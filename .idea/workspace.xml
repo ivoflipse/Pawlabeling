@@ -2,14 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/entirePlateWidget.py" afterPath="$PROJECT_DIR$/entirePlateWidget.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mainwidget.py" afterPath="$PROJECT_DIR$/mainwidget.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Pawlabeling.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/mainwindow.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372708314274" ignored="false" />
-    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372710879515" ignored="false" />
+    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372714600272" ignored="false" />
     <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372714057277" ignored="false" />
     <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372704976316" ignored="false" />
     <file path="/popupwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372664863442" ignored="false" />
@@ -457,7 +455,11 @@
       <created>1372710884712</created>
       <updated>1372710884712</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Sadly, but the COP is really a crappy indicator (at least visually)">
+      <created>1372714607016</created>
+      <updated>1372714607016</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -537,7 +539,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Working on changing the colors in the contact list" />
+    <option name="LAST_COMMIT_MESSAGE" value="Sadly, but the COP is really a crappy indicator (at least visually)" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -558,6 +560,7 @@
     <MESSAGE value="Added graphs next to the paws, but they seem useless and take up a lot of space" />
     <MESSAGE value="Fixed the problem with how my normalized looked" />
     <MESSAGE value="Working on changing the colors in the contact list" />
+    <MESSAGE value="Sadly, but the COP is really a crappy indicator (at least visually)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
