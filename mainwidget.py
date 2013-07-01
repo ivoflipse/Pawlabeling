@@ -60,7 +60,7 @@ class MainWidget(QWidget):
                              entirePlateWidget_size,
                              self)
 
-        self.paws_widget = PawsWidget(self, self.degree*2, self.nmin, self.nmax)
+        self.paws_widget = PawsWidget(self, self.degree*3, self.nmin, self.nmax)
 
         self.entirePlateWidget.setMinimumWidth(600)
 
@@ -203,7 +203,7 @@ class MainWidget(QWidget):
     def addContacts(self):
         # Print how many contacts we found
         print "Number of paws found:", len(self.paws)
-        print "Number of frames: ", [paw.frames[0] for paw in self.paws]
+        print "Starting frames: ", [paw.frames[0] for paw in self.paws]
 
         # Clear any existing contacts
         self.contactTree.clear()

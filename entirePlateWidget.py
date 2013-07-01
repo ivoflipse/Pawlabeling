@@ -26,6 +26,7 @@ class EntirePlateWidget(QWidget):
         # A cache to store the polygons of the previous frame
         self.previouspolygons = []
         self.bounding_boxes = []
+        self.current_box = None
         self.gait_lines = []
         self.colors = [
                       QColor(Qt.green),
@@ -97,15 +98,24 @@ class EntirePlateWidget(QWidget):
         self.bboxpen = QPen(color)
         self.bboxpen.setWidth(3)
 
-        old_box = self.bounding_boxes[index]
-        self.scene.removeItem(old_box)
+        if paw_label == -1:
+            if self.current_box:
+                self.scene.removeItem(self.current_box)
+            self.bboxpen.setWidth(5)
+        else:
+            old_box = self.bounding_boxes[index]
+            self.scene.removeItem(old_box)
+
         paw = self.paws[index]
         polygon = QPolygonF([QPointF(paw.totalminx * self.degree, paw.totalminy * self.degree),
                            QPointF(paw.totalmaxx * self.degree, paw.totalminy * self.degree),
                            QPointF(paw.totalmaxx * self.degree, paw.totalmaxy * self.degree),
                            QPointF(paw.totalminx * self.degree, paw.totalmaxy * self.degree)])
 
-        self.bounding_boxes[index] = self.scene.addPolygon(polygon, self.bboxpen)
+        if paw_label == -1:
+            self.current_box = self.scene.addPolygon(polygon, self.bboxpen)
+        else:
+            self.bounding_boxes[index] = self.scene.addPolygon(polygon, self.bboxpen)
 
 
     def draw_gait_line(self):
