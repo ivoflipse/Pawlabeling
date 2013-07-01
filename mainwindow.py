@@ -76,7 +76,7 @@ class MainWindow(QMainWindow):
         self.fastForward.setShortcutContext(Qt.ApplicationShortcut)
 
         self.toolbar.addAction(self.trackContacts)
-        self.toolbar.addAction(self.goodResult)
+        self.toolbar.addAction(self.storeStatus)
         self.toolbar.addAction(self.slideLeft)
         self.toolbar.addAction(self.slideRight)
         self.toolbar.addAction(self.fastBackward)
@@ -92,6 +92,8 @@ class MainWindow(QMainWindow):
         # Install an event filter
         self.arrowFilter = utility.arrowFilter()
         self.installEventFilter(self.arrowFilter)
+
+        self.mainWidget.setFileName(event=None)
 
 
     def createAction(self, text, shortcut=None, icon=None,

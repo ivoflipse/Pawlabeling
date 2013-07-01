@@ -6,7 +6,7 @@ from view import View
 import utility
 
 class EntirePlateWidget(QWidget):
-    def __init__(self, filename, measurement, paws, degree, size, parent = None):
+    def __init__(self, degree, size, parent = None):
         super(EntirePlateWidget, self).__init__(parent)
         self.parent = parent
         self.resize(size[0], size[1])
@@ -35,44 +35,30 @@ class EntirePlateWidget(QWidget):
                       QColor(Qt.red),
                       ]
 
-        self.measurement = measurement
-        self.paws = paws
-        
-        # Get the number of Frames for the slider
-        self.height, self.width, self.numFrames = self.measurement.shape
-        
         self.degree = degree
-        self.delta = 0
-        
-        # These are the min and max values of the entire measurement
-        self.nmin = self.measurement.min()
-        self.nmax = self.measurement.max()
-        
-    def newMeasurement(self, measurement, paws):
+
+    def newMeasurement(self, measurement):
         # Update the measurement
         self.measurement = measurement
+        self.height, self.width, self.numFrames = self.measurement.shape
+        self.nmin = self.measurement.min()
+        self.nmax = self.measurement.max()
+        self.changeFrame(frame=0)
+
+    def newPaws(self, paws):
         # Update the paws
         self.paws = paws
-        # Set the frame to zero
-        self.changeFrame(frame = 0)
         self.draw_bounding_box()
         self.draw_gait_line()
 
-    def getData(self, frame):      
+    def changeFrame(self, frame):
         # Set the frame
         self.frame = frame
         # Slice out the data from the measurement
-        self.data = self.measurement[:, :, self.frame].T    
-        
-    def changeFrame(self, frame):
-        self.frame = frame
-        self.getData(self.frame)
-        self.update_pixmap()
-  
-    def update_pixmap(self):
-        # Set the pixmap with the data
-        self.image.setPixmap(utility.getQPixmap(self.data, self.degree, self.nmin, self.nmax))
-    
+        self.data = self.measurement[:, :, self.frame].T
+        # Update the pixmap
+        self.self.image.setPixmap(utility.getQPixmap(self.data, self.degree, self.nmin, self.nmax))
+
     def draw_bounding_box(self):
         self.bboxpen = QPen(Qt.white)
         self.bboxpen.setWidth(3)
