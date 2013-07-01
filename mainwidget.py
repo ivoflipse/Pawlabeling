@@ -8,6 +8,7 @@ from entirePlateWidget import EntirePlateWidget
 from pawswidget import PawsWidget
 import realtimetracker
 import utility
+import numpy as np
 
 class MainWidget(QWidget):
     def __init__(self, path, pickled, desktopFlag, parent=None):
@@ -143,8 +144,11 @@ class MainWidget(QWidget):
         paws = realtimetracker.trackContours_graph(self.measurement)
         # Convert them to class objects
         self.paws = []
+        self.paw_data = []
         for index, paw in enumerate(paws):
-            self.paws.append(realtimetracker.Contact(paw))
+            paw = realtimetracker.Contact(paw)
+            self.paws.append(paw)
+            self.paw_data.append(utility.convertContourToSlice(self.measurement, paw.contourList))
 
         # Sort the contacts based on their position along the first dimension    
         self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
@@ -174,10 +178,14 @@ class MainWidget(QWidget):
         self.next_paw()
 
     def update_current_paw(self, paw_label=-1):
+        #TODO change the color in the table here too
+        #treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green
+        #self.currentItem.setForeground(0, treeBrush)
+        #self.currentItem.setTextColor(0, QColor(Qt.green))
         if self.current_paw_index <= len(self.paws):
             self.current_paw = self.paws[self.current_paw_index]
             # Convert it to a numpy array
-            current_paw_data = utility.convertContourToSlice(self.measurement, self.current_paw.contourList)
+            current_paw_data = self.paw_data[self.current_paw_index]
 
             if paw_label > -1:
                 self.paw_labels[self.current_paw_index] = paw_label
@@ -204,15 +212,13 @@ class MainWidget(QWidget):
 
         # Clear any existing contacts
         self.contactTree.clear()
-        for index, paw in enumerate(self.paws):
+        for index, paw in enumerate(self.paw_data):
+            x, y, z = paw.shape
             rootItem = QTreeWidgetItem(self.contactTree)
             rootItem.setText(0, "Contact %s" % index)
-            rootItem.setText(1, str(len(paw.frames)))
-            # Calculate a crude measure of the paw surface
-            width = paw.totalmaxx - paw.totalminx
-            height = paw.totalmaxy - paw.totalminy
-            surface = int(width * height)
-            rootItem.setText(2, str(surface))
+            rootItem.setText(1, str(z))
+            surface = np.max([np.count_nonzero(paw[:,:,frame]) for frame in range(z)])
+            rootItem.setText(2, str(int(surface)))
 
     def deleteContact(self):
         index = self.contactTree.currentIndex().row()

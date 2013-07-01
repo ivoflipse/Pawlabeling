@@ -128,13 +128,17 @@ class MainWindow(QMainWindow):
                                               connection=self.mainWidget.next_paw
         )
 
-        self.actions = [self.storeStatus, self.trackContacts, self.slideLeft, self.slideRight,
-                    self.fastBackward, self.fastForward, self.front_left, self.front_right,
+        self.actions = [self.storeStatus, self.trackContacts, self.front_left, self.front_right,
                     self.hind_left, self.hind_right, self.previous_paw, self.next_paw]
 
         for action in self.actions:
             action.setShortcutContext(Qt.ApplicationShortcut)
             self.toolbar.addAction(action)
+
+        # Not adding the forward/backward buttons to the toolbar
+        self.non_toolbar_actions = [self.slideLeft, self.slideRight, self.fastBackward, self.fastForward]
+        for action in self.non_toolbar_actions:
+            action.setShortcutContext(Qt.ApplicationShortcut)
 
         # Install an event filter
         self.arrowFilter = utility.arrowFilter()
