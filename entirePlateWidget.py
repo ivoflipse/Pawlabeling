@@ -47,14 +47,6 @@ class EntirePlateWidget(QWidget):
         # These are the min and max values of the entire measurement
         self.nmin = self.measurement.min()
         self.nmax = self.measurement.max()
-
-        # Draw the bounding boxes for all the paws that have been found so far
-        if self.paws:
-            self.draw_bounding_box()
-
-    def updateSlice(self):
-        # Pass the message to the parent
-        self.parent.updateDialog()
         
     def newMeasurement(self, measurement, paws):
         # Update the measurement

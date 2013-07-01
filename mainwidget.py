@@ -20,11 +20,11 @@ class MainWidget(QWidget):
         if desktop:
             # Set the size to something nice and large
             self.resize(2550, 1000) # Make these sizes more platform independent
-            widget_size = [600, 600]
+            entirePlateWidget_size = [600, 600]
             self.degree = 4
         else:
             self.resize(1400, 800) # Make these sizes more platform independent
-            widget_size = [800, 500]
+            entirePlateWidget_size = [800, 500]
             self.degree = 4
 
         # Create a label to display the measurement name
@@ -54,7 +54,7 @@ class MainWidget(QWidget):
 
         self.entirePlateWidget = EntirePlateWidget(self.filename, self.measurement,
                              self.paws, self.degree,
-                             widget_size,
+                             entirePlateWidget_size,
                              self)
 
         self.entirePlateWidget.setMinimumWidth(600)
@@ -137,8 +137,6 @@ class MainWidget(QWidget):
         #self.measurement = readzebris.loadFile(self.filename) # This enabled reading Zebris files
         # Get the number of Frames for the slider
         self.height, self.width, self.numFrames = self.measurement.shape
-        # Initialize the paws to None
-        self.paws = None
 
     def trackContacts(self):
         print "Track!"
@@ -155,39 +153,6 @@ class MainWidget(QWidget):
         self.addContacts()
         self.updateWidget()
 
-    def findPickledFile(self, dogName, filename):
-        # For the current filename, check if there's a pickled file, if so load it
-        # Get the name of the dog       
-        path = os.path.join(self.pickled, dogName)
-        # If the folder exists
-        if os.path.exists(path):
-            inputPath = None
-            # Check if the current file's name is in that folder
-            for root, dirs, files in os.walk(path):
-                for f in files:
-                    name, ext = f.split('.') # name.pkl 
-                    if name == filename:
-                        inputFile = f
-                        inputPath = os.path.join(path, inputFile)
-                        return inputPath
-
-    def loadPickled(self):
-        self.dogName = self.filename.split('\\')[-2]
-        # Get the measurements name
-        file_name = self.filename.split('\\')[-1]
-        inputPath = self.findPickledFile(self.dogName, file_name)
-        # If an inputFile has been found, unpickle it
-        if inputPath:
-            #print "Found it!"
-            import pickle
-
-            input = open(inputPath, 'rb')
-            self.paws = pickle.load(input)
-            # Sort the paws
-            self.paws = sorted(self.paws, key=lambda paw: paw.totalcentroid[0])
-            return True
-        return False
-
     def updateWidget(self):
         self.entirePlateWidget.newMeasurement(self.measurement, self.paws)
         # Reset the frame counter
@@ -198,7 +163,7 @@ class MainWidget(QWidget):
     def addContacts(self):
         # Print how many contacts we found
         print "Number of paws found:", len(self.paws)
-        print "Number of frames: ", [len(paw.frames) for paw in self.paws]
+        print "Number of frames: ", [paw.frames[0] for paw in self.paws]
 
         # Clear any existing contacts
         self.contactTree.clear()
@@ -248,38 +213,6 @@ class MainWidget(QWidget):
                     if self.findPickledFile(self.dogName, fname) is not None:
                         # Change the foreground to green
                         childItem.setForeground(0, greenBrush)
-
-
-    def checkPickleStatus(self, name): # This one isn't really working as intended
-        # Open the status file, find the dog + filename and check if it has been pickled
-        self.statusFilePath = os.path.join(self.pickled, "status")
-
-        # Try opening the status file
-        if os.path.exists(self.statusFilePath):
-            statusFile = open(self.statusFilePath, "rb")
-            # Get the measurement name from filename
-            file_name = name.split('\\')[-1]
-            for line in statusFile.readlines():
-                if line: # Ignore empty lines
-                    # Split the line
-                    dogName, filename, status = line.split('\t')
-                    # Check if we found a match
-                    if dogName == self.dogName and filename == file_name:
-                        # If the status is True, return True
-                        if status == 'True': # We're reading a string, so its not a Boolean!
-                            return True
-                        else:
-                            return False
-        else: # Doesn't exist
-            return False
-
-
-    def createContact(self, event):
-        # Make sure everything else gets calculated as well
-        # Like a bounding box and whatnot
-        # Update the display, so we can see where it is
-        self.entirePlateWidget.newMeasurement(self.measurement, self.paws)
-
 
     def sliderMoved(self, frame):
         self.sliderText.setText("Frame: {}".format(frame))
