@@ -5,9 +5,9 @@ from view import View
 
 import utility
 
-class Widget(QWidget):
+class EntirePlateWidget(QWidget):
     def __init__(self, filename, measurement, paws, degree, size, parent = None):
-        super(Widget, self).__init__(parent)
+        super(EntirePlateWidget, self).__init__(parent)
         self.parent = parent
         self.resize(size[0], size[1])
         self.layout = QVBoxLayout(self)
@@ -26,6 +26,7 @@ class Widget(QWidget):
         # A cache to store the polygons of the previous frame
         self.previouspolygons = []
         self.bounding_boxes = []
+        self.gait_lines = []
         self.colors = [
                       QColor(Qt.darkCyan),
                       QColor(Qt.gray),
@@ -46,10 +47,11 @@ class Widget(QWidget):
         # These are the min and max values of the entire measurement
         self.nmin = self.measurement.min()
         self.nmax = self.measurement.max()
-        
-        # Draw the bounding boxes for all the paws that have been found so far                                                     
-        self.draw_bounding_box()
-    
+
+        # Draw the bounding boxes for all the paws that have been found so far
+        if self.paws:
+            self.draw_bounding_box()
+
     def updateSlice(self):
         # Pass the message to the parent
         self.parent.updateDialog()
@@ -62,6 +64,7 @@ class Widget(QWidget):
         # Set the frame to zero
         self.changeFrame(frame = 0)
         self.draw_bounding_box()
+        self.draw_gait_line()
 
     def getData(self, frame):      
         # Set the frame
@@ -76,13 +79,11 @@ class Widget(QWidget):
   
     def update_pixmap(self):
         # Set the pixmap with the data
-        self.image.setPixmap(utility.getQPixmap(self.data, self.degree, self.nmin, self.nmax))  
-        # Draw the contours
-        self.draw_contours()
+        self.image.setPixmap(utility.getQPixmap(self.data, self.degree, self.nmin, self.nmax))
     
     def draw_bounding_box(self):
         self.bboxpen = QPen(Qt.white)
-        self.bboxpen.setWidth(5)
+        self.bboxpen.setWidth(3)
         # Remove the old ones and redraw
         for box in self.bounding_boxes:
             self.scene.removeItem(box)
@@ -90,6 +91,7 @@ class Widget(QWidget):
                
         # Container to map contours to colors        
         self.paw_colors = []
+
         for index, paw in enumerate(self.paws):
             if len(paw.frames) > 1:
                 #color = self.colors[index % len(self.colors)]  # We'll default to white first
@@ -99,32 +101,27 @@ class Widget(QWidget):
                                      QPointF(paw.totalmaxx * self.degree, paw.totalminy * self.degree),
                                      QPointF(paw.totalmaxx * self.degree, paw.totalmaxy * self.degree),
                                      QPointF(paw.totalminx * self.degree, paw.totalmaxy * self.degree)])
-                
+
                 self.paw_colors.append([paw. totalcentroid, paw.totalminx, paw.totalmaxx, paw.totalminy, paw.totalmaxy, color])
                 self.bounding_boxes.append(self.scene.addPolygon(polygon, self.bboxpen))
-                               
-    def draw_contours(self):
-        # Loop through the polygons of the previous frame and delete them
-        for polygon in self.previouspolygons:
-            self.scene.removeItem(polygon)
-        
-        self.previouspolygons = []
-        
-        # Loop through all the paws
-        for index, paw in enumerate(self.paws):
-            # Check if there are any contours for the given frame
-            if self.frame in paw.contourList:
-                for contour in paw.contourList[self.frame]:
-                    polygon = utility.contourToPolygon(contour, self.degree)
-                    color = self.colors[index % len(self.colors)]
-                    self.pen.setColor(color)
-                    self.pen.setWidth(1)
-                    # Set the brush color to the same color as the pen, but transparent
-                    brush_color = QColor(color)
-                    brush_color.setAlpha(78)
-                    self.brush.setColor(color)
-                    polygon = self.scene.addPolygon(polygon, self.pen, self.brush)
-                    # Store it so it can be deleted in the next frame
-                    self.previouspolygons.append(polygon)     
+
+    def draw_gait_line(self):
+        self.gait_line_pen = QPen(Qt.white)
+        self.gait_line_pen.setWidth(1)
+        self.gait_line_pen.setColor(Qt.white)
+
+        for line in self.gait_lines:
+            self.scene.removeItem(line)
+        self.gait_lines = []
+
+        for index in range(1, len(self.paws)):
+            prevPaw = self.paws[index-1]
+            curPaw = self.paws[index]
+            polygon = QPolygonF([QPointF(prevPaw.totalcentroid[0] * self.degree, prevPaw.totalcentroid[1] * self.degree),
+                                 QPointF(curPaw.totalcentroid[0] * self.degree, curPaw.totalcentroid[1] * self.degree)])
+            self.gait_lines.append(self.scene.addPolygon(polygon, self.gait_line_pen))
+
+
+
 
 

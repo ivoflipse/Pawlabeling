@@ -5,7 +5,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import numpy as np
 
-from widget import Widget
+from entirePlateWidget import EntirePlateWidget
 import realtimetracker
 import utility
 
@@ -15,7 +15,7 @@ class MainWidget(QWidget):
         desktop = desktopFlag
 
         # Initialize numframes, in case measurements aren't loaded
-        self.numFrames = 256
+        self.numFrames = 248
 
         if desktop:
             # Set the size to something nice and large
@@ -28,7 +28,7 @@ class MainWidget(QWidget):
             self.degree = 4
 
         # Create a label to display the measurement name
-        self.nameLabel = QLabel()
+        self.nameLabel = QLabel(self)
 
         self.path = path
         self.pickled = pickled
@@ -52,12 +52,12 @@ class MainWidget(QWidget):
         self.measurementTree.setCurrentItem(self.measurementTree.topLevelItem(0).child(0))
         self.setFileName(None)
 
-        self.widget = Widget(self.filename, self.measurement,
+        self.entirePlateWidget = EntirePlateWidget(self.filename, self.measurement,
                              self.paws, self.degree,
                              widget_size,
                              self)
 
-        self.widget.setMinimumWidth(600)
+        self.entirePlateWidget.setMinimumWidth(600)
 
 
         # Create a slider
@@ -66,17 +66,23 @@ class MainWidget(QWidget):
         self.slider.setMinimum(0)
         self.slider.setMaximum(self.numFrames - 1)
         self.slider.valueChanged.connect(self.sliderMoved)
+        self.sliderText = QLabel(self)
+        self.sliderText.setText("Frame: 0")
+
         # Set the slider to the first frame
         self.sliderMoved(0)
 
-        self.mainLayout = QHBoxLayout(self)
+        self.sliderLayout = QHBoxLayout()
+        self.sliderLayout.addWidget(self.slider)
+        self.sliderLayout.addWidget(self.sliderText)
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.nameLabel)
-        self.layout.addWidget(self.widget)
-        self.layout.addWidget(self.slider)
+        self.layout.addWidget(self.entirePlateWidget)
+        self.layout.addLayout(self.sliderLayout)
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.addWidget(self.measurementTree)
         self.verticalLayout.addWidget(self.contactTree)
+        self.mainLayout = QHBoxLayout(self)
         self.mainLayout.addLayout(self.verticalLayout)
         self.mainLayout.addLayout(self.layout)
         self.setLayout(self.mainLayout)
@@ -131,16 +137,8 @@ class MainWidget(QWidget):
         #self.measurement = readzebris.loadFile(self.filename) # This enabled reading Zebris files
         # Get the number of Frames for the slider
         self.height, self.width, self.numFrames = self.measurement.shape
-        pickle = False
-        found = False
-        if pickle:
-            # If its pickled, get it from its pickle folder
-            found = self.loadPickled()
-            # Add the paws to the contactTree
-            self.addContacts()
-
-        if not pickle or not found:
-            self.trackContacts()
+        # Initialize the paws to None
+        self.paws = None
 
     def trackContacts(self):
         print "Track!"
@@ -151,12 +149,11 @@ class MainWidget(QWidget):
             self.paws.append(realtimetracker.Contact(paw))
 
         # Sort the contacts based on their position along the first dimension    
-        self.paws = sorted(self.paws, key=lambda paw: paw.totalcentroid[0])
+        self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
 
         # Add the paws to the contactTree
         self.addContacts()
-        if hasattr(self, 'widget'):
-            self.updateWidget()
+        self.updateWidget()
 
     def findPickledFile(self, dogName, filename):
         # For the current filename, check if there's a pickled file, if so load it
@@ -192,7 +189,7 @@ class MainWidget(QWidget):
         return False
 
     def updateWidget(self):
-        self.widget.newMeasurement(self.measurement, self.paws)
+        self.entirePlateWidget.newMeasurement(self.measurement, self.paws)
         # Reset the frame counter
         self.slider.setValue(0)
         # Update the slider, in case the shape of the file changes
@@ -219,7 +216,7 @@ class MainWidget(QWidget):
         index = self.contactTree.currentIndex().row()
         del self.paws[index]
         # Redraw everything, its probably easier to separate this because only the paws have to be redrawn
-        self.widget.newMeasurement(self.measurement, self.paws)
+        self.entirePlateWidget.newMeasurement(self.measurement, self.paws)
         # Update the contactTree
         self.addContacts()
 
@@ -281,25 +278,18 @@ class MainWidget(QWidget):
         # Make sure everything else gets calculated as well
         # Like a bounding box and whatnot
         # Update the display, so we can see where it is
-        self.widget.newMeasurement(self.measurement, self.paws)
+        self.entirePlateWidget.newMeasurement(self.measurement, self.paws)
 
 
     def sliderMoved(self, frame):
-        # This prints the index and location of the paws to the command line for debugging purposes
-        pawLoc = []
-        for index, paw in enumerate(self.paws):
-            if frame in paw.contourList:
-                if len(paw.contourList[frame]) > 0:
-                    d = {frame: paw.contourList[frame]}
-                    center, _, _, _, _ = realtimetracker.updateBoundingBox(d)
-                    pawLoc.append((index, (int(center[0]), int(center[1]))))
-        print "Slider moved to:", frame, " ".join([str(c) for c in pawLoc])
+        self.sliderText.setText("Frame: {}".format(frame))
         try:
             self.frame = frame
-            self.widget.changeFrame(self.frame)
+            self.entirePlateWidget.changeFrame(self.frame)
             self.nameLabel.setText("Measurement name: {}".format(self.filename))
         except IndexError:
             print "Error: No image at index", frame
+
 
     def goodResult(self):
         """
@@ -334,7 +324,6 @@ class MainWidget(QWidget):
         # Close the output file
         output.close()
         print "Pickled %s at location %s" % (self.file_name, self.new_path)
-        self.createLookupTable()
 
         # Change the color of the measurement in the tree to green
         treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green

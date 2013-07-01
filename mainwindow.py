@@ -1,11 +1,10 @@
 import sys, os
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
 from mainwidget import MainWidget
 from toolbar import Toolbar
 import utility
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 
 base_folder = "C:\Dropbox\Public\Examples\\"
 name = base_folder + "der_1 - 3-4-2010 - Entire Plate Roll Off"
@@ -23,6 +22,10 @@ class MainWindow(QMainWindow):
 
         path = "C:\\Exports\\"
         pickled = "C:\\LabelsPickled\\"
+        # Add the folder for the pickled data if it doesn't exist
+        if not os.path.exists(pickled):
+            os.mkdir(pickled)
+
         self.mainWidget = MainWidget(path, pickled, desktop, self)
         self.setCentralWidget(self.mainWidget)
         self.toolbar = Toolbar(self)
@@ -30,56 +33,43 @@ class MainWindow(QMainWindow):
 
         self.status = self.statusBar()
         self.status.showMessage("Ready")
-        self.setWindowTitle("Paw detection tool")
+        self.setWindowTitle("Paw labeling tool")
 
         self.trackContacts = self.createAction(text="&Track Contacts",
             shortcut="CTRL+F", icon=QIcon(os.path.join(os.path.dirname(__file__), "images/editzoom.png")),
             tip="Using the tracker to find contacts",
-            checkable=False)
+            checkable=False        )
 
         self.goodResult = self.createAction(text="&Store",
             shortcut="CTRL+S", icon=QIcon(os.path.join(os.path.dirname(__file__), "images/save-icon.png")),
             tip="Mark the tracking as correct",
-            checkable=False)
+            checkable=False        )
 
-        self.deleteContact = self.createAction(text="&Delete",
-            shortcut=Qt.Key_Delete, icon=QIcon(os.path.join(os.path.dirname(__file__), "images/trash-icon.png")),
-            tip="Delete a contact",
-            checkable=False)
-
-        self.createContact = self.createAction(text="&Create",
-            shortcut="CTRL+N", icon=QIcon(os.path.join(os.path.dirname(__file__), "images/add-icon.png")),
-            tip="Create a new contact",
-            checkable=False)
 
         self.slideLeft = self.createAction(text="Slide Left",
             shortcut=Qt.Key_Left, icon=QIcon(os.path.join(os.path.dirname(__file__), "images/arrow-left-icon.png")),
             tip="Move the slider to the left",
-            checkable=False)
+            checkable=False        )
 
         self.slideRight = self.createAction(text="Slide Right",
             shortcut=Qt.Key_Right, icon=QIcon(os.path.join(os.path.dirname(__file__), "images/arrow-right-icon.png")),
             tip="Move the slider to the right",
-            checkable=False)
+            checkable=False        )
 
         self.fastBackward = self.createAction(text="Fast Back",
             shortcut=QKeySequence(Qt.CTRL + Qt.Key_Left),
             icon=QIcon(os.path.join(os.path.dirname(__file__), "images/arrow-left-icon.png")),
             tip="Move the slider to the left faster",
-            checkable=False)
+            checkable=False        )
 
         self.fastForward = self.createAction(text="Fast Left Right",
             shortcut=QKeySequence(Qt.CTRL + Qt.Key_Right),
             icon=QIcon(os.path.join(os.path.dirname(__file__), "images/arrow-right-icon.png")),
             tip="Move the slider to the right faster",
-            checkable=False)
+            checkable=False        )
 
-
-        # Make the shortcuts global
         self.goodResult.setShortcutContext(Qt.ApplicationShortcut)
         self.trackContacts.setShortcutContext(Qt.ApplicationShortcut)
-        self.deleteContact.setShortcutContext(Qt.ApplicationShortcut)
-        self.createContact.setShortcutContext(Qt.ApplicationShortcut)
         self.slideLeft.setShortcutContext(Qt.ApplicationShortcut)
         self.slideRight.setShortcutContext(Qt.ApplicationShortcut)
         self.fastBackward.setShortcutContext(Qt.ApplicationShortcut)
@@ -87,18 +77,13 @@ class MainWindow(QMainWindow):
 
         self.toolbar.addAction(self.trackContacts)
         self.toolbar.addAction(self.goodResult)
-        self.toolbar.addAction(self.deleteContact)
-        self.toolbar.addAction(self.createContact)
         self.toolbar.addAction(self.slideLeft)
         self.toolbar.addAction(self.slideRight)
         self.toolbar.addAction(self.fastBackward)
         self.toolbar.addAction(self.fastForward)
 
-        # Do I really need to call this deep down the stack?
         self.trackContacts.triggered.connect(self.mainWidget.trackContacts)
         self.goodResult.triggered.connect(self.mainWidget.goodResult)
-        self.deleteContact.triggered.connect(self.mainWidget.deleteContact)
-        self.createContact.triggered.connect(self.mainWidget.createContact)
         self.slideLeft.triggered.connect(self.mainWidget.slideToLeft)
         self.slideRight.triggered.connect(self.mainWidget.slideToRight)
         self.fastBackward.triggered.connect(self.mainWidget.fastBackward)
@@ -110,7 +95,7 @@ class MainWindow(QMainWindow):
 
 
     def createAction(self, text, shortcut=None, icon=None,
-                     tip=None, checkable=False):
+                     tip=None, checkable=False, connection=None):
         action = QAction(text, self)
         if icon is not None:
             action.setIcon(icon)
