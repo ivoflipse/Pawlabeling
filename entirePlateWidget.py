@@ -28,22 +28,25 @@ class EntirePlateWidget(QWidget):
         self.bounding_boxes = []
         self.gait_lines = []
         self.colors = [
-                      QColor(Qt.darkCyan),
-                      QColor(Qt.gray),
-                      QColor(Qt.darkMagenta),
                       QColor(Qt.green),
+                      QColor(Qt.darkGreen),
                       QColor(Qt.red),
+                      QColor(Qt.darkRed),
+                      QColor(Qt.yellow),
                       ]
 
         self.degree = degree
 
     def newMeasurement(self, measurement):
+        # Clear the bounding boxes + the line
+        self.clear_bounding_box()
+        self.clear_gait_line()
         # Update the measurement
         self.measurement = measurement
         self.height, self.width, self.numFrames = self.measurement.shape
         self.nmin = self.measurement.min()
         self.nmax = self.measurement.max()
-        self.changeFrame(frame=0)
+        self.changeFrame(frame=-1)
 
     def newPaws(self, paws):
         # Update the paws
@@ -54,43 +57,63 @@ class EntirePlateWidget(QWidget):
     def changeFrame(self, frame):
         # Set the frame
         self.frame = frame
-        # Slice out the data from the measurement
-        self.data = self.measurement[:, :, self.frame].T
+        if frame == -1:
+            self.data = self.measurement.max(axis=2).T
+        else:
+            # Slice out the data from the measurement
+            self.data = self.measurement[:, :, self.frame].T
         # Update the pixmap
-        self.self.image.setPixmap(utility.getQPixmap(self.data, self.degree, self.nmin, self.nmax))
+        self.image.setPixmap(utility.getQPixmap(self.data, self.degree, self.nmin, self.nmax))
 
-    def draw_bounding_box(self):
-        self.bboxpen = QPen(Qt.white)
-        self.bboxpen.setWidth(3)
+    def clear_bounding_box(self):
         # Remove the old ones and redraw
         for box in self.bounding_boxes:
             self.scene.removeItem(box)
         self.bounding_boxes = []
-               
-        # Container to map contours to colors        
-        self.paw_colors = []
 
+    def clear_gait_line(self):
+        # Remove the gait line
+        for line in self.gait_lines:
+            self.scene.removeItem(line)
+        self.gait_lines = []
+
+    def draw_bounding_box(self):
+        self.bboxpen = QPen(Qt.white)
+        self.bboxpen.setWidth(3)
+
+        self.clear_bounding_box()
         for index, paw in enumerate(self.paws):
             if len(paw.frames) > 1:
                 #color = self.colors[index % len(self.colors)]  # We'll default to white first
-                color = QColor(Qt.white)
-                self.bboxpen.setColor(color)
                 polygon = QPolygonF([QPointF(paw.totalminx * self.degree, paw.totalminy * self.degree),
                                      QPointF(paw.totalmaxx * self.degree, paw.totalminy * self.degree),
                                      QPointF(paw.totalmaxx * self.degree, paw.totalmaxy * self.degree),
                                      QPointF(paw.totalminx * self.degree, paw.totalmaxy * self.degree)])
 
-                self.paw_colors.append([paw. totalcentroid, paw.totalminx, paw.totalmaxx, paw.totalminy, paw.totalmaxy, color])
                 self.bounding_boxes.append(self.scene.addPolygon(polygon, self.bboxpen))
+
+    def update_bounding_box(self, index, paw_label):
+        color = self.colors[paw_label]
+        self.bboxpen = QPen(color)
+        self.bboxpen.setWidth(3)
+
+        old_box = self.bounding_boxes[index]
+        self.scene.removeItem(old_box)
+        paw = self.paws[index]
+        polygon = QPolygonF([QPointF(paw.totalminx * self.degree, paw.totalminy * self.degree),
+                           QPointF(paw.totalmaxx * self.degree, paw.totalminy * self.degree),
+                           QPointF(paw.totalmaxx * self.degree, paw.totalmaxy * self.degree),
+                           QPointF(paw.totalminx * self.degree, paw.totalmaxy * self.degree)])
+
+        self.bounding_boxes[index] = self.scene.addPolygon(polygon, self.bboxpen)
+
 
     def draw_gait_line(self):
         self.gait_line_pen = QPen(Qt.white)
         self.gait_line_pen.setWidth(1)
         self.gait_line_pen.setColor(Qt.white)
 
-        for line in self.gait_lines:
-            self.scene.removeItem(line)
-        self.gait_lines = []
+        self.clear_gait_line()
 
         for index in range(1, len(self.paws)):
             prevPaw = self.paws[index-1]

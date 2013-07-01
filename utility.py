@@ -312,6 +312,17 @@ def calculateDetectionRate(data, paws, frame):
         f_measure = float(2 * float((precision * recall) / (precision + recall)))
     return non_zero, true_positives, false_positives, true_negatives, false_negatives
 
+def averagecontacts(contacts):
+    numcontacts = len(contacts)
+    emptyarray = np.zeros((50, 100, numcontacts)) # This should fit ANYTHING
+    for index, contact in enumerate(contacts):
+        nx, ny = np.shape(contact)
+        emptyarray[0:nx, 0:ny, index] = contact # dump the array in the empty one
+    averagearray = np.mean(emptyarray, axis=2)
+    xmax, ymax = np.max(np.nonzero(averagearray)[0]), np.max(np.nonzero(averagearray)[1])
+    averagearray = averagearray[0:xmax+1, 0:ymax+1]
+    return averagearray
+
 
 def calculate_cop(data):
     copx, copy = [], []

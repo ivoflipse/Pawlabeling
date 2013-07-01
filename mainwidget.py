@@ -7,6 +7,7 @@ import numpy as np
 import pickle
 
 from entirePlateWidget import EntirePlateWidget
+from pawswidget import PawsWidget
 import realtimetracker
 import utility
 
@@ -18,11 +19,13 @@ class MainWidget(QWidget):
         # Initialize numframes, in case measurements aren't loaded
         self.numFrames = 248
         self.frame = 0
+        self.nmin = 0
+        self.nmax = 10
 
         if desktop:
             # Set the size to something nice and large
             self.resize(2550, 1000) # Make these sizes more platform independent
-            entirePlateWidget_size = [600, 600]
+            entirePlateWidget_size = [600, 300]
             self.degree = 4
         else:
             self.resize(1400, 800) # Make these sizes more platform independent
@@ -41,7 +44,7 @@ class MainWidget(QWidget):
         self.measurementTree.setMinimumWidth(100)
         self.measurementTree.setColumnCount(1)
         self.measurementTree.setHeaderLabel("Measurements")
-        self.measurementTree.itemActivated.connect(self.setFileName)
+        self.measurementTree.itemActivated.connect(self.loadFile)
         # Load the measurements from a default path and set the filename to the first file from the folder
         self.addMeasurements(path=path)
 
@@ -57,12 +60,14 @@ class MainWidget(QWidget):
                              entirePlateWidget_size,
                              self)
 
+        self.paws_widget = PawsWidget(self, self.degree*2, self.nmin, self.nmax)
+
         self.entirePlateWidget.setMinimumWidth(600)
 
         # Create a slider
         self.slider = QSlider(self)
         self.slider.setOrientation(Qt.Horizontal)
-        self.slider.setMinimum(0)
+        self.slider.setMinimum(-1)
         self.slider.setMaximum(0)
         self.slider.valueChanged.connect(self.sliderMoved)
         self.sliderText = QLabel(self)
@@ -75,6 +80,7 @@ class MainWidget(QWidget):
         self.layout.addWidget(self.nameLabel)
         self.layout.addWidget(self.entirePlateWidget)
         self.layout.addLayout(self.sliderLayout)
+        self.layout.addWidget(self.paws_widget)
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.addWidget(self.measurementTree)
         self.verticalLayout.addWidget(self.contactTree)
@@ -110,22 +116,13 @@ class MainWidget(QWidget):
         self.frame = frame
         self.entirePlateWidget.changeFrame(self.frame)
 
-    def setFileName(self, event=None):
+    def loadFile(self, event=None):
         # Get the text from the currentItem
         self.currentItem = self.measurementTree.currentItem()
         parentItem = str(self.currentItem.parent().text(0))
         currentItem = str(self.currentItem.text(0))
         # Get the path from the filenames dictionary
         self.filename = self.filenames[parentItem][currentItem]
-        try:
-            # Load the file with the new filename
-            self.loadFile()
-            self.nameLabel.setText("Measurement name: {}".format(self.filename))
-        except Exception, e:
-            print "Can't load the file with filename: {}".format(self.filename)
-            print e
-
-    def loadFile(self):
         # Update the label
         self.nameLabel.setText(self.filename)
         # Pass the new measurement through to the widget
@@ -137,9 +134,10 @@ class MainWidget(QWidget):
         # Send the measurement to the widget
         self.entirePlateWidget.newMeasurement(self.measurement)
         # Reset the frame counter
-        self.slider.setValue(0)
+        self.slider.setValue(-1)
         # Update the slider, in case the shape of the file changes
         self.slider.setMaximum(self.numFrames - 1)
+        self.nameLabel.setText("Measurement name: {}".format(self.filename))
 
     def trackContacts(self):
         print "Track!"
@@ -156,6 +154,51 @@ class MainWidget(QWidget):
         self.addContacts()
         # Update the widget's paws too
         self.entirePlateWidget.newPaws(self.paws)
+        self.current_paw_index = 0
+        self.paw_labels = {}
+        self.update_current_paw()
+
+    def select_left_front(self, event=None):
+        self.update_current_paw(paw_label=0)
+        self.next_paw()
+
+    def select_left_hind(self, event=None):
+        self.update_current_paw(paw_label=1)
+        self.next_paw()
+
+    def select_right_front(self, event=None):
+        self.update_current_paw(paw_label=2)
+        self.next_paw()
+
+    def select_right_hind(self, event=None):
+        self.update_current_paw(paw_label=3)
+        self.next_paw()
+
+    def update_current_paw(self, paw_label=-1):
+        if self.current_paw_index <= len(self.paws):
+            self.current_paw = self.paws[self.current_paw_index]
+            # Convert it to a numpy array
+            current_paw_data = utility.convertContourToSlice(self.measurement, self.current_paw.contourList)
+
+            if paw_label > -1:
+                self.paw_labels[self.current_paw_index] = paw_label
+
+            self.entirePlateWidget.update_bounding_box(self.current_paw_index, paw_label)
+            self.paws_widget.update_current_paw(current_paw_data, paw_label, self.current_paw_index)
+
+    def previous_paw(self, event=None):
+        self.current_paw_index -= 1
+        if self.current_paw_index < 0:
+            self.current_paw_index = 0
+        paw_label = self.paw_labels.get(self.current_paw_index, -1)
+        self.update_current_paw(paw_label)
+
+    def next_paw(self, event=None):
+        self.current_paw_index += 1
+        if self.current_paw_index >= len(self.paws):
+            self.current_paw_index = len(self.paws) - 1
+        paw_label = self.paw_labels.get(self.current_paw_index, -1)
+        self.update_current_paw(paw_label)
 
     def addContacts(self):
         # Print how many contacts we found
@@ -251,9 +294,20 @@ class MainWidget(QWidget):
         Pickles the paws to the pickle folder with the name of the measurement as file name
         """
         # Open a file at this path with the file_name as name
-        output = open("%s//%s.pkl" % (self.new_path, self.file_name), 'wb')
+        output = open("%s//paw_labels_%s.pkl" % (self.new_path, self.file_name), 'wb')
+
+        # The result in this case will be the index + 3D slice + sideid
+        results = []
+        for index, paw in enumerate(self.paws):
+            totalcentroid, totalminx, totalmaxx, totalminy, totalmaxy = utility.updateBoundingBox(paw.contourList)
+            paw_label = self.paw_labels.get(index, -1)
+            results.append([index, paw_label,
+                            int(totalminx), int(totalmaxx),
+                            int(totalminy), int(totalmaxy),
+                            paw.frames[0], paw.frames[-1]])
+
         # Pickle dump the file to the hard drive
-        pickle.dump(self.paws, output)
+        pickle.dump(results, output)
         # Close the output file
         output.close()
         print "Pickled %s at location %s" % (self.file_name, self.new_path)
