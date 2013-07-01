@@ -242,20 +242,19 @@ def changeDilationErosion(data, dilationIterations, erosionIterations):
     return data
 
 
-def normalize(array, nmin, nmax):
+def normalize(array, nmax):
     """
     This rescales all the values to be between 0-255
     """
     # If we have a non-zero offset, subtract the minimum
-    if nmin:
-        array = array - nmin
-        nmax = nmax - nmin
     if nmax == 0:
         return array
+
     scale = 255. / nmax
-    if scale != 1.0:
-        array = array * scale
+    array = array * scale
+
     return array
+
 
 def interpolateFrame(data, degree):
     """
@@ -350,7 +349,7 @@ def scipy_cop(data):
         copy.append(y + 1)
     return copx, copy
 
-def getQPixmap(data, degree, nmin, nmax, interpolation=cv2.INTER_LINEAR):
+def getQPixmap(data, degree, nmax, color_table):
     """
     This function expects a single frame, it will interpolate/resize it with a given degree and
     return a pixmap
@@ -358,11 +357,11 @@ def getQPixmap(data, degree, nmin, nmax, interpolation=cv2.INTER_LINEAR):
     # Need the sizes before reshaping
     width, height = data.shape
     # This can be used to interpolate, but it doesn't seem to work entirely correct yet...
-    data = cv2.resize(data, (height * degree, width * degree), interpolation=interpolation)
+    data = cv2.resize(data, (height * degree, width * degree), interpolation=cv2.INTER_LINEAR)
     # Normalize the data
-    data = normalize(data, nmin, nmax)
+    data = normalize(data, nmax)
     # Convert it from numpy to qimage
-    qimage = array2qimage(data)
+    qimage = array2qimage(data, color_table)
     # Convert the image to a pixmap
     pixmap = QPixmap.fromImage(qimage)
     # Scale up the image so its better visible
@@ -370,22 +369,16 @@ def getQPixmap(data, degree, nmin, nmax, interpolation=cv2.INTER_LINEAR):
     #                                 Qt.KeepAspectRatio, Qt.FastTransformation) #Qt.SmoothTransformation
     return pixmap
 
-def array2qimage(array, colorTable=None):
+def array2qimage(array, color_table):
     """Convert the 2D numpy array  into a 8-bit QImage with a gray
     colormap.  The first dimension represents the vertical image axis."""
     array = np.require(array, np.uint8, 'C')
     width, height = array.shape
     result = QImage(array.data, height, width, QImage.Format_Indexed8)
     result.ndarray = array
-    if colorTable:
-        # Set your own custom colorTable
-        result.setColorTable(colorTable)
-    else:
-        # Or use the default one from this library
-        imageCT = ImageColorTable()
-        colorTable = imageCT.create_colortable()
-        result.setColorTable(colorTable)
-        # Convert it to RGB32
+    # Use the default one from this library
+    result.setColorTable(color_table)
+    # Convert it to RGB32
     result = result.convertToFormat(QImage.Format_RGB32)
     return result
 
@@ -497,10 +490,6 @@ class ImageColorTable():
                     elif val <= self.redThreshold:
                         colortable[val] = interpolate_rgb(self.orange, self.orangeThreshold,
                                                           self.red, self.redThreshold, val)
-                        #else:
-                        #colortable.append(interpolate_rgb(self.lightblue, self.blackThreshold,
-                        #                                  self.blue, self.blueThreshold, val))
-                        #colortable[val] = self.lightblue
         return colortable
 
 
@@ -567,3 +556,5 @@ mapping = {
     20: [float("-inf"), -1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39, 0.52, 0.67,
          0.84, 1.04, 1.28, 1.64],
 }
+
+

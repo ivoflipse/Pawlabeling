@@ -114,7 +114,7 @@ class MainWindow(QMainWindow):
 
         self.previous_paw = self.createAction(text="Select Previous Paw",
                                               shortcut=QKeySequence(Qt.Key_4),
-                                              icon=QIcon(os.path.join(os.path.dirname(__file__), "images/left-arrow.png")),
+                                              icon=QIcon(os.path.join(os.path.dirname(__file__), "images/backward.png")),
                                               tip="Select the previous paw",
                                               checkable=False,
                                               connection=self.mainWidget.previous_paw
@@ -122,7 +122,7 @@ class MainWindow(QMainWindow):
 
         self.next_paw = self.createAction(text="Select Next Paw",
                                               shortcut=QKeySequence(Qt.Key_6),
-                                              icon=QIcon(os.path.join(os.path.dirname(__file__), "images/right-arrow.png")),
+                                              icon=QIcon(os.path.join(os.path.dirname(__file__), "images/forward.png")),
                                               tip="Select the next paw",
                                               checkable=False,
                                               connection=self.mainWidget.next_paw

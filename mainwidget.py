@@ -3,8 +3,6 @@ import pickle
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-import numpy as np
-import pickle
 
 from entirePlateWidget import EntirePlateWidget
 from pawswidget import PawsWidget
@@ -19,8 +17,7 @@ class MainWidget(QWidget):
         # Initialize numframes, in case measurements aren't loaded
         self.numFrames = 248
         self.frame = 0
-        self.nmin = 0
-        self.nmax = 10
+        self.nmax = 0
 
         if desktop:
             # Set the size to something nice and large
@@ -60,7 +57,7 @@ class MainWidget(QWidget):
                              entirePlateWidget_size,
                              self)
 
-        self.paws_widget = PawsWidget(self, self.degree*3, self.nmin, self.nmax)
+        self.paws_widget = PawsWidget(self, self.degree*3, self.nmax)
 
         self.entirePlateWidget.setMinimumWidth(600)
 
@@ -131,6 +128,8 @@ class MainWidget(QWidget):
         #self.measurement = readzebris.loadFile(self.filename) # This enabled reading Zebris files
         # Get the number of Frames for the slider
         self.height, self.width, self.numFrames = self.measurement.shape
+        self.nmax = self.measurement.max()
+        self.paws_widget.update_nmax(self.nmax)
         # Send the measurement to the widget
         self.entirePlateWidget.newMeasurement(self.measurement)
         # Reset the frame counter
@@ -190,15 +189,13 @@ class MainWidget(QWidget):
         self.current_paw_index -= 1
         if self.current_paw_index < 0:
             self.current_paw_index = 0
-        paw_label = self.paw_labels.get(self.current_paw_index, -1)
-        self.update_current_paw(paw_label)
+        self.update_current_paw(paw_label=-1)
 
     def next_paw(self, event=None):
         self.current_paw_index += 1
         if self.current_paw_index >= len(self.paws):
             self.current_paw_index = len(self.paws) - 1
-        paw_label = self.paw_labels.get(self.current_paw_index, -1)
-        self.update_current_paw(paw_label)
+        self.update_current_paw(paw_label=-1)
 
     def addContacts(self):
         # Print how many contacts we found
@@ -208,7 +205,7 @@ class MainWidget(QWidget):
         # Clear any existing contacts
         self.contactTree.clear()
         for index, paw in enumerate(self.paws):
-            rootItem = QTreeWidgetItem(self.contactTree) # , ["Contact %s" % index, len(paw.frames)]
+            rootItem = QTreeWidgetItem(self.contactTree)
             rootItem.setText(0, "Contact %s" % index)
             rootItem.setText(1, str(len(paw.frames)))
             # Calculate a crude measure of the paw surface

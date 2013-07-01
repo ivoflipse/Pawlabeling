@@ -1,8 +1,5 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-import numpy as np
-from view import View
-
 import utility
 
 class EntirePlateWidget(QWidget):
@@ -13,11 +10,10 @@ class EntirePlateWidget(QWidget):
         self.layout = QVBoxLayout(self)
 
         self.scene = QGraphicsScene(self)
-        self.view = View(self.scene, widget = self)
+        self.view = QGraphicsView(self.scene)
         self.layout.addWidget(self.view)
         self.image = QGraphicsPixmapItem()
         self.scene.addItem(self.image)
-        self.view.centerOn(self.image)
 
         # This pen is used to draw the polygons
         self.pen = QPen(Qt.white)
@@ -37,6 +33,8 @@ class EntirePlateWidget(QWidget):
                       ]
 
         self.degree = degree
+        self.imageCT = utility.ImageColorTable()
+        self.color_table = self.imageCT.create_colortable()
 
     def newMeasurement(self, measurement):
         # Clear the bounding boxes + the line
@@ -45,7 +43,6 @@ class EntirePlateWidget(QWidget):
         # Update the measurement
         self.measurement = measurement
         self.height, self.width, self.numFrames = self.measurement.shape
-        self.nmin = self.measurement.min()
         self.nmax = self.measurement.max()
         self.changeFrame(frame=-1)
 
@@ -64,7 +61,7 @@ class EntirePlateWidget(QWidget):
             # Slice out the data from the measurement
             self.data = self.measurement[:, :, self.frame].T
         # Update the pixmap
-        self.image.setPixmap(utility.getQPixmap(self.data, self.degree, self.nmin, self.nmax))
+        self.image.setPixmap(utility.getQPixmap(self.data, self.degree, self.nmax, self.color_table))
 
     def clear_bounding_box(self):
         # Remove the old ones and redraw
@@ -98,19 +95,20 @@ class EntirePlateWidget(QWidget):
         self.bboxpen = QPen(color)
         self.bboxpen.setWidth(3)
 
+        current_paw = 0
         if paw_label == -1:
+            current_paw = 1
             if self.current_box:
                 self.scene.removeItem(self.current_box)
-            self.bboxpen.setWidth(5)
         else:
             old_box = self.bounding_boxes[index]
             self.scene.removeItem(old_box)
 
         paw = self.paws[index]
-        polygon = QPolygonF([QPointF(paw.totalminx * self.degree, paw.totalminy * self.degree),
-                           QPointF(paw.totalmaxx * self.degree, paw.totalminy * self.degree),
-                           QPointF(paw.totalmaxx * self.degree, paw.totalmaxy * self.degree),
-                           QPointF(paw.totalminx * self.degree, paw.totalmaxy * self.degree)])
+        polygon = QPolygonF([QPointF((paw.totalminx - current_paw) * self.degree, (paw.totalminy - current_paw) * self.degree),
+                             QPointF((paw.totalmaxx + current_paw) * self.degree, (paw.totalminy - current_paw) * self.degree),
+                             QPointF((paw.totalmaxx + current_paw) * self.degree, (paw.totalmaxy + current_paw) * self.degree),
+                             QPointF((paw.totalminx - current_paw) * self.degree, (paw.totalmaxy + current_paw) * self.degree)])
 
         if paw_label == -1:
             self.current_box = self.scene.addPolygon(polygon, self.bboxpen)
