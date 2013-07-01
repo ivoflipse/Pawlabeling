@@ -46,6 +46,8 @@ class EntirePlateWidget(QWidget):
         self.nmax = self.measurement.max()
         self.changeFrame(frame=-1)
 
+        #self.cop_x, self.cop_y = utility.calculate_cop(self.measurement)
+
     def newPaws(self, paws):
         # Update the paws
         self.paws = paws
@@ -68,6 +70,10 @@ class EntirePlateWidget(QWidget):
         for box in self.bounding_boxes:
             self.scene.removeItem(box)
         self.bounding_boxes = []
+
+        if self.current_box:
+            self.scene.removeItem(self.current_box)
+        self.current_box = None
 
     def clear_gait_line(self):
         # Remove the gait line
@@ -130,6 +136,13 @@ class EntirePlateWidget(QWidget):
                                  QPointF(curPaw.totalcentroid[0] * self.degree, curPaw.totalcentroid[1] * self.degree)])
             self.gait_lines.append(self.scene.addPolygon(polygon, self.gait_line_pen))
 
+        # It seems that COP is really a poor indicator in most cases, unless perhaps I can use the shape
+        # points = []
+        # for cop_x, cop_y in zip(self.cop_x, self.cop_y):
+        #     points.append(QPointF(cop_y * self.degree, cop_x * self.degree))
+        #
+        # polygon = QPolygonF(points)
+        # self.gait_lines.append(self.scene.addPolygon(polygon, self.gait_line_pen))
 
 
 

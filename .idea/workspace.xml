@@ -2,19 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/entirePlateWidget.py" afterPath="$PROJECT_DIR$/entirePlateWidget.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mainwidget.py" afterPath="$PROJECT_DIR$/mainwidget.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mainwindow.py" afterPath="$PROJECT_DIR$/mainwindow.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Pawlabeling.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/mainwindow.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372708314274" ignored="false" />
-    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372708040180" ignored="false" />
-    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372710763982" ignored="false" />
+    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372710879515" ignored="false" />
+    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372714057277" ignored="false" />
     <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372704976316" ignored="false" />
     <file path="/popupwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372664863442" ignored="false" />
     <file path="/widget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372667192968" ignored="false" />
-    <file path="/entirePlateWidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372707195793" ignored="false" />
+    <file path="/entirePlateWidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372714574446" ignored="false" />
     <file path="/pawswidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372705159178" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -87,10 +87,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mainwidget.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="mainwidget.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mainwidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="119" column="59" selection-start="4210" selection-end="4210" vertical-scroll-proportion="0.3873582">
+            <state line="330" column="48" selection-start="13388" selection-end="13388" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -109,10 +109,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="entirePlateWidget.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="entirePlateWidget.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="104" column="42" selection-start="3839" selection-end="3839" vertical-scroll-proportion="0.0">
+            <state line="48" column="9" selection-start="1662" selection-end="1662" vertical-scroll-proportion="0.4853683">
               <folding>
                 <element signature="e#0#26#0" expanded="true" />
               </folding>
@@ -154,9 +154,9 @@
         <option value="$PROJECT_DIR$/widget.py" />
         <option value="$PROJECT_DIR$/utility.py" />
         <option value="$PROJECT_DIR$/pawswidget.py" />
-        <option value="$PROJECT_DIR$/entirePlateWidget.py" />
         <option value="$PROJECT_DIR$/mainwindow.py" />
         <option value="$PROJECT_DIR$/mainwidget.py" />
+        <option value="$PROJECT_DIR$/entirePlateWidget.py" />
       </list>
     </option>
   </component>
@@ -164,10 +164,9 @@
     <treeState />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-1688" />
-    <option name="y" value="-8" />
-    <option name="width" value="1696" />
-    <option name="height" value="1026" />
+    <option name="x" value="881" />
+    <option name="width" value="1679" />
+    <option name="height" value="1400" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -454,11 +453,15 @@
       <created>1372708046689</created>
       <updated>1372708046689</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Working on changing the colors in the contact list">
+      <created>1372710884712</created>
+      <updated>1372710884712</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-1688" y="-8" width="1696" height="1026" extended-state="6" />
+    <frame x="881" y="0" width="1679" height="1400" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -472,8 +475,8 @@
       <window_info id="REST Client" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.101591185" sideWeight="0.7713626" order="1" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22863741" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.10265925" sideWeight="0.84032255" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.15967742" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -482,7 +485,7 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
       <window_info id="RESTClient" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20930232" sideWeight="0.7713626" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.21150278" sideWeight="0.84032255" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295626" sideWeight="0.76693547" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Graphical Navigator" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -534,7 +537,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed the problem with how my normalized looked" />
+    <option name="LAST_COMMIT_MESSAGE" value="Working on changing the colors in the contact list" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -554,6 +557,7 @@
     <MESSAGE value="Added the option to pickle the result and calculating averages" />
     <MESSAGE value="Added graphs next to the paws, but they seem useless and take up a lot of space" />
     <MESSAGE value="Fixed the problem with how my normalized looked" />
+    <MESSAGE value="Working on changing the colors in the contact list" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -677,20 +681,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
+    <entry file="file://$PROJECT_DIR$/mainwidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="104" column="42" selection-start="3839" selection-end="3839" vertical-scroll-proportion="0.0">
+        <state line="330" column="48" selection-start="13388" selection-end="13388" vertical-scroll-proportion="0.0">
           <folding>
-            <element signature="e#0#26#0" expanded="true" />
+            <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mainwidget.py">
+    <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="119" column="59" selection-start="4210" selection-end="4210" vertical-scroll-proportion="0.3873582">
+        <state line="48" column="9" selection-start="1662" selection-end="1662" vertical-scroll-proportion="0.4853683">
           <folding>
-            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#0#26#0" expanded="true" />
           </folding>
         </state>
       </provider>

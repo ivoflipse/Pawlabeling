@@ -36,6 +36,15 @@ class MainWidget(QWidget):
         self.path = path
         self.pickled = pickled
 
+        # TODO Make this variable shared between all widgets
+        self.colors = [
+            QColor(Qt.green),
+            QColor(Qt.darkGreen),
+            QColor(Qt.red),
+            QColor(Qt.darkRed),
+            QColor(Qt.yellow),
+            ]
+
         # Create a list widget
         self.measurementTree = QTreeWidget(self)
         self.measurementTree.setMaximumWidth(250)
@@ -178,10 +187,6 @@ class MainWidget(QWidget):
         self.next_paw()
 
     def update_current_paw(self, paw_label=-1):
-        #TODO change the color in the table here too
-        #treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green
-        #self.currentItem.setForeground(0, treeBrush)
-        #self.currentItem.setTextColor(0, QColor(Qt.green))
         if self.current_paw_index <= len(self.paws):
             self.current_paw = self.paws[self.current_paw_index]
             # Convert it to a numpy array
@@ -193,16 +198,28 @@ class MainWidget(QWidget):
             self.entirePlateWidget.update_bounding_box(self.current_paw_index, paw_label)
             self.paws_widget.update_current_paw(current_paw_data, paw_label, self.current_paw_index)
 
+            paw_label = self.paw_labels.get(self.current_paw_index, -1)
+            item = self.contactTree.topLevelItem(self.current_paw_index)
+            for idx in range(item.columnCount()):
+                item.setBackgroundColor(idx, self.colors[paw_label])
+
     def previous_paw(self, event=None):
         self.current_paw_index -= 1
         if self.current_paw_index < 0:
             self.current_paw_index = 0
+        # Decrement the index in the tree
+        self.current_tree_item -= 1
+        item = self.contactTree.topLevelItem(self.current_tree_item)
+        self.contactTree.setCurrentItem(item)
         self.update_current_paw(paw_label=-1)
 
     def next_paw(self, event=None):
         self.current_paw_index += 1
         if self.current_paw_index >= len(self.paws):
             self.current_paw_index = len(self.paws) - 1
+        self.current_tree_item += 1
+        item = self.contactTree.topLevelItem(self.current_tree_item)
+        self.contactTree.setCurrentItem(item)
         self.update_current_paw(paw_label=-1)
 
     def addContacts(self):
@@ -215,10 +232,12 @@ class MainWidget(QWidget):
         for index, paw in enumerate(self.paw_data):
             x, y, z = paw.shape
             rootItem = QTreeWidgetItem(self.contactTree)
-            rootItem.setText(0, "Contact %s" % index)
+            rootItem.setText(0, str(index))
             rootItem.setText(1, str(z))
             surface = np.max([np.count_nonzero(paw[:,:,frame]) for frame in range(z)])
             rootItem.setText(2, str(int(surface)))
+
+        self.current_tree_item = 0
 
     def deleteContact(self):
         index = self.contactTree.currentIndex().row()
