@@ -29,12 +29,17 @@ class PawsWidget(QWidget):
         self.clear_paws()
 
         self.left_paws_layout = QVBoxLayout()
+        self.left_paws_layout.addWidget(QLabel("Left Front"))
         self.left_paws_layout.addWidget(self.left_front)
+        self.left_paws_layout.addWidget(QLabel("Left Hind"))
         self.left_paws_layout.addWidget(self.left_hind)
         self.current_paw_layout = QVBoxLayout()
+        self.current_paw_layout.addWidget(QLabel("Current Paw"))
         self.current_paw_layout.addWidget(self.current_paw)
         self.right_paws_layout = QVBoxLayout()
+        self.right_paws_layout.addWidget(QLabel("Right Front"))
         self.right_paws_layout.addWidget(self.right_front)
+        self.right_paws_layout.addWidget(QLabel("Right Hind"))
         self.right_paws_layout.addWidget(self.right_hind)
 
         self.mainLayout = QHBoxLayout()

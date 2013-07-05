@@ -113,7 +113,7 @@ class MainWindow(QMainWindow):
         )
 
         self.previous_paw = self.createAction(text="Select Previous Paw",
-                                              shortcut=QKeySequence(Qt.Key_4),
+                                              shortcut=[QKeySequence(Qt.Key_4), Qt.Key_Up],
                                               icon=QIcon(os.path.join(os.path.dirname(__file__), "images/backward.png")),
                                               tip="Select the previous paw",
                                               checkable=False,
@@ -128,8 +128,8 @@ class MainWindow(QMainWindow):
                                               connection=self.mainWidget.next_paw
         )
 
-        self.actions = [self.storeStatus, self.trackContacts, self.front_left, self.front_right,
-                    self.hind_left, self.hind_right, self.previous_paw, self.next_paw]
+        self.actions = [self.storeStatus, self.trackContacts, self.front_left, self.hind_left,
+                        self.front_right, self.hind_right, self.previous_paw, self.next_paw]
 
         for action in self.actions:
             action.setShortcutContext(Qt.ApplicationShortcut)
@@ -153,7 +153,11 @@ class MainWindow(QMainWindow):
         if icon is not None:
             action.setIcon(icon)
         if shortcut is not None:
-            action.setShortcut(shortcut)
+            if type(shortcut) == list:
+                for s in shortcut:
+                    action.setShortcut(s)
+            else:
+                action.setShortcut(shortcut)
         if tip is not None:
             action.setToolTip(tip)
             action.setStatusTip(tip)

@@ -124,7 +124,7 @@ class EntirePlateWidget(QWidget):
 
     def draw_gait_line(self):
         self.gait_line_pen = QPen(Qt.white)
-        self.gait_line_pen.setWidth(1)
+        self.gait_line_pen.setWidth(2)
         self.gait_line_pen.setColor(Qt.white)
 
         self.clear_gait_line()

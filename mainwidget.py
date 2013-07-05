@@ -22,9 +22,9 @@ class MainWidget(QWidget):
 
         if desktop:
             # Set the size to something nice and large
-            self.resize(2550, 1000) # Make these sizes more platform independent
-            entirePlateWidget_size = [600, 300]
-            self.degree = 4
+            self.resize(2550, 1400) # Make these sizes more platform independent
+            entirePlateWidget_size = [800, 800]
+            self.degree = 6
         else:
             self.resize(1400, 800) # Make these sizes more platform independent
             entirePlateWidget_size = [800, 500]
@@ -67,7 +67,7 @@ class MainWidget(QWidget):
                              entirePlateWidget_size,
                              self)
 
-        self.paws_widget = PawsWidget(self, self.degree*3, self.nmax)
+        self.paws_widget = PawsWidget(self, self.degree*2, self.nmax)
 
         self.entirePlateWidget.setMinimumWidth(600)
 
@@ -316,7 +316,7 @@ class MainWidget(QWidget):
         Pickles the paws to the pickle folder with the name of the measurement as file name
         """
         # Open a file at this path with the file_name as name
-        output = open("%s//paw_labels_%s.pkl" % (self.new_path, self.file_name), 'wb')
+        output = open("%s//%s.labels.pkl" % (self.new_path, self.file_name), 'wb')
 
         # The result in this case will be the index + 3D slice + sideid
         results = []
