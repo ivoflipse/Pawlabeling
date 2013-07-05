@@ -52,8 +52,6 @@ class MainWidget(QWidget):
             3 : "RH"
         }
 
-        self.current_paw_index = -1
-
         # Create a list widget
         self.measurementTree = QTreeWidget(self)
         self.measurementTree.setMaximumWidth(300)
@@ -161,7 +159,6 @@ class MainWidget(QWidget):
         self.contactTree.clear()
         # Clear the paws list
         self.paws = []
-        self.current_paw_index = -1
         # Reset the frame counter
         self.slider.setValue(-1)
         # Update the slider, in case the shape of the file changes
@@ -226,16 +223,21 @@ class MainWidget(QWidget):
             for idx in range(item.columnCount()):
                 item.setBackgroundColor(idx, self.colors[paw_label])
 
+    def contacts_available(self):
+        """
+        This function checks if there is a contact with index 0, if not, the tree must be empty
+        """
+        return False if self.contactTree.findItems("0", Qt.MatchExactly, 0) == [] else True
+
     def remove_selected_color(self):
-        if self.current_paw_index > -1:
-            # Remove the color from the Contact Tree if its yellow
-            item = self.contactTree.topLevelItem(self.current_paw_index)
-            if item.backgroundColor(0) == self.colors[-1]:
-                for idx in range(item.columnCount()):
-                    item.setBackgroundColor(idx, Qt.white)
+        # Remove the color from the Contact Tree if its yellow
+        item = self.contactTree.topLevelItem(self.current_paw_index)
+        if item.backgroundColor(0) == self.colors[-1]:
+            for idx in range(item.columnCount()):
+                item.setBackgroundColor(idx, Qt.white)
 
     def previous_paw(self, event=None):
-        if self.current_paw_index > -1:
+        if self.contacts_available():
             self.remove_selected_color()
             self.current_paw_index -= 1
             if self.current_paw_index < 0:
@@ -246,7 +248,7 @@ class MainWidget(QWidget):
             self.update_current_paw(paw_label=-1)
 
     def next_paw(self, event=None):
-        if self.current_paw_index > -1:
+        if self.contacts_available():
             self.remove_selected_color()
             self.current_paw_index += 1
             if self.current_paw_index >= len(self.paws):
