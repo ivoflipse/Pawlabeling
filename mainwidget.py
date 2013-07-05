@@ -47,8 +47,8 @@ class MainWidget(QWidget):
 
         # Create a list widget
         self.measurementTree = QTreeWidget(self)
-        self.measurementTree.setMaximumWidth(250)
-        self.measurementTree.setMinimumWidth(100)
+        self.measurementTree.setMaximumWidth(300)
+        self.measurementTree.setMinimumWidth(300)
         self.measurementTree.setColumnCount(1)
         self.measurementTree.setHeaderLabel("Measurements")
         self.measurementTree.itemActivated.connect(self.loadFile)
@@ -56,9 +56,13 @@ class MainWidget(QWidget):
         self.addMeasurements(path=path)
 
         self.contactTree = QTreeWidget(self)
-        self.contactTree.setMaximumWidth(250)
-        self.contactTree.setColumnCount(3)
-        self.contactTree.setHeaderLabels(["Contacts", "Length", "Surface"])
+        self.contactTree.setMaximumWidth(300)
+        self.contactTree.setMinimumWidth(300)
+        self.contactTree.setColumnCount(5)
+        self.contactTree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
+        # Set the widths of the columns
+        for column in range(self.contactTree.columnCount()):
+            self.contactTree.setColumnWidth(column, 60)
 
         # Pick the first item (if any exist)
         self.measurementTree.setCurrentItem(self.measurementTree.topLevelItem(0).child(0))
@@ -233,9 +237,12 @@ class MainWidget(QWidget):
             x, y, z = paw.shape
             rootItem = QTreeWidgetItem(self.contactTree)
             rootItem.setText(0, str(index))
-            rootItem.setText(1, str(z))
+            rootItem.setText(1, "-1")
+            rootItem.setText(2, str(z))  # Sets the frame count
             surface = np.max([np.count_nonzero(paw[:,:,frame]) for frame in range(z)])
-            rootItem.setText(2, str(int(surface)))
+            rootItem.setText(3, str(int(surface)))
+            force = np.max(np.sum(np.sum(paw, axis=0), axis=0))
+            rootItem.setText(4, str(int(force)))
 
         self.current_tree_item = 0
 
