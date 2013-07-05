@@ -45,6 +45,13 @@ class MainWidget(QWidget):
             QColor(Qt.yellow),
             ]
 
+        self.paw_dict = {
+            0 : "LF",
+            1 : "LH",
+            2 : "RF",
+            3 : "RH"
+        }
+
         # Create a list widget
         self.measurementTree = QTreeWidget(self)
         self.measurementTree.setMaximumWidth(300)
@@ -204,6 +211,9 @@ class MainWidget(QWidget):
 
             paw_label = self.paw_labels.get(self.current_paw_index, -1)
             item = self.contactTree.topLevelItem(self.current_paw_index)
+            # Update the label in the tree if its not -1
+            if paw_label > -1:
+                item.setText(1, self.paw_dict[paw_label])
             for idx in range(item.columnCount()):
                 item.setBackgroundColor(idx, self.colors[paw_label])
 
@@ -211,6 +221,11 @@ class MainWidget(QWidget):
         self.current_paw_index -= 1
         if self.current_paw_index < 0:
             self.current_paw_index = 0
+        # Remove the color from the Contact Tree if its yellow
+        item = self.contactTree.topLevelItem(self.current_tree_item)
+        if item.backgroundColor(0) == self.colors[-1]:
+            for idx in range(item.columnCount()):
+                item.setBackgroundColor(idx, Qt.white)
         # Decrement the index in the tree
         self.current_tree_item -= 1
         item = self.contactTree.topLevelItem(self.current_tree_item)
@@ -221,6 +236,11 @@ class MainWidget(QWidget):
         self.current_paw_index += 1
         if self.current_paw_index >= len(self.paws):
             self.current_paw_index = len(self.paws) - 1
+        # Remove the color from the Contact Tree if its yellow
+        item = self.contactTree.topLevelItem(self.current_tree_item)
+        if item.backgroundColor(0) == self.colors[-1]:
+            for idx in range(item.columnCount()):
+                item.setBackgroundColor(idx, Qt.white)
         self.current_tree_item += 1
         item = self.contactTree.topLevelItem(self.current_tree_item)
         self.contactTree.setCurrentItem(item)
