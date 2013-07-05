@@ -8,8 +8,8 @@
     <ignored path="Pawlabeling.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/mainwindow.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373017037763" ignored="false" />
-    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373017852688" ignored="false" />
-    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373018347546" ignored="false" />
+    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373018420880" ignored="false" />
+    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373019825032" ignored="false" />
     <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372716193188" ignored="false" />
     <file path="/popupwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372664863442" ignored="false" />
     <file path="/widget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372667192968" ignored="false" />
@@ -75,19 +75,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="mainwindow.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="mainwindow.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mainwindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="115" column="91" selection-start="5341" selection-end="5341" vertical-scroll-proportion="0.0">
+            <state line="142" column="33" selection-start="6857" selection-end="6857" vertical-scroll-proportion="0.9158416">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mainwidget.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="mainwidget.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mainwidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="227" column="54" selection-start="8656" selection-end="8656" vertical-scroll-proportion="0.7248731">
+            <state line="235" column="0" selection-start="8868" selection-end="8868" vertical-scroll-proportion="-24.68">
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -461,7 +461,11 @@
       <created>1373017857654</created>
       <updated>1373017857654</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="I changed the coloring in the contacttree, but I'd like it to be driven by which row is selected in the table">
+      <created>1373018425778</created>
+      <updated>1373018425778</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -541,7 +545,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed the contactTree so it displays the essential info" />
+    <option name="LAST_COMMIT_MESSAGE" value="I changed the coloring in the contacttree, but I'd like it to be driven by which row is selected in the table" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -565,6 +569,7 @@
     <MESSAGE value="Sadly, but the COP is really a crappy indicator (at least visually)" />
     <MESSAGE value="Tried adding a second shortcut, but I fear I'm just overwriting it now..." />
     <MESSAGE value="Fixed the contactTree so it displays the essential info" />
+    <MESSAGE value="I changed the coloring in the contacttree, but I'd like it to be driven by which row is selected in the table" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -653,13 +658,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mainwindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="115" column="91" selection-start="5341" selection-end="5341" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pawswidget.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="112" column="29" selection-start="4175" selection-end="4219" vertical-scroll-proportion="0.0">
@@ -669,10 +667,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/mainwidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="227" column="54" selection-start="8656" selection-end="8656" vertical-scroll-proportion="0.7248731">
+        <state line="235" column="0" selection-start="8868" selection-end="8868" vertical-scroll-proportion="-24.68">
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mainwindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="142" column="33" selection-start="6857" selection-end="6857" vertical-scroll-proportion="0.9158416">
+          <folding />
         </state>
       </provider>
     </entry>
