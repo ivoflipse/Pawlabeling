@@ -8,12 +8,12 @@
     <ignored path="Pawlabeling.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/mainwindow.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373017037763" ignored="false" />
-    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373018420880" ignored="false" />
-    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373019825032" ignored="false" />
+    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373020038151" ignored="false" />
+    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373020727014" ignored="false" />
     <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372716193188" ignored="false" />
     <file path="/popupwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372664863442" ignored="false" />
     <file path="/widget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372667192968" ignored="false" />
-    <file path="/entirePlateWidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372714574446" ignored="false" />
+    <file path="/entirePlateWidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373020232908" ignored="false" />
     <file path="/pawswidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372715165038" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -75,19 +75,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="mainwindow.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="mainwindow.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mainwindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="142" column="33" selection-start="6857" selection-end="6857" vertical-scroll-proportion="0.9158416">
+            <state line="142" column="33" selection-start="6857" selection-end="6857" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mainwidget.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="mainwidget.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mainwidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="235" column="0" selection-start="8868" selection-end="8868" vertical-scroll-proportion="-24.68">
+            <state line="239" column="39" selection-start="9066" selection-end="9066" vertical-scroll-proportion="0.471066">
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -107,7 +107,7 @@
       <file leaf-file-name="entirePlateWidget.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="24" column="12" selection-start="833" selection-end="833" vertical-scroll-proportion="0.0">
+            <state line="42" column="0" selection-start="1429" selection-end="1429" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -143,10 +143,10 @@
         <option value="$PROJECT_DIR$/realtimetracker.py" />
         <option value="$PROJECT_DIR$/popupwidget.py" />
         <option value="$PROJECT_DIR$/widget.py" />
-        <option value="$PROJECT_DIR$/entirePlateWidget.py" />
         <option value="$PROJECT_DIR$/pawswidget.py" />
         <option value="$PROJECT_DIR$/utility.py" />
         <option value="$PROJECT_DIR$/mainwindow.py" />
+        <option value="$PROJECT_DIR$/entirePlateWidget.py" />
         <option value="$PROJECT_DIR$/mainwidget.py" />
       </list>
     </option>
@@ -465,7 +465,11 @@
       <created>1373018425778</created>
       <updated>1373018425778</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="I'm pretty satisfied with how it now selects paws">
+      <created>1373020043206</created>
+      <updated>1373020043206</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -545,7 +549,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="I changed the coloring in the contacttree, but I'd like it to be driven by which row is selected in the table" />
+    <option name="LAST_COMMIT_MESSAGE" value="I'm pretty satisfied with how it now selects paws" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -570,6 +574,7 @@
     <MESSAGE value="Tried adding a second shortcut, but I fear I'm just overwriting it now..." />
     <MESSAGE value="Fixed the contactTree so it displays the essential info" />
     <MESSAGE value="I changed the coloring in the contacttree, but I'd like it to be driven by which row is selected in the table" />
+    <MESSAGE value="I'm pretty satisfied with how it now selects paws" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -651,13 +656,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="12" selection-start="833" selection-end="833" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pawswidget.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="112" column="29" selection-start="4175" selection-end="4219" vertical-scroll-proportion="0.0">
@@ -665,19 +663,26 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mainwidget.py">
+    <entry file="file://$PROJECT_DIR$/mainwindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="235" column="0" selection-start="8868" selection-end="8868" vertical-scroll-proportion="-24.68">
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+        <state line="142" column="33" selection-start="6857" selection-end="6857" vertical-scroll-proportion="0.0">
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mainwindow.py">
+    <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="142" column="33" selection-start="6857" selection-end="6857" vertical-scroll-proportion="0.9158416">
+        <state line="42" column="0" selection-start="1429" selection-end="1429" vertical-scroll-proportion="0.0">
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/mainwidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="239" column="39" selection-start="9066" selection-end="9066" vertical-scroll-proportion="0.471066">
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

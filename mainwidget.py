@@ -52,6 +52,8 @@ class MainWidget(QWidget):
             3 : "RH"
         }
 
+        self.current_paw_index = -1
+
         # Create a list widget
         self.measurementTree = QTreeWidget(self)
         self.measurementTree.setMaximumWidth(300)
@@ -155,6 +157,11 @@ class MainWidget(QWidget):
         self.paws_widget.update_nmax(self.nmax)
         # Send the measurement to the widget
         self.entirePlateWidget.newMeasurement(self.measurement)
+        # Remove outdated info from the contact tree
+        self.contactTree.clear()
+        # Clear the paws list
+        self.paws = []
+        self.current_paw_index = -1
         # Reset the frame counter
         self.slider.setValue(-1)
         # Update the slider, in case the shape of the file changes
@@ -200,7 +207,7 @@ class MainWidget(QWidget):
         self.next_paw()
 
     def update_current_paw(self, paw_label=-1):
-        if self.current_paw_index <= len(self.paws):
+        if self.current_paw_index <= len(self.paws) and len(self.paws) > 0:
             self.current_paw = self.paws[self.current_paw_index]
             # Convert it to a numpy array
             current_paw_data = self.paw_data[self.current_paw_index]
@@ -220,32 +227,34 @@ class MainWidget(QWidget):
                 item.setBackgroundColor(idx, self.colors[paw_label])
 
     def remove_selected_color(self):
-        # Remove the color from the Contact Tree if its yellow
-        item = self.contactTree.topLevelItem(self.current_paw_index)
-        print item.text(0), item.backgroundColor(0) == Qt.yellow
-        if item.backgroundColor(0) == self.colors[-1]:
-            for idx in range(item.columnCount()):
-                item.setBackgroundColor(idx, Qt.white)
+        if self.current_paw_index > -1:
+            # Remove the color from the Contact Tree if its yellow
+            item = self.contactTree.topLevelItem(self.current_paw_index)
+            if item.backgroundColor(0) == self.colors[-1]:
+                for idx in range(item.columnCount()):
+                    item.setBackgroundColor(idx, Qt.white)
 
     def previous_paw(self, event=None):
-        self.remove_selected_color()
-        self.current_paw_index -= 1
-        if self.current_paw_index < 0:
-            self.current_paw_index = 0
+        if self.current_paw_index > -1:
+            self.remove_selected_color()
+            self.current_paw_index -= 1
+            if self.current_paw_index < 0:
+                self.current_paw_index = 0
 
-        item = self.contactTree.topLevelItem(self.current_paw_index)
-        self.contactTree.setCurrentItem(item)
-        self.update_current_paw(paw_label=-1)
+            item = self.contactTree.topLevelItem(self.current_paw_index)
+            self.contactTree.setCurrentItem(item)
+            self.update_current_paw(paw_label=-1)
 
     def next_paw(self, event=None):
-        self.remove_selected_color()
-        self.current_paw_index += 1
-        if self.current_paw_index >= len(self.paws):
-            self.current_paw_index = len(self.paws) - 1
+        if self.current_paw_index > -1:
+            self.remove_selected_color()
+            self.current_paw_index += 1
+            if self.current_paw_index >= len(self.paws):
+                self.current_paw_index = len(self.paws) - 1
 
-        item = self.contactTree.topLevelItem(self.current_paw_index)
-        self.contactTree.setCurrentItem(item)
-        self.update_current_paw(paw_label=-1)
+            item = self.contactTree.topLevelItem(self.current_paw_index)
+            self.contactTree.setCurrentItem(item)
+            self.update_current_paw(paw_label=-1)
 
     def switch_contacts(self, event=None):
         self.remove_selected_color()
