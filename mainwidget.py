@@ -199,25 +199,19 @@ class MainWidget(QWidget):
         self.mx = 0
         self.my = 0
         for paw in self.paws:
-            x = paw.width
-            y = paw.height
+            data_slice = utility.convertContourToSlice(self.measurement, paw.contourList)
+            x, y, z = data_slice.shape
+            self.paw_data.append(data_slice)
             if x > self.mx:
                 self.mx = x
             if y > self.my:
                 self.my = y
 
-        # Add padding of +3 to the max shape
-        self.mx += 3
-        self.my += 3
-
-        # We need to set this array with the sorted version of self.paws
-        for paw in self.paws:
-            data_slice = utility.convertContourToSlice(self.measurement, paw.contourList)
-            self.paw_data.append(data_slice)
-            x, y, z = data_slice.shape
+        for paw in self.paw_data:
+            x, y, z = paw.shape
             offset_x, offset_y = int((self.mx - x)/2), int((self.my - y)/2)
             average_slice = np.zeros((self.mx, self.my))
-            average_slice[offset_x:offset_x+x, offset_y:offset_y+y] = data_slice.max(axis=2)
+            average_slice[offset_x:offset_x+x, offset_y:offset_y+y] = paw.max(axis=2)
             self.average_data.append(average_slice)
 
         # Update the shape of the paws widget

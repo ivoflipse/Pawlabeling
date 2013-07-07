@@ -272,7 +272,7 @@ def convertContourToSlice(data, contact):
         # We need to slice around the contacts a little wider, I wonder what problems this might cause
         minx, maxx, miny, maxy = int(minx), int(maxx) + 2, int(miny), int(maxy) + 2
         newData[minx:maxx, miny:maxy, frame] = data[minx:maxx, miny:maxy, frame]
-    return newData[minx1:maxx1 + 2, miny1:maxy1 + 2, minz:maxz + 1]
+    return newData[minx1-1:maxx1+2, miny1-1:maxy1+2, minz:maxz+1]
 
 def contourToPolygon(contour, degree, offsetx=0, offsety=0):
     # Loop through the contour, create a polygon out of it
