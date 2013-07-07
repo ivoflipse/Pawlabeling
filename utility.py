@@ -15,6 +15,28 @@ class arrowFilter(QObject):
                 return True
         return False
 
+def calculateDistance(a, b):
+    return np.linalg.norm(np.array(a) - np.array(b))
+
+def fix_orientation(data):
+    from scipy.ndimage.measurements import center_of_mass
+    # Find the first and last frame with nonzero data (from z)
+    x, y, z = np.nonzero(data)
+    # For some reason I was loading the file in such a way that it wasn't sorted
+    z = sorted(z)
+    start, end = z[0], z[-1]
+    # Get the COP for those two frames
+    start_x, start_y = center_of_mass(data[:, :, start])
+    end_x, end_y = center_of_mass(data[:, :, end])
+    # We've calculated the start and end point of the measurement (if at all)
+    x_distance = end_x - start_x
+    # If this distance is negative, the dog walked right to left
+    #print "The distance between the start and end is: {}".format(x_distance)
+    if x_distance < 0:
+        # So we flip the data around
+        data = np.rot90(np.rot90(data))
+    return data
+
 def agglomerative_clustering(data, num_clusters):
     from collections import defaultdict
     import heapq

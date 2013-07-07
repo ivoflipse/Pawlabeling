@@ -128,8 +128,25 @@ class MainWindow(QMainWindow):
                                               connection=self.mainWidget.next_paw
         )
 
+        self.delete_label = self.createAction(text="Delete Label From Paw",
+                                              shortcut=Qt.Key_Delete,
+                                              icon=QIcon(os.path.join(os.path.dirname(__file__), "images/cancel-icon.png")),
+                                              tip="Delete the label from the paw",
+                                              checkable=False,
+                                              connection=self.mainWidget.delete_label
+                                              )
+
+        self.undo_label = self.createAction(text="Undo Label From Paw",
+                                              shortcut=QKeySequence(Qt.CTRL + Qt.Key_Z),
+                                              icon=QIcon(os.path.join(os.path.dirname(__file__), "images/undo-icon.png")),
+                                              tip="Delete the label from the paw",
+                                              checkable=False,
+                                              connection=self.mainWidget.undo_label
+        )
+
         self.actions = [self.storeStatus, self.trackContacts, self.front_left, self.hind_left,
-                        self.front_right, self.hind_right, self.previous_paw, self.next_paw]
+                        self.front_right, self.hind_right, self.previous_paw, self.next_paw,
+                        self.delete_label, self.undo_label]
 
         for action in self.actions:
             action.setShortcutContext(Qt.ApplicationShortcut)
