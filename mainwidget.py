@@ -204,12 +204,13 @@ class MainWidget(QWidget):
         if not self.contacts_available():
             return
 
-        # Remove the label
-        self.paw_labels[self.current_paw_index] = -1
         # Change the current paw index
         self.current_paw_index -= 1
         if self.current_paw_index < 0:
             self.current_paw_index = 0
+
+        # Remove the label
+        self.paw_labels[self.current_paw_index] = -1
         # Update the screen
         self.update_current_paw()
 
