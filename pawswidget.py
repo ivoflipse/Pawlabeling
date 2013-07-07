@@ -123,10 +123,11 @@ class PawsWidget(QWidget):
         perc_pressures = [np.sqrt((p - pressure)**2) / pressure for p in pressures]
         perc_surfaces = [np.sqrt((s - surface)**2) / surface for s in surfaces]
         perc_durations = [np.sqrt((d - duration)**2) / duration for d in durations]
-        perc_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
+        #perc_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
+        perc_data = [np.sum(np.sqrt((d - data)**2)) for d in data_list]
         results = []
         for p, s, d, d2 in zip(perc_pressures, perc_surfaces, perc_durations, perc_data):
-            results.append(p + s + d + (3*d2))
+            results.append(p + s + d + d2)
 
         best_result = np.argmin(results)
         print np.argmin(results), results
