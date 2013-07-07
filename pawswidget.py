@@ -25,6 +25,7 @@ class PawsWidget(QWidget):
         self.paws_list = [self.left_front, self.left_hind,
                           self.right_front, self.right_hind,
                           self.current_paw]
+
         # This sets every widget to a zero image and initializes paws
         self.clear_paws()
 
@@ -48,16 +49,29 @@ class PawsWidget(QWidget):
         self.mainLayout.addLayout(self.right_paws_layout)
         self.setLayout(self.mainLayout)
 
-    def update_current_paw(self, data, paw_label, index):
-        # Make sure that each paw is only mapped to exactly one paw
-        self.paws[index] = (paw_label, data)
-        data_list = []
-        for index, item in self.paws.items():
-            label, data = item
-            if label == paw_label:
-                data_list.append(data)
-        widget = self.paws_list[paw_label]
-        widget.update(data_list)
+    # self.paws_widget.update_current_paw(self.paw_labels, self.current_paw_index, self.paw_data)
+    def update_paws(self, paw_labels, current_paw_index, paw_data):
+        # Clear the paws, so we can draw new ones
+        # TODO only update if the information has changed
+        self.clear_paws()
+        for index, paw in enumerate(paw_data):
+            paw_label = paw_labels[index]
+            # We don't do anything with unlabeled paws that aren't selected
+            if current_paw_index != index and paw_label == -1:
+                continue
+            # If we do have a label, but we have selected it, update the current_paw too
+            if current_paw_index == index and paw_label != -1:
+                self.paws[-1] = [paw]
+
+            if paw_label not in self.paws:
+                self.paws[paw_label] = []
+            # Add the data to the paws dictionary
+            self.paws[paw_label].append(paw)
+
+        # Update the widgets
+        for paw_label, data_list in self.paws.items():
+            widget = self.paws_list[paw_label]
+            widget.update(data_list)
 
     def update_nmax(self, nmax):
         for paw in self.paws_list:
@@ -115,7 +129,7 @@ class PawWidget(QWidget):
             durations.append(z)
             surfaces.append(np.max([np.count_nonzero(data[:,:,frame]) for frame in range(z)]))
 
-        self.max_pressure.setText("{} N".format(int(np.max(pressures))))
+        self.max_pressure.setText("{} N".format(int(np.mean(pressures))))
         self.mean_duration.setText("{} frames".format(int(np.mean(durations))))
         self.mean_surface.setText("{} pixels".format(int(np.mean(surfaces))))
 
@@ -127,3 +141,6 @@ class PawWidget(QWidget):
         self.data = None
         # Put the screen to black
         self.image.setPixmap(utility.getQPixmap(np.zeros((20,20)), self.degree, self.nmax, self.color_table))
+        self.max_pressure.setText("{} N".format(0))
+        self.mean_duration.setText("{} frames".format(0))
+        self.mean_surface.setText("{} pixels".format(0))

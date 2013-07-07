@@ -52,7 +52,9 @@ class EntirePlateWidget(QWidget):
     def newPaws(self, paws):
         # Update the paws
         self.paws = paws
-        self.draw_bounding_box()
+        # TODO shouldn't this be run by update blabla in mainWidget?
+        #for paw in self.paws:
+        #    self.draw_bounding_box(paw, paw_label = -2)
         self.draw_gait_line()
 
     def changeFrame(self, frame):
@@ -78,22 +80,7 @@ class EntirePlateWidget(QWidget):
             self.scene.removeItem(line)
         self.gait_lines = []
 
-    def draw_bounding_box(self):
-        self.bboxpen = QPen(Qt.white)
-        self.bboxpen.setWidth(3)
-
-        self.clear_bounding_box()
-        for index, paw in enumerate(self.paws):
-            if len(paw.frames) > 1:
-                #color = self.colors[index % len(self.colors)]  # We'll default to white first
-                polygon = QPolygonF([QPointF(paw.totalminx * self.degree, paw.totalminy * self.degree),
-                                     QPointF(paw.totalmaxx * self.degree, paw.totalminy * self.degree),
-                                     QPointF(paw.totalmaxx * self.degree, paw.totalmaxy * self.degree),
-                                     QPointF(paw.totalminx * self.degree, paw.totalmaxy * self.degree)])
-
-                self.bounding_boxes.append(self.scene.addPolygon(polygon, self.bboxpen))
-
-    def update_bounding_box(self, index, paw_label):
+    def draw_bounding_box(self, paw, paw_label):
         color = self.colors[paw_label]
         self.bboxpen = QPen(color)
         self.bboxpen.setWidth(3)
@@ -103,16 +90,24 @@ class EntirePlateWidget(QWidget):
         else:
             current_paw = 0
 
-        old_box = self.bounding_boxes[index]
-        self.scene.removeItem(old_box)
-
-        paw = self.paws[index]
         polygon = QPolygonF([QPointF((paw.totalminx - current_paw) * self.degree, (paw.totalminy - current_paw) * self.degree),
                              QPointF((paw.totalmaxx + current_paw) * self.degree, (paw.totalminy - current_paw) * self.degree),
                              QPointF((paw.totalmaxx + current_paw) * self.degree, (paw.totalmaxy + current_paw) * self.degree),
                              QPointF((paw.totalminx - current_paw) * self.degree, (paw.totalmaxy + current_paw) * self.degree)])
 
-        self.bounding_boxes[index] = self.scene.addPolygon(polygon, self.bboxpen)
+        self.bounding_boxes.append(self.scene.addPolygon(polygon, self.bboxpen))
+
+    def update_bounding_boxes(self, paw_labels, current_paw_index):
+        self.clear_bounding_box()
+
+        for index, paw_label in paw_labels.items():
+            # Mark unlabeled paws white if they're not the current paw
+            if index != current_paw_index and paw_label == -1:
+                paw_label = -2
+
+            self.draw_bounding_box(self.paws[index], paw_label)
+            if current_paw_index == index:
+                self.draw_bounding_box(self.paws[index], paw_label=-1)
 
 
     def draw_gait_line(self):

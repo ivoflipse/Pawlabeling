@@ -180,20 +180,24 @@ class MainWidget(QWidget):
         # Convert them to class objects
         self.paws = []
         self.paw_data = []
+        self.paw_labels = {}
         for index, paw in enumerate(paws):
             paw = realtimetracker.Contact(paw)
             self.paws.append(paw)
-            self.paw_data.append(utility.convertContourToSlice(self.measurement, paw.contourList))
+            self.paw_labels[index] = -1
 
         # Sort the contacts based on their position along the first dimension    
         self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
+
+        # We need to set this array with the sorted version of self.paws
+        for paw in self.paws:
+            self.paw_data.append(utility.convertContourToSlice(self.measurement, paw.contourList))
 
         # Add the paws to the contactTree
         self.addContacts()
         # Update the widget's paws too
         self.entirePlateWidget.newPaws(self.paws)
         self.current_paw_index = 0
-        self.paw_labels = {}
         self.update_current_paw()
 
     def undo_label(self, event=None):
@@ -241,8 +245,7 @@ class MainWidget(QWidget):
     def update_current_paw(self):
         if self.current_paw_index <= len(self.paws) and len(self.paws) > 0:
             for index, paw_label in self.paw_labels.items():
-                # Convert it to a numpy array
-                current_paw_data = self.paw_data[index]
+
                 # Get the current row from the tree
                 item = self.contactTree.topLevelItem(index)
                 item.setText(1, self.paw_dict[paw_label])
@@ -250,14 +253,17 @@ class MainWidget(QWidget):
                 # If its not the currently selected paw, change the label to gibberish
                 if self.current_paw_index != index and paw_label == -1:
                     paw_label = -2
-
-
-                self.entirePlateWidget.update_bounding_box(index, paw_label)
-                self.paws_widget.update_current_paw(current_paw_data, paw_label, index)
+                if self.current_paw_index == index:
+                    paw_label = -1
 
                 # Update the colors in the contact tree
                 for idx in range(item.columnCount()):
                     item.setBackgroundColor(idx, self.colors[paw_label])
+
+            # Update the bounding boxes
+            self.entirePlateWidget.update_bounding_boxes(self.paw_labels, self.current_paw_index)
+            # Update the paws widget
+            self.paws_widget.update_paws(self.paw_labels, self.current_paw_index, self.paw_data)
 
 
     def contacts_available(self):
@@ -277,7 +283,6 @@ class MainWidget(QWidget):
         if not self.contacts_available():
             return
 
-        self.remove_selected_color()
         self.current_paw_index -= 1
         if self.current_paw_index < 0:
             self.current_paw_index = 0
@@ -290,7 +295,6 @@ class MainWidget(QWidget):
         if not self.contacts_available():
             return
 
-        self.remove_selected_color()
         self.current_paw_index += 1
         if self.current_paw_index >= len(self.paws):
             self.current_paw_index = len(self.paws) - 1
@@ -300,7 +304,6 @@ class MainWidget(QWidget):
         self.update_current_paw()
 
     def switch_contacts(self, event=None):
-        self.remove_selected_color()
         item = self.contactTree.selectedItems()[0]
         self.current_paw_index = int(item.text(0))
         self.update_current_paw()
