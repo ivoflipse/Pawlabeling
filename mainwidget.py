@@ -36,7 +36,7 @@ class MainWidget(QWidget):
         self.path = path
         self.pickled = pickled
 
-        # TODO Make this variable shared between all widgets
+        # TODO Make these variable shared between all widgets
         self.colors = [
             QColor(Qt.green),
             QColor(Qt.darkGreen),
@@ -166,8 +166,12 @@ class MainWidget(QWidget):
         self.entirePlateWidget.newMeasurement(self.measurement)
         # Remove outdated info from the contact tree
         self.contactTree.clear()
-        # Clear the paws list
+        # Reset all the stored values
+        # TODO Cache these values in some way, so it makes labeling in subsequent measurements easier
         self.paws = []
+        self.paw_data = []
+        self.average_data = []
+        self.paw_labels = {}
         # Reset the frame counter
         self.slider.setValue(-1)
         # Update the slider, in case the shape of the file changes
@@ -180,6 +184,7 @@ class MainWidget(QWidget):
         # Convert them to class objects
         self.paws = []
         self.paw_data = []
+        self.average_data = []
         self.paw_labels = {}
         for index, paw in enumerate(paws):
             paw = realtimetracker.Contact(paw)
@@ -189,10 +194,34 @@ class MainWidget(QWidget):
         # Sort the contacts based on their position along the first dimension    
         self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
 
+        # TODO refactor out this code so its in a separate function, somewhere else preferably
+        # Get the maximum dimensions of the paws
+        self.mx = 0
+        self.my = 0
+        for paw in self.paws:
+            x = paw.width
+            y = paw.height
+            if x > self.mx:
+                self.mx = x
+            if y > self.my:
+                self.my = y
+
+        # Add padding of +3 to the max shape
+        self.mx += 3
+        self.my += 3
+
         # We need to set this array with the sorted version of self.paws
         for paw in self.paws:
-            self.paw_data.append(utility.convertContourToSlice(self.measurement, paw.contourList))
+            data_slice = utility.convertContourToSlice(self.measurement, paw.contourList)
+            self.paw_data.append(data_slice)
+            x, y, z = data_slice.shape
+            offset_x, offset_y = int((self.mx - x)/2), int((self.my - y)/2)
+            average_slice = np.zeros((self.mx, self.my))
+            average_slice[offset_x:offset_x+x, offset_y:offset_y+y] = data_slice.max(axis=2)
+            self.average_data.append(average_slice)
 
+        # Update the shape of the paws widget
+        self.paws_widget.update_shape(self.mx, self.my)
         # Add the paws to the contactTree
         self.addContacts()
         # Update the widget's paws too
@@ -225,28 +254,23 @@ class MainWidget(QWidget):
 
     def select_left_front(self, event=None):
         self.paw_labels[self.current_paw_index] = 0
-        self.update_current_paw()
         self.next_paw()
 
     def select_left_hind(self, event=None):
         self.paw_labels[self.current_paw_index] = 1
-        self.update_current_paw()
         self.next_paw()
 
     def select_right_front(self, event=None):
         self.paw_labels[self.current_paw_index] = 2
-        self.update_current_paw()
         self.next_paw()
 
     def select_right_hind(self, event=None):
         self.paw_labels[self.current_paw_index] = 3
-        self.update_current_paw()
         self.next_paw()
 
     def update_current_paw(self):
         if self.current_paw_index <= len(self.paws) and len(self.paws) > 0:
             for index, paw_label in self.paw_labels.items():
-
                 # Get the current row from the tree
                 item = self.contactTree.topLevelItem(index)
                 item.setText(1, self.paw_dict[paw_label])
@@ -264,7 +288,7 @@ class MainWidget(QWidget):
             # Update the bounding boxes
             self.entirePlateWidget.update_bounding_boxes(self.paw_labels, self.current_paw_index)
             # Update the paws widget
-            self.paws_widget.update_paws(self.paw_labels, self.current_paw_index, self.paw_data)
+            self.paws_widget.update_paws(self.paw_labels, self.current_paw_index, self.paw_data, self.average_data)
 
 
     def contacts_available(self):
@@ -297,8 +321,8 @@ class MainWidget(QWidget):
             return
 
         self.current_paw_index += 1
-        if self.current_paw_index >= len(self.paws):
-            self.current_paw_index = len(self.paws) - 1
+        if self.current_paw_index > len(self.paws):
+            self.current_paw_index = len(self.paws)
 
         item = self.contactTree.topLevelItem(self.current_paw_index)
         self.contactTree.setCurrentItem(item)
@@ -331,6 +355,7 @@ class MainWidget(QWidget):
 
     def deleteContact(self):
         index = self.contactTree.currentIndex().row()
+        # TODO make sure it gets deleted EVERYWHERE
         del self.paws[index]
         # Redraw everything, its probably easier to separate this because only the paws have to be redrawn
         self.entirePlateWidget.newMeasurement(self.measurement, self.paws)

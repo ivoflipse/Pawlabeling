@@ -15,6 +15,62 @@ class arrowFilter(QObject):
                 return True
         return False
 
+def standardize_paw(paw, STD_NUMX = 20, STD_NUMY = 20):
+    """Standardizes a pawprint onto a STD_NUMYxSTD_NUMX grid. Returns a 1D,
+    flattened version of the paw data resample onto this grid."""
+    from scipy.ndimage import map_coordinates
+    ny, nx = np.shape(paw)
+    # Based on a scientific guess
+    # Make a 20x20 grid to resample the paw pressure values onto
+    #STD_NUMX, STD_NUMY = 20, 20
+    xi = np.linspace(0, nx, STD_NUMX)
+    yi = np.linspace(0, ny, STD_NUMY)
+    xi, yi = np.meshgrid(xi, yi)
+    # Resample the values onto the 20x20 grid
+    coords = np.vstack([yi.flatten(), xi.flatten()])
+    zi = map_coordinates(paw, coords)
+    zi = zi.reshape(STD_NUMY,STD_NUMX)
+
+    # Rescale the pressure values
+    zi -= zi.min()
+    zi /= zi.max()
+    zi -= zi.mean() #<- Helps distinguish front from hind paws...
+    return zi
+
+def find_max_shape(data, data_slices):
+    mx, my = 0, 0
+    for dat_slice in data_slices:
+        ty, tx, tz = np.shape(data[dat_slice])
+        if ty > my:
+            my = ty
+        if tx > mx:
+            mx = tx
+    return pad_with_zeros(data, data_slices, mx, my)
+
+def pad_with_zeros(data, data_slices, mx, my):
+    padded = {}
+    for contactnumber, dat_slice in enumerate(data_slices):
+        contactnumber += 1
+        ny, nx, nt = np.shape(data[dat_slice])
+        offsety, offsetx = int((my-ny)/2), int((mx-nx)/2)
+        temparray = np.zeros((my, mx))
+        for y in range(ny):
+            for x in range(nx):
+                temparray[y+offsety, x+offsetx] = data[dat_slice].max(axis=2)[y, x]
+        padded[contactnumber] = temparray
+    return padded
+
+def average_contacts(contacts):
+    numcontacts = len(contacts)
+    emptyarray = np.zeros((50, 100, numcontacts)) # This should fit ANYTHING
+    for index, contact in enumerate(contacts):
+        nx, ny = np.shape(contact)
+        emptyarray[0:nx, 0:ny, index] = contact # dump the array in the empty one
+    averagearray = np.mean(emptyarray, axis=2)
+    xmax, ymax = np.max(np.nonzero(averagearray)[0]), np.max(np.nonzero(averagearray)[1])
+    averagearray = averagearray[0:xmax+1, 0:ymax+1]
+    return averagearray
+
 def calculateDistance(a, b):
     return np.linalg.norm(np.array(a) - np.array(b))
 

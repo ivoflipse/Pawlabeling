@@ -2,21 +2,23 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/entirePlateWidget.py" afterPath="$PROJECT_DIR$/entirePlateWidget.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mainwidget.py" afterPath="$PROJECT_DIR$/mainwidget.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pawswidget.py" afterPath="$PROJECT_DIR$/pawswidget.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/realtimetracker.py" afterPath="$PROJECT_DIR$/realtimetracker.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utility.py" afterPath="$PROJECT_DIR$/utility.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Pawlabeling.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/mainwindow.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373173735884" ignored="false" />
-    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373176669968" ignored="false" />
-    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373180490209" ignored="false" />
-    <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373023703731" ignored="false" />
+    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373180847055" ignored="false" />
+    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373188556725" ignored="false" />
+    <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373183334668" ignored="false" />
     <file path="/popupwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372664863442" ignored="false" />
     <file path="/widget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372667192968" ignored="false" />
     <file path="/entirePlateWidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373179674676" ignored="false" />
-    <file path="/pawswidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373180627123" ignored="false" />
+    <file path="/pawswidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373189168268" ignored="false" />
+    <file path="/realtimetracker.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373186567031" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,10 +88,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mainwidget.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="mainwidget.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mainwidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="191" column="72" selection-start="7024" selection-end="7024" vertical-scroll-proportion="0.31656805">
+            <state line="271" column="36" selection-start="9803" selection-end="9803" vertical-scroll-proportion="-7.4">
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -97,10 +99,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="pawswidget.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="pawswidget.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pawswidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="131" column="59" selection-start="5114" selection-end="5114" vertical-scroll-proportion="0.0">
+            <state line="97" column="41" selection-start="3749" selection-end="3749" vertical-scroll-proportion="0.23947369">
               <folding />
             </state>
           </provider>
@@ -109,7 +111,7 @@
       <file leaf-file-name="entirePlateWidget.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="99" column="29" selection-start="3679" selection-end="3700" vertical-scroll-proportion="-37.16">
+            <state line="88" column="29" selection-start="3031" selection-end="3031" vertical-scroll-proportion="-31.96">
               <folding />
             </state>
           </provider>
@@ -118,8 +120,19 @@
       <file leaf-file-name="utility.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/utility.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="27" column="38" selection-start="909" selection-end="909" vertical-scroll-proportion="0.0">
+            <state line="274" column="30" selection-start="10202" selection-end="10207" vertical-scroll-proportion="-22.36">
               <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="realtimetracker.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/realtimetracker.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="33" column="42" selection-start="955" selection-end="955" vertical-scroll-proportion="0.0">
+              <folding>
+                <element signature="e#83#93#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -153,11 +166,11 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/realtimetracker.py" />
         <option value="$PROJECT_DIR$/popupwidget.py" />
         <option value="$PROJECT_DIR$/widget.py" />
-        <option value="$PROJECT_DIR$/utility.py" />
         <option value="$PROJECT_DIR$/mainwindow.py" />
+        <option value="$PROJECT_DIR$/utility.py" />
+        <option value="$PROJECT_DIR$/realtimetracker.py" />
         <option value="$PROJECT_DIR$/entirePlateWidget.py" />
         <option value="$PROJECT_DIR$/mainwidget.py" />
         <option value="$PROJECT_DIR$/pawswidget.py" />
@@ -215,20 +228,6 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="Pawlabeling" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Pawlabeling" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="Pawlabeling" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="images" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -513,7 +512,15 @@
       <created>1373176675227</created>
       <updated>1373176675227</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="I'm very happy with how it currently works, however I think I'm going to change the way undo works to just deleting the label">
+      <created>1373180778249</created>
+      <updated>1373180778249</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Nevermind, I changed the order instead. It goes back a step and then removes that label">
+      <created>1373180850972</created>
+      <updated>1373180850972</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -521,33 +528,33 @@
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39919356" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
-      <window_info id="UML Diagrams" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="IDEtalk Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="IDEtalk" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="CDI" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="RESTClient" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="REST Client" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.08989658" sideWeight="0.84792995" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295626" sideWeight="0.76693547" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.066030234" sideWeight="0.84792995" order="1" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.15207006" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.066030234" sideWeight="0.64570063" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.35429937" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32882166" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39919356" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="UML Diagrams" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
+      <window_info id="RESTClient" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.08989658" sideWeight="0.64570063" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295626" sideWeight="0.76693547" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Graphical Navigator" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="10" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -593,7 +600,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="I've made the way paws are updated more data driven, so the code should always know what the current status is. However, its not entirely correct just yet" />
+    <option name="LAST_COMMIT_MESSAGE" value="Nevermind, I changed the order instead. It goes back a step and then removes that label" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -623,6 +630,8 @@
     <MESSAGE value="Made the test a bit more elegant, I think" />
     <MESSAGE value="The way I update paws has become a bit of a mess, I'll make it loop through the paws that have been labeled and make sure it updates accordingly" />
     <MESSAGE value="I've made the way paws are updated more data driven, so the code should always know what the current status is. However, its not entirely correct just yet" />
+    <MESSAGE value="I'm very happy with how it currently works, however I think I'm going to change the way undo works to just deleting the label" />
+    <MESSAGE value="Nevermind, I changed the order instead. It goes back a step and then removes that label" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -672,21 +681,18 @@
     </entry>
     <entry file="file://C:/Anaconda/Lib/site-packages/numpy/core/_methods.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="0" selection-start="447" selection-end="447" vertical-scroll-proportion="0.0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/realtimetracker.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="24" selection-start="601" selection-end="612" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#83#93#0" expanded="true" />
-          </folding>
+        <state line="12" column="0" selection-start="447" selection-end="447" vertical-scroll-proportion="0.0">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/popupwidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="0" selection-start="283" selection-end="365" vertical-scroll-proportion="0.0" />
+        <state line="16" column="0" selection-start="283" selection-end="365" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#83#93#0" expanded="true" />
+          </folding>
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/view.py">
@@ -703,20 +709,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utility.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="38" selection-start="909" selection-end="909" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="99" column="29" selection-start="3679" selection-end="3700" vertical-scroll-proportion="-37.16">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/mainwindow.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="131" column="47" selection-start="6334" selection-end="6334" vertical-scroll-proportion="0.0">
@@ -724,19 +716,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pawswidget.py">
+    <entry file="file://$PROJECT_DIR$/realtimetracker.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="131" column="59" selection-start="5114" selection-end="5114" vertical-scroll-proportion="0.0">
+        <state line="33" column="42" selection-start="955" selection-end="955" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#83#93#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utility.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="274" column="30" selection-start="10202" selection-end="10207" vertical-scroll-proportion="-22.36">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mainwidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="191" column="72" selection-start="7024" selection-end="7024" vertical-scroll-proportion="0.31656805">
+        <state line="271" column="36" selection-start="9803" selection-end="9803" vertical-scroll-proportion="-7.4">
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="88" column="29" selection-start="3031" selection-end="3031" vertical-scroll-proportion="-31.96">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pawswidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="97" column="41" selection-start="3749" selection-end="3749" vertical-scroll-proportion="0.23947369">
+          <folding />
         </state>
       </provider>
     </entry>

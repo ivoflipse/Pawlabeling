@@ -31,6 +31,9 @@ class Contact():
         self.totalminx, self.totalmaxx = minx, maxx
         self.totalminy, self.totalmaxy = miny, maxy
         self.totalcentroid = center
+        self.width = int(abs(maxx - minx))
+        self.height = int(abs(maxy - miny))
+        self.length = len(self.frames)
 
     def __str__(self):
         for frame in self.frames:
