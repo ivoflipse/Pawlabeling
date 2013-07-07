@@ -42,6 +42,7 @@ class MainWidget(QWidget):
             QColor(Qt.darkGreen),
             QColor(Qt.red),
             QColor(Qt.darkRed),
+            QColor(Qt.white),
             QColor(Qt.yellow),
             ]
 
@@ -50,10 +51,11 @@ class MainWidget(QWidget):
             1 : "LH",
             2 : "RF",
             3 : "RH",
+            -2 : "-1",
             -1 : "-1"
         }
 
-        self.current_paw_index = -1
+        self.current_paw_index = 0
 
         # Create a list widget
         self.measurementTree = QTreeWidget(self)
@@ -198,62 +200,65 @@ class MainWidget(QWidget):
         if not self.contacts_available():
             return
 
+        # Remove the label
+        self.paw_labels[self.current_paw_index] = -1
+        # Change the current paw index
         self.current_paw_index -= 1
         if self.current_paw_index < 0:
             self.current_paw_index = 0
-        self.delete_label()
+        # Update the screen
+        self.update_current_paw()
 
     def delete_label(self, event=None):
         # Check if we have any contacts available, else don't bother
         if not self.contacts_available():
             return
-
-        # Remove the label from all the places it is stored
-        paw_label = -1
-        item = self.contactTree.topLevelItem(self.current_paw_index)
-        # Update the label in the tree if its not -1
-        item.setText(1, "-1")
-        for idx in range(item.columnCount()):
-            item.setBackgroundColor(idx, self.colors[paw_label])
-
+        # Remove the label
         self.paw_labels[self.current_paw_index] = -1
-
-        # Then call update_current_paw(paw_label=-1)
-        self.update_current_paw(paw_label)
+        # Update the screen
+        self.update_current_paw()
 
     def select_left_front(self, event=None):
-        self.update_current_paw(paw_label=0)
+        self.paw_labels[self.current_paw_index] = 0
+        self.update_current_paw()
         self.next_paw()
 
     def select_left_hind(self, event=None):
-        self.update_current_paw(paw_label=1)
+        self.paw_labels[self.current_paw_index] = 1
+        self.update_current_paw()
         self.next_paw()
 
     def select_right_front(self, event=None):
-        self.update_current_paw(paw_label=2)
+        self.paw_labels[self.current_paw_index] = 2
+        self.update_current_paw()
         self.next_paw()
 
     def select_right_hind(self, event=None):
-        self.update_current_paw(paw_label=3)
+        self.paw_labels[self.current_paw_index] = 3
+        self.update_current_paw()
         self.next_paw()
 
-    def update_current_paw(self, paw_label=-1, update=True):
+    def update_current_paw(self):
         if self.current_paw_index <= len(self.paws) and len(self.paws) > 0:
-            self.current_paw = self.paws[self.current_paw_index]
-            # Convert it to a numpy array
-            current_paw_data = self.paw_data[self.current_paw_index]
-            # Get the current row from the tree
-            item = self.contactTree.topLevelItem(self.current_paw_index)
-            if update:
-                self.paw_labels[self.current_paw_index] = paw_label
+            for index, paw_label in self.paw_labels.items():
+                # Convert it to a numpy array
+                current_paw_data = self.paw_data[index]
+                # Get the current row from the tree
+                item = self.contactTree.topLevelItem(index)
                 item.setText(1, self.paw_dict[paw_label])
 
-            self.entirePlateWidget.update_bounding_box(self.current_paw_index, paw_label)
-            self.paws_widget.update_current_paw(current_paw_data, paw_label, self.current_paw_index)
+                # If its not the currently selected paw, change the label to gibberish
+                if self.current_paw_index != index and paw_label == -1:
+                    paw_label = -2
 
-            # Update the colors
-            for idx in range(item.columnCount()):
-                item.setBackgroundColor(idx, self.colors[paw_label])
+
+                self.entirePlateWidget.update_bounding_box(index, paw_label)
+                self.paws_widget.update_current_paw(current_paw_data, paw_label, index)
+
+                # Update the colors in the contact tree
+                for idx in range(item.columnCount()):
+                    item.setBackgroundColor(idx, self.colors[paw_label])
+
 
     def contacts_available(self):
         """
@@ -279,7 +284,7 @@ class MainWidget(QWidget):
 
         item = self.contactTree.topLevelItem(self.current_paw_index)
         self.contactTree.setCurrentItem(item)
-        self.update_current_paw(paw_label=-1, update=False)
+        self.update_current_paw()
 
     def next_paw(self, event=None):
         if not self.contacts_available():
@@ -292,14 +297,13 @@ class MainWidget(QWidget):
 
         item = self.contactTree.topLevelItem(self.current_paw_index)
         self.contactTree.setCurrentItem(item)
-        self.update_current_paw(paw_label=-1, update=False)
+        self.update_current_paw()
 
     def switch_contacts(self, event=None):
         self.remove_selected_color()
         item = self.contactTree.selectedItems()[0]
         self.current_paw_index = int(item.text(0))
-        paw_label = self.paw_labels.get(self.current_paw_index, -1)
-        self.update_current_paw(paw_label)
+        self.update_current_paw()
 
     def addContacts(self):
         # Print how many contacts we found

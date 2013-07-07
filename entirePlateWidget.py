@@ -29,6 +29,7 @@ class EntirePlateWidget(QWidget):
                       QColor(Qt.darkGreen),
                       QColor(Qt.red),
                       QColor(Qt.darkRed),
+                      QColor(Qt.white),
                       QColor(Qt.yellow),
                       ]
 
@@ -71,10 +72,6 @@ class EntirePlateWidget(QWidget):
             self.scene.removeItem(box)
         self.bounding_boxes = []
 
-        if self.current_box:
-            self.scene.removeItem(self.current_box)
-        self.current_box = None
-
     def clear_gait_line(self):
         # Remove the gait line
         for line in self.gait_lines:
@@ -101,14 +98,13 @@ class EntirePlateWidget(QWidget):
         self.bboxpen = QPen(color)
         self.bboxpen.setWidth(3)
 
-        current_paw = 0
         if paw_label == -1:
-            current_paw = 1
-            if self.current_box:
-                self.scene.removeItem(self.current_box)
+            current_paw = 0.5
         else:
-            old_box = self.bounding_boxes[index]
-            self.scene.removeItem(old_box)
+            current_paw = 0
+
+        old_box = self.bounding_boxes[index]
+        self.scene.removeItem(old_box)
 
         paw = self.paws[index]
         polygon = QPolygonF([QPointF((paw.totalminx - current_paw) * self.degree, (paw.totalminy - current_paw) * self.degree),
@@ -116,10 +112,7 @@ class EntirePlateWidget(QWidget):
                              QPointF((paw.totalmaxx + current_paw) * self.degree, (paw.totalmaxy + current_paw) * self.degree),
                              QPointF((paw.totalminx - current_paw) * self.degree, (paw.totalmaxy + current_paw) * self.degree)])
 
-        if paw_label == -1:
-            self.current_box = self.scene.addPolygon(polygon, self.bboxpen)
-        else:
-            self.bounding_boxes[index] = self.scene.addPolygon(polygon, self.bboxpen)
+        self.bounding_boxes[index] = self.scene.addPolygon(polygon, self.bboxpen)
 
 
     def draw_gait_line(self):
