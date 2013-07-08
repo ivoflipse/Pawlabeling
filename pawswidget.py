@@ -3,6 +3,7 @@ from PyQt4.QtGui import *
 import numpy as np
 import utility
 
+
 class PawsWidget(QWidget):
     def __init__(self, parent, degree, n_max):
         super(PawsWidget, self).__init__(parent)
@@ -16,21 +17,21 @@ class PawsWidget(QWidget):
         self.current_paw = PawWidget(self, degree, n_max, label="")
 
         self.paws_list = {
-                0 : self.left_front,
-                1 : self.left_hind,
-                2 : self.right_front,
-                3 : self.right_hind,
-                -1 : self.current_paw
-            }
+            0: self.left_front,
+            1: self.left_hind,
+            2: self.right_front,
+            3: self.right_hind,
+            -1: self.current_paw
+        }
 
         self.paw_dict = {
-            0 : "LF",
-            1 : "LH",
-            2 : "RF",
-            3 : "RH",
-            -3 : "Invalid",
-            -2 : "-1",  # I've changed this
-            -1 : "-1"
+            0: "LF",
+            1: "LH",
+            2: "RF",
+            3: "RH",
+            -3: "Invalid",
+            -2: "-1", # I've changed this
+            -1: "-1"
         }
 
         # This sets every widget to a zero image and initializes paws
@@ -69,13 +70,13 @@ class PawsWidget(QWidget):
                 continue
             elif paw_label == -3:
                 continue
-            # If we do have a label, but we have selected it, update the current_paw too
+                # If we do have a label, but we have selected it, update the current_paw too
             if current_paw_index == index and paw_label != -1:
                 self.paws[-1] = [[paw], [average_paw]]
 
             if paw_label not in self.paws:
-                self.paws[paw_label] = [],[]
-            # Add the data to the paws dictionary
+                self.paws[paw_label] = [], []
+                # Add the data to the paws dictionary
             self.paws[paw_label][0].append(paw)
             self.paws[paw_label][1].append(average_paw)
 
@@ -119,18 +120,18 @@ class PawsWidget(QWidget):
         # For each value calculate how much % it varies
         # TODO this has an obvious risk of divide by zero
         if all([pressure, surface, duration, data_list]):
-            percentages_pressures = [np.sqrt((p - pressure)**2) / pressure for p in pressures]
-            percentages_surfaces = [np.sqrt((s - surface)**2) / surface for s in surfaces]
-            percentages_durations = [np.sqrt((d - duration)**2) / duration for d in durations]
+            percentages_pressures = [np.sqrt((p - pressure) ** 2) / pressure for p in pressures]
+            percentages_surfaces = [np.sqrt((s - surface) ** 2) / surface for s in surfaces]
+            percentages_durations = [np.sqrt((d - duration) ** 2) / duration for d in durations]
             #percentages_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
-            percentages_data = [np.sum(np.sqrt((d - data)**2)) for d in data_list]
+            percentages_data = [np.sum(np.sqrt((d - data) ** 2)) for d in data_list]
             results = []
-            for p, s, d, d2 in zip(percentages_pressures, percentages_surfaces, percentages_durations, percentages_data):
+            for p, s, d, d2 in zip(percentages_pressures, percentages_surfaces, percentages_durations,
+                                   percentages_data):
                 results.append(p + s + d + d2)
-            # TODO I'm also not so satisfied with this heuristic, though it might get better with more data
+                # TODO I'm also not so satisfied with this heuristic, though it might get better with more data
             best_result = np.argmin(results)
             current_paw.label_prediction.setText("{}".format(self.paw_dict[best_result]))
-
 
 
     def update_n_max(self, n_max):
@@ -165,7 +166,6 @@ class PawWidget(QWidget):
         self.data_list = []
         self.average_data_list = []
 
-
         self.scene = QGraphicsScene(self)
         self.view = QGraphicsView(self.scene)
         self.view.setGeometry(0, 0, 100, 100)
@@ -183,8 +183,10 @@ class PawWidget(QWidget):
 
         self.label_prediction.setText("{}".format(self.label))
         self.max_pressure_label.setText("{} N".format(0 if self.max_pressure == float("inf") else self.max_pressure))
-        self.mean_duration_label.setText("{} frames".format(0 if self.mean_duration == float("inf") else self.mean_duration))
-        self.mean_surface_label.setText("{} pixels".format(0 if self.mean_surface == float("inf") else self.mean_surface))
+        self.mean_duration_label.setText(
+            "{} frames".format(0 if self.mean_duration == float("inf") else self.mean_duration))
+        self.mean_surface_label.setText(
+            "{} pixels".format(0 if self.mean_surface == float("inf") else self.mean_surface))
 
         self.number_layout = QVBoxLayout()
         self.number_layout.addWidget(self.label_prediction)
@@ -209,7 +211,7 @@ class PawWidget(QWidget):
             pressures.append(np.max(np.sum(np.sum(data, axis=0), axis=0)))
             x, y, z = data.shape
             durations.append(z)
-            surfaces.append(np.max([np.count_nonzero(data[:,:,frame]) for frame in range(z)]))
+            surfaces.append(np.max([np.count_nonzero(data[:, :, frame]) for frame in range(z)]))
 
         self.max_pressure = int(np.mean(pressures))
         self.mean_duration = int(np.mean(durations))
@@ -230,12 +232,14 @@ class PawWidget(QWidget):
         self.data_list = []
         self.average_data_list = []
         # Put the screen to black
-        self.image.setPixmap(utility.get_QPixmap(np.zeros((15,15)), self.degree, self.n_max, self.color_table))
+        self.image.setPixmap(utility.get_QPixmap(np.zeros((15, 15)), self.degree, self.n_max, self.color_table))
         self.max_pressure = float("inf")
         self.mean_duration = float("inf")
         self.mean_surface = float("inf")
 
         self.label_prediction.setText("{}".format(self.label))
         self.max_pressure_label.setText("{} N".format(0 if self.max_pressure == float("inf") else self.max_pressure))
-        self.mean_duration_label.setText("{} frames".format(0 if self.mean_duration == float("inf") else self.mean_duration))
-        self.mean_surface_label.setText("{} pixels".format(0 if self.mean_surface == float("inf") else self.mean_surface))
+        self.mean_duration_label.setText(
+            "{} frames".format(0 if self.mean_duration == float("inf") else self.mean_duration))
+        self.mean_surface_label.setText(
+            "{} pixels".format(0 if self.mean_surface == float("inf") else self.mean_surface))

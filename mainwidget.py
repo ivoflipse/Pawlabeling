@@ -9,6 +9,7 @@ from pawswidget import PawsWidget
 import utility
 import numpy as np
 
+
 class MainWidget(QWidget):
     def __init__(self, path, pickled, desktopFlag, parent=None):
         super(MainWidget, self).__init__(parent)
@@ -44,17 +45,17 @@ class MainWidget(QWidget):
             QColor(Qt.gray),
             QColor(Qt.white),
             QColor(Qt.yellow),
-            ]
+        ]
 
         # FYI the id's are 1 lower compared to iApp
         self.paw_dict = {
-            0 : "LF",
-            1 : "LH",
-            2 : "RF",
-            3 : "RH",
-            -3 : "Invalid",
-            -2 : "-1",  # I've changed this
-            -1 : "-1"
+            0: "LF",
+            1: "LH",
+            2: "RF",
+            3: "RH",
+            -3: "Invalid",
+            -2: "-1", # I've changed this
+            -1: "-1"
         }
 
         self.current_paw_index = 0
@@ -84,10 +85,10 @@ class MainWidget(QWidget):
         self.measurementTree.setCurrentItem(self.measurementTree.topLevelItem(0).child(0))
 
         self.entirePlateWidget = EntirePlateWidget(self.degree,
-                             entirePlateWidget_size,
-                             self)
+                                                   entirePlateWidget_size,
+                                                   self)
 
-        self.paws_widget = PawsWidget(self, self.degree*2, self.n_max)
+        self.paws_widget = PawsWidget(self, self.degree * 2, self.n_max)
 
         self.entirePlateWidget.setMinimumWidth(600)
 
@@ -211,9 +212,9 @@ class MainWidget(QWidget):
 
         for paw in self.paw_data:
             x, y, z = paw.shape
-            offset_x, offset_y = int((self.mx - x)/2), int((self.my - y)/2)
+            offset_x, offset_y = int((self.mx - x) / 2), int((self.my - y) / 2)
             average_slice = np.zeros((self.mx, self.my))
-            average_slice[offset_x:offset_x+x, offset_y:offset_y+y] = paw.max(axis=2)
+            average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = paw.max(axis=2)
             self.average_data.append(average_slice)
 
         # Update the shape of the paws widget
@@ -243,7 +244,7 @@ class MainWidget(QWidget):
         # Check if we have any contacts available, else don't bother
         if not self.contacts_available():
             return
-        # Remove the label
+            # Remove the label
         self.paw_labels[self.current_paw_index] = -1
         # Update the screen
         self.update_current_paw()
@@ -252,7 +253,7 @@ class MainWidget(QWidget):
         # Check if we have any contacts available, else don't bother
         if not self.contacts_available():
             return
-        # I've picked -3 as the label for invalid paws
+            # I've picked -3 as the label for invalid paws
         self.paw_labels[self.current_paw_index] = -3
         # Update the screen
         self.update_current_paw()
@@ -351,7 +352,7 @@ class MainWidget(QWidget):
             rootItem.setText(0, str(index))
             rootItem.setText(1, "-1")
             rootItem.setText(2, str(z))  # Sets the frame count
-            surface = np.max([np.count_nonzero(paw[:,:,frame]) for frame in range(z)])
+            surface = np.max([np.count_nonzero(paw[:, :, frame]) for frame in range(z)])
             rootItem.setText(3, str(int(surface)))
             force = np.max(np.sum(np.sum(paw, axis=0), axis=0))
             rootItem.setText(4, str(int(force)))
@@ -441,7 +442,8 @@ class MainWidget(QWidget):
         # The result in this case will be the index + 3D slice + sideid
         results = []
         for index, paw in enumerate(self.paws):
-            total_centroid, total_min_x, total_max_x, total_min_y, total_max_y = utility.update_bounding_box(paw.contour_list)
+            total_centroid, total_min_x, total_max_x, total_min_y, total_max_y = utility.update_bounding_box(
+                paw.contour_list)
             paw_label = self.paw_labels.get(index, -1)
             results.append([index, paw_label,
                             int(total_min_x), int(total_max_x),

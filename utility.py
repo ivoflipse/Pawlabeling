@@ -4,6 +4,7 @@ import numpy as np
 import scipy.ndimage
 import heapq
 
+
 class Contact():
     """
     This class has only one real function and that's to take a contact and create some
@@ -41,6 +42,7 @@ def calculate_bounding_box(contour):
     """
     # Calculate a minimum bounding rectangle, can be rotated!
     from cv2 import minAreaRect
+
     center, size, angle = minAreaRect(contour)
     if -45 <= angle <= 45:
         width, length = size
@@ -56,6 +58,7 @@ def calculate_bounding_box(contour):
     min_y = y - ydist
     max_y = y + ydist
     return center, min_x, max_x, min_y, max_y
+
 
 def update_bounding_box(contact):
     """
@@ -91,6 +94,7 @@ def update_bounding_box(contact):
 
     total_centroid = ((total_max_x + total_min_x) / 2, (total_max_y + total_min_y) / 2)
     return total_centroid, total_min_x, total_max_x, total_min_y, total_max_y
+
 
 def closest_contact(contact1, contact2, center1, euclidean_distance):
     """
@@ -132,6 +136,7 @@ def closest_contact(contact1, contact2, center1, euclidean_distance):
                     value += euclidean_distance - distance
     return value / float(len(frames))
 
+
 def calculate_temporal_spatial_variables(contacts):
     """
     We recalculate the euclidean distance based on the current size of the  remaining contacts
@@ -160,6 +165,7 @@ def calculate_temporal_spatial_variables(contacts):
         lengths.append(len(contact.keys()))
     return sides, centers, surfaces, lengths
 
+
 def merge_contours(contact1, contact2):
     """
     This function takes two contacts, then for each frame the second was active,
@@ -173,6 +179,7 @@ def merge_contours(contact1, contact2):
             contact1[frame].append(contour)
             # This makes sure it won't accidentally merge either
         contact2[frame] = []
+
 
 def merging_contacts(contacts):
     """
@@ -323,6 +330,7 @@ def find_contours(data):
             contour_dict[frame] = contour_list
     return contour_dict
 
+
 def create_graph(contour_dict, euclideanDistance=15):
     from cv2 import pointPolygonTest
     # Create a graph
@@ -370,6 +378,7 @@ def create_graph(contour_dict, euclideanDistance=15):
                                         # if so, link them and stop looking
     return G
 
+
 def search_graph(G, contour_dict):
     # Empty list of contacts
     contacts = []
@@ -402,6 +411,7 @@ def search_graph(G, contour_dict):
             contacts.append(contact)
     return contacts
 
+
 def track_contours_graph(data):
     """
     This tracking algorithm uses a graph based approach.
@@ -426,6 +436,7 @@ def track_contours_graph(data):
     contacts = merging_contacts(contacts)
     return contacts
 
+
 class arrow_filter(QObject):
     def eventFilter(self, parent, event):
         if event.type() == QEvent.KeyPress:
@@ -437,10 +448,12 @@ class arrow_filter(QObject):
                 return True
         return False
 
-def standardize_paw(paw, std_num_x = 20, std_num_y = 20):
+
+def standardize_paw(paw, std_num_x=20, std_num_y=20):
     """Standardizes a paw print onto a std_num_y x std_num_x grid. Returns a 1D,
     flattened version of the paw data resample onto this grid."""
     from scipy.ndimage import map_coordinates
+
     ny, nx = np.shape(paw)
     # Based on a scientific guess
     # Make a 20x20 grid to resample the paw pressure values onto
@@ -451,13 +464,14 @@ def standardize_paw(paw, std_num_x = 20, std_num_y = 20):
     # Resample the values onto the 20x20 grid
     coordinates = np.vstack([yi.flatten(), xi.flatten()])
     zi = map_coordinates(paw, coordinates)
-    zi = zi.reshape(std_num_y,std_num_x)
+    zi = zi.reshape(std_num_y, std_num_x)
 
     # Rescale the pressure values
     zi -= zi.min()
     zi /= zi.max()
     zi -= zi.mean() #<- Helps distinguish front from hind paws...
     return zi
+
 
 def find_max_shape(data, data_slices):
     mx, my = 0, 0
@@ -469,18 +483,20 @@ def find_max_shape(data, data_slices):
             mx = tx
     return pad_with_zeros(data, data_slices, mx, my)
 
+
 def pad_with_zeros(data, data_slices, mx, my):
     padded = {}
     for contact_number, dat_slice in enumerate(data_slices):
         contact_number += 1
         ny, nx, nt = np.shape(data[dat_slice])
-        offset_y, offset_x = int((my-ny)/2), int((mx-nx)/2)
+        offset_y, offset_x = int((my - ny) / 2), int((mx - nx) / 2)
         temp_array = np.zeros((my, mx))
         for y in range(ny):
             for x in range(nx):
-                temp_array[y+offset_y, x+offset_x] = data[dat_slice].max(axis=2)[y, x]
+                temp_array[y + offset_y, x + offset_x] = data[dat_slice].max(axis=2)[y, x]
         padded[contact_number] = temp_array
     return padded
+
 
 def average_contacts(contacts):
     num_contacts = len(contacts)
@@ -490,11 +506,13 @@ def average_contacts(contacts):
         empty_array[0:nx, 0:ny, index] = contact # dump the array in the empty one
     average_array = np.mean(empty_array, axis=2)
     max_x, max_y = np.max(np.nonzero(average_array)[0]), np.max(np.nonzero(average_array)[1])
-    average_array = average_array[0:max_x+1, 0:max_y+1]
+    average_array = average_array[0:max_x + 1, 0:max_y + 1]
     return average_array
+
 
 def calculate_distance(a, b):
     return np.linalg.norm(np.array(a) - np.array(b))
+
 
 def fix_orientation(data):
     from scipy.ndimage.measurements import center_of_mass
@@ -514,6 +532,7 @@ def fix_orientation(data):
         # So we flip the data around
         data = np.rot90(np.rot90(data))
     return data
+
 
 def load_file(infile):
     """
@@ -575,6 +594,7 @@ def load(filename, padding=False):
         result = np.dstack(data_slices)
         return result
 
+
 def convert_contour_to_slice(data, contact):
     # Get the bounding box for the entire contact
     center, min_x1, max_x1, min_y1, max_y1 = update_bounding_box(contact)
@@ -588,7 +608,8 @@ def convert_contour_to_slice(data, contact):
         # We need to slice around the contacts a little wider, I wonder what problems this might cause
         min_x, max_x, min_y, max_y = int(min_x), int(max_x) + 2, int(min_y), int(max_y) + 2
         newData[min_x:max_x, min_y:max_y, frame] = data[min_x:max_x, min_y:max_y, frame]
-    return newData[min_x1-1:max_x1+2, min_y1-1:max_y1+2, min_z:max_z+1]
+    return newData[min_x1 - 1:max_x1 + 2, min_y1 - 1:max_y1 + 2, min_z:max_z + 1]
+
 
 def contour_to_polygon(contour, degree, offset_x=0, offset_y=0):
     # Loop through the contour, create a polygon out of it
@@ -601,8 +622,9 @@ def contour_to_polygon(contour, degree, offset_x=0, offset_y=0):
         # If the contour has only a single point, add another point, that's right beside it
     if len(contour) == 1:
         polygon.append(QPointF((coordinates[0][0] + 1 - offset_x) * degree,
-            (coordinates[0][1] + 1 - offset_y) * degree)) # Pray this doesn't go out of bounds!
+                               (coordinates[0][1] + 1 - offset_y) * degree)) # Pray this doesn't go out of bounds!
     return QPolygonF(polygon)
+
 
 def contour_to_lines(contour):
     x = []
@@ -611,6 +633,7 @@ def contour_to_lines(contour):
         x.append(point[0][0])
         y.append(point[0][1])
     return x, y
+
 
 def normalize(array, n_max):
     """
@@ -624,6 +647,7 @@ def normalize(array, n_max):
     array *= scale
 
     return array
+
 
 def interpolate_frame(data, degree):
     """
@@ -646,6 +670,7 @@ def interpolate_frame(data, degree):
     zi = zi.reshape(std_num_y, std_num_x)
     return zi
 
+
 def average_contacts(contacts):
     num_contacts = len(contacts)
     empty_array = np.zeros((50, 100, num_contacts)) # This seems rather wasteful with space
@@ -654,8 +679,9 @@ def average_contacts(contacts):
         empty_array[0:nx, 0:ny, index] = contact # dump the array in the empty one
     average_array = np.mean(empty_array, axis=2)
     max_x, max_y = np.max(np.nonzero(average_array)[0]), np.max(np.nonzero(average_array)[1])
-    average_array = average_array[0:max_x+1, 0:max_y+1]
+    average_array = average_array[0:max_x + 1, 0:max_y + 1]
     return average_array
+
 
 def calculate_cop(data):
     cop_x, cop_y = [], []
@@ -673,6 +699,7 @@ def calculate_cop(data):
                 cop_y.append(np.round(np.sum(temp_y[:, frame]) / np.sum(data[:, :, frame]), 2))
     return cop_x, cop_y
 
+
 def scipy_cop(data):
     cop_x, cop_y = [], []
     height, width, length = data.shape
@@ -681,6 +708,7 @@ def scipy_cop(data):
         cop_x.append(x + 1)
         cop_y.append(y + 1)
     return cop_x, cop_y
+
 
 def get_QPixmap(data, degree, n_max, color_table):
     """
@@ -703,6 +731,7 @@ def get_QPixmap(data, degree, n_max, color_table):
     #                                 Qt.KeepAspectRatio, Qt.Fas.Transformation) #Qt.Smoot.Transformation
     return pixmap
 
+
 def array_to_qimage(array, color_table):
     """Convert the 2D numpy array  into a 8-bit QImage with a gray
     colormap.  The first dimension represents the vertical image axis."""
@@ -715,6 +744,7 @@ def array_to_qimage(array, color_table):
     # Convert it to RGB32
     result = result.convertToFormat(QImage.Format_RGB32)
     return result
+
 
 def interpolate_rgb(start_color, start_value, end_color, end_value, actual_value):
     delta_value = end_value - start_value
@@ -800,44 +830,46 @@ class ImageColorTable():
         for val in range(255):
             if val < self.black_threshold:
                 color_table[val] = interpolate_rgb(self.black, self.black_threshold,
-                                                  self.blue, self.blue_threshold, val)
+                                                   self.blue, self.blue_threshold, val)
             else:
                 if val <= self.yellow_threshold:
                     if val <= self.cyan_threshold:
                         if val <= self.blue_threshold:
                             color_table[val] = interpolate_rgb(self.blue, self.black_threshold,
-                                                              self.lightblue, self.blue_threshold, val)
+                                                               self.lightblue, self.blue_threshold, val)
                         else:
                             color_table[val] = interpolate_rgb(self.lightblue, self.blue_threshold,
-                                                              self.cyan, self.cyan_threshold, val)
+                                                               self.cyan, self.cyan_threshold, val)
                     else:
                         if val <= self.green_threshold:
                             color_table[val] = interpolate_rgb(self.cyan, self.cyan_threshold,
-                                                              self.green, self.green_threshold, val)
+                                                               self.green, self.green_threshold, val)
                         else:
                             color_table[val] = interpolate_rgb(self.green, self.green_threshold,
-                                                              self.yellow, self.yellow_threshold, val)
+                                                               self.yellow, self.yellow_threshold, val)
                 else:
                     if val <= self.orange_threshold:
                         color_table[val] = interpolate_rgb(self.yellow, self.yellow_threshold,
-                                                          self.orange, self.orange_threshold, val)
+                                                           self.orange, self.orange_threshold, val)
                     elif val <= self.red_threshold:
                         color_table[val] = interpolate_rgb(self.orange, self.orange_threshold,
-                                                          self.red, self.red_threshold, val)
+                                                           self.red, self.red_threshold, val)
         return color_table
 
 
 def color_map():
     from matplotlib.colors import LinearSegmentedColormap
+
     my_color_map = {'blue': [(0.0, 0.0, 0.0), (0.12, 1.0, 1.0), (0.44, 0.0, 0.0), (0.76000000000000001, 0.0, 0.0),
-                        (0.92000000000000004, 0.0, 0.0), (1, 0.0, 0.0)],
-               'green': [(0.0, 0.0, 0.0), (0.12, 0.29999999999999999, 0.29999999999999999), (0.44, 1.0, 1.0),
-                         (0.76000000000000001, 0.90000000000000002, 0.90000000000000002),
-                         (0.92000000000000004, 0.40000000000000002, 0.40000000000000002), (1, 0.0, 0.0)],
-               'red': [(0.0, 0.0, 0.0), (0.12, 0.0, 0.0), (0.44, 0.0, 0.0), (0.76000000000000001, 1.0, 1.0),
-                       (0.92000000000000004, 1.0, 1.0), (1, 1.0, 1.0)]}
+                             (0.92000000000000004, 0.0, 0.0), (1, 0.0, 0.0)],
+                    'green': [(0.0, 0.0, 0.0), (0.12, 0.29999999999999999, 0.29999999999999999), (0.44, 1.0, 1.0),
+                              (0.76000000000000001, 0.90000000000000002, 0.90000000000000002),
+                              (0.92000000000000004, 0.40000000000000002, 0.40000000000000002), (1, 0.0, 0.0)],
+                    'red': [(0.0, 0.0, 0.0), (0.12, 0.0, 0.0), (0.44, 0.0, 0.0), (0.76000000000000001, 1.0, 1.0),
+                            (0.92000000000000004, 1.0, 1.0), (1, 1.0, 1.0)]}
     new_color_map = LinearSegmentedColormap('my_color_map', my_color_map)
     return new_color_map
+
 
 def convert_to_hex(color_scale):
     list_of_hex = []
@@ -846,21 +878,24 @@ def convert_to_hex(color_scale):
         list_of_hex.append(hex_string)
     return list_of_hex
 
+
 def create_hex_colormap():
     from matplotlib.colors import makeMappingArray
+
     my_color_map = {'blue': [(0.0, 0.0, 0.0), (0.12, 1.0, 1.0), (0.44, 0.0, 0.0), (0.76000000000000001, 0.0, 0.0),
-                        (0.92000000000000004, 0.0, 0.0), (1, 0.0, 0.0)],
-               'green': [(0.0, 0.0, 0.0), (0.12, 0.29999999999999999, 0.29999999999999999), (0.44, 1.0, 1.0),
-                         (0.76000000000000001, 0.90000000000000002, 0.90000000000000002),
-                         (0.92000000000000004, 0.40000000000000002, 0.40000000000000002), (1, 0.0, 0.0)],
-               'red': [(0.0, 0.0, 0.0), (0.12, 0.0, 0.0), (0.44, 0.0, 0.0), (0.76000000000000001, 1.0, 1.0),
-                       (0.92000000000000004, 1.0, 1.0), (1, 1.0, 1.0)]}
-					   
+                             (0.92000000000000004, 0.0, 0.0), (1, 0.0, 0.0)],
+                    'green': [(0.0, 0.0, 0.0), (0.12, 0.29999999999999999, 0.29999999999999999), (0.44, 1.0, 1.0),
+                              (0.76000000000000001, 0.90000000000000002, 0.90000000000000002),
+                              (0.92000000000000004, 0.40000000000000002, 0.40000000000000002), (1, 0.0, 0.0)],
+                    'red': [(0.0, 0.0, 0.0), (0.12, 0.0, 0.0), (0.44, 0.0, 0.0), (0.76000000000000001, 1.0, 1.0),
+                            (0.92000000000000004, 1.0, 1.0), (1, 1.0, 1.0)]}
+
     red = makeMappingArray(256, my_color_map['red'])
     green = makeMappingArray(256, my_color_map['green'])
     blue = makeMappingArray(256, my_color_map['blue'])
     color_scale = np.array(zip(red, green, blue))
     return convert_to_hex(color_scale)
+
 
 def touches_edges(data, data_slice):
     ny, nx, nt = np.shape(data)
@@ -870,9 +905,11 @@ def touches_edges(data, data_slice):
     ttouch = (t.stop == nt)
     return xtouch or ytouch or ttouch
 
+
 def agglomerative_clustering(data, num_clusters):
     from collections import defaultdict
     import heapq
+
     distances = defaultdict(dict)
     heap = []
 
@@ -884,7 +921,7 @@ def agglomerative_clustering(data, num_clusters):
         leaders[index1] = index1
         for index2, trial2 in enumerate(data):
             if index1 != index2:
-                dist = np.sum( np.sqrt( (trial1 - trial2)**2 ))
+                dist = np.sum(np.sqrt((trial1 - trial2) ** 2))
                 #dist = np.sum(trial1 - trial2)
                 distances[index1][index2] = dist
                 heapq.heappush(heap, (dist, (index1, index2)))
@@ -960,7 +997,7 @@ def map_to_string(piecewise_aggregate_approximation, alphabet_size):
         20: [float("-inf"), -1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39, 0.52,
              0.67,
              0.84, 1.04, 1.28, 1.64],
-        }
+    }
     # Get the right cut-off point from the mapping
     cut_points = mapping[alphabet_size]
     for i in range(len(piecewise_aggregate_approximation)):
@@ -976,6 +1013,7 @@ def timeseries2symbol(data, N, n, alphabet_size):
     Use as: current_string = timeseries2symbol(data, data_len, nseg, alphabet_size)
     """
     from math import floor
+
     if alphabet_size > 20:
         print "Alphabet is too large!"
 
@@ -989,7 +1027,7 @@ def timeseries2symbol(data, N, n, alphabet_size):
         sub_section = data[i:i + N]
         # Z normalize it
         # Turned off for now, since its already applied, but then to the entire dataset
-        sub_section = (sub_section - np.mean(sub_section))/ np.std(sub_section)
+        sub_section = (sub_section - np.mean(sub_section)) / np.std(sub_section)
 
         # If the data is as long as the number of segments, we don't have to piecewise_aggregate_approximation
         if N == n:
@@ -1023,6 +1061,7 @@ def saxify(data, n=10, alphabet_size=4, plot_results=False, axes=None):
     Assumes numpy is imported as np
     """
     from math import floor
+
     N = len(data)
     win_size = int(floor(N / n))
     # Do I want to Z-normalize?
@@ -1047,7 +1086,8 @@ def saxify(data, n=10, alphabet_size=4, plot_results=False, axes=None):
     if plot_results:
         color = ['g', 'y', 'm', 'c']
         # Rescale the piecewise data
-        piecewise_aggregate_approximation_plot = np.reshape(np.tile(piecewise_aggregate_approximation[:, None], win_size), (win_size * n))  # data_len
+        piecewise_aggregate_approximation_plot = np.reshape(
+            np.tile(piecewise_aggregate_approximation[:, None], win_size), (win_size * n))  # data_len
         axes.plot(piecewise_aggregate_approximation_plot, 'r')
 
         for i in range(n):
@@ -1057,11 +1097,13 @@ def saxify(data, n=10, alphabet_size=4, plot_results=False, axes=None):
             # Subtract one, because we start indexing from zero
             letter = int(current_string[i]) - 1
             colorIndex = int(letter % len(color))
-            axes.plot(range(x_start, x_end), piecewise_aggregate_approximation_plot[x_start:x_end], color=color[colorIndex], linewidth=3)
+            axes.plot(range(x_start, x_end), piecewise_aggregate_approximation_plot[x_start:x_end],
+                      color=color[colorIndex], linewidth=3)
             axes.text(x_mid, piecewise_aggregate_approximation_plot[x_start], new_string[i], fontsize=14)
 
     # Actually this returns the numeric version!
     return current_string
+
 
 def build_dist_table(alphabet_size):
     """
@@ -1088,7 +1130,7 @@ def build_dist_table(alphabet_size):
         18: [-1.62, -1.25, -1, -0.8, -0.63, -0.48, -0.34, -0.2 - 0.07, 0.07, 0.2, 0.34, 0.48, 0.63, 0.8, 1, 1.25, 1.62],
         19: [-1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39, 0.52, 0.67, 0.84, 1.04,
              1.28, 1.64],
-        }
+    }
     cutlines = mapping[alphabet_size]
     dist_matrix = np.zeros((alphabet_size, alphabet_size))
     for i in range(alphabet_size):
@@ -1099,6 +1141,7 @@ def build_dist_table(alphabet_size):
             dist_matrix[j, i] = dist_matrix[i, j]
     return dist_matrix
 
+
 def calc_distances(str1, str2, alphabet_size):
     dist_matrix = build_dist_table(alphabet_size)
     distances = np.zeros((len(str1), len(str2)))
@@ -1107,6 +1150,7 @@ def calc_distances(str1, str2, alphabet_size):
             # Why on earth I have to use -1 is beyond me
             distances[idx1, idx2] = dist_matrix[i - 1, j - 1]
     return distances
+
 
 def min_dist(str1, str2, alphabet_size, compression_ratio):
     """
@@ -1135,12 +1179,14 @@ def min_dist(str1, str2, alphabet_size, compression_ratio):
 
     return dist
 
+
 def distance_between_centers(center1, center2):
     x1, y1 = center1
     x2, y2 = center2
     dx = x1 - x2
     dy = y1 - y2
     return (dx * dx + dy * dy) ** 0.5
+
 
 mapping = {
     2: [float("-inf"), 0],
