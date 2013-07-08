@@ -4,16 +4,16 @@ import numpy as np
 import utility
 
 class PawsWidget(QWidget):
-    def __init__(self, parent, degree, nmax):
+    def __init__(self, parent, degree, n_max):
         super(PawsWidget, self).__init__(parent)
         self.parent = parent
         self.degree = degree
 
-        self.left_front = PawWidget(self, degree, nmax, label="LF")
-        self.left_hind = PawWidget(self, degree, nmax, label="LH")
-        self.right_front = PawWidget(self, degree, nmax, label="RF")
-        self.right_hind = PawWidget(self, degree, nmax, label="RH")
-        self.current_paw = PawWidget(self, degree, nmax, label="")
+        self.left_front = PawWidget(self, degree, n_max, label="LF")
+        self.left_hind = PawWidget(self, degree, n_max, label="LH")
+        self.right_front = PawWidget(self, degree, n_max, label="RF")
+        self.right_hind = PawWidget(self, degree, n_max, label="RH")
+        self.current_paw = PawWidget(self, degree, n_max, label="")
 
         self.paws_list = {
                 0 : self.left_front,
@@ -119,13 +119,13 @@ class PawsWidget(QWidget):
         # For each value calculate how much % it varies
         # TODO this has an obvious risk of divide by zero
         if all([pressure, surface, duration, data_list]):
-            perc_pressures = [np.sqrt((p - pressure)**2) / pressure for p in pressures]
-            perc_surfaces = [np.sqrt((s - surface)**2) / surface for s in surfaces]
-            perc_durations = [np.sqrt((d - duration)**2) / duration for d in durations]
-            #perc_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
-            perc_data = [np.sum(np.sqrt((d - data)**2)) for d in data_list]
+            percentages_pressures = [np.sqrt((p - pressure)**2) / pressure for p in pressures]
+            percentages_surfaces = [np.sqrt((s - surface)**2) / surface for s in surfaces]
+            percentages_durations = [np.sqrt((d - duration)**2) / duration for d in durations]
+            #percentages_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
+            percentages_data = [np.sum(np.sqrt((d - data)**2)) for d in data_list]
             results = []
-            for p, s, d, d2 in zip(perc_pressures, perc_surfaces, perc_durations, perc_data):
+            for p, s, d, d2 in zip(percentages_pressures, percentages_surfaces, percentages_durations, percentages_data):
                 results.append(p + s + d + d2)
             # TODO I'm also not so satisfied with this heuristic, though it might get better with more data
             best_result = np.argmin(results)
@@ -133,9 +133,9 @@ class PawsWidget(QWidget):
 
 
 
-    def update_nmax(self, nmax):
+    def update_n_max(self, n_max):
         for paw_label, paw in self.paws_list.items():
-            paw.nmax = nmax
+            paw.n_max = n_max
 
     def update_shape(self, mx, my):
         for paw_label, paw in self.paws_list.items():
@@ -151,11 +151,11 @@ class PawsWidget(QWidget):
 
 
 class PawWidget(QWidget):
-    def __init__(self, parent, degree, nmax, label):
+    def __init__(self, parent, degree, n_max, label):
         super(PawWidget, self).__init__(parent)
         self.parent = parent
         self.degree = degree
-        self.nmax = nmax
+        self.n_max = n_max
         self.label = label
         self.imageCT = utility.ImageColorTable()
         self.color_table = self.imageCT.create_color_table()
@@ -223,14 +223,14 @@ class PawWidget(QWidget):
         data = np.array(mean_data_list).mean(axis=0)
         # Make sure the paws are facing upright
         self.data = np.rot90(np.rot90(data))
-        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.nmax, self.color_table))
+        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table))
 
     def clear_paws(self):
         self.data = np.zeros((self.mx, self.my))
         self.data_list = []
         self.average_data_list = []
         # Put the screen to black
-        self.image.setPixmap(utility.get_QPixmap(np.zeros((15,15)), self.degree, self.nmax, self.color_table))
+        self.image.setPixmap(utility.get_QPixmap(np.zeros((15,15)), self.degree, self.n_max, self.color_table))
         self.max_pressure = float("inf")
         self.mean_duration = float("inf")
         self.mean_surface = float("inf")

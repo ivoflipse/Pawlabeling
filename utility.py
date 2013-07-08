@@ -315,10 +315,10 @@ def find_contours(data):
     rows, cols, numFrames = data.shape
     for frame in range(numFrames):
         # Threshold the data
-        copy_data = data[:, :, frame].T * 1.
-        _, copy_data = threshold(copy_data, 0.0, 1, THRESH_BINARY)
+        cop_y_data = data[:, :, frame].T * 1.
+        _, cop_y_data = threshold(cop_y_data, 0.0, 1, THRESH_BINARY)
         # The astype conversion here is quite expensive!
-        contour_list, _ = findContours(copy_data.astype('uint8'), RETR_EXTERNAL, CHAIN_APPROX_NONE)
+        contour_list, _ = findContours(cop_y_data.astype('uint8'), RETR_EXTERNAL, CHAIN_APPROX_NONE)
         if contour_list:
             contour_dict[frame] = contour_list
     return contour_dict
@@ -658,7 +658,7 @@ def average_contacts(contacts):
     return average_array
 
 def calculate_cop(data):
-    copx, copy = [], []
+    cop_x, cop_y = [], []
     y, x, z = np.shape(data)
     x_coordinate, y_coordinate = np.arange(1, x + 1), np.arange(1, y + 1)
     temp_x, temp_y = np.zeros((y, z)), np.zeros((x, z))
@@ -669,18 +669,18 @@ def calculate_cop(data):
             for row in range(x):
                 temp_y[row, frame] = np.sum(data[:, row, frame] * y_coordinate)
             if np.sum(temp_x[:, frame]) != 0.0 and np.sum(temp_y[:, frame]) != 0.0:
-                copx.append(np.round(np.sum(temp_x[:, frame]) / np.sum(data[:, :, frame]), 2))
-                copy.append(np.round(np.sum(temp_y[:, frame]) / np.sum(data[:, :, frame]), 2))
-    return copx, copy
+                cop_x.append(np.round(np.sum(temp_x[:, frame]) / np.sum(data[:, :, frame]), 2))
+                cop_y.append(np.round(np.sum(temp_y[:, frame]) / np.sum(data[:, :, frame]), 2))
+    return cop_x, cop_y
 
 def scipy_cop(data):
-    copx, copy = [], []
+    cop_x, cop_y = [], []
     height, width, length = data.shape
     for frame in range(length):
         y, x = scipy.ndimage.measurements.center_of_mass(data[:, :, frame])
-        copx.append(x + 1)
-        copy.append(y + 1)
-    return copx, copy
+        cop_x.append(x + 1)
+        cop_y.append(y + 1)
+    return cop_x, cop_y
 
 def get_QPixmap(data, degree, n_max, color_table):
     """
@@ -999,7 +999,7 @@ def timeseries2symbol(data, N, n, alphabet_size):
             # If this check doesn't work anymore, its because of lacking parentheses
             if N / float(n) - floor(N / n): # If this is not zero, the ratio is off
                 # Tile the sub_sections
-                temp = np.tile(data[:, None], (n))
+                temp = np.tile(data[:, None], n)
                 # Unroll the subsections from N x n to 1 x (N*n)
                 expanded_sub_section = np.reshape(temp, (1, N * n))
                 piecewise_aggregate_approximation = np.mean(np.reshape(expanded_sub_section, (n, N)), axis=1)

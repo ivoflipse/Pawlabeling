@@ -163,7 +163,7 @@ class MainWidget(QWidget):
         # Get the number of Frames for the slider
         self.height, self.width, self.num_frames = self.measurement.shape
         self.n_max = self.measurement.max()
-        self.paws_widget.update_nmax(self.n_max)
+        self.paws_widget.update_n_max(self.n_max)
         # Send the measurement to the widget
         self.entirePlateWidget.new_measurement(self.measurement)
         # Remove outdated info from the contact tree
