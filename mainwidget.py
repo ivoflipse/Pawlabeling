@@ -42,7 +42,7 @@ class MainWidget(QWidget):
             QColor(Qt.darkGreen),
             QColor(Qt.red),
             QColor(Qt.darkRed),
-            QColor(Qt.grey),
+            QColor(Qt.gray),
             QColor(Qt.white),
             QColor(Qt.yellow),
             ]
@@ -249,6 +249,15 @@ class MainWidget(QWidget):
         # Update the screen
         self.update_current_paw()
 
+    def invalid_paw(self, event=None):
+        # Check if we have any contacts available, else don't bother
+        if not self.contacts_available():
+            return
+        # I've picked -3 as the label for invalid paws
+        self.paw_labels[self.current_paw_index] = -3
+        # Update the screen
+        self.update_current_paw()
+
     def select_left_front(self, event=None):
         self.paw_labels[self.current_paw_index] = 0
         self.next_paw()
@@ -318,8 +327,8 @@ class MainWidget(QWidget):
             return
 
         self.current_paw_index += 1
-        if self.current_paw_index > len(self.paws):
-            self.current_paw_index = len(self.paws)
+        if self.current_paw_index >= len(self.paws):
+            self.current_paw_index = len(self.paws) - 1
 
         item = self.contactTree.topLevelItem(self.current_paw_index)
         self.contactTree.setCurrentItem(item)

@@ -74,6 +74,8 @@ class PawsWidget(QWidget):
             # We don't do anything with unlabeled paws that aren't selected
             if current_paw_index != index and paw_label == -1:
                 continue
+            elif paw_label == -3:
+                continue
             # If we do have a label, but we have selected it, update the current_paw too
             if current_paw_index == index and paw_label != -1:
                 self.paws[-1] = [[paw], [average_paw]]
@@ -86,8 +88,10 @@ class PawsWidget(QWidget):
 
         # Update the widgets
         for paw_label, data_list in self.paws.items():
-            widget = self.paws_list[paw_label]
-            widget.update(data_list)
+            widget = self.paws_list.get(paw_label, None)
+            # If -2 or -3 there will be no widget
+            if widget:
+                widget.update(data_list)
 
         try:
             self.predict_label()
