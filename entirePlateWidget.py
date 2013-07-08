@@ -36,8 +36,8 @@ class EntirePlateWidget(QWidget):
         ]
 
         self.degree = degree
-        self.imageCT = utility.ImageColorTable()
-        self.color_table = self.imageCT.create_color_table()
+        self.image_color_table = utility.ImageColorTable()
+        self.color_table = self.image_color_table.create_color_table()
 
     def new_measurement(self, measurement):
         # Clear the bounding boxes + the line
@@ -54,7 +54,7 @@ class EntirePlateWidget(QWidget):
     def new_paws(self, paws):
         # Update the paws
         self.paws = paws
-        # TODO shouldn't this be run by update blabla in mainWidget?
+        # TODO shouldn't this be run by update blabla in main_widget?
         #for paw in self.paws:
         #    self.draw_bounding_box(paw, paw_label = -2)
         self.draw_gait_line()

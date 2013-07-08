@@ -11,9 +11,9 @@ import numpy as np
 
 
 class MainWidget(QWidget):
-    def __init__(self, path, pickled, desktopFlag, parent=None):
+    def __init__(self, path, store_path, desktop_flag, parent=None):
         super(MainWidget, self).__init__(parent)
-        desktop = desktopFlag
+        desktop = desktop_flag
 
         # Initialize numframes, in case measurements aren't loaded
         self.num_frames = 248
@@ -23,18 +23,18 @@ class MainWidget(QWidget):
         if desktop:
             # Set the size to something nice and large
             self.resize(2550, 1400) # Make these sizes more platform independent
-            entirePlateWidget_size = [800, 800]
+            entire_plate_widget_size = [800, 800]
             self.degree = 6
         else:
             self.resize(1400, 800) # Make these sizes more platform independent
-            entirePlateWidget_size = [800, 500]
+            entire_plate_widget_size = [800, 500]
             self.degree = 4
 
         # Create a label to display the measurement name
         self.nameLabel = QLabel(self)
 
         self.path = path
-        self.pickled = pickled
+        self.store_path = store_path
 
         # TODO Make these variable shared between all widgets, possibly putting it in config files?
         self.colors = [
@@ -61,36 +61,36 @@ class MainWidget(QWidget):
         self.current_paw_index = 0
 
         # Create a list widget
-        self.measurementTree = QTreeWidget(self)
-        self.measurementTree.setMaximumWidth(300)
-        self.measurementTree.setMinimumWidth(300)
-        self.measurementTree.setColumnCount(1)
-        self.measurementTree.setHeaderLabel("Measurements")
-        self.measurementTree.itemActivated.connect(self.load_file)
-        # Load the measurements from a default path and set the filename to the first file from the folder
+        self.measurement_tree = QTreeWidget(self)
+        self.measurement_tree.setMaximumWidth(300)
+        self.measurement_tree.setMinimumWidth(300)
+        self.measurement_tree.setColumnCount(1)
+        self.measurement_tree.setHeaderLabel("Measurements")
+        self.measurement_tree.itemActivated.connect(self.load_file)
+        # Load the measurements from a default path and set the file_name to the first file from the folder
         self.add_measurements(path=path)
 
-        self.contactTree = QTreeWidget(self)
-        self.contactTree.setMaximumWidth(300)
-        self.contactTree.setMinimumWidth(300)
-        self.contactTree.setColumnCount(5)
-        self.contactTree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
+        self.contact_tree = QTreeWidget(self)
+        self.contact_tree.setMaximumWidth(300)
+        self.contact_tree.setMinimumWidth(300)
+        self.contact_tree.setColumnCount(5)
+        self.contact_tree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
         # Set the widths of the columns
-        for column in range(self.contactTree.columnCount()):
-            self.contactTree.setColumnWidth(column, 60)
+        for column in range(self.contact_tree.columnCount()):
+            self.contact_tree.setColumnWidth(column, 60)
 
-        self.contactTree.itemActivated.connect(self.switch_contacts)
+        self.contact_tree.itemActivated.connect(self.switch_contacts)
 
         # Pick the first item (if any exist)
-        self.measurementTree.setCurrentItem(self.measurementTree.topLevelItem(0).child(0))
+        self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
 
         self.entirePlateWidget = EntirePlateWidget(self.degree,
-                                                   entirePlateWidget_size,
+                                                   entire_plate_widget_size,
                                                    self)
 
         self.paws_widget = PawsWidget(self, self.degree * 2, self.n_max)
 
-        self.entirePlateWidget.setMinimumWidth(600)
+        self.entire_plate_widget.setMinimumWidth(600)
 
         # Create a slider
         self.slider = QSlider(self)
@@ -98,24 +98,24 @@ class MainWidget(QWidget):
         self.slider.setMinimum(-1)
         self.slider.setMaximum(0)
         self.slider.valueChanged.connect(self.slider_moved)
-        self.sliderText = QLabel(self)
-        self.sliderText.setText("Frame: 0")
+        self.slider_text = QLabel(self)
+        self.slider_text.setText("Frame: 0")
 
-        self.sliderLayout = QHBoxLayout()
-        self.sliderLayout.addWidget(self.slider)
-        self.sliderLayout.addWidget(self.sliderText)
+        self.slider_layout = QHBoxLayout()
+        self.slider_layout.addWidget(self.slider)
+        self.slider_layout.addWidget(self.slider_text)
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.nameLabel)
         self.layout.addWidget(self.entirePlateWidget)
-        self.layout.addLayout(self.sliderLayout)
+        self.layout.addLayout(self.slider_layout)
         self.layout.addWidget(self.paws_widget)
-        self.verticalLayout = QVBoxLayout()
-        self.verticalLayout.addWidget(self.measurementTree)
-        self.verticalLayout.addWidget(self.contactTree)
-        self.mainLayout = QHBoxLayout(self)
-        self.mainLayout.addLayout(self.verticalLayout)
-        self.mainLayout.addLayout(self.layout)
-        self.setLayout(self.mainLayout)
+        self.vertical_layout = QVBoxLayout()
+        self.vertical_layout.addWidget(self.measurement_tree)
+        self.vertical_layout.addWidget(self.contact_tree)
+        self.main_layout = QHBoxLayout(self)
+        self.main_layout.addLayout(self.vertical_layout)
+        self.main_layout.addLayout(self.layout)
+        self.setLayout(self.main_layout)
 
     def fast_backward(self):
         self.change_slider(-1, fast=True)
@@ -140,22 +140,22 @@ class MainWidget(QWidget):
         self.slider.setValue(new_frame)
 
     def slider_moved(self, frame):
-        self.sliderText.setText("Frame: {}".format(frame))
+        self.slider_text.setText("Frame: {}".format(frame))
         self.frame = frame
         self.entirePlateWidget.change_frame(self.frame)
 
     def load_file(self, event=None):
         # Get the text from the currentItem
-        self.currentItem = self.measurementTree.currentItem()
+        self.currentItem = self.measurement_tree.currentItem()
         parentItem = str(self.currentItem.parent().text(0))
         currentItem = str(self.currentItem.text(0))
         # Get the path from the file_names dictionary
-        self.filename = self.file_names[parentItem][currentItem]
-        # Update the label
-        self.nameLabel.setText(self.filename)
+        self.file_name = self.file_names[parentItem][currentItem]
+        self.measurement_name = self.file_name.split("\\")[-1]
+        self.dog_name = self.file_name.split("\\")[-2]
         # Pass the new measurement through to the widget
-        self.measurement = utility.load(self.filename, padding=True)
-        #self.measurement = readzebris.load_file(self.filename) # This enabled reading Zebris files
+        self.measurement = utility.load(self.file_name, padding=True)
+        #self.measurement = readzebris.load_file(self.file_name) # This enabled reading Zebris files
         # Check the orientation of the plate and make sure its left to right
         self.measurement = utility.fix_orientation(self.measurement)
 
@@ -168,7 +168,7 @@ class MainWidget(QWidget):
         # Send the measurement to the widget
         self.entirePlateWidget.new_measurement(self.measurement)
         # Remove outdated info from the contact tree
-        self.contactTree.clear()
+        self.contact_tree.clear()
         # Reset all the stored values
         # TODO Cache these values in some way, so it makes labeling in subsequent measurements easier
         self.paws = []
@@ -179,7 +179,7 @@ class MainWidget(QWidget):
         self.slider.setValue(-1)
         # Update the slider, in case the shape of the file changes
         self.slider.setMaximum(self.num_frames - 1)
-        self.nameLabel.setText("Measurement name: {}".format(self.filename))
+        self.nameLabel.setText("Measurement name: {}".format(self.file_name))
 
     def track_contacts(self):
         print "Track!"
@@ -219,7 +219,7 @@ class MainWidget(QWidget):
 
         # Update the shape of the paws widget
         self.paws_widget.update_shape(self.mx, self.my)
-        # Add the paws to the contactTree
+        # Add the paws to the contact_tree
         self.add_contacts()
         # Update the widget's paws too
         self.entirePlateWidget.new_paws(self.paws)
@@ -278,7 +278,7 @@ class MainWidget(QWidget):
         if self.current_paw_index <= len(self.paws) and len(self.paws) > 0:
             for index, paw_label in self.paw_labels.items():
                 # Get the current row from the tree
-                item = self.contactTree.topLevelItem(index)
+                item = self.contact_tree.topLevelItem(index)
                 item.setText(1, self.paw_dict[paw_label])
 
                 # If its not the currently selected paw, change the label to gibberish
@@ -301,11 +301,11 @@ class MainWidget(QWidget):
         """
         This function checks if there is a contact with index 0, if not, the tree must be empty
         """
-        return False if self.contactTree.findItems("0", Qt.MatchExactly, 0) == [] else True
+        return False if self.contact_tree.findItems("0", Qt.MatchExactly, 0) == [] else True
 
     def remove_selected_color(self):
         # Remove the color from the Contact Tree if its yellow
-        item = self.contactTree.topLevelItem(self.current_paw_index)
+        item = self.contact_tree.topLevelItem(self.current_paw_index)
         if item.backgroundColor(0) == self.colors[-1]:
             for idx in range(item.columnCount()):
                 item.setBackgroundColor(idx, Qt.white)
@@ -318,8 +318,8 @@ class MainWidget(QWidget):
         if self.current_paw_index < 0:
             self.current_paw_index = 0
 
-        item = self.contactTree.topLevelItem(self.current_paw_index)
-        self.contactTree.setCurrentItem(item)
+        item = self.contact_tree.topLevelItem(self.current_paw_index)
+        self.contact_tree.setCurrentItem(item)
         self.update_current_paw()
 
     def next_paw(self, event=None):
@@ -330,12 +330,12 @@ class MainWidget(QWidget):
         if self.current_paw_index >= len(self.paws):
             self.current_paw_index = len(self.paws) - 1
 
-        item = self.contactTree.topLevelItem(self.current_paw_index)
-        self.contactTree.setCurrentItem(item)
+        item = self.contact_tree.topLevelItem(self.current_paw_index)
+        self.contact_tree.setCurrentItem(item)
         self.update_current_paw()
 
     def switch_contacts(self, event=None):
-        item = self.contactTree.selectedItems()[0]
+        item = self.contact_tree.selectedItems()[0]
         self.current_paw_index = int(item.text(0))
         self.update_current_paw()
 
@@ -345,10 +345,10 @@ class MainWidget(QWidget):
         print "Starting frames: ", [paw.frames[0] for paw in self.paws]
 
         # Clear any existing contacts
-        self.contactTree.clear()
+        self.contact_tree.clear()
         for index, paw in enumerate(self.paw_data):
             x, y, z = paw.shape
-            rootItem = QTreeWidgetItem(self.contactTree)
+            rootItem = QTreeWidgetItem(self.contact_tree)
             rootItem.setText(0, str(index))
             rootItem.setText(1, "-1")
             rootItem.setText(2, str(z))  # Sets the frame count
@@ -359,71 +359,50 @@ class MainWidget(QWidget):
 
         self.current_paw_index = 0
 
-    def delete_contact(self):
-        index = self.contactTree.currentIndex().row()
-        # TODO make sure it gets deleted EVERYWHERE
-        del self.paws[index]
-        # Redraw everything, its probably easier to separate this because only the paws have to be redrawn
-        self.entirePlateWidget.new_measurement(self.measurement)
-        # Update the contactTree
-        self.add_contacts()
-
     def add_measurements(self, path):
         self.file_names = {}
         # Clear any existing measurements
-        self.measurementTree.clear()
-        # Create a green brush for coloring pickled measurements
-        greenBrush = QBrush(QColor(46, 139, 87))
+        self.measurement_tree.clear()
+        # Create a green brush for coloring store_path measurements
+        green_brush = QBrush(QColor(46, 139, 87))
         # Walk through the folder and gather up all the files
         for idx, (root, dirs, files) in enumerate(os.walk(path)):
             if not dirs: # changed from == []
                 # Add the name of the dog
-                self.dogName = root.split("\\")[-1]
+                self.dog_name = root.split("\\")[-1]
                 # Create a tree item
-                rootItem = QTreeWidgetItem(self.measurementTree, [self.dogName])
+                root_item = QTreeWidgetItem(self.measurement_tree, [self.dog_name])
                 # Create a dictionary to store all the measurements for each dog
-                self.file_names[self.dogName] = {}
+                self.file_names[self.dog_name] = {}
                 for index, file_name in enumerate(files):
-                    # Create a path from the path and the filename
-                    name = os.path.join(root, file_name)
-                    # Set the filename to the first file from the folder
-                    if index is 0:
-                        self.filename = name
-                        # Store the path with the file name
-                    self.file_names[self.dogName][file_name] = name
-                    childItem = QTreeWidgetItem(rootItem, [file_name])
-                    # Check if the measurement has already been pickled
-                    if self.find_pickled_file(self.dogName, file_name) is not None:
-                        # Change the foreground to green
-                        childItem.setForeground(0, greenBrush)
+                    # Ignoring the running trials for now
+                    # TODO add a more elegant way to skip parts of the data
+                    if file_name[0] != "d":
+                        # Create a path from the path and the file_name
+                        name = os.path.join(root, file_name)
+                        # Set the file_name to the first file from the folder
+                        if index is 0:
+                            self.file_name = name
 
-    def find_pickled_file(self, dogName, filename):
-        # For the current filename, check if there's a pickled file, if so load it
-        # Get the name of the dog
-        path = os.path.join(self.pickled, dogName)
-        # If the folder exists
-        if os.path.exists(path):
-            inputPath = None
-            # Check if the current file's name is in that folder
-            for root, dirs, files in os.walk(path):
-                for f in files:
-                    name, ext = f.split('.') # name.pkl
-                    if name == filename:
-                        inputFile = f
-                        inputPath = os.path.join(path, inputFile)
-                        return inputPath
+                        # Store the path with the file name
+                        self.file_names[self.dog_name][file_name] = name
+                        childItem = QTreeWidgetItem(root_item, [file_name])
+                        # Check if the measurement has already been store_path
+                        if self.find_pickled_file(self.dog_name, file_name) is not None:
+                            # Change the foreground to green
+                            childItem.setForeground(0, green_brush)
 
     def store_status(self):
         """
-        This function creates a file in the pickled folder if it doesn't exist
+        This function creates a file in the store_path folder if it doesn't exist
         """
-        # Get the file's name
-        self.file_name = self.filename.split('\\')[-1]
-        # Try and create a folder to add store the pickled result
-        self.create_pickled_folder()
-        # Store the pickled result
+        # Try and create a folder to add store the store_path result
+        self.create_results_folder()
+        # Store the store_path result
         try:
-            self.pickle_result()
+            #self.pickle_result()
+            self.dump_to_json()  # Switched from pickling to JSON
+
             # Change the color of the measurement in the tree to green
             treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green
             self.currentItem.setForeground(0, treeBrush)
@@ -431,13 +410,56 @@ class MainWidget(QWidget):
         except Exception, e:
             print "Pickling failed!", e
 
+    def create_results_folder(self):
+        """
+        This function take a path and creates a folder called" store_path [current date]"
+        Returns the path of the folder just created
+        """
+        # The name of the dog is the second last element in file_name
+        path = os.path.join(self.store_path, self.dog_name)
+        # If the folder doesn't exist create it
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+        self.new_path = path
+        # Create a new folder in the base folder if it doesn't already exist
+        if not os.path.exists(self.new_path):
+            os.mkdir(self.new_path)
+
+    def dump_to_json(self):
+        """
+        This creates or takes a json file for the current dog and fills or updates it with the new
+        paw information.
+        """
+        import json
+        with open("{}//{}.labels.json".format(self.new_path, self.dog_name), "wb") as json_file:
+            # Read the existing data
+            data = json.load(json_file)
+
+            # If data is empty, create an empty dictionary
+            if not data:
+                data = {}
+                
+            # Update somewhere in between
+            new_results = {}
+            new_results["dog_name"] = self.dog_name
+            new_results["measurement_name"] = self.measurement_name
+            new_results["paw_labels"] = self.paw_labels
+            new_results["paws"] = self.paws
+
+            # Add the results to the results to be written to json
+            data[self.measurement_name] = new_results
+
+            json_file.seek(0)  # Rewind the file, so overwrite it
+            json_file.write(json.dumps(data))
+            json_file.truncate()  # In case the new file is smaller
 
     def pickle_result(self):
         """
         Pickles the paws to the pickle folder with the name of the measurement as file name
         """
         # Open a file at this path with the file_name as name
-        output = open("%s//%s.labels.pkl" % (self.new_path, self.file_name), 'wb')
+        output = open("%s//%s.labels.pkl" % (self.new_path, self.measurement_name), 'wb')
 
         # The result in this case will be the index + 3D slice + sideid
         results = []
@@ -456,33 +478,29 @@ class MainWidget(QWidget):
         output.close()
         print "Pickled %s at location %s" % (self.file_name, self.new_path)
 
-    def create_pickled_folder(self):
-        """
-        This function take a path and creates a folder called" pickled [current date]"
-        Returns the path of the folder just created
-        """
-        # The name of the dog is the second last element in filename
-        self.dogName = self.filename.split('\\')[-2]
-        path = os.path.join(self.pickled, self.dogName)
-        # If the folder doesn't exist create it
-        if not os.path.exists(path):
-            os.mkdir(path)
-
-        self.new_path = path
-        # Create a new folder in the base folder if it doesn't already exist
-        if not os.path.exists(self.new_path):
-            os.mkdir(self.new_path)
-
     def load_pickled(self):
-        self.dogName = self.filename.split('\\')[-2]
-        # Get the measurements name
-        file_name = self.filename.split('\\')[-1]
-        inputPath = self.find_pickled_file(self.dogName, file_name)
+        input_path = self.find_pickled_file(self.dog_name, self.measurement_name)
         # If an inputFile has been found, unpickle it
-        if inputPath:
-            input_file = open(inputPath, 'rb')
+        if input_path:
+            input_file = open(input_path, 'rb')
             self.paws = pickle.load(input_file)
             # Sort the paws
             self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
             return True
         return False
+
+    def find_pickled_file(self, dogName, file_name):
+        # For the current file_name, check if there's a store_path file, if so load it
+        # Get the name of the dog
+        path = os.path.join(self.store_path, dogName)
+        # If the folder exists
+        if os.path.exists(path):
+            input_path = None
+            # Check if the current file's name is in that folder
+            for root, dirs, files in os.walk(path):
+                for f in files:
+                    name, ext = f.split('.') # name.pkl
+                    if name == file_name:
+                        input_file = f
+                        input_path = os.path.join(path, input_file)
+                        return input_path

@@ -51,11 +51,11 @@ class PawsWidget(QWidget):
         self.right_paws_layout.addWidget(QLabel("Right Hind"))
         self.right_paws_layout.addWidget(self.right_hind)
 
-        self.mainLayout = QHBoxLayout()
-        self.mainLayout.addLayout(self.left_paws_layout)
-        self.mainLayout.addLayout(self.current_paw_layout)
-        self.mainLayout.addLayout(self.right_paws_layout)
-        self.setLayout(self.mainLayout)
+        self.main_layout = QHBoxLayout()
+        self.main_layout.addLayout(self.left_paws_layout)
+        self.main_layout.addLayout(self.current_paw_layout)
+        self.main_layout.addLayout(self.right_paws_layout)
+        self.setLayout(self.main_layout)
 
     # self.paws_widget.update_current_paw(self.paw_labels, self.current_paw_index, self.paw_data)
     def update_paws(self, paw_labels, current_paw_index, paw_data, average_data):
@@ -158,8 +158,8 @@ class PawWidget(QWidget):
         self.degree = degree
         self.n_max = n_max
         self.label = label
-        self.imageCT = utility.ImageColorTable()
-        self.color_table = self.imageCT.create_color_table()
+        self.image_color_table = utility.ImageColorTable()
+        self.color_table = self.image_color_table.create_color_table()
         self.mx = 15
         self.my = 15
         self.data = np.zeros((self.mx, self.my))
