@@ -35,7 +35,8 @@ class PawsWidget(QWidget):
             1 : "LH",
             2 : "RF",
             3 : "RH",
-            -2 : "-1",
+            -3 : "Invalid",
+            -2 : "-1",  # I've changed this
             -1 : "-1"
         }
 
@@ -120,17 +121,19 @@ class PawsWidget(QWidget):
 
         # For each value calculate how much % it varies
         # TODO this has an obvious risk of divide by zero
-        perc_pressures = [np.sqrt((p - pressure)**2) / pressure for p in pressures]
-        perc_surfaces = [np.sqrt((s - surface)**2) / surface for s in surfaces]
-        perc_durations = [np.sqrt((d - duration)**2) / duration for d in durations]
-        #perc_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
-        perc_data = [np.sum(np.sqrt((d - data)**2)) for d in data_list]
-        results = []
-        for p, s, d, d2 in zip(perc_pressures, perc_surfaces, perc_durations, perc_data):
-            results.append(p + s + d + d2)
-        # TODO I'm also not so satisfied with this heuristic, though it might get better with more data
-        best_result = np.argmin(results)
-        current_paw.label_prediction.setText("{}".format(self.paw_dict[best_result]))
+        if all([pressure, surface, duration, data_list]):
+            perc_pressures = [np.sqrt((p - pressure)**2) / pressure for p in pressures]
+            perc_surfaces = [np.sqrt((s - surface)**2) / surface for s in surfaces]
+            perc_durations = [np.sqrt((d - duration)**2) / duration for d in durations]
+            #perc_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
+            perc_data = [np.sum(np.sqrt((d - data)**2)) for d in data_list]
+            results = []
+            for p, s, d, d2 in zip(perc_pressures, perc_surfaces, perc_durations, perc_data):
+                results.append(p + s + d + d2)
+            # TODO I'm also not so satisfied with this heuristic, though it might get better with more data
+            best_result = np.argmin(results)
+            current_paw.label_prediction.setText("{}".format(self.paw_dict[best_result]))
+
 
 
     def update_nmax(self, nmax):

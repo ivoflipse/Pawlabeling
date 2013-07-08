@@ -42,16 +42,19 @@ class MainWidget(QWidget):
             QColor(Qt.darkGreen),
             QColor(Qt.red),
             QColor(Qt.darkRed),
+            QColor(Qt.grey),
             QColor(Qt.white),
             QColor(Qt.yellow),
             ]
 
+        # FYI the id's are 1 lower compared to iApp
         self.paw_dict = {
             0 : "LF",
             1 : "LH",
             2 : "RF",
             3 : "RH",
-            -2 : "-1",
+            -3 : "Invalid",
+            -2 : "-1",  # I've changed this
             -1 : "-1"
         }
 

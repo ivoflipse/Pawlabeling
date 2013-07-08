@@ -29,6 +29,7 @@ class EntirePlateWidget(QWidget):
                       QColor(Qt.darkGreen),
                       QColor(Qt.red),
                       QColor(Qt.darkRed),
+                      QColor(Qt.grey),
                       QColor(Qt.white),
                       QColor(Qt.yellow),
                       ]
