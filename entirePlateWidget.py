@@ -20,7 +20,7 @@ class EntirePlateWidget(QWidget):
         # I can also draw with a brush
         self.brush = QBrush(Qt.white)
         # A cache to store the polygons of the previous frame
-        self.previouspolygons = []
+        self.previous_polygons = []
         self.bounding_boxes = []
         self.current_box = None
         self.gait_lines = []
@@ -36,21 +36,21 @@ class EntirePlateWidget(QWidget):
 
         self.degree = degree
         self.imageCT = utility.ImageColorTable()
-        self.color_table = self.imageCT.create_colortable()
+        self.color_table = self.imageCT.create_color_table()
 
-    def newMeasurement(self, measurement):
+    def new_measurement(self, measurement):
         # Clear the bounding boxes + the line
         self.clear_bounding_box()
         self.clear_gait_line()
         # Update the measurement
         self.measurement = measurement
         self.height, self.width, self.numFrames = self.measurement.shape
-        self.nmax = self.measurement.max()
-        self.changeFrame(frame=-1)
+        self.n_max = self.measurement.max()
+        self.change_frame(frame=-1)
 
         #self.cop_x, self.cop_y = utility.calculate_cop(self.measurement)
 
-    def newPaws(self, paws):
+    def new_paws(self, paws):
         # Update the paws
         self.paws = paws
         # TODO shouldn't this be run by update blabla in mainWidget?
@@ -58,7 +58,7 @@ class EntirePlateWidget(QWidget):
         #    self.draw_bounding_box(paw, paw_label = -2)
         self.draw_gait_line()
 
-    def changeFrame(self, frame):
+    def change_frame(self, frame):
         # Set the frame
         self.frame = frame
         if frame == -1:
@@ -67,7 +67,7 @@ class EntirePlateWidget(QWidget):
             # Slice out the data from the measurement
             self.data = self.measurement[:, :, self.frame].T
         # Update the pixmap
-        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.nmax, self.color_table))
+        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table))
 
     def clear_bounding_box(self):
         # Remove the old ones and redraw
@@ -83,20 +83,20 @@ class EntirePlateWidget(QWidget):
 
     def draw_bounding_box(self, paw, paw_label):
         color = self.colors[paw_label]
-        self.bboxpen = QPen(color)
-        self.bboxpen.setWidth(3)
+        self.bounding_box_pen = QPen(color)
+        self.bounding_box_pen.setWidth(3)
 
         if paw_label == -1:
             current_paw = 0.5
         else:
             current_paw = 0
 
-        polygon = QPolygonF([QPointF((paw.totalminx - current_paw) * self.degree, (paw.totalminy - current_paw) * self.degree),
-                             QPointF((paw.totalmaxx + current_paw) * self.degree, (paw.totalminy - current_paw) * self.degree),
-                             QPointF((paw.totalmaxx + current_paw) * self.degree, (paw.totalmaxy + current_paw) * self.degree),
-                             QPointF((paw.totalminx - current_paw) * self.degree, (paw.totalmaxy + current_paw) * self.degree)])
+        polygon = QPolygonF([QPointF((paw.total_min_x - current_paw) * self.degree, (paw.total_min_y - current_paw) * self.degree),
+                             QPointF((paw.total_max_x + current_paw) * self.degree, (paw.total_min_y - current_paw) * self.degree),
+                             QPointF((paw.total_max_x + current_paw) * self.degree, (paw.total_max_y + current_paw) * self.degree),
+                             QPointF((paw.total_min_x - current_paw) * self.degree, (paw.total_max_y + current_paw) * self.degree)])
 
-        self.bounding_boxes.append(self.scene.addPolygon(polygon, self.bboxpen))
+        self.bounding_boxes.append(self.scene.addPolygon(polygon, self.bounding_box_pen))
 
     def update_bounding_boxes(self, paw_labels, current_paw_index):
         self.clear_bounding_box()
@@ -121,8 +121,8 @@ class EntirePlateWidget(QWidget):
         for index in range(1, len(self.paws)):
             prevPaw = self.paws[index-1]
             curPaw = self.paws[index]
-            polygon = QPolygonF([QPointF(prevPaw.totalcentroid[0] * self.degree, prevPaw.totalcentroid[1] * self.degree),
-                                 QPointF(curPaw.totalcentroid[0] * self.degree, curPaw.totalcentroid[1] * self.degree)])
+            polygon = QPolygonF([QPointF(prevPaw.total_centroid[0] * self.degree, prevPaw.total_centroid[1] * self.degree),
+                                 QPointF(curPaw.total_centroid[0] * self.degree, curPaw.total_centroid[1] * self.degree)])
             self.gait_lines.append(self.scene.addPolygon(polygon, self.gait_line_pen))
 
         # It seems that COP is really a poor indicator in most cases, unless perhaps I can use the shape

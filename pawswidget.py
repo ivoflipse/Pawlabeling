@@ -1,12 +1,5 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
-from matplotlib import use, rcParams
-use('Qt4Agg')
-rcParams['backend.qt4']='PyQt4'
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-
 import numpy as np
 import utility
 
@@ -165,7 +158,7 @@ class PawWidget(QWidget):
         self.nmax = nmax
         self.label = label
         self.imageCT = utility.ImageColorTable()
-        self.color_table = self.imageCT.create_colortable()
+        self.color_table = self.imageCT.create_color_table()
         self.mx = 15
         self.my = 15
         self.data = np.zeros((self.mx, self.my))

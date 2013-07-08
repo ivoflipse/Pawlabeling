@@ -1,13 +1,13 @@
-import cv2
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import numpy as np
 import scipy.ndimage
+import heapq
 
 class Contact():
     """
-    _this class has only one real function and that's to take a contact and create some
-    attributes that my viewer depends upon. _these are a contour_list that contains all the contours
+    This class has only one real function and that's to take a contact and create some
+    attributes that my viewer depends upon. These are a contour_list that contains all the contours
     and the dimensions + center of the bounding box of the entire contact
     """
 
@@ -16,7 +16,7 @@ class Contact():
         self.contour_list = {}
         for frame in self.frames:
             self.contour_list[frame] = contact[frame]
-        center, min_x, max_x, min_y, max_y = updateBoundingBox(contact)
+        center, min_x, max_x, min_y, max_y = update_bounding_box(contact)
         self.total_min_x, self.total_max_x = min_x, max_x
         self.total_min_y, self.total_max_y = min_y, max_y
         self.total_centroid = center
@@ -31,16 +31,17 @@ class Contact():
                 print "Contour %s: %s" % (index, "".join([str(c) for c in contour]))
 
 
-def calculateBoundingBox(contour):
+def calculate_bounding_box(contour):
     """
-    _this function calculates the bounding box based on an individual contour
+    This function calculates the bounding box based on an individual contour
     For this is uses OpenCV's area rectangle, which fits a rectangle around a
     contour. Depending on the 'angle' of the rectangle, I switch around the
     definition of the width and length, so it lines up with the orientation
     of the plate. By subtracting the halves of the center, we get the extremes.
     """
     # Calculate a minimum bounding rectangle, can be rotated!
-    center, size, angle = cv2.minAreaRect(contour)
+    from cv2 import minAreaRect
+    center, size, angle = minAreaRect(contour)
     if -45 <= angle <= 45:
         width, length = size
     else:
@@ -56,7 +57,7 @@ def calculateBoundingBox(contour):
     max_y = y + ydist
     return center, min_x, max_x, min_y, max_y
 
-def updateBoundingBox(contact):
+def update_bounding_box(contact):
     """
     Given a contact, it will iterate through all the frames and calculate the bounding box
     It then compares the dimensions of the bounding box to determine the total shape of that
@@ -72,7 +73,7 @@ def updateBoundingBox(contact):
     for frame in contact.keys():
         for contour in contact[frame]:
         #        for contour in maxContours:
-            center, min_x, max_x, min_y, max_y = calculateBoundingBox(contour)
+            center, min_x, max_x, min_y, max_y = calculate_bounding_box(contour)
             if total_min_x is None:
                 total_min_x = min_x
                 total_max_x = max_x
@@ -91,11 +92,11 @@ def updateBoundingBox(contact):
     total_centroid = ((total_max_x + total_min_x) / 2, (total_max_y + total_min_y) / 2)
     return total_centroid, total_min_x, total_max_x, total_min_y, total_max_y
 
-def closestContact(contact1, contact2, center1, euclideanDistance):
+def closest_contact(contact1, contact2, center1, euclidean_distance):
     """
     We take all the frames, add some to bridge any gaps, then we calculate the distance
     between the center of the first (short) contact and center of the second contact
-    in each frame. _this assumes the first contact doesn't move a lot, while the
+    in each frame. This assumes the first contact doesn't move a lot, while the
     the second (and often longer) contact might move closer to the first contact.
     For each frame where the distance between the two centers is closer than the
     euclidean distances, we subtract the distance from the ED, such that closer contacts
@@ -106,19 +107,19 @@ def closestContact(contact1, contact2, center1, euclideanDistance):
     # Perhaps I should add a boolean for when there's a gap or not
     frames = contact1.keys()
     minFrame, maxFrame = min(frames), max(frames)
-    # _this makes sure it checks if there's nothing close in the neighboring frame
+    # This makes sure it checks if there's nothing close in the neighboring frame
     # Shouldn't this be up to the gap?
     # Add more frames
     for f in range(1, 6):
         frames.append(minFrame - f)
         frames.append(maxFrame + f)
         #frames += [minFrame - 2, minFrame - 1, maxFrame + 1, maxFrame + 2]
-    minDistance = euclideanDistance
+    minDistance = euclidean_distance
     value = 0
     for frame in frames:
         if frame in contact2:
             if contact2[frame]: # How can there be an empty list in here?
-                center2, _, _, _, _ = updateBoundingBox({frame: contact2[frame]})
+                center2, _, _, _, _ = update_bounding_box({frame: contact2[frame]})
                 #distance = np.linalg.norm(np.array(center1) - np.array(center2))
                 x1 = center1[0]
                 y1 = center1[1]
@@ -127,14 +128,14 @@ def closestContact(contact1, contact2, center1, euclideanDistance):
                 distance = (abs(x1 - x2) ** 2 + abs(y1 - y2) ** 2) ** 0.5
                 if distance < minDistance:
                     minDistance = distance
-                if distance <= euclideanDistance:
-                    value += euclideanDistance - distance
+                if distance <= euclidean_distance:
+                    value += euclidean_distance - distance
     return value / float(len(frames))
 
-def calc_temporalSpatialVariables(contacts):
+def calculate_temporal_spatial_variables(contacts):
     """
     We recalculate the euclidean distance based on the current size of the  remaining contacts
-    _this ensures that we reduce the number of false positives, by having a too large euclidean distance
+    This ensures that we reduce the number of false positives, by having a too large euclidean distance
     It assumes contacts are more of less round, such that the width and height are equal.
     """
     sides = []
@@ -143,7 +144,7 @@ def calc_temporalSpatialVariables(contacts):
     lengths = []
     for contact in contacts:
         # Get the dimensions for each contact
-        center, min_x, max_x, min_y, max_y = updateBoundingBox(contact)
+        center, min_x, max_x, min_y, max_y = update_bounding_box(contact)
         centers.append(center)
 
         width = max_x - min_x
@@ -159,26 +160,40 @@ def calc_temporalSpatialVariables(contacts):
         lengths.append(len(contact.keys()))
     return sides, centers, surfaces, lengths
 
-def mergingContacts(contacts):
+def merge_contours(contact1, contact2):
+    """
+    This function takes two contacts, then for each frame the second was active,
+    add its contours to the first, then clears the second just to be safe
+    """
+    # Iterate through all the frames
+    for frame in contact2:
+        if frame not in contact1:
+            contact1[frame] = []
+        for contour in contact2[frame]:
+            contact1[frame].append(contour)
+            # This makes sure it won't accidentally merge either
+        contact2[frame] = []
+
+def merging_contacts(contacts):
     """
     We compare each contact with the rest, if the distance between the centers of both
     contacts is <= the euclidean distance, then we check if they also made contact during the
-    same frames. _this ensures that only contours that are in each others vicinity for a sufficient
+    same frames. This ensures that only contours that are in each others vicinity for a sufficient
     amount of frames are considered for merging. Just naively merging based on distance would
     cause problems if dogs place the paws too close too each other.
-    _this will fail if the dogs paws are close for more frames than the threshold.
+    This will fail if the dogs paws are close for more frames than the threshold.
     """
 
     # Get the important temporal spatial variables
-    sides, centerList, surfaces, lengths = calc_temporalSpatialVariables(contacts)
+    sides, centerList, surfaces, lengths = calculate_temporal_spatial_variables(contacts)
     # Get their averages and adjust them when needed
     frame_threshold = np.mean(lengths) * 0.5
     euclideanDistance = np.mean(sides)
     averageSurface = np.mean(surfaces) * 0.25
-    # Initialize two dictionaries for calculating the Minimal Spanning _tree
+    # Initialize two dictionaries for calculating the Minimal Spanning Tree
     leaders = {}
     clusters = {}
-    # _this list forms the heap to which we'll add all edges
+    # This list forms the heap to which we'll add all edges
     edges = []
     for index1, contact1 in enumerate(contacts):
         clusters[index1] = {index1}
@@ -214,21 +229,21 @@ def mergingContacts(contacts):
                         # We have 4 different cases where contacts can be merged
                         # If the overlap is larger than the frame_threshold we always merge
                         if overlap >= frame_threshold:
-                            merge = _true
+                            merge = True
                             value = (euclideanDistance - distance) * overlap
                         # If the first contact is too short, but we have overlap nonetheless,
                         # we also merge, we'll deal with picking the best value later
                         elif length1 <= frame_threshold and overlap:
-                            merge = _true
+                            merge = True
                         # Some contacts are longer than the threshold, yet don't have overlap
                         # that's larger than the threshold. However, because the overlap is
                         # significant, we'll allow it to merge too
                         elif ratio >= 0.5:
-                            merge = _true
-                        # _this deals with the edge cases where a contact is really small
+                            merge = True
+                        # This deals with the edge cases where a contact is really small
                         # yet because its duration is quite long, it wouldn't get merged
                         elif ratio >= 0.2 and surface1 < averageSurface:
-                            merge = _true
+                            merge = True
                     # In some cases we don't get a merge because there's no overlap
                     # But still its clear these pixels belong to a paw in adjacent frames
                     # If the gap between the two contacts isn't too large, we'll allow that one too
@@ -236,7 +251,7 @@ def mergingContacts(contacts):
                         if length1 <= frame_threshold and not overlap:
                             gap = min([abs(f1 - f2) for f1 in frames1 for f2 in frames2])
                             if gap < 5: # I changed it to 5, which may or may not work
-                                merge = _true
+                                merge = True
                                 # If we've found a merge, we'll add it to the heap
                     if merge:
                     # We use two different values for large and short contacts
@@ -244,7 +259,7 @@ def mergingContacts(contacts):
                         if not value:
                             # For short contacts we calculate the average distance to the contact
                             # Which seems to be much more reliable, yet is computationally more expensive
-                            value = closestContact(contact1, contact2, center1, euclideanDistance)
+                            value = closest_contact(contact1, contact2, center1, euclideanDistance)
                             # Use a heap to get the minimum item
                         heapq.heappush(edges, (-value, index1, index2))
 
@@ -261,65 +276,67 @@ def mergingContacts(contacts):
             explored.add(index1)
             # Find the shortest one, so we have to do less work
             if len(contacts[leader1]) <= len(contacts[leader2]):
-                minCluster, maxCluster = leader1, leader2
+                min_cluster, max_cluster = leader1, leader2
             else:
-                minCluster, maxCluster = leader2, leader1
-            minCluster, maxCluster = leader1, leader2
+                min_cluster, max_cluster = leader2, leader1
+            min_cluster, max_cluster = leader1, leader2
             # Merge the two contacts, so delete the nodes
             # that are part of the short cluster
             # and add them to the large cluster
-            for node in clusters[minCluster]:
-                # Add it to the cluster of the maxCluster
-                clusters[maxCluster].add(node)
+            for node in clusters[min_cluster]:
+                # Add it to the cluster of the max_cluster
+                clusters[max_cluster].add(node)
                 # Replace its label
-                leaders[node] = maxCluster
+                leaders[node] = max_cluster
                 if node in clusters:
                     # Delete the old cluster
                     del clusters[node]
 
-    newContacts = []
+    new_contacts = []
     # I defer merging till the end, because else
     # we might have to move things around several times
-    # _this is where we actually merge the contacts in
+    # This is where we actually merge the contacts in
     # each cluster
     for key, indices in clusters.items():
         newContact = {}
         for index in indices:
             contact = contacts[index]
-            mergeContours(newContact, contact)
-        newContacts.append(newContact)
+            merge_contours(newContact, contact)
+        new_contacts.append(newContact)
 
-    return newContacts
+    return new_contacts
 
 
 def find_contours(data):
+    from cv2 import threshold, findContours, THRESH_BINARY, RETR_EXTERNAL, CHAIN_APPROX_NONE
     # Dictionary to fill with results
-    contourDict = {}
+    contour_dict = {}
     # Find the contours in this frame
     rows, cols, numFrames = data.shape
     for frame in range(numFrames):
-        # _threshold the data
-        copy_data = data[:, :, frame]._t * 1.
-        _, copy_data = cv2.threshold(copy_data, 0.0, 1, cv2._tHRESH_BINARY)
-        # _the astype conversion here is quite expensive!
-        contour_list, _ = cv2.findContours(copy_data.astype('uint8'), cv2.RE_tR_EX_tERNAL, cv2.CHAIN_APPROX_NONE)
+        # Threshold the data
+        copy_data = data[:, :, frame].T * 1.
+        _, copy_data = threshold(copy_data, 0.0, 1, THRESH_BINARY)
+        # The astype conversion here is quite expensive!
+        contour_list, _ = findContours(copy_data.astype('uint8'), RETR_EXTERNAL, CHAIN_APPROX_NONE)
         if contour_list:
-            contourDict[frame] = contour_list
-    return contourDict
+            contour_dict[frame] = contour_list
+    return contour_dict
 
-def createGraph(contourDict, euclideanDistance=15):
+def create_graph(contour_dict, euclideanDistance=15):
+    from cv2 import pointPolygonTest
     # Create a graph
     G = {}
-    # Now go through the contourDict and for each contour, check if there's a matching contour in the adjacent frame
-    for frame in contourDict:
-        contours = contourDict[frame]
+    # Now go through the contour_dict and for each contour, check if there's a matching contour in the adjacent frame
+    for frame in contour_dict:
+        contours = contour_dict[frame]
         for index1, contour1 in enumerate(contours):
             # Initialize a key for this frame + index combo
             G[(frame, index1)] = set()
             # Get the contours from the previous frame
             for f in [frame - 1]:
-                if f in contourDict:
-                    otherContours = contourDict[f]
+                if f in contour_dict:
+                    otherContours = contour_dict[f]
                     # Iterate through the contacts in the adjacent frame
                     for index2, contour2 in enumerate(otherContours):
                         if (f, index2) not in G:
@@ -334,7 +351,7 @@ def createGraph(contourDict, euclideanDistance=15):
                         coord1 = short_contour[0]
                         coord2 = long_contour[0]
                         distance = coord1[0][0] - coord2[0][0]
-                        # _taking a safe margin
+                        # Taking a safe margin
                         if distance <= 2 * euclideanDistance:
                             match = False
                             # We iterate through all the coordinates in the short contour and test if
@@ -343,8 +360,8 @@ def createGraph(contourDict, euclideanDistance=15):
                             for coordinates in short_contour:
                                 if not match:
                                     coordinates = (coordinates[0][0], coordinates[0][1])
-                                    if cv2.pointPolygon_test(long_contour, coordinates, 0) > -1.0:
-                                        match = _true
+                                    if pointPolygonTest(long_contour, coordinates, 0) > -1.0:
+                                        match = True
                                         # Create a bi-directional edge between the two keys
                                         G[(frame, index1)].add((f, index2))
                                         G[(f, index2)].add((frame, index1))
@@ -353,7 +370,7 @@ def createGraph(contourDict, euclideanDistance=15):
                                         # if so, link them and stop looking
     return G
 
-def search_graph(G, contourDict):
+def search_graph(G, contour_dict):
     # Empty list of contacts
     contacts = []
     # Set to keep track of contours we've already visited
@@ -364,8 +381,8 @@ def search_graph(G, contourDict):
         if key not in explored:
             frame, index1 = key
             # Initialize a new contact
-            contact = {frame: [contourDict[frame][index1]]}
-            #contact[frame] = [contourDict[frame][index1]]
+            contact = {frame: [contour_dict[frame][index1]]}
+            #contact[frame] = [contour_dict[frame][index1]]
             explored.add(key)
             nodes = set(G[key])
             # Keep going until there are no more nodes to explore
@@ -375,7 +392,7 @@ def search_graph(G, contourDict):
                     f, index2 = vertex
                     if f not in contact:
                         contact[f] = []
-                    contact[f].append(contourDict[f][index2])
+                    contact[f].append(contour_dict[f][index2])
                     # Add vertex's neighbors to nodes
                     for v in G[vertex]:
                         if v not in explored:
@@ -387,13 +404,13 @@ def search_graph(G, contourDict):
 
 def track_contours_graph(data):
     """
-    _this tracking algorithm uses a graph based approach.
+    This tracking algorithm uses a graph based approach.
     It finds all the contours in each frame, connects them based on whether
-    they have overlap in adjacent frames. _then finds connected components
-    using a simple graph search. _these resulting connected components might
+    they have overlap in adjacent frames. Then finds connected components
+    using a simple graph search. These resulting connected components might
     be unconnected, yet part of the same contact. So we calculate two threshold
     based on the average duration and width/height of the connected components.
-    _these are then used to merge connected components with sufficient overlap.
+    These are then used to merge connected components with sufficient overlap.
     """
     # Find all the contours, put them in a dictionary where the keys are the frames
     # and the values are the contours
@@ -409,15 +426,15 @@ def track_contours_graph(data):
     contacts = merging_contacts(contacts)
     return contacts
 
-class arrowFilter(QObject):
+class arrow_filter(QObject):
     def eventFilter(self, parent, event):
         if event.type() == QEvent.KeyPress:
             if event.key() == Qt.Key_Left:
-                parent.mainWidget.slide_toLeft()
-                return _true
+                parent.mainWidget.slid.ToLeft()
+                return True
             if event.key() == Qt.Key_Right:
-                parent.mainWidget.slide_toRight()
-                return _true
+                parent.mainWidget.slid.ToRight()
+                return True
         return False
 
 def standardize_paw(paw, std_num_x = 20, std_num_y = 20):
@@ -467,7 +484,7 @@ def pad_with_zeros(data, data_slices, mx, my):
 
 def average_contacts(contacts):
     num_contacts = len(contacts)
-    empty_array = np.zeros((50, 100, num_contacts)) # _this should fit ANY_tHING
+    empty_array = np.zeros((50, 100, num_contacts)) # This should fit AN.THING
     for index, contact in enumerate(contacts):
         nx, ny = np.shape(contact)
         empty_array[0:nx, 0:ny, index] = contact # dump the array in the empty one
@@ -476,7 +493,7 @@ def average_contacts(contacts):
     average_array = average_array[0:max_x+1, 0:max_y+1]
     return average_array
 
-def calculateDistance(a, b):
+def calculate_distance(a, b):
     return np.linalg.norm(np.array(a) - np.array(b))
 
 def fix_orientation(data):
@@ -492,75 +509,32 @@ def fix_orientation(data):
     # We've calculated the start and end point of the measurement (if at all)
     x_distance = end_x - start_x
     # If this distance is negative, the dog walked right to left
-    #print "_the distance between the start and end is: {}".format(x_distance)
+    #print .The distance between the start and end is: {}".format(x_distance)
     if x_distance < 0:
         # So we flip the data around
         data = np.rot90(np.rot90(data))
     return data
-
-def agglomerative_clustering(data, num_clusters):
-    from collections import defaultdict
-    import heapq
-    distances = defaultdict(dict)
-    heap = []
-    
-    clusters = {}
-    leaders = {}
-    
-    for index1, trial1 in enumerate(data):
-        clusters[index1] = set([index1])
-        leaders[index1] = index1
-        for index2, trial2 in enumerate(data):
-            if index1 != index2:
-                dist = np.sum( np.sqrt( (trial1 - trial2)**2 ))
-                #dist = np.sum(trial1 - trial2)
-                distances[index1][index2] = dist
-                heapq.heappush(heap, (dist, (index1, index2)))
-
-    explored = set()
-    # Keep going as long as there are clusters left
-    while heap and len(clusters) > num_clusters:
-        dist, (index1, index2) = heapq.heappop(heap)
-        leader1 = leaders[index1]
-        leader2 = leaders[index2]
-        
-        if leader1 != leader2 and index1 not in explored:
-            explored.add(index1)
-            #explored.add(index2)
-            for node in clusters[leader2]:
-                clusters[leader1].add(node)
-                leaders[node] = leader1
-                if node in clusters:
-                    del clusters[node]
-    
-    labels = [0 for x in range(len(leaders))]
-    keys = clusters.keys()
-    for leader in clusters:
-        for node in clusters[leader]:
-            labels[node] = keys.index(leader)
-    
-    return labels
 
 def load_file(infile):
     """
     Input: raw text file, consisting of lines of strings
     Output: stacked numpy array (width x height x number of frames)
 
-    _this very crudely goes through the file, and if the line starts with an F splits it
-    _then if the first word is Frame, it flips a boolean "frame_number" 
+    This very crudely goes through the file, and if the line starts with an F splits it
+    Then if the first word is Frame, it flips a boolean "frame_number" 
     and parses every line until we hit the closing "}".
     """
     frame_number = None
     data_slices = []
     for line in infile:
-        # _this should prevent it from splitting every line
+        # This should prevent it from splitting every line
         if frame_number:
             if line[0] == 'y':
                 line = line.split()
                 data.append(line[1:])
                 # End of the frame
             if line[0] == '}':
-                data_slices.append(np.array(data, dtype=np.float32)._t)
+                data_slices.append(np.array(data, dtype=np.float32).T)
                 frame_number = None
 
         if line[0] == 'F':
@@ -572,7 +546,7 @@ def load_file(infile):
     width, height, length = results.shape
     return results if width > height else results.swapaxes(0, 1)
 
-# _this functions is modified from:
+# This functions is modified from:
 # http://stackoverflow.com/questions/4087919/how-can-i-improve-my-paw-detection
 def load(filename, padding=False):
     """Reads all data in the datafile. Returns an array of times for each
@@ -601,27 +575,28 @@ def load(filename, padding=False):
         result = np.dstack(data_slices)
         return result
 
-def convertContour_toSlice(data, contact):
+def convert_contour_to_slice(data, contact):
     # Get the bounding box for the entire contact
-    center, min_x1, max_x1, min_y1, max_y1 = updateBoundingBox(contact)
+    center, min_x1, max_x1, min_y1, max_y1 = update_bounding_box(contact)
     frames = sorted(contact.keys())
     min_z, max_z = frames[0], frames[-1]
     # Create an empty array that should fit the entire contact
     newData = np.zeros_like(data)
     for frame, contours in contact.items():
         # Pass a single frame dictionary as if it were a contact to get its bounding box
-        center, min_x, max_x, min_y, max_y = updateBoundingBox({frame: contours})
+        center, min_x, max_x, min_y, max_y = update_bounding_box({frame: contours})
         # We need to slice around the contacts a little wider, I wonder what problems this might cause
         min_x, max_x, min_y, max_y = int(min_x), int(max_x) + 2, int(min_y), int(max_y) + 2
         newData[min_x:max_x, min_y:max_y, frame] = data[min_x:max_x, min_y:max_y, frame]
     return newData[min_x1-1:max_x1+2, min_y1-1:max_y1+2, min_z:max_z+1]
 
-def contour_toPolygon(contour, degree, offset_x=0, offset_y=0):
+def contour_to_polygon(contour, degree, offset_x=0, offset_y=0):
     # Loop through the contour, create a polygon out of it
     polygon = []
+    coordinates = [[0][0]]  # Dummy coordinate
     for coordinates in contour:
         # Convert the points from the contour to QPointFs and add them to the list
-        # _the offset is used when you only display a slice, so you basically move the origin
+        # The offset is used when you only display a slice, so you basically move the origin
         polygon.append(QPointF((coordinates[0][0] - offset_x) * degree, (coordinates[0][1] - offset_y) * degree))
         # If the contour has only a single point, add another point, that's right beside it
     if len(contour) == 1:
@@ -629,8 +604,7 @@ def contour_toPolygon(contour, degree, offset_x=0, offset_y=0):
             (coordinates[0][1] + 1 - offset_y) * degree)) # Pray this doesn't go out of bounds!
     return QPolygonF(polygon)
 
-
-def contour_toLines(contour):
+def contour_to_lines(contour):
     x = []
     y = []
     for point in contour:
@@ -638,33 +612,9 @@ def contour_toLines(contour):
         y.append(point[0][1])
     return x, y
 
-
-def findContours(data, threshold=0.0, dilationIterations=0, erosionIterations=0):
-    """
-    Supply this function with a single frame of raw data
-    Returns a list of contours
-    """
-    # Make a deep copy, because I need to change its type to uint8
-    copy_data = data.copy()
-    # _threshold the data to get a binary image
-    _, copy_data = cv2.threshold(copy_data, threshold, 1, cv2._tHRESH_BINARY)
-    # Adding dilation and erosion:
-    copy_data = cv2.dilate(copy_data, None, iterations=dilationIterations)
-    copy_data = cv2.erode(copy_data, None, iterations=erosionIterations)
-    # Find the contours
-    contours, _ = cv2.findContours(copy_data.astype('uint8'), cv2.RE_tR_EX_tERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    return contours
-
-
-def changeDilationErosion(data, dilationIterations, erosionIterations):
-    data = cv2.dilate(data, None, iterations=dilationIterations)
-    data = cv2.erode(data, None, iterations=erosionIterations)
-    return data
-
-
 def normalize(array, n_max):
     """
-    _this rescales all the values to be between 0-255
+    This rescales all the values to be between 0-255
     """
     # If we have a non-zero offset, subtract the minimum
     if n_max == 0:
@@ -675,10 +625,9 @@ def normalize(array, n_max):
 
     return array
 
-
-def interpolateFrame(data, degree):
+def interpolate_frame(data, degree):
     """
-    interpolateFrame interpolates one frame for a given degree. Don't insert a 3D array!
+    interpolate_frame interpolates one frame for a given degree. Don't insert a 3D array!
     """
     from scipy.ndimage import map_coordinates
 
@@ -697,43 +646,9 @@ def interpolateFrame(data, degree):
     zi = zi.reshape(std_num_y, std_num_x)
     return zi
 
-
-def calculateDetectionRate(data, paws, frame):
-    copy_data = np.zeros_like(data, dtype=data.dtype)
-    non_zero = np.count_nonzero(data)
-    # Loop through all the paws
-    for index, paw in enumerate(paws):
-        # Check if its active in this frame
-        if frame in paw.contour_list:
-            # For all the contours within this frame
-            for cont in paw.contour_list[frame]:
-                cv2.drawContours(image=copy_data._t, contours=[cont], contourIdx=-1, color=(255, 255, 255), thickness=-1)
-
-    # How many pixels above zero are NO_t 255
-    #false_negatives = np.count_nonzero(data[data > 0.0] < 255)
-    true_negatives = np.count_nonzero(copy_data[data == 0] == 0.0)
-    false_negatives = np.count_nonzero(copy_data[data > 0.0] == 0.0)
-    false_positives = np.count_nonzero(data[copy_data == 255] == 0)
-    # How many pixels are
-    true_positives = np.count_nonzero(copy_data == 255)
-    #total = false_negatives + true_positives
-    if true_positives + false_positives:
-        precision = float(true_positives) / (true_positives + false_positives)
-    else:
-        precision = 0
-    if true_positives + false_negatives:
-        recall = float(true_positives) / (true_positives + false_negatives)
-    else:
-        recall = 0
-    if recall == 0 or precision == 0:
-        f_measure = 0
-    else:
-        f_measure = float(2 * float((precision * recall) / (precision + recall)))
-    return non_zero, true_positives, false_positives, true_negatives, false_negatives
-
 def average_contacts(contacts):
     num_contacts = len(contacts)
-    empty_array = np.zeros((50, 100, num_contacts)) # _this should fit ANY_tHING
+    empty_array = np.zeros((50, 100, num_contacts)) # This seems rather wasteful with space
     for index, contact in enumerate(contacts):
         nx, ny = np.shape(contact)
         empty_array[0:nx, 0:ny, index] = contact # dump the array in the empty one
@@ -741,7 +656,6 @@ def average_contacts(contacts):
     max_x, max_y = np.max(np.nonzero(average_array)[0]), np.max(np.nonzero(average_array)[1])
     average_array = average_array[0:max_x+1, 0:max_y+1]
     return average_array
-
 
 def calculate_cop(data):
     copx, copy = [], []
@@ -759,7 +673,6 @@ def calculate_cop(data):
                 copy.append(np.round(np.sum(temp_y[:, frame]) / np.sum(data[:, :, frame]), 2))
     return copx, copy
 
-
 def scipy_cop(data):
     copx, copy = [], []
     height, width, length = data.shape
@@ -771,96 +684,97 @@ def scipy_cop(data):
 
 def get_QPixmap(data, degree, n_max, color_table):
     """
-    _this function expects a single frame, it will interpolate/resize it with a given degree and
+    This function expects a single frame, it will interpolate/resize it with a given degree and
     return a pixmap
     """
+    from cv2 import resize, INTER_LINEAR
     # Need the sizes before reshaping
     width, height = data.shape
-    # _this can be used to interpolate, but it doesn't seem to work entirely correct yet...
-    data = cv2.resize(data, (height * degree, width * degree), interpolation=cv2.IN_tER_LINEAR)
+    # This can be used to interpolate, but it doesn't seem to work entirely correct yet...
+    data = resize(data, (height * degree, width * degree), interpolation=INTER_LINEAR)
     # Normalize the data
     data = normalize(data, n_max)
     # Convert it from numpy to qimage
-    qimage = array2qimage(data, color_table)
+    qimage = array_to_qimage(data, color_table)
     # Convert the image to a pixmap
     pixmap = QPixmap.fromImage(qimage)
     # Scale up the image so its better visible
     #self.pixmap = self.pixmap.scaled(self.degree * self.height, self.degree * self.width,
-    #                                 Qt.KeepAspectRatio, Qt.Fast_transformation) #Qt.Smooth_transformation
+    #                                 Qt.KeepAspectRatio, Qt.Fas.Transformation) #Qt.Smoot.Transformation
     return pixmap
 
-def array2qimage(array, color_table):
+def array_to_qimage(array, color_table):
     """Convert the 2D numpy array  into a 8-bit QImage with a gray
-    colormap.  _the first dimension represents the vertical image axis."""
+    colormap.  The first dimension represents the vertical image axis."""
     array = np.require(array, np.uint8, 'C')
     width, height = array.shape
     result = QImage(array.data, height, width, QImage.Format_Indexed8)
     result.ndarray = array
     # Use the default one from this library
-    result.setColor_table(color_table)
+    result.setColorTable(color_table)
     # Convert it to RGB32
-    result = result.convert_toFormat(QImage.Format_RGB32)
+    result = result.convertToFormat(QImage.Format_RGB32)
     return result
 
-def interpolate_rgb(startColor, startValue, endColor, endValue, actualValue):
-    deltaValue = endValue - startValue
-    if deltaValue == 0.0:
-        return startColor
+def interpolate_rgb(start_color, start_value, end_color, end_value, actual_value):
+    delta_value = end_value - start_value
+    if delta_value == 0.0:
+        return start_color
 
-    multiplier = (actualValue - startValue) / deltaValue
+    multiplier = (actual_value - start_value) / delta_value
 
-    startRed = (startColor >> 16) & 0xff
-    endRed = (endColor >> 16) & 0xff
-    deltaRed = endRed - startRed
-    red = startRed + (deltaRed * multiplier)
+    start_red = (start_color >> 16) & 0xff
+    end_red = (end_color >> 16) & 0xff
+    delta_red = end_red - start_red
+    red = start_red + (delta_red * multiplier)
 
-    if deltaRed > 0:
-        if red < startRed:
-            red = startRed
-        elif red > endRed:
-            red = endRed
+    if delta_red > 0:
+        if red < start_red:
+            red = start_red
+        elif red > end_red:
+            red = end_red
     else:
-        if red > startRed:
-            red = startRed
-        elif red < endRed:
-            red = endRed
+        if red > start_red:
+            red = start_red
+        elif red < end_red:
+            red = end_red
 
-    startGreen = (startColor >> 8) & 0xff
-    endGreen = (endColor >> 8) & 0xff
-    deltaGreen = endGreen - startGreen
-    green = startGreen + (deltaGreen * multiplier)
+    start_green = (start_color >> 8) & 0xff
+    end_green = (end_color >> 8) & 0xff
+    delta_green = end_green - start_green
+    green = start_green + (delta_green * multiplier)
 
-    if deltaGreen > 0:
-        if green < startGreen:
-            green = startGreen
-        elif green > endGreen:
-            green = endGreen
+    if delta_green > 0:
+        if green < start_green:
+            green = start_green
+        elif green > end_green:
+            green = end_green
     else:
-        if green > startGreen:
-            green = startGreen
-        elif green < endGreen:
-            green = endGreen
+        if green > start_green:
+            green = start_green
+        elif green < end_green:
+            green = end_green
 
-    startBlue = startColor & 0xff
-    endBlue = endColor & 0xff
-    deltaBlue = endBlue - startBlue
-    blue = startBlue + (deltaBlue * multiplier)
+    start_blue = start_color & 0xff
+    end_blue = end_color & 0xff
+    delta_blue = end_blue - start_blue
+    blue = start_blue + (delta_blue * multiplier)
 
-    if deltaBlue > 0:
-        if blue < startBlue:
-            blue = startBlue
-        elif blue > endBlue:
-            blue = endBlue
+    if delta_blue > 0:
+        if blue < start_blue:
+            blue = start_blue
+        elif blue > end_blue:
+            blue = end_blue
     else:
-        if blue > startBlue:
-            blue = startBlue
-        elif blue < endBlue:
-            blue = endBlue
+        if blue > start_blue:
+            blue = start_blue
+        elif blue < end_blue:
+            blue = end_blue
 
     return qRgb(red, green, blue)
 
 
-class ImageColor_table():
+class ImageColorTable():
     def __init__(self):
         self.black = QColor(0, 0, 0).rgb()
         self.lightblue = QColor(0, 0, 255).rgb()
@@ -882,7 +796,7 @@ class ImageColor_table():
         self.red_threshold = 256.0
 
     def create_color_table(self):
-        color_table = [self.black for i in range(255)]
+        color_table = [self.black for _ in range(255)]
         for val in range(255):
             if val < self.black_threshold:
                 color_table[val] = interpolate_rgb(self.black, self.black_threshold,
@@ -913,9 +827,8 @@ class ImageColor_table():
         return color_table
 
 
-def ColorMap():
-    import matplotlib
-
+def color_map():
+    from matplotlib.colors import LinearSegmentedColormap
     my_color_map = {'blue': [(0.0, 0.0, 0.0), (0.12, 1.0, 1.0), (0.44, 0.0, 0.0), (0.76000000000000001, 0.0, 0.0),
                         (0.92000000000000004, 0.0, 0.0), (1, 0.0, 0.0)],
                'green': [(0.0, 0.0, 0.0), (0.12, 0.29999999999999999, 0.29999999999999999), (0.44, 1.0, 1.0),
@@ -923,13 +836,19 @@ def ColorMap():
                          (0.92000000000000004, 0.40000000000000002, 0.40000000000000002), (1, 0.0, 0.0)],
                'red': [(0.0, 0.0, 0.0), (0.12, 0.0, 0.0), (0.44, 0.0, 0.0), (0.76000000000000001, 1.0, 1.0),
                        (0.92000000000000004, 1.0, 1.0), (1, 1.0, 1.0)]}
-    new_color_map = matplotlib.colors.LinearSegmentedColormap('my_color_map', my_color_map)
+    new_color_map = LinearSegmentedColormap('my_color_map', my_color_map)
     return new_color_map
 
+def convert_to_hex(color_scale):
+    list_of_hex = []
+    for colors in color_scale:
+        hex_string = '#%02x%02x%02x' % tuple([np.round(val * 255) for val in colors])
+        list_of_hex.append(hex_string)
+    return list_of_hex
+
 def create_hex_colormap():
-	import matplotlib.colors as colors
-	
-	my_color_map = {'blue': [(0.0, 0.0, 0.0), (0.12, 1.0, 1.0), (0.44, 0.0, 0.0), (0.76000000000000001, 0.0, 0.0),
+    from matplotlib.colors import makeMappingArray
+    my_color_map = {'blue': [(0.0, 0.0, 0.0), (0.12, 1.0, 1.0), (0.44, 0.0, 0.0), (0.76000000000000001, 0.0, 0.0),
                         (0.92000000000000004, 0.0, 0.0), (1, 0.0, 0.0)],
                'green': [(0.0, 0.0, 0.0), (0.12, 0.29999999999999999, 0.29999999999999999), (0.44, 1.0, 1.0),
                          (0.76000000000000001, 0.90000000000000002, 0.90000000000000002),
@@ -937,19 +856,291 @@ def create_hex_colormap():
                'red': [(0.0, 0.0, 0.0), (0.12, 0.0, 0.0), (0.44, 0.0, 0.0), (0.76000000000000001, 1.0, 1.0),
                        (0.92000000000000004, 1.0, 1.0), (1, 1.0, 1.0)]}
 					   
-	red = colors.makeMappingArray(256, my_color_map['red'])
-	green = colors.makeMappingArray(256, my_color_map['green'])
-	blue = colors.makeMappingArray(256, my_color_map['blue'])
-	color_scale = np.array(zip(red, green, blue))
-	
-	def convert_to_hex(color_scale):
-		list_of_hex = []
-		for colors in color_scale:
-			hex_string = '#%02x%02x%02x' % tuple([np.round(val * 255) for val in colors])
-			list_of_hex.append(hex_string)
-		return list_of_hex  
-		
-	return convert_to_hex(color_scale)
+    red = makeMappingArray(256, my_color_map['red'])
+    green = makeMappingArray(256, my_color_map['green'])
+    blue = makeMappingArray(256, my_color_map['blue'])
+    color_scale = np.array(zip(red, green, blue))
+    return convert_to_hex(color_scale)
+
+def touches_edges(data, data_slice):
+    ny, nx, nt = np.shape(data)
+    y, x, t = data_slice
+    xtouch = (x.start == 0) or (x.stop == nx)
+    ytouch = (y.start == 0) or (y.stop == ny)
+    ttouch = (t.stop == nt)
+    return xtouch or ytouch or ttouch
+
+def agglomerative_clustering(data, num_clusters):
+    from collections import defaultdict
+    import heapq
+    distances = defaultdict(dict)
+    heap = []
+
+    clusters = {}
+    leaders = {}
+
+    for index1, trial1 in enumerate(data):
+        clusters[index1] = {index1}
+        leaders[index1] = index1
+        for index2, trial2 in enumerate(data):
+            if index1 != index2:
+                dist = np.sum( np.sqrt( (trial1 - trial2)**2 ))
+                #dist = np.sum(trial1 - trial2)
+                distances[index1][index2] = dist
+                heapq.heappush(heap, (dist, (index1, index2)))
+
+    explored = set()
+    # Keep going as long as there are clusters left
+    while heap and len(clusters) > num_clusters:
+        dist, (index1, index2) = heapq.heappop(heap)
+        leader1 = leaders[index1]
+        leader2 = leaders[index2]
+
+        if leader1 != leader2 and index1 not in explored:
+            explored.add(index1)
+            #explored.add(index2)
+            for node in clusters[leader2]:
+                clusters[leader1].add(node)
+                leaders[node] = leader1
+                if node in clusters:
+                    del clusters[node]
+
+    labels = [0 for _ in range(len(leaders))]
+    keys = clusters.keys()
+    for leader in clusters:
+        for node in clusters[leader]:
+            labels[node] = keys.index(leader)
+
+    return labels
+
+
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i + n]
+
+
+def piecewise_aggregate_approximation(data, step_size=3):
+    return [np.mean(chunk) for chunk in chunks(data, step_size)]
+
+
+def map_to_string(piecewise_aggregate_approximation, alphabet_size):
+    """
+    I'm not sure whether using len here is appropriate
+    Shouldn't I be using shape and testing if we even have the appropriate format?
+    """
+    result = np.zeros((len(piecewise_aggregate_approximation)))
+
+    mapping = {
+        2: [float("-inf"), 0],
+        3: [float("-inf"), -0.43, 0.43],
+        4: [float("-inf"), -0.67, 0, 0.67],
+        5: [float("-inf"), -0.84, -0.25, 0.25, 0.84],
+        6: [float("-inf"), -0.97, -0.43, 0, 0.43, 0.97],
+        7: [float("-inf"), -1.07, -0.57, -0.18, 0.18, 0.57, 1.07],
+        8: [float("-inf"), -1.15, -0.67, -0.32, 0, 0.32, 0.67, 1.15],
+        9: [float("-inf"), -1.22, -0.76, -0.43, -0.14, 0.14, 0.43, 0.76, 1.22],
+        10: [float("-inf"), -1.28, -0.84, -0.52, -0.25, 0., 0.25, 0.52, 0.84, 1.28],
+        11: [float("-inf"), -1.34, -0.91, -0.6, -0.35, -0.11, 0.11, 0.35, 0.6, 0.91, 1.34],
+        12: [float("-inf"), -1.38, -0.97, -0.67, -0.43, -0.21, 0, 0.21, 0.43, 0.67, 0.97, 1.38],
+        13: [float("-inf"), -1.43, -1.02, -0.74, -0.5, -0.29, -0.1, 0.1, 0.29, 0.5, 0.74, 1.02, 1.43],
+        14: [float("-inf"), -1.47, -1.07, -0.79, -0.57, -0.37, -0.18, 0, 0.18, 0.37, 0.57, 0.79, 1.07, 1.47],
+        15: [float("-inf"), -1.5, -1.11, -0.84, -0.62, -0.43, -0.25, -0.08, 0.08, 0.25, 0.43, 0.62, 0.84, 1.11, 1.5],
+        16: [float("-inf"), -1.53, -1.15, -0.89, -0.67, -0.49, -0.32, -0.16, 0, 0.16, 0.32, 0.49, 0.67, 0.89, 1.15,
+             1.53],
+        17: [float("-inf"), -1.56, -1.19, -0.93, -0.72, -0.54, -0.38, -0.22, -0.07, 0.07, 0.22, 0.38, 0.54, 0.72, 0.93,
+             1.19, 1.56],
+        18: [float("-inf"), -1.59, -1.22, -0.97, -0.76, -0.59, -0.43, -0.28, -0.14, 0, 0.14, 0.28, 0.43, 0.59, 0.76,
+             0.97,
+             1.22, 1.59],
+        19: [float("-inf"), -1.62, -1.25, -1, -0.8, -0.63, -0.48, -0.34, -0.2 - 0.07, 0.07, 0.2, 0.34, 0.48, 0.63, 0.8,
+             1,
+             1.25, 1.62],
+        20: [float("-inf"), -1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39, 0.52,
+             0.67,
+             0.84, 1.04, 1.28, 1.64],
+        }
+    # Get the right cut-off point from the mapping
+    cut_points = mapping[alphabet_size]
+    for i in range(len(piecewise_aggregate_approximation)):
+        result[i] = np.sum((cut_points <= piecewise_aggregate_approximation[i]))
+    return result
+
+
+def timeseries2symbol(data, N, n, alphabet_size):
+    """
+    N = data_len or sliding window
+    n = nseg
+    When calculating the ratio N / n, make sure one of them is a float!
+    Use as: current_string = timeseries2symbol(data, data_len, nseg, alphabet_size)
+    """
+    from math import floor
+    if alphabet_size > 20:
+        print "Alphabet is too large!"
+
+    win_size = int(floor(N / n))
+    piecewise_aggregate_approximation = []  # Dummy variable
+
+    # If N == data_len, then this will only be done once
+    # So then we don't use a sliding window
+    for i in range(len(data) - (N - 1)):
+    # Slice the data
+        sub_section = data[i:i + N]
+        # Z normalize it
+        # Turned off for now, since its already applied, but then to the entire dataset
+        sub_section = (sub_section - np.mean(sub_section))/ np.std(sub_section)
+
+        # If the data is as long as the number of segments, we don't have to piecewise_aggregate_approximation
+        if N == n:
+            piecewise_aggregate_approximation = sub_section
+        else:
+            # Check if we have the right number of segments
+            # If this check doesn't work anymore, its because of lacking parentheses
+            if N / float(n) - floor(N / n): # If this is not zero, the ratio is off
+                # Tile the sub_sections
+                temp = np.tile(data[:, None], (n))
+                # Unroll the subsections from N x n to 1 x (N*n)
+                expanded_sub_section = np.reshape(temp, (1, N * n))
+                piecewise_aggregate_approximation = np.mean(np.reshape(expanded_sub_section, (n, N)), axis=1)
+            else:
+                # This last part can probably be rewritten, so I only have to piecewise_aggregate_approximation once.
+                # But we'll wait until we know it actually works!
+                piecewise_aggregate_approximation = np.mean(np.reshape(sub_section, (n, win_size)), axis=1)
+
+    current_string = map_to_string(piecewise_aggregate_approximation, alphabet_size)
+    # Here follow so steps related to pointers, but I have no idea what for
+    # They also delete the first item from symbolic_data, which is being returned
+    # But I think that's only important if you really use the sliding window in some way
+    return current_string
+
+
+def saxify(data, n=10, alphabet_size=4, plot_results=False, axes=None):
+    """
+    data is expected to be a 1D time serie
+    n = number of segments
+    alphabet_size has to be 2 < size < 20, defines how the number of intervals in Y
+    Assumes numpy is imported as np
+    """
+    from math import floor
+    N = len(data)
+    win_size = int(floor(N / n))
+    # Do I want to Z-normalize?
+    data = (data - np.mean(data)) / np.std(data)
+
+    # Check if we have the right number of segments
+    if N / float(n) - floor(N / n):  # If this is not zero, the ratio is off
+        # Tile the sub_sections
+        temp = np.tile(data[:, None], n)
+        # Unroll the subsections from N x n to 1 x (N*n)
+        expanded_sub_section = np.reshape(temp, (1, N * n))
+        piecewise_aggregate_approximation = np.mean(np.reshape(expanded_sub_section, (n, N)), axis=1)
+    else:
+        piecewise_aggregate_approximation = np.mean(np.reshape(data, (n, win_size)), axis=1)
+
+    # I might strip out N, because I don't use sliding windows
+    current_string = timeseries2symbol(data, N, n, alphabet_size)
+    symbols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
+               'v', 'w', 'x', 'y', 'z']
+
+    new_string = "".join([symbols[int(current_string[i]) - 1] for i in range(n)])
+    if plot_results:
+        color = ['g', 'y', 'm', 'c']
+        # Rescale the piecewise data
+        piecewise_aggregate_approximation_plot = np.reshape(np.tile(piecewise_aggregate_approximation[:, None], win_size), (win_size * n))  # data_len
+        axes.plot(piecewise_aggregate_approximation_plot, 'r')
+
+        for i in range(n):
+            x_start = i * win_size
+            x_end = x_start + win_size
+            x_mid = x_start + (x_end - x_start) / 2
+            # Subtract one, because we start indexing from zero
+            letter = int(current_string[i]) - 1
+            colorIndex = int(letter % len(color))
+            axes.plot(range(x_start, x_end), piecewise_aggregate_approximation_plot[x_start:x_end], color=color[colorIndex], linewidth=3)
+            axes.text(x_mid, piecewise_aggregate_approximation_plot[x_start], new_string[i], fontsize=14)
+
+    # Actually this returns the numeric version!
+    return current_string
+
+def build_dist_table(alphabet_size):
+    """
+    Given the alphabet size, build the distance table for the (squared) minimum distances
+    between different symbols
+    """
+    mapping = {
+        2: [-0.43, 0.43],
+        3: [-0.67, 0, 0.67],
+        4: [-0.84, -0.25, 0.25, 0.84],
+        5: [-0.97, -0.43, 0, 0.43, 0.97],
+        6: [-1.07, -0.57, -0.18, 0.18, 0.57, 1.07],
+        7: [-1.15, -0.67, -0.32, 0, 0.32, 0.67, 1.15],
+        8: [-1.22, -0.76, -0.43, -0.14, 0.14, 0.43, 0.76, 1.22],
+        9: [-1.28, -0.84, -0.52, -0.25, 0., 0.25, 0.52, 0.84, 1.28],
+        10: [-1.34, -0.91, -0.6, -0.35, -0.11, 0.11, 0.35, 0.6, 0.91, 1.34],
+        11: [-1.38, -0.97, -0.67, -0.43, -0.21, 0, 0.21, 0.43, 0.67, 0.97, 1.38],
+        12: [-1.43, -1.02, -0.74, -0.5, -0.29, -0.1, 0.1, 0.29, 0.5, 0.74, 1.02, 1.43],
+        13: [-1.47, -1.07, -0.79, -0.57, -0.37, -0.18, 0, 0.18, 0.37, 0.57, 0.79, 1.07, 1.47],
+        14: [-1.5, -1.11, -0.84, -0.62, -0.43, -0.25, -0.08, 0.08, 0.25, 0.43, 0.62, 0.84, 1.11, 1.5],
+        15: [-1.53, -1.15, -0.89, -0.67, -0.49, -0.32, -0.16, 0, 0.16, 0.32, 0.49, 0.67, 0.89, 1.15, 1.53],
+        16: [-1.56, -1.19, -0.93, -0.72, -0.54, -0.38, -0.22, -0.07, 0.07, 0.22, 0.38, 0.54, 0.72, 0.93, 1.19, 1.56],
+        17: [-1.59, -1.22, -0.97, -0.76, -0.59, -0.43, -0.28, -0.14, 0, 0.14, 0.28, 0.43, 0.59, 0.76, 0.97, 1.22, 1.59],
+        18: [-1.62, -1.25, -1, -0.8, -0.63, -0.48, -0.34, -0.2 - 0.07, 0.07, 0.2, 0.34, 0.48, 0.63, 0.8, 1, 1.25, 1.62],
+        19: [-1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39, 0.52, 0.67, 0.84, 1.04,
+             1.28, 1.64],
+        }
+    cutlines = mapping[alphabet_size]
+    dist_matrix = np.zeros((alphabet_size, alphabet_size))
+    for i in range(alphabet_size):
+        # the min_dist for adjacent symbols are 0, so we start with i+2
+        for j in range(i, alphabet_size):
+            # Get the squared difference
+            dist_matrix[i, j] = (cutlines[i] - cutlines[j]) ** 2
+            dist_matrix[j, i] = dist_matrix[i, j]
+    return dist_matrix
+
+def calc_distances(str1, str2, alphabet_size):
+    dist_matrix = build_dist_table(alphabet_size)
+    distances = np.zeros((len(str1), len(str2)))
+    for idx1, i in enumerate(str1):
+        for idx2, j in enumerate(str2):
+            # Why on earth I have to use -1 is beyond me
+            distances[idx1, idx2] = dist_matrix[i - 1, j - 1]
+    return distances
+
+def min_dist(str1, str2, alphabet_size, compression_ratio):
+    """
+    This function computes the minimum (lower-bounding) distance between two strings.  The strings
+    should have equal length.
+    Input:
+        str1: first string
+        str2: second string
+        alphabet_size: alphabet_size used to construct the strings
+        compression_ratio: original_data_len / symbolic_len
+    Output:
+        dist: lower-bounding distance
+    """
+    if len(str1) != len(str2):
+        print "Error: strings must have equal length!"
+        return
+
+    # Wait does this check whether any of the chars
+    # Matlab: if (any(str1 > alphabet_size) | any(str2 > alphabet_size))
+    if any(str1 > alphabet_size) or any(str2 > alphabet_size):
+        print "Error: some symbols in the string exceed the alphabet_size!"
+        return
+
+    distances = calc_distances(str1, str2, alphabet_size)
+    dist = np.sqrt(compression_ratio * sum(np.diagonal(distances)))
+
+    return dist
+
+def distance_between_centers(center1, center2):
+    x1, y1 = center1
+    x2, y2 = center2
+    dx = x1 - x2
+    dy = y1 - y2
+    return (dx * dx + dy * dy) ** 0.5
 
 mapping = {
     2: [float("-inf"), 0],
