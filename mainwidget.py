@@ -36,7 +36,7 @@ class MainWidget(QWidget):
         self.path = path
         self.pickled = pickled
 
-        # TODO Make these variable shared between all widgets
+        # TODO Make these variable shared between all widgets, possibly putting it in config files?
         self.colors = [
             QColor(Qt.green),
             QColor(Qt.darkGreen),

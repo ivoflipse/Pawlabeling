@@ -230,14 +230,14 @@ class PawWidget(QWidget):
         data = np.array(mean_data_list).mean(axis=0)
         # Make sure the paws are facing upright
         self.data = np.rot90(np.rot90(data))
-        self.image.setPixmap(utility.getQPixmap(self.data, self.degree, self.nmax, self.color_table))
+        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.nmax, self.color_table))
 
     def clear_paws(self):
         self.data = np.zeros((self.mx, self.my))
         self.data_list = []
         self.average_data_list = []
         # Put the screen to black
-        self.image.setPixmap(utility.getQPixmap(np.zeros((15,15)), self.degree, self.nmax, self.color_table))
+        self.image.setPixmap(utility.get_QPixmap(np.zeros((15,15)), self.degree, self.nmax, self.color_table))
         self.max_pressure = float("inf")
         self.mean_duration = float("inf")
         self.mean_surface = float("inf")

@@ -67,7 +67,7 @@ class EntirePlateWidget(QWidget):
             # Slice out the data from the measurement
             self.data = self.measurement[:, :, self.frame].T
         # Update the pixmap
-        self.image.setPixmap(utility.getQPixmap(self.data, self.degree, self.nmax, self.color_table))
+        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.nmax, self.color_table))
 
     def clear_bounding_box(self):
         # Remove the old ones and redraw
