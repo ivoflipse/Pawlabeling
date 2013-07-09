@@ -7,10 +7,9 @@
 #-----------------------------------------------------------------------------
 
 import os
-import pickle
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide.QtCore import *
+from PySide.QtGui import *
 
 from entireplatewidget import EntirePlateWidget
 from pawswidget import PawsWidget
@@ -305,7 +304,7 @@ class MainWidget(QWidget):
 
                 # Update the colors in the contact tree
                 for idx in range(item.columnCount()):
-                    item.setBackgroundColor(idx, self.colors[paw_label])
+                    item.setBackground(idx, self.colors[paw_label])
 
             # Update the bounding boxes
             self.entire_plate_widget.update_bounding_boxes(self.paw_labels, self.current_paw_index)
@@ -324,7 +323,7 @@ class MainWidget(QWidget):
         item = self.contact_tree.topLevelItem(self.current_paw_index)
         if item.backgroundColor(0) == self.colors[-1]:
             for idx in range(item.columnCount()):
-                item.setBackgroundColor(idx, Qt.white)
+                item.setBackground(idx, Qt.white)
 
     def previous_paw(self, event=None):
         if not self.contacts_available():

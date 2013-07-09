@@ -29,3 +29,43 @@ If this information is not available, it will try to track the individual contac
 (Left Front, LF; Left Hind, LH; Right Front, RF; Right Hind, RH).
 
 The tool currently offers no options for viewing the results or fixing any issues with the tracking.
+
+Features
+--------
+
+- Load measurements and track where the paws have made contact
+- Enable manual labeling of the contacts with their respective paw and saving of the results for later use
+
+
+Usage
+-----
+
+Requires Python 2 (2.6 or newer), I'm not sure whether my dependencies are supported by Python 3 yet.
+
+**1. Install any missing dependencies.**
+
+I strongly recommend that you consider installing Python packages with pip, as in it is the current preferred method.
+If you are using pip, you can directly install all the dependencies from the requirements file using
+`pip install -r requirements.txt`
+
+Alternatively, you can download a package manager like [Anaconda](http://continuum.io/downloads) or
+a scientific distribution like [Python(x,y)](https://code.google.com/p/pythonxy/).
+This is especially recommendable if you're not used to using Python and are a Windows user.
+Please check whether you're using 32 or 64 bit Python, because you'll have to download the respective library versions.
+
+In any case, you need to install:
+
+- OpenCV
+- PySide
+- Numpy
+- Scipy
+
+
+**2. Run mainwindow.py to start the tool**
+
+
+
+ Contact
+ -------
+
+ Post bugs and issues on github. Send other comments to Ivo Flipse: first last at geemail dotcom or @ivoflipse5

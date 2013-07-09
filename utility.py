@@ -6,8 +6,8 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #-----------------------------------------------------------------------------
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide.QtCore import *
+from PySide.QtGui import *
 import numpy as np
 
 class Contact():
@@ -893,12 +893,12 @@ def create_hex_colormap():
 def touches_edges(data, paw, padding=False):
     ny, nx, nt = data.shape
     if not padding:
-        x_touch = (paw.total_min_x == 0) or (paw.total_max_x == nx)
-        y_touch = (paw.total_min_y == 0) or (paw.total_max_y == ny)
+        x_touch = (paw.total_min_x == 0) or (paw.total_max_x == ny)
+        y_touch = (paw.total_min_y == 0) or (paw.total_max_y == nx)
         z_touch = (paw.frames[-1] == nt)
     else:
-        x_touch = (paw.total_max_x <= 1) or (paw.total_max_x >= nx-1)
-        y_touch = (paw.total_max_x <= 1) or (paw.total_max_y >= ny-1)
+        x_touch = (paw.total_min_x <= 1) or (paw.total_max_x >= ny-1)
+        y_touch = (paw.total_min_y <= 1) or (paw.total_max_y >= nx-1)
         z_touch = (paw.frames[-1] >= nt-1)
     return x_touch or y_touch or z_touch
 

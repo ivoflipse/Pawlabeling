@@ -9,8 +9,8 @@
 import sys, os
 
 from mainwidget import MainWidget
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PySide.QtCore import *
+from PySide.QtGui import *
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Paw Labeling tool")
 
         self.track_contacts = self.create_action(text="&Track Contacts",
-                                                shortcut="CTRL+F",
+                                                shortcut=QKeySequence("CTRL+F"),
                                                 icon=QIcon(
                                                     os.path.join(os.path.dirname(__file__), "images/editzoom.png")),
                                                 tip="Using the tracker to find contacts",
@@ -47,7 +47,7 @@ class MainWindow(QMainWindow):
         )
 
         self.store_status = self.create_action(text="&Store",
-                                              shortcut="CTRL+S",
+                                              shortcut=QKeySequence("CTRL+S"),
                                               icon=QIcon(
                                                   os.path.join(os.path.dirname(__file__), "images/save-icon.png")),
                                               tip="Mark the tracking as correct",
@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         )
 
         self.slide_to_left = self.create_action(text="Slide Left",
-                                            shortcut=Qt.Key_Left,
+                                            shortcut=QKeySequence(Qt.Key_Left),
                                             icon=QIcon(
                                                 os.path.join(os.path.dirname(__file__), "images/arrow-left-icon.png")),
                                             tip="Move the slider to the left",
@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
         )
 
         self.slide_to_right = self.create_action(text="Slide Right",
-                                             shortcut=Qt.Key_Right,
+                                             shortcut=QKeySequence(Qt.Key_Right),
                                              icon=QIcon(os.path.join(os.path.dirname(__file__),
                                                                      "images/arrow-right-icon.png")),
                                              tip="Move the slider to the right",
@@ -124,7 +124,7 @@ class MainWindow(QMainWindow):
         )
 
         self.previous_paw = self.create_action(text="Select Previous Paw",
-                                               shortcut=[QKeySequence(Qt.Key_4), Qt.Key_Down],
+                                               shortcut=[QKeySequence(Qt.Key_4), QKeySequence(Qt.Key_Down)],
                                                icon=QIcon(
                                                    os.path.join(os.path.dirname(__file__), "images/backward.png")),
                                                tip="Select the previous paw",
@@ -133,7 +133,7 @@ class MainWindow(QMainWindow):
         )
 
         self.next_paw = self.create_action(text="Select Next Paw",
-                                           shortcut=[QKeySequence(Qt.Key_6), Qt.Key_Up],
+                                           shortcut=[QKeySequence(Qt.Key_6), QKeySequence(Qt.Key_Up)],
                                            icon=QIcon(os.path.join(os.path.dirname(__file__), "images/forward.png")),
                                            tip="Select the next paw",
                                            checkable=False,
@@ -141,7 +141,7 @@ class MainWindow(QMainWindow):
         )
 
         self.delete_label = self.create_action(text="Delete Label From Paw",
-                                               shortcut=Qt.Key_5,
+                                               shortcut=QKeySequence(Qt.Key_5),
                                                icon=QIcon(
                                                    os.path.join(os.path.dirname(__file__), "images/cancel-icon.png")),
                                                tip="Delete the label from the paw",
@@ -150,7 +150,7 @@ class MainWindow(QMainWindow):
         )
 
         self.invalid_paw = self.create_action(text="Mark Paw as Invalid",
-                                              shortcut=Qt.Key_Delete,
+                                              shortcut=QKeySequence(Qt.Key_Delete),
                                               icon=QIcon(
                                                   os.path.join(os.path.dirname(__file__), "images/trash-icon.png")),
                                               tip="Mark the paw as invalid",
