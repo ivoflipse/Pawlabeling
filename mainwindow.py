@@ -6,29 +6,21 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #-----------------------------------------------------------------------------
 
-import sys, os
+import sys
+import os
 
 from mainwidget import MainWidget
 from PySide.QtCore import *
 from PySide.QtGui import *
 
+from settings import configuration
+
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        desktop = True
-        if desktop:
-            # Set the size to something nice and large
-            self.setGeometry(QRect(0, 25, 2250, 1000))
-        else:
-            self.setGeometry(QRect(0, 25, 1400, 800))
+        self.setGeometry(configuration.main_window_size)
 
-        path = "C:\\Exports\\"
-        store_path = "C:\\LabelsStored\\"
-        # Add the folder for the store_path data if it doesn't exist
-        if not os.path.exists(store_path):
-            os.mkdir(store_path)
-
-        self.main_widget = MainWidget(path, store_path, desktop, self)
+        self.main_widget = MainWidget(self)
         self.setCentralWidget(self.main_widget)
         self.toolbar = Toolbar(self)
         self.addToolBar(Qt.TopToolBarArea, self.toolbar)

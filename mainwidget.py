@@ -16,53 +16,26 @@ from pawswidget import PawsWidget
 import utility
 import numpy as np
 
+from settings import configuration
 
 class MainWidget(QWidget):
-    def __init__(self, path, store_path, desktop_flag, parent=None):
+    def __init__(self, parent=None):
         super(MainWidget, self).__init__(parent)
-        desktop = desktop_flag
 
         # Initialize numframes, in case measurements aren't loaded
         self.num_frames = 248
         self.frame = 0
         self.n_max = 0
 
-        if desktop:
-            # Set the size to something nice and large
-            self.resize(2550, 1400) # Make these sizes more platform independent
-            entire_plate_widget_size = [800, 800]
-            self.degree = 6
-        else:
-            self.resize(1400, 800) # Make these sizes more platform independent
-            entire_plate_widget_size = [800, 500]
-            self.degree = 4
+        self.degree = configuration.degree
 
         # Create a label to display the measurement name
         self.nameLabel = QLabel(self)
 
-        self.path = path
-        self.store_path = store_path
-
-        self.colors = [
-            QColor(Qt.green),
-            QColor(Qt.darkGreen),
-            QColor(Qt.red),
-            QColor(Qt.darkRed),
-            QColor(Qt.gray),
-            QColor(Qt.white),
-            QColor(Qt.yellow),
-        ]
-
-        # FYI the id's are 1 lower compared to iApp
-        self.paw_dict = {
-            0: "LF",
-            1: "LH",
-            2: "RF",
-            3: "RH",
-            -3: "Invalid",
-            -2: "-1", # I've changed this
-            -1: "-1"
-        }
+        self.path = configuration.path
+        self.store_path = configuration.store_path
+        self.colors = configuration.colors
+        self.paw_dict = configuration.paw_dict
 
         self.current_paw_index = 0
 
@@ -74,7 +47,7 @@ class MainWidget(QWidget):
         self.measurement_tree.setHeaderLabel("Measurements")
         self.measurement_tree.itemActivated.connect(self.load_file)
         # Load the measurements from a default path and set the file_name to the first file from the folder
-        self.add_measurements(path=path)
+        self.add_measurements(path=self.path)
 
         self.contact_tree = QTreeWidget(self)
         self.contact_tree.setMaximumWidth(300)
@@ -91,13 +64,10 @@ class MainWidget(QWidget):
         # TODO move this call to mainwindow so its not ran until AFTER everything has been initialized
         self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
 
-        self.entire_plate_widget = EntirePlateWidget(self.degree,
-                                                   entire_plate_widget_size,
-                                                   self)
-
-        self.paws_widget = PawsWidget(self, self.degree * 2, self.n_max)
-
+        self.entire_plate_widget = EntirePlateWidget(self)
         self.entire_plate_widget.setMinimumWidth(600)
+
+        self.paws_widget = PawsWidget(self, self.n_max)
 
         # Create a slider
         self.slider = QSlider(self)

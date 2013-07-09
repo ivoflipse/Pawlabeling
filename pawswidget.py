@@ -11,18 +11,19 @@ from PySide.QtGui import *
 import numpy as np
 import utility
 
+from settings import configuration
 
 class PawsWidget(QWidget):
-    def __init__(self, parent, degree, n_max):
+    def __init__(self, parent, n_max):
         super(PawsWidget, self).__init__(parent)
         self.parent = parent
-        self.degree = degree
+        self.degree = configuration.degree * 2  # I want these to be a bit bigger
 
-        self.left_front = PawWidget(self, degree, n_max, label="LF")
-        self.left_hind = PawWidget(self, degree, n_max, label="LH")
-        self.right_front = PawWidget(self, degree, n_max, label="RF")
-        self.right_hind = PawWidget(self, degree, n_max, label="RH")
-        self.current_paw = PawWidget(self, degree, n_max, label="")
+        self.left_front = PawWidget(self, self.degree, n_max, label="LF")
+        self.left_hind = PawWidget(self, self.degree, n_max, label="LH")
+        self.right_front = PawWidget(self, self.degree, n_max, label="RF")
+        self.right_hind = PawWidget(self, self.degree, n_max, label="RH")
+        self.current_paw = PawWidget(self, self.degree, n_max, label="")
 
         self.paws_list = {
             0: self.left_front,
@@ -32,15 +33,7 @@ class PawsWidget(QWidget):
             -1: self.current_paw
         }
 
-        self.paw_dict = {
-            0: "LF",
-            1: "LH",
-            2: "RF",
-            3: "RH",
-            -3: "Invalid",
-            -2: "-1", # I've changed this
-            -1: "-1"
-        }
+        self.paw_dict = configuration.paw_dict
 
         # This sets every widget to a zero image and initializes paws
         self.clear_paws()
