@@ -9,13 +9,13 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 import utility
-
+from settings import configuration
 
 class EntirePlateWidget(QWidget):
-    def __init__(self, degree, size, parent=None):
+    def __init__(self, parent=None):
         super(EntirePlateWidget, self).__init__(parent)
         self.parent = parent
-        self.resize(size[0], size[1])
+        self.resize(configuration.entire_plate_widget_width, configuration.entire_plate_widget_height)
         self.layout = QVBoxLayout(self)
 
         self.scene = QGraphicsScene(self)
@@ -33,17 +33,9 @@ class EntirePlateWidget(QWidget):
         self.bounding_boxes = []
         self.current_box = None
         self.gait_lines = []
-        self.colors = [
-            QColor(Qt.green),
-            QColor(Qt.darkGreen),
-            QColor(Qt.red),
-            QColor(Qt.darkRed),
-            QColor(Qt.gray),
-            QColor(Qt.white),
-            QColor(Qt.yellow),
-        ]
 
-        self.degree = degree
+        self.colors = configuration.colors
+        self.degree = configuration.degree
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
 

@@ -213,14 +213,7 @@ class MainWidget(QWidget):
         self.update_current_paw()
 
     def undo_label(self, event=None):
-        if not self.contacts_available():
-            return
-
-        # Change the current paw index
-        self.current_paw_index -= 1
-        if self.current_paw_index < 0:
-            self.current_paw_index = 0
-
+        self.previous_paw()
         self.delete_label()
 
     def delete_label(self, event=None):
@@ -243,34 +236,31 @@ class MainWidget(QWidget):
         self.update_current_paw()
 
     def select_left_front(self, event=None):
-        self.paw_labels[self.current_paw_index] = 0
+        if self.paw_labels[self.current_paw_index] != -3:
+            self.paw_labels[self.current_paw_index] = 0
         self.next_paw()
 
     def select_left_hind(self, event=None):
-        self.paw_labels[self.current_paw_index] = 1
+        if self.paw_labels[self.current_paw_index] != -3:
+            self.paw_labels[self.current_paw_index] = 1
         self.next_paw()
 
     def select_right_front(self, event=None):
-        self.paw_labels[self.current_paw_index] = 2
+        if self.paw_labels[self.current_paw_index] != -3:
+            self.paw_labels[self.current_paw_index] = 2
         self.next_paw()
 
     def select_right_hind(self, event=None):
-        self.paw_labels[self.current_paw_index] = 3
+        if self.paw_labels[self.current_paw_index] != -3:
+            self.paw_labels[self.current_paw_index] = 3
         self.next_paw()
 
     def update_current_paw(self):
         if self.current_paw_index <= len(self.paws) and len(self.paws) > 0:
-            print self.paw_labels
             for index, paw_label in self.paw_labels.items():
                 # Get the current row from the tree
                 item = self.contact_tree.topLevelItem(index)
                 item.setText(1, self.paw_dict[paw_label])
-
-                # If its not the currently selected paw, change the label to gibberish
-                if self.current_paw_index != index and paw_label == -1:
-                    paw_label = -2
-                if self.current_paw_index == index and paw_label != -3:
-                    paw_label = -1
 
                 # Update the colors in the contact tree
                 for idx in range(item.columnCount()):
@@ -286,14 +276,17 @@ class MainWidget(QWidget):
         """
         This function checks if there is a contact with index 0, if not, the tree must be empty
         """
-        return False if self.contact_tree.findItems("0", Qt.MatchExactly, 0) == [] else True
+        #return False if self.contact_tree.findItems("0", Qt.MatchExactly, 0) == [] else True
+        return True if self.paw_labels else False
 
-    def remove_selected_color(self):
-        # Remove the color from the Contact Tree if its yellow
-        item = self.contact_tree.topLevelItem(self.current_paw_index)
-        if item.backgroundColor(0) == self.colors[-1]:
-            for idx in range(item.columnCount()):
-                item.setBackground(idx, Qt.white)
+    def check_label_status(self):
+        results = []
+        for paw_label in self.paw_labels.values():
+            if paw_label == -2:
+                results.append(True)
+            else:
+                results.append(False)
+        return any(results)
 
     def previous_paw(self, event=None):
         if not self.contacts_available():
@@ -308,7 +301,7 @@ class MainWidget(QWidget):
             self.current_paw_index = 0
 
         # If we encounter an invalid paw and its not the first paw, skip this one
-        if self.paw_labels[self.current_paw_index] == -3 and self.current_paw_index > 0:
+        if self.paw_labels[self.current_paw_index] == -3 and self.check_label_status():
             self.previous_paw()
 
         item = self.contact_tree.topLevelItem(self.current_paw_index)
@@ -328,7 +321,7 @@ class MainWidget(QWidget):
             self.current_paw_index = len(self.paws) - 1
 
         # If we encounter an invalid paw and its not the last paw, skip this one
-        if self.paw_labels[self.current_paw_index] == -3 and self.current_paw_index < len(self.paws):
+        if self.paw_labels[self.current_paw_index] == -3 and self.check_label_status():
             self.next_paw()  # Woops, recursive loop right here!
 
         item = self.contact_tree.topLevelItem(self.current_paw_index)
@@ -429,31 +422,20 @@ class MainWidget(QWidget):
 
     def results_to_json(self):
         """
-        This creates or takes a json file for the current dog and fills or updates it with the new
-        paw information.
+        This creates a json file for the current measurement and stores the results
         """
         import json
-        json_file_name = "{}//{} labels.json".format(self.new_path, self.dog_name)
+        json_file_name = "{}//{} labels.json".format(self.new_path, self.measurement_name)
         with open(json_file_name, "w+") as json_file:
-            # Read the existing data
-            data = json.load(json_file)
-
-            # If data is empty, create an empty dictionary
-            if not data:
-                data = {}
-                
             # Update somewhere in between
-            new_results = {}
-            new_results["dog_name"] = self.dog_name
-            new_results["measurement_name"] = self.measurement_name
-            new_results["paw_labels"] = self.paw_labels
-            new_results["paws"] = self.paws
+            results = {}
+            results["dog_name"] = self.dog_name
+            results["measurement_name"] = self.measurement_name
+            results["paw_labels"] = self.paw_labels
+            results["paws"] = self.paws
 
-            # Add the results to the results to be written to json
-            data[self.measurement_name] = new_results
-
-            json_file.seek(0)  # Rewind the file, so overwrite it
-            json_file.write(json.dumps(data))
+            json_file.seek(0)  # Rewind the file, so we overwrite it
+            json_file.write(json.dumps(results))
             json_file.truncate()  # In case the new file is smaller
 
     def pickle_result(self):
