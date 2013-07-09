@@ -1,5 +1,66 @@
-*.py[co]
+# Python #
+##########
+*.py[cod]
+
+# C extensions #
+################
+*.so
+
+# Packages #
+############
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+__pycache__
+
+# Installer logs #
+##################
+pip-log.txt
+
+# Intellij project files #
+##########################
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Unit test / coverage reports #
+################################
+.coverage
+.tox
+nosetests.xml
+
+# Random #
+##########
 *~
 .DS_Store
 _cache/
+._*
 
+# Logs and databases #
+######################
+*.sqlite
+*.log
+*.sql
+
+# Windows #
+###########
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
