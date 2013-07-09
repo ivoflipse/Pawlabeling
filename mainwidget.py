@@ -121,7 +121,7 @@ class MainWidget(QWidget):
         self.frame = frame
         self.entire_plate_widget.change_frame(self.frame)
 
-    def load_file(self, event=None):
+    def load_file(self):
         # Get the text from the currentItem
         self.currentItem = self.measurement_tree.currentItem()
         parentItem = str(self.currentItem.parent().text(0))
@@ -212,11 +212,11 @@ class MainWidget(QWidget):
         self.current_paw_index = 0
         self.update_current_paw()
 
-    def undo_label(self, event=None):
+    def undo_label(self):
         self.previous_paw()
         self.delete_label()
 
-    def delete_label(self, event=None):
+    def delete_label(self):
         # Check if we have any contacts available, else don't bother
         if not self.contacts_available():
             return
@@ -226,7 +226,7 @@ class MainWidget(QWidget):
         # Update the screen
         self.update_current_paw()
 
-    def invalid_paw(self, event=None):
+    def invalid_paw(self):
         # Check if we have any contacts available, else don't bother
         if not self.contacts_available():
             return
@@ -235,22 +235,22 @@ class MainWidget(QWidget):
         # Update the screen
         self.update_current_paw()
 
-    def select_left_front(self, event=None):
+    def select_left_front(self):
         if self.paw_labels[self.current_paw_index] != -3:
             self.paw_labels[self.current_paw_index] = 0
         self.next_paw()
 
-    def select_left_hind(self, event=None):
+    def select_left_hind(self):
         if self.paw_labels[self.current_paw_index] != -3:
             self.paw_labels[self.current_paw_index] = 1
         self.next_paw()
 
-    def select_right_front(self, event=None):
+    def select_right_front(self):
         if self.paw_labels[self.current_paw_index] != -3:
             self.paw_labels[self.current_paw_index] = 2
         self.next_paw()
 
-    def select_right_hind(self, event=None):
+    def select_right_hind(self):
         if self.paw_labels[self.current_paw_index] != -3:
             self.paw_labels[self.current_paw_index] = 3
         self.next_paw()
@@ -288,7 +288,7 @@ class MainWidget(QWidget):
                 results.append(False)
         return any(results)
 
-    def previous_paw(self, event=None):
+    def previous_paw(self):
         if not self.contacts_available():
             return
 
@@ -308,7 +308,7 @@ class MainWidget(QWidget):
         self.contact_tree.setCurrentItem(item)
         self.update_current_paw()
 
-    def next_paw(self, event=None):
+    def next_paw(self):
         if not self.contacts_available():
             return
 
@@ -328,7 +328,7 @@ class MainWidget(QWidget):
         self.contact_tree.setCurrentItem(item)
         self.update_current_paw()
 
-    def switch_contacts(self, event=None):
+    def switch_contacts(self):
         item = self.contact_tree.selectedItems()[0]
         self.current_paw_index = int(item.text(0))
         self.update_current_paw()
@@ -428,11 +428,10 @@ class MainWidget(QWidget):
         json_file_name = "{}//{} labels.json".format(self.new_path, self.measurement_name)
         with open(json_file_name, "w+") as json_file:
             # Update somewhere in between
-            results = {}
-            results["dog_name"] = self.dog_name
-            results["measurement_name"] = self.measurement_name
-            results["paw_labels"] = self.paw_labels
-            results["paws"] = self.paws
+            results = {"dog_name": self.dog_name,
+                       "measurement_name": self.measurement_name,
+                       "paw_labels": self.paw_labels,
+                       "paws": self.paws}
 
             json_file.seek(0)  # Rewind the file, so we overwrite it
             json_file.write(json.dumps(results))

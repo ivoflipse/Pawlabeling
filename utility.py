@@ -10,6 +10,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 import numpy as np
 
+
 class Contact():
     """
     This class has only one real function and that's to take a contact and create some
@@ -22,13 +23,14 @@ class Contact():
         self.contour_list = {}
         for frame in self.frames:
             self.contour_list[frame] = contact[frame]
+
         center, min_x, max_x, min_y, max_y = update_bounding_box(contact)
-        self.total_min_x, self.total_max_x = min_x, max_x
-        self.total_min_y, self.total_max_y = min_y, max_y
-        self.total_centroid = center
         self.width = int(abs(max_x - min_x))
         self.height = int(abs(max_y - min_y))
         self.length = len(self.frames)
+        self.total_min_x, self.total_max_x = min_x, max_x
+        self.total_min_y, self.total_max_y = min_y, max_y
+        self.total_centroid = center
 
     def __str__(self):
         for frame in self.frames:
@@ -74,8 +76,8 @@ def update_bounding_box(contact):
     # Don't accept empty contacts
     assert len(contact) > 0
 
-    total_min_x, total_max_x = None, None
-    total_min_y, total_max_y = None, None
+    total_min_x, total_max_x = float("-inf"), float("inf")
+    total_min_y, total_max_y = float("-inf"), float("inf")
 
     # For each contour, get the sizes
     for frame in contact.keys():
@@ -292,7 +294,6 @@ def merging_contacts(contacts):
                 min_cluster, max_cluster = leader1, leader2
             else:
                 min_cluster, max_cluster = leader2, leader1
-            min_cluster, max_cluster = leader1, leader2
             # Merge the two contacts, so delete the nodes
             # that are part of the short cluster
             # and add them to the large cluster
@@ -441,6 +442,7 @@ def track_contours_graph(data):
     # have overlap that's >= than the frame threshold
     contacts = merging_contacts(contacts)
     return contacts
+
 
 def standardize_paw(paw, std_num_x=20, std_num_y=20):
     """Standardizes a paw print onto a std_num_y x std_num_x grid. Returns a 1D,
@@ -695,6 +697,7 @@ def calculate_cop(data):
 
 def scipy_cop(data):
     from scipy.ndimage.measurements import center_of_mass
+
     cop_x, cop_y = [], []
     height, width, length = data.shape
     for frame in range(length):
@@ -851,45 +854,6 @@ class ImageColorTable():
         return color_table
 
 
-def color_map():
-    from matplotlib.colors import LinearSegmentedColormap
-
-    my_color_map = {'blue': [(0.0, 0.0, 0.0), (0.12, 1.0, 1.0), (0.44, 0.0, 0.0), (0.76000000000000001, 0.0, 0.0),
-                             (0.92000000000000004, 0.0, 0.0), (1, 0.0, 0.0)],
-                    'green': [(0.0, 0.0, 0.0), (0.12, 0.29999999999999999, 0.29999999999999999), (0.44, 1.0, 1.0),
-                              (0.76000000000000001, 0.90000000000000002, 0.90000000000000002),
-                              (0.92000000000000004, 0.40000000000000002, 0.40000000000000002), (1, 0.0, 0.0)],
-                    'red': [(0.0, 0.0, 0.0), (0.12, 0.0, 0.0), (0.44, 0.0, 0.0), (0.76000000000000001, 1.0, 1.0),
-                            (0.92000000000000004, 1.0, 1.0), (1, 1.0, 1.0)]}
-    new_color_map = LinearSegmentedColormap('my_color_map', my_color_map)
-    return new_color_map
-
-
-def convert_to_hex(color_scale):
-    list_of_hex = []
-    for colors in color_scale:
-        hex_string = '#%02x%02x%02x' % tuple([np.round(val * 255) for val in colors])
-        list_of_hex.append(hex_string)
-    return list_of_hex
-
-
-def create_hex_colormap():
-    from matplotlib.colors import makeMappingArray
-
-    my_color_map = {'blue': [(0.0, 0.0, 0.0), (0.12, 1.0, 1.0), (0.44, 0.0, 0.0), (0.76000000000000001, 0.0, 0.0),
-                             (0.92000000000000004, 0.0, 0.0), (1, 0.0, 0.0)],
-                    'green': [(0.0, 0.0, 0.0), (0.12, 0.29999999999999999, 0.29999999999999999), (0.44, 1.0, 1.0),
-                              (0.76000000000000001, 0.90000000000000002, 0.90000000000000002),
-                              (0.92000000000000004, 0.40000000000000002, 0.40000000000000002), (1, 0.0, 0.0)],
-                    'red': [(0.0, 0.0, 0.0), (0.12, 0.0, 0.0), (0.44, 0.0, 0.0), (0.76000000000000001, 1.0, 1.0),
-                            (0.92000000000000004, 1.0, 1.0), (1, 1.0, 1.0)]}
-
-    red = makeMappingArray(256, my_color_map['red'])
-    green = makeMappingArray(256, my_color_map['green'])
-    blue = makeMappingArray(256, my_color_map['blue'])
-    color_scale = np.array(zip(red, green, blue))
-    return convert_to_hex(color_scale)
-
 def touches_edges(data, paw, padding=False):
     ny, nx, nt = data.shape
     if not padding:
@@ -897,10 +861,11 @@ def touches_edges(data, paw, padding=False):
         y_touch = (paw.total_min_y == 0) or (paw.total_max_y == nx)
         z_touch = (paw.frames[-1] == nt)
     else:
-        x_touch = (paw.total_min_x <= 1) or (paw.total_max_x >= ny-1)
-        y_touch = (paw.total_min_y <= 1) or (paw.total_max_y >= nx-1)
-        z_touch = (paw.frames[-1] >= nt-1)
+        x_touch = (paw.total_min_x <= 1) or (paw.total_max_x >= ny - 1)
+        y_touch = (paw.total_min_y <= 1) or (paw.total_max_y >= nx - 1)
+        z_touch = (paw.frames[-1] >= nt - 1)
     return x_touch or y_touch or z_touch
+
 
 def incomplete_step(data_slice):
     pressure_over_time = np.sum(np.sum(data_slice, axis=0), axis=0)
@@ -909,6 +874,7 @@ def incomplete_step(data_slice):
     if pressure_over_time[0] > (0.1 * max_pressure) or pressure_over_time[-1] > (0.1 * max_pressure):
         incomplete = True
     return incomplete
+
 
 def agglomerative_clustering(data, num_clusters):
     from collections import defaultdict
@@ -1057,7 +1023,7 @@ def timeseries2symbol(data, N, n, alphabet_size):
     return current_string
 
 
-def saxify(data, n=10, alphabet_size=4, plot_results=False, axes=None):
+def saxify(data, n=10, alphabet_size=4):
     """
     data is expected to be a 1D time serie
     n = number of segments
@@ -1081,31 +1047,7 @@ def saxify(data, n=10, alphabet_size=4, plot_results=False, axes=None):
     else:
         piecewise_aggregate_approximation = np.mean(np.reshape(data, (n, win_size)), axis=1)
 
-    # I might strip out N, because I don't use sliding windows
-    current_string = timeseries2symbol(data, N, n, alphabet_size)
-    symbols = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
-               'v', 'w', 'x', 'y', 'z']
-
-    new_string = "".join([symbols[int(current_string[i]) - 1] for i in range(n)])
-    if plot_results:
-        color = ['g', 'y', 'm', 'c']
-        # Rescale the piecewise data
-        piecewise_aggregate_approximation_plot = np.reshape(
-            np.tile(piecewise_aggregate_approximation[:, None], win_size), (win_size * n))  # data_len
-        axes.plot(piecewise_aggregate_approximation_plot, 'r')
-
-        for i in range(n):
-            x_start = i * win_size
-            x_end = x_start + win_size
-            x_mid = x_start + (x_end - x_start) / 2
-            # Subtract one, because we start indexing from zero
-            letter = int(current_string[i]) - 1
-            colorIndex = int(letter % len(color))
-            axes.plot(range(x_start, x_end), piecewise_aggregate_approximation_plot[x_start:x_end],
-                      color=color[colorIndex], linewidth=3)
-            axes.text(x_mid, piecewise_aggregate_approximation_plot[x_start], new_string[i], fontsize=14)
-
-    # Actually this returns the numeric version!
+    current_string = map_to_string(piecewise_aggregate_approximation, alphabet_size)
     return current_string
 
 
