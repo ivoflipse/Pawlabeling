@@ -159,7 +159,7 @@ class MainWidget(QWidget):
         self.nameLabel.setText("Measurement name: {}".format(self.file_name))
 
     def track_contacts(self):
-        print "Track!"
+        print("Track!")
         paws = utility.track_contours_graph(self.measurement)
         # Convert them to class objects
         self.paws = []
@@ -257,7 +257,7 @@ class MainWidget(QWidget):
 
     def update_current_paw(self):
         if self.current_paw_index <= len(self.paws) and len(self.paws) > 0:
-            for index, paw_label in self.paw_labels.items():
+            for index, paw_label in list(self.paw_labels.items()):
                 # Get the current row from the tree
                 item = self.contact_tree.topLevelItem(index)
                 item.setText(1, self.paw_dict[paw_label])
@@ -281,7 +281,7 @@ class MainWidget(QWidget):
 
     def check_label_status(self):
         results = []
-        for paw_label in self.paw_labels.values():
+        for paw_label in list(self.paw_labels.values()):
             if paw_label == -2:
                 results.append(True)
             else:
@@ -335,8 +335,8 @@ class MainWidget(QWidget):
 
     def add_contacts(self):
         # Print how many contacts we found
-        print "Number of paws found:", len(self.paws)
-        print "Starting frames: ", [paw.frames[0] for paw in self.paws]
+        print("Number of paws found: {}".format(len(self.paws)))
+        print("Starting frames: {}".format([paw.frames[0] for paw in self.paws]))
 
         # Clear any existing contacts
         self.contact_tree.clear()
@@ -401,8 +401,8 @@ class MainWidget(QWidget):
             treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green
             self.currentItem.setForeground(0, treeBrush)
             self.currentItem.setTextColor(0, QColor(Qt.green))
-        except Exception, e:
-            print "Pickling failed!", e
+        except Exception as e:
+            print("Pickling failed!", e)
 
     def create_results_folder(self):
         """
@@ -460,7 +460,7 @@ class MainWidget(QWidget):
         pickle.dump(results, output)
         # Close the output file
         output.close()
-        print "Pickled %s at location %s" % (self.file_name, self.new_path)
+        print("Pickled %s at location %s" % (self.file_name, self.new_path))
 
     def load_pickled(self):
         import pickle

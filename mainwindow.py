@@ -176,7 +176,7 @@ class MainWindow(QMainWindow):
         self.arrow_filter = ArrowFilter()
         self.installEventFilter(self.arrow_filter)
 
-        self.main_widget.load_file(event=None)
+        self.main_widget.load_file()
 
 
     def create_action(self, text, shortcut=None, icon=None,
@@ -199,7 +199,7 @@ class MainWindow(QMainWindow):
         return action
 
 class ArrowFilter(QObject):
-    def eventFilter(self, parent, event):
+    def eventFilter(self, parent, event=None):
         if event.type() == QEvent.KeyPress:
             if event.key() == Qt.Key_Left:
                 parent.main_widget.slid.ToLeft()

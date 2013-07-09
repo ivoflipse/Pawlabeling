@@ -34,9 +34,9 @@ class Contact():
 
     def __str__(self):
         for frame in self.frames:
-            print "Frame %s", frame
+            print("Frame %s", frame)
             for index, contour in enumerate(self.contour_list[frame]):
-                print "Contour %s: %s" % (index, "".join([str(c) for c in contour]))
+                print("Contour %s: %s" % (index, "".join([str(c) for c in contour])))
 
 
 def calculate_bounding_box(contour):
@@ -76,20 +76,13 @@ def update_bounding_box(contact):
     # Don't accept empty contacts
     assert len(contact) > 0
 
-    total_min_x, total_max_x = float("-inf"), float("inf")
-    total_min_y, total_max_y = float("-inf"), float("inf")
+    total_min_x, total_max_x = float("inf"), float("-inf")
+    total_min_y, total_max_y = float("inf"), float("-inf")
 
     # For each contour, get the sizes
-    for frame in contact.keys():
+    for frame in list(contact.keys()):
         for contour in contact[frame]:
-        #        for contour in maxContours:
             center, min_x, max_x, min_y, max_y = calculate_bounding_box(contour)
-            if total_min_x is None:
-                total_min_x = min_x
-                total_max_x = max_x
-                total_min_y = min_y
-                total_max_y = max_y
-
             if min_x < total_min_x:
                 total_min_x = min_x
             if max_x > total_max_x:
@@ -116,7 +109,7 @@ def closest_contact(contact1, contact2, center1, euclidean_distance):
     an earlier position in the heap.
     """
     # Perhaps I should add a boolean for when there's a gap or not
-    frames = contact1.keys()
+    frames = list(contact1.keys())
     minFrame, maxFrame = min(frames), max(frames)
     # This makes sure it checks if there's nothing close in the neighboring frame
     # Shouldn't this be up to the gap?
@@ -169,7 +162,7 @@ def calculate_temporal_spatial_variables(contacts):
         surface = width * height
         surfaces.append(surface)
 
-        lengths.append(len(contact.keys()))
+        lengths.append(len(list(contact.keys())))
     return sides, centers, surfaces, lengths
 
 
@@ -311,7 +304,7 @@ def merging_contacts(contacts):
     # we might have to move things around several times
     # This is where we actually merge the contacts in
     # each cluster
-    for key, indices in clusters.items():
+    for key, indices in list(clusters.items()):
         newContact = {}
         for index in indices:
             contact = contacts[index]
@@ -597,7 +590,7 @@ def convert_contour_to_slice(data, contact):
     min_z, max_z = frames[0], frames[-1]
     # Create an empty array that should fit the entire contact
     newData = np.zeros_like(data)
-    for frame, contours in contact.items():
+    for frame, contours in list(contact.items()):
         # Pass a single frame dictionary as if it were a contact to get its bounding box
         center, min_x, max_x, min_y, max_y = update_bounding_box({frame: contours})
         # We need to slice around the contacts a little wider, I wonder what problems this might cause
@@ -913,7 +906,7 @@ def agglomerative_clustering(data, num_clusters):
                     del clusters[node]
 
     labels = [0 for _ in range(len(leaders))]
-    keys = clusters.keys()
+    keys = list(clusters.keys())
     for leader in clusters:
         for node in clusters[leader]:
             labels[node] = keys.index(leader)
@@ -924,7 +917,7 @@ def agglomerative_clustering(data, num_clusters):
 def chunks(l, n):
     """ Yield successive n-sized chunks from l.
     """
-    for i in xrange(0, len(l), n):
+    for i in range(0, len(l), n):
         yield l[i:i + n]
 
 
@@ -985,7 +978,7 @@ def timeseries2symbol(data, N, n, alphabet_size):
     from math import floor
 
     if alphabet_size > 20:
-        print "Alphabet is too large!"
+        print("Alphabet is too large!")
 
     win_size = int(floor(N / n))
     piecewise_aggregate_approximation = []  # Dummy variable
@@ -1111,13 +1104,13 @@ def min_dist(str1, str2, alphabet_size, compression_ratio):
         dist: lower-bounding distance
     """
     if len(str1) != len(str2):
-        print "Error: strings must have equal length!"
+        print("Error: strings must have equal length!")
         return
 
     # Wait does this check whether any of the chars
     # Matlab: if (any(str1 > alphabet_size) | any(str2 > alphabet_size))
     if any(str1 > alphabet_size) or any(str2 > alphabet_size):
-        print "Error: some symbols in the string exceed the alphabet_size!"
+        print("Error: some symbols in the string exceed the alphabet_size!")
         return
 
     distances = calc_distances(str1, str2, alphabet_size)

@@ -57,6 +57,6 @@ def main():
     """
     I was trying to use a config file, but I haven't figured out how to share the info
     """
-    import ConfigParser
-    config = ConfigParser.ConfigParser()
+    import configparser
+    config = configparser.ConfigParser()
     config.read("configuration.ini")

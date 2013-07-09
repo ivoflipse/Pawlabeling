@@ -80,7 +80,7 @@ class PawsWidget(QWidget):
             self.paws[paw_label][1].append(average_paw)
 
         # Update the widgets
-        for paw_label, data_list in self.paws.items():
+        for paw_label, data_list in list(self.paws.items()):
             widget = self.paws_list.get(paw_label, None)
             # If -2 or -3 there will be no widget
             if widget:
@@ -88,8 +88,8 @@ class PawsWidget(QWidget):
 
         try:
             self.predict_label()
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
 
     def predict_label(self):
         current_paw = self.paws_list[-1]
@@ -107,7 +107,7 @@ class PawsWidget(QWidget):
         durations = []
         data_list = []
         # Then iterate through the other paws
-        for paw_label, paw in self.paws_list.items():
+        for paw_label, paw in list(self.paws_list.items()):
             # Skip comparing with yourself
             if paw_label == -1:
                 continue
@@ -134,11 +134,11 @@ class PawsWidget(QWidget):
 
 
     def update_n_max(self, n_max):
-        for paw_label, paw in self.paws_list.items():
+        for paw_label, paw in list(self.paws_list.items()):
             paw.n_max = n_max
 
     def update_shape(self, mx, my):
-        for paw_label, paw in self.paws_list.items():
+        for paw_label, paw in list(self.paws_list.items()):
             paw.mx = mx
             paw.my = my
 
@@ -146,7 +146,7 @@ class PawsWidget(QWidget):
 
     def clear_paws(self):
         self.paws = {}
-        for paw_label, paw in self.paws_list.items():
+        for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()
 
 
