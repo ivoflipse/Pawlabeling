@@ -98,7 +98,7 @@ class EntirePlateWidget(QWidget):
     def update_bounding_boxes(self, paw_labels, current_paw_index):
         self.clear_bounding_box()
 
-        for index, paw_label in paw_labels.items():
+        for index, paw_label in list(paw_labels.items()):
             # Mark unlabeled paws white if they're not the current paw
             #if index != current_paw_index and paw_label == -1:
             #    paw_label = -2

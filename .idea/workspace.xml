@@ -2,18 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" name="Default" comment="">
+      <change type="MOVED" beforePath="C:\Dropbox\Development\Pawlabeling\entirePlateWidget.py" afterPath="$PROJECT_DIR$/entireplatewidget.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/settings/configuration.py" afterPath="$PROJECT_DIR$/settings/configuration.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mainwidget.py" afterPath="$PROJECT_DIR$/mainwidget.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pawswidget.py" afterPath="$PROJECT_DIR$/pawswidget.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/requirements.txt" afterPath="$PROJECT_DIR$/requirements.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utility.py" afterPath="$PROJECT_DIR$/utility.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Pawlabeling.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/mainwindow.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373392639579" ignored="false" />
-    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373396068531" ignored="false" />
-    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373396013809" ignored="false" />
-    <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373396310776" ignored="false" />
+    <file path="/mainwindow.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373397105825" ignored="false" />
+    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373397538834" ignored="false" />
+    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373402724782" ignored="false" />
+    <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373400183546" ignored="false" />
     <file path="/popupwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372664863442" ignored="false" />
     <file path="/widget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372667192968" ignored="false" />
     <file path="/entirePlateWidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373282315449" ignored="false" />
@@ -47,7 +48,7 @@
     <file path="/surfacepanel.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373383384558" ignored="false" />
     <file path="/requirements.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373396124796" ignored="false" />
     <file path="/.gitignore" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373389980646" ignored="false" />
-    <file path="/configuration.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373393002481" ignored="false" />
+    <file path="/configuration.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373398180714" ignored="false" />
     <file path="/entireplatewidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373393340305" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -112,7 +113,7 @@
       <file leaf-file-name="mainwindow.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mainwindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="34" column="100" selection-start="1308" selection-end="1308" vertical-scroll-proportion="-9.24">
+            <state line="201" column="44" selection-start="10999" selection-end="10999" vertical-scroll-proportion="-136.68">
               <folding>
                 <element signature="e#354#364#0" expanded="true" />
               </folding>
@@ -120,10 +121,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mainwidget.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="mainwidget.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mainwidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="331" column="9" selection-start="12910" selection-end="12910" vertical-scroll-proportion="-42.54">
+            <state line="445" column="51" selection-start="18377" selection-end="18377" vertical-scroll-proportion="0.8006728">
               <folding>
                 <element signature="e#354#363#0" expanded="true" />
               </folding>
@@ -134,7 +135,7 @@
       <file leaf-file-name="configuration.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/settings/configuration.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="40" column="15" selection-start="1007" selection-end="1007" vertical-scroll-proportion="0.0">
+            <state line="38" column="34" selection-start="1121" selection-end="1121" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="e#353#362#0" expanded="true" />
               </folding>
@@ -145,9 +146,9 @@
       <file leaf-file-name="pawswidget.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pawswidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="8" column="1" selection-start="355" selection-end="355" vertical-scroll-proportion="0.0">
+            <state line="8" column="0" selection-start="354" selection-end="354" vertical-scroll-proportion="0.0">
               <folding>
-                <element signature="e#383#409#0" expanded="true" />
+                <element signature="e#354#381#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -164,10 +165,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utility.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="utility.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/utility.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="78" column="0" selection-start="2790" selection-end="2790" vertical-scroll-proportion="0.25974026">
+            <state line="50" column="33" selection-start="1871" selection-end="1871" vertical-scroll-proportion="-34.0">
               <folding>
                 <element signature="e#354#381#0" expanded="true" />
               </folding>
@@ -216,13 +217,13 @@
         <option value="$PROJECT_DIR$/configuration.ini" />
         <option value="$PROJECT_DIR$/settings/__init__.py" />
         <option value="$PROJECT_DIR$/settings/configuration.ini" />
-        <option value="$PROJECT_DIR$/settings/configuration.py" />
-        <option value="$PROJECT_DIR$/mainwindow.py" />
         <option value="$PROJECT_DIR$/entireplatewidget.py" />
         <option value="$PROJECT_DIR$/requirements.txt" />
+        <option value="$PROJECT_DIR$/mainwindow.py" />
         <option value="$PROJECT_DIR$/pawswidget.py" />
-        <option value="$PROJECT_DIR$/mainwidget.py" />
+        <option value="$PROJECT_DIR$/settings/configuration.py" />
         <option value="$PROJECT_DIR$/utility.py" />
+        <option value="$PROJECT_DIR$/mainwidget.py" />
       </list>
     </option>
   </component>
@@ -682,7 +683,15 @@
       <created>1373396075808</created>
       <updated>1373396075808</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="Fixed a couple of errors, which might have some consequences">
+      <created>1373397081563</created>
+      <updated>1373397081563</updated>
+    </task>
+    <task id="LOCAL-00036" summary="Ran 2to3 on the codebase">
+      <created>1373397566589</created>
+      <updated>1373397566589</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -700,7 +709,7 @@
       <window_info id="REST Client" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22861753" sideWeight="0.6" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22861753" sideWeight="0.675" order="1" side_tool="false" content_ui="combo" />
       <window_info id="IView" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="true" weight="0.35403225" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" x="-806" y="6" width="806" height="969" />
       <window_info id="SQL" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="17" side_tool="false" content_ui="tabs" />
@@ -712,11 +721,11 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="RESTClient" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.121570736" sideWeight="0.6" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.121570736" sideWeight="0.675" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295626" sideWeight="0.76693547" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="JSON Formatter" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.4" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Graphical Navigator" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="10" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
@@ -765,7 +774,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Reverting the way things are stored, so it does it on measurement by measurement basis" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ran 2to3 on the codebase" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -779,8 +788,6 @@
     <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="Tried adding a second shortcut, but I fear I'm just overwriting it now..." />
-    <MESSAGE value="Fixed the contactTree so it displays the essential info" />
     <MESSAGE value="I changed the coloring in the contacttree, but I'd like it to be driven by which row is selected in the table" />
     <MESSAGE value="I'm pretty satisfied with how it now selects paws" />
     <MESSAGE value="Added some bound checks for when there are no paws, bit ugly, but I don't know how to ignore events if the tree is empty" />
@@ -804,6 +811,8 @@
     <MESSAGE value="Added a gitignore file" />
     <MESSAGE value="Refactored the code so it uses configuration.py, sadly the ini file does nothing for now" />
     <MESSAGE value="Reverting the way things are stored, so it does it on measurement by measurement basis" />
+    <MESSAGE value="Fixed a couple of errors, which might have some consequences" />
+    <MESSAGE value="Ran 2to3 on the codebase" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -835,13 +844,6 @@
     <entry file="file://$USER_HOME$/.IntelliJIdea12/system/python_stubs/-946255732/PySide/QtCore.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="8049" column="6" selection-start="244793" selection-end="244793" vertical-scroll-proportion="0.47493038">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="41" column="0" selection-start="429" selection-end="429" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
@@ -880,15 +882,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/settings/configuration.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="40" column="15" selection-start="1007" selection-end="1007" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#353#362#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/entireplatewidget.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="35" column="0" selection-start="1323" selection-end="1323" vertical-scroll-proportion="0.0">
@@ -905,38 +898,54 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/pawswidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="0" selection-start="354" selection-end="354" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#354#381#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="38" column="2" selection-start="402" selection-end="402" vertical-scroll-proportion="0.21866295">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/settings/configuration.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="38" column="34" selection-start="1121" selection-end="1121" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="e#353#362#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/mainwindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="34" column="100" selection-start="1308" selection-end="1308" vertical-scroll-proportion="-9.24">
+        <state line="201" column="44" selection-start="10999" selection-end="10999" vertical-scroll-proportion="-136.68">
           <folding>
             <element signature="e#354#364#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pawswidget.py">
+    <entry file="file://$PROJECT_DIR$/utility.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="8" column="1" selection-start="355" selection-end="355" vertical-scroll-proportion="0.0">
+        <state line="50" column="33" selection-start="1871" selection-end="1871" vertical-scroll-proportion="-34.0">
           <folding>
-            <element signature="e#383#409#0" expanded="true" />
+            <element signature="e#354#381#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mainwidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="331" column="9" selection-start="12910" selection-end="12910" vertical-scroll-proportion="-42.54">
+        <state line="445" column="51" selection-start="18377" selection-end="18377" vertical-scroll-proportion="0.8006728">
           <folding>
             <element signature="e#354#363#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utility.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="78" column="0" selection-start="2790" selection-end="2790" vertical-scroll-proportion="0.25974026">
-          <folding>
-            <element signature="e#354#381#0" expanded="true" />
           </folding>
         </state>
       </provider>

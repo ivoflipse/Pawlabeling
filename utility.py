@@ -28,9 +28,24 @@ class Contact():
         self.width = int(abs(max_x - min_x))
         self.height = int(abs(max_y - min_y))
         self.length = len(self.frames)
-        self.total_min_x, self.total_max_x = min_x, max_x
-        self.total_min_y, self.total_max_y = min_y, max_y
-        self.total_centroid = center
+        self.total_min_x, self.total_max_x = int(min_x), int(max_x)
+        self.total_min_y, self.total_max_y = int(min_y), int(max_y)
+        self.total_centroid = (int(center[0]), int(center[1]))
+
+    def contact_to_dict(self):
+        return {
+            "width": self.width,
+            "height": self.height,
+            "length": self.length,
+            "min_x": self.total_min_x,
+            "max_x": self.total_max_x,
+            "min_y": self.total_min_y,
+            "max_y": self.total_max_y,
+            "min_z": self.frames[0],
+            "max_z": self.frames[-1],
+            "center_x": self.total_centroid[0],
+            "center_y": self.total_centroid[1]
+        }
 
     def __str__(self):
         for frame in self.frames:
@@ -287,7 +302,7 @@ def merging_contacts(contacts):
                 min_cluster, max_cluster = leader1, leader2
             else:
                 min_cluster, max_cluster = leader2, leader1
-            # Merge the two contacts, so delete the nodes
+                # Merge the two contacts, so delete the nodes
             # that are part of the short cluster
             # and add them to the large cluster
             for node in clusters[min_cluster]:

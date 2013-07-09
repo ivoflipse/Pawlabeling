@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #-----------------------------------------------------------------------------
 
-#from PySide.QtCore import *
+from PySide.QtCore import *
 from PySide.QtGui import *
 import numpy as np
 import utility
