@@ -1,9 +1,14 @@
+#-----------------------------------------------------------------------------
+# Copyright (c) 2013, Paw Labeling Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#-----------------------------------------------------------------------------
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import numpy as np
-import scipy.ndimage
-import heapq
-
 
 class Contact():
     """
@@ -190,6 +195,7 @@ def merging_contacts(contacts):
     cause problems if dogs place the paws too close too each other.
     This will fail if the dogs paws are close for more frames than the threshold.
     """
+    import heapq
 
     # Get the important temporal spatial variables
     sides, centerList, surfaces, lengths = calculate_temporal_spatial_variables(contacts)
@@ -322,10 +328,10 @@ def find_contours(data):
     rows, cols, numFrames = data.shape
     for frame in range(numFrames):
         # Threshold the data
-        cop_y_data = data[:, :, frame].T * 1.
-        _, cop_y_data = threshold(cop_y_data, 0.0, 1, THRESH_BINARY)
+        copy_data = data[:, :, frame].T * 1.
+        _, copy_data = threshold(copy_data, 0.0, 1, THRESH_BINARY)
         # The astype conversion here is quite expensive!
-        contour_list, _ = findContours(cop_y_data.astype('uint8'), RETR_EXTERNAL, CHAIN_APPROX_NONE)
+        contour_list, _ = findContours(copy_data.astype('uint8'), RETR_EXTERNAL, CHAIN_APPROX_NONE)
         if contour_list:
             contour_dict[frame] = contour_list
     return contour_dict
@@ -435,19 +441,6 @@ def track_contours_graph(data):
     # have overlap that's >= than the frame threshold
     contacts = merging_contacts(contacts)
     return contacts
-
-
-class arrow_filter(QObject):
-    def eventFilter(self, parent, event):
-        if event.type() == QEvent.KeyPress:
-            if event.key() == Qt.Key_Left:
-                parent.mainWidget.slid.ToLeft()
-                return True
-            if event.key() == Qt.Key_Right:
-                parent.mainWidget.slid.ToRight()
-                return True
-        return False
-
 
 def standardize_paw(paw, std_num_x=20, std_num_y=20):
     """Standardizes a paw print onto a std_num_y x std_num_x grid. Returns a 1D,
@@ -701,10 +694,11 @@ def calculate_cop(data):
 
 
 def scipy_cop(data):
+    from scipy.ndimage.measurements import center_of_mass
     cop_x, cop_y = [], []
     height, width, length = data.shape
     for frame in range(length):
-        y, x = scipy.ndimage.measurements.center_of_mass(data[:, :, frame])
+        y, x = center_of_mass(data[:, :, frame])
         cop_x.append(x + 1)
         cop_y.append(y + 1)
     return cop_x, cop_y
@@ -896,15 +890,25 @@ def create_hex_colormap():
     color_scale = np.array(zip(red, green, blue))
     return convert_to_hex(color_scale)
 
+def touches_edges(data, paw, padding=False):
+    ny, nx, nt = data.shape
+    if not padding:
+        x_touch = (paw.total_min_x == 0) or (paw.total_max_x == nx)
+        y_touch = (paw.total_min_y == 0) or (paw.total_max_y == ny)
+        z_touch = (paw.frames[-1] == nt)
+    else:
+        x_touch = (paw.total_max_x <= 1) or (paw.total_max_x >= nx-1)
+        y_touch = (paw.total_max_x <= 1) or (paw.total_max_y >= ny-1)
+        z_touch = (paw.frames[-1] >= nt-1)
+    return x_touch or y_touch or z_touch
 
-def touches_edges(data, data_slice):
-    ny, nx, nt = np.shape(data)
-    y, x, t = data_slice
-    xtouch = (x.start == 0) or (x.stop == nx)
-    ytouch = (y.start == 0) or (y.stop == ny)
-    ttouch = (t.stop == nt)
-    return xtouch or ytouch or ttouch
-
+def incomplete_step(data_slice):
+    pressure_over_time = np.sum(np.sum(data_slice, axis=0), axis=0)
+    max_pressure = np.max(pressure_over_time)
+    incomplete = False
+    if pressure_over_time[0] > (0.1 * max_pressure) or pressure_over_time[-1] > (0.1 * max_pressure):
+        incomplete = True
+    return incomplete
 
 def agglomerative_clustering(data, num_clusters):
     from collections import defaultdict

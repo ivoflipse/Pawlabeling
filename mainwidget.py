@@ -1,10 +1,18 @@
+#-----------------------------------------------------------------------------
+# Copyright (c) 2013, Paw Labeling Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#-----------------------------------------------------------------------------
+
 import os
 import pickle
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from entirePlateWidget import EntirePlateWidget
+from entireplatewidget import EntirePlateWidget
 from pawswidget import PawsWidget
 import utility
 import numpy as np
@@ -36,7 +44,6 @@ class MainWidget(QWidget):
         self.path = path
         self.store_path = store_path
 
-        # TODO Make these variable shared between all widgets, possibly putting it in config files?
         self.colors = [
             QColor(Qt.green),
             QColor(Qt.darkGreen),
@@ -82,9 +89,10 @@ class MainWidget(QWidget):
         self.contact_tree.itemActivated.connect(self.switch_contacts)
 
         # Pick the first item (if any exist)
+        # TODO move this call to mainwindow so its not ran until AFTER everything has been initialized
         self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
 
-        self.entirePlateWidget = EntirePlateWidget(self.degree,
+        self.entire_plate_widget = EntirePlateWidget(self.degree,
                                                    entire_plate_widget_size,
                                                    self)
 
@@ -106,7 +114,7 @@ class MainWidget(QWidget):
         self.slider_layout.addWidget(self.slider_text)
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.nameLabel)
-        self.layout.addWidget(self.entirePlateWidget)
+        self.layout.addWidget(self.entire_plate_widget)
         self.layout.addLayout(self.slider_layout)
         self.layout.addWidget(self.paws_widget)
         self.vertical_layout = QVBoxLayout()
@@ -142,7 +150,7 @@ class MainWidget(QWidget):
     def slider_moved(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))
         self.frame = frame
-        self.entirePlateWidget.change_frame(self.frame)
+        self.entire_plate_widget.change_frame(self.frame)
 
     def load_file(self, event=None):
         # Get the text from the currentItem
@@ -159,14 +167,14 @@ class MainWidget(QWidget):
         # Check the orientation of the plate and make sure its left to right
         self.measurement = utility.fix_orientation(self.measurement)
 
-        self.entirePlateWidget.measurement = self.measurement
+        self.entire_plate_widget.measurement = self.measurement
 
         # Get the number of Frames for the slider
         self.height, self.width, self.num_frames = self.measurement.shape
         self.n_max = self.measurement.max()
         self.paws_widget.update_n_max(self.n_max)
         # Send the measurement to the widget
-        self.entirePlateWidget.new_measurement(self.measurement)
+        self.entire_plate_widget.new_measurement(self.measurement)
         # Remove outdated info from the contact tree
         self.contact_tree.clear()
         # Reset all the stored values
@@ -192,7 +200,6 @@ class MainWidget(QWidget):
         for index, paw in enumerate(paws):
             paw = utility.Contact(paw)
             self.paws.append(paw)
-            self.paw_labels[index] = -1
 
         # Sort the contacts based on their position along the first dimension    
         self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
@@ -201,7 +208,7 @@ class MainWidget(QWidget):
         # Get the maximum dimensions of the paws
         self.mx = 0
         self.my = 0
-        for paw in self.paws:
+        for index, paw in enumerate(self.paws):
             data_slice = utility.convert_contour_to_slice(self.measurement, paw.contour_list)
             x, y, z = data_slice.shape
             self.paw_data.append(data_slice)
@@ -209,6 +216,15 @@ class MainWidget(QWidget):
                 self.mx = x
             if y > self.my:
                 self.my = y
+
+            # I've made -2 the label for unlabeled paws, -1 == unlabeled + selected
+            paw_label = -2
+            # Test if the paw touches the edge of the plate
+            if utility.touches_edges(self.measurement, paw, padding=True):
+                paw_label = -3  # Mark it as invalid
+            elif utility.incomplete_step(data_slice):
+                paw_label = -3
+            self.paw_labels[index] = paw_label
 
         for paw in self.paw_data:
             x, y, z = paw.shape
@@ -222,7 +238,8 @@ class MainWidget(QWidget):
         # Add the paws to the contact_tree
         self.add_contacts()
         # Update the widget's paws too
-        self.entirePlateWidget.new_paws(self.paws)
+        self.entire_plate_widget.new_paws(self.paws)
+        self.entire_plate_widget.draw_gait_line()
         self.current_paw_index = 0
         self.update_current_paw()
 
@@ -235,16 +252,14 @@ class MainWidget(QWidget):
         if self.current_paw_index < 0:
             self.current_paw_index = 0
 
-        # Remove the label
-        self.paw_labels[self.current_paw_index] = -1
-        # Update the screen
-        self.update_current_paw()
+        self.delete_label()
 
     def delete_label(self, event=None):
         # Check if we have any contacts available, else don't bother
         if not self.contacts_available():
             return
-            # Remove the label
+
+        # Remove the label
         self.paw_labels[self.current_paw_index] = -1
         # Update the screen
         self.update_current_paw()
@@ -276,6 +291,7 @@ class MainWidget(QWidget):
 
     def update_current_paw(self):
         if self.current_paw_index <= len(self.paws) and len(self.paws) > 0:
+            print self.paw_labels
             for index, paw_label in self.paw_labels.items():
                 # Get the current row from the tree
                 item = self.contact_tree.topLevelItem(index)
@@ -284,7 +300,7 @@ class MainWidget(QWidget):
                 # If its not the currently selected paw, change the label to gibberish
                 if self.current_paw_index != index and paw_label == -1:
                     paw_label = -2
-                if self.current_paw_index == index:
+                if self.current_paw_index == index and paw_label != -3:
                     paw_label = -1
 
                 # Update the colors in the contact tree
@@ -292,7 +308,7 @@ class MainWidget(QWidget):
                     item.setBackgroundColor(idx, self.colors[paw_label])
 
             # Update the bounding boxes
-            self.entirePlateWidget.update_bounding_boxes(self.paw_labels, self.current_paw_index)
+            self.entire_plate_widget.update_bounding_boxes(self.paw_labels, self.current_paw_index)
             # Update the paws widget
             self.paws_widget.update_paws(self.paw_labels, self.current_paw_index, self.paw_data, self.average_data)
 
@@ -314,9 +330,17 @@ class MainWidget(QWidget):
         if not self.contacts_available():
             return
 
+        # If we haven't labeled the current paw yet, mark it as unselected
+        if self.paw_labels[self.current_paw_index] == -1:
+            self.paw_labels[self.current_paw_index] = -2
+
         self.current_paw_index -= 1
         if self.current_paw_index < 0:
             self.current_paw_index = 0
+
+        # If we encounter an invalid paw and its not the first paw, skip this one
+        if self.paw_labels[self.current_paw_index] == -3 and self.current_paw_index > 0:
+            self.previous_paw()
 
         item = self.contact_tree.topLevelItem(self.current_paw_index)
         self.contact_tree.setCurrentItem(item)
@@ -326,9 +350,17 @@ class MainWidget(QWidget):
         if not self.contacts_available():
             return
 
+        # If we haven't labeled the current paw yet, mark it as unselected
+        if self.paw_labels[self.current_paw_index] == -1:
+            self.paw_labels[self.current_paw_index] = -2
+
         self.current_paw_index += 1
         if self.current_paw_index >= len(self.paws):
             self.current_paw_index = len(self.paws) - 1
+
+        # If we encounter an invalid paw and its not the last paw, skip this one
+        if self.paw_labels[self.current_paw_index] == -3 and self.current_paw_index < len(self.paws):
+            self.next_paw()  # Woops, recursive loop right here!
 
         item = self.contact_tree.topLevelItem(self.current_paw_index)
         self.contact_tree.setCurrentItem(item)
@@ -350,7 +382,7 @@ class MainWidget(QWidget):
             x, y, z = paw.shape
             rootItem = QTreeWidgetItem(self.contact_tree)
             rootItem.setText(0, str(index))
-            rootItem.setText(1, "-1")
+            rootItem.setText(1, self.paw_dict[self.paw_labels[index]])
             rootItem.setText(2, str(z))  # Sets the frame count
             surface = np.max([np.count_nonzero(paw[:, :, frame]) for frame in range(z)])
             rootItem.setText(3, str(int(surface)))
@@ -388,7 +420,7 @@ class MainWidget(QWidget):
                         self.file_names[self.dog_name][file_name] = name
                         childItem = QTreeWidgetItem(root_item, [file_name])
                         # Check if the measurement has already been store_path
-                        if self.find_pickled_file(self.dog_name, file_name) is not None:
+                        if self.find_stored_file(self.dog_name, file_name) is not None:
                             # Change the foreground to green
                             childItem.setForeground(0, green_brush)
 
@@ -401,7 +433,7 @@ class MainWidget(QWidget):
         # Store the store_path result
         try:
             #self.pickle_result()
-            self.dump_to_json()  # Switched from pickling to JSON
+            self.results_to_json()  # Switched from pickling to JSON
 
             # Change the color of the measurement in the tree to green
             treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green
@@ -426,13 +458,14 @@ class MainWidget(QWidget):
         if not os.path.exists(self.new_path):
             os.mkdir(self.new_path)
 
-    def dump_to_json(self):
+    def results_to_json(self):
         """
         This creates or takes a json file for the current dog and fills or updates it with the new
         paw information.
         """
         import json
-        with open("{}//{}.labels.json".format(self.new_path, self.dog_name), "wb") as json_file:
+        json_file_name = "{}//{} labels.json".format(self.new_path, self.dog_name)
+        with open(json_file_name, "w+") as json_file:
             # Read the existing data
             data = json.load(json_file)
 
@@ -458,8 +491,9 @@ class MainWidget(QWidget):
         """
         Pickles the paws to the pickle folder with the name of the measurement as file name
         """
+        import pickle
         # Open a file at this path with the file_name as name
-        output = open("%s//%s.labels.pkl" % (self.new_path, self.measurement_name), 'wb')
+        output = open("%s//%s labels.pkl" % (self.new_path, self.measurement_name), 'wb')
 
         # The result in this case will be the index + 3D slice + sideid
         results = []
@@ -479,7 +513,8 @@ class MainWidget(QWidget):
         print "Pickled %s at location %s" % (self.file_name, self.new_path)
 
     def load_pickled(self):
-        input_path = self.find_pickled_file(self.dog_name, self.measurement_name)
+        import pickle
+        input_path = self.find_stored_file(self.dog_name, self.measurement_name)
         # If an inputFile has been found, unpickle it
         if input_path:
             input_file = open(input_path, 'rb')
@@ -489,13 +524,12 @@ class MainWidget(QWidget):
             return True
         return False
 
-    def find_pickled_file(self, dogName, file_name):
+    def find_stored_file(self, dog_name, file_name):
         # For the current file_name, check if there's a store_path file, if so load it
         # Get the name of the dog
-        path = os.path.join(self.store_path, dogName)
+        path = os.path.join(self.store_path, dog_name)
         # If the folder exists
         if os.path.exists(path):
-            input_path = None
             # Check if the current file's name is in that folder
             for root, dirs, files in os.walk(path):
                 for f in files:

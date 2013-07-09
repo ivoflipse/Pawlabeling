@@ -1,0 +1,4 @@
+numpy
+PyQt4
+cv2
+scipy

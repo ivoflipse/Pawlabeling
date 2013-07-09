@@ -1,3 +1,11 @@
+#-----------------------------------------------------------------------------
+# Copyright (c) 2013, Paw Labeling Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#-----------------------------------------------------------------------------
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import numpy as np
@@ -65,10 +73,8 @@ class PawsWidget(QWidget):
         for index, paw in enumerate(paw_data):
             average_paw = average_data[index]
             paw_label = paw_labels[index]
-            # We don't do anything with unlabeled paws that aren't selected
-            if current_paw_index != index and paw_label == -1:
-                continue
-            elif paw_label == -3:
+            # We don't do anything with unlabeled paws that aren't selected or invalid
+            if paw_label < -1:
                 continue
                 # If we do have a label, but we have selected it, update the current_paw too
             if current_paw_index == index and paw_label != -1:

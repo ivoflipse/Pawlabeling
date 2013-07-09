@@ -2,25 +2,55 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/entirePlateWidget.py" afterPath="$PROJECT_DIR$/entirePlateWidget.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/COPYING.txt" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/configuration.ini" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/readme.md" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/requirements.txt" />
+      <change type="MOVED" beforePath="C:\Dropbox\Development\Pawlabeling\entirePlateWidget.py" afterPath="$PROJECT_DIR$/entireplatewidget.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mainwidget.py" afterPath="$PROJECT_DIR$/mainwidget.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mainwindow.py" afterPath="$PROJECT_DIR$/mainwindow.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pawswidget.py" afterPath="$PROJECT_DIR$/pawswidget.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utility.py" afterPath="$PROJECT_DIR$/utility.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Pawlabeling.iws" />
     <ignored path=".idea/workspace.xml" />
-    <file path="/mainwindow.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373287691823" ignored="false" />
-    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373288670584" ignored="false" />
-    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373288351540" ignored="false" />
-    <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373281956522" ignored="false" />
+    <file path="/mainwindow.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373369749979" ignored="false" />
+    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373383814444" ignored="false" />
+    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373370690931" ignored="false" />
+    <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373387434026" ignored="false" />
     <file path="/popupwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372664863442" ignored="false" />
     <file path="/widget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372667192968" ignored="false" />
     <file path="/entirePlateWidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373282315449" ignored="false" />
-    <file path="/pawswidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373270672239" ignored="false" />
+    <file path="/pawswidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373291657172" ignored="false" />
     <file path="/realtimetracker.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373186567031" ignored="false" />
     <file path="/a.dummy" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373272044549" ignored="false" />
     <file path="/dialogview.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373272100299" ignored="false" />
+    <file path="/COPYING.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373369646718" ignored="false" />
+    <file path="/readme.md" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373371103656" ignored="false" />
+    <file path="/configuration.config" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373371376465" ignored="false" />
+    <file path="/configuration.ini" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373376326568" ignored="false" />
+    <file path="$PROJECT_DIR$/../iApp/controller/analysis.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373383756830" ignored="false" />
+    <file path="$PROJECT_DIR$/../iApp/view/entireplatepanel.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373379359522" ignored="false" />
+    <file path="/entireplatepanel.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373378262129" ignored="false" />
+    <file path="$PROJECT_DIR$/../iApp/controller/contactcontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373383733354" ignored="false" />
+    <file path="/contactcontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373383729586" ignored="false" />
+    <file path="$PROJECT_DIR$/../iApp/controller/datacontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373379218176" ignored="false" />
+    <file path="/datacontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373378947569" ignored="false" />
+    <file path="$PROJECT_DIR$/../iApp/view/selectmeasurement.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373379954961" ignored="false" />
+    <file path="/selectmeasurement.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373379697742" ignored="false" />
+    <file path="$PROJECT_DIR$/../iApp/controller/measurementcontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373381986184" ignored="false" />
+    <file path="/measurementcontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373381863702" ignored="false" />
+    <file path="$PROJECT_DIR$/../iApp/controller/copcontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373382543257" ignored="false" />
+    <file path="/copcontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373382541037" ignored="false" />
+    <file path="$PROJECT_DIR$/../iApp/controller/calculateresultscontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373382696740" ignored="false" />
+    <file path="/calculateresultscontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373382688729" ignored="false" />
+    <file path="/analysis.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373382789619" ignored="false" />
+    <file path="$PROJECT_DIR$/../iApp/controller/loadresultscontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373383638098" ignored="false" />
+    <file path="/loadresultscontroller.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373383634094" ignored="false" />
+    <file path="$PROJECT_DIR$/../iApp/view/surfacepanel.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373383384558" ignored="false" />
+    <file path="/surfacepanel.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373383384558" ignored="false" />
+    <file path="/requirements.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373387391737" ignored="false" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,7 +114,7 @@
       <file leaf-file-name="mainwindow.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mainwindow.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="17" column="13" selection-start="449" selection-end="449" vertical-scroll-proportion="0.0">
+            <state line="11" column="10" selection-start="409" selection-end="414" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -93,10 +123,31 @@
       <file leaf-file-name="mainwidget.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mainwidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="15" column="30" selection-start="360" selection-end="372" vertical-scroll-proportion="0.0">
+            <state line="26" column="23" selection-start="808" selection-end="818" vertical-scroll-proportion="-17.68">
               <folding>
-                <element signature="e#0#9#0" expanded="true" />
+                <element signature="e#354#363#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="configuration.ini" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/configuration.ini">
+          <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="8" column="0" selection-start="169" selection-end="169" vertical-scroll-proportion="-5.44">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="COPYING.txt" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/COPYING.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="53" column="34" selection-start="2693" selection-end="2693" vertical-scroll-proportion="0.0">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -104,17 +155,21 @@
       <file leaf-file-name="pawswidget.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pawswidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="160" column="30" selection-start="6238" selection-end="6255" vertical-scroll-proportion="0.0">
-              <folding />
+            <state line="8" column="0" selection-start="354" selection-end="354" vertical-scroll-proportion="-5.44">
+              <folding>
+                <element signature="e#354#380#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="entirePlateWidget.py" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
+      <file leaf-file-name="entireplatewidget.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/entireplatewidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="8" selection-start="8" selection-end="8" vertical-scroll-proportion="0.0">
-              <folding />
+            <state line="1" column="34" selection-start="113" selection-end="113" vertical-scroll-proportion="-0.68">
+              <folding>
+                <element signature="e#354#380#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -122,7 +177,30 @@
       <file leaf-file-name="utility.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/utility.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="3" column="20" selection-start="92" selection-end="92" vertical-scroll-proportion="0.0">
+            <state line="500" column="57" selection-start="22232" selection-end="22232" vertical-scroll-proportion="-340.0">
+              <folding>
+                <element signature="e#354#380#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="readme.md" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/readme.md">
+          <provider editor-type-id="MarkdownPreviewEditor">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="30" column="100" selection-start="1178" selection-end="1178" vertical-scroll-proportion="-20.4">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="requirements.txt" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/requirements.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="3" column="5" selection-start="21" selection-end="21" vertical-scroll-proportion="0.042009886">
               <folding />
             </state>
           </provider>
@@ -151,11 +229,17 @@
         <option value="$PROJECT_DIR$/popupwidget.py" />
         <option value="$PROJECT_DIR$/realtimetracker.py" />
         <option value="$PROJECT_DIR$/toolbar.py" />
-        <option value="$PROJECT_DIR$/utility.py" />
-        <option value="$PROJECT_DIR$/mainwidget.py" />
-        <option value="$PROJECT_DIR$/mainwindow.py" />
-        <option value="$PROJECT_DIR$/pawswidget.py" />
         <option value="$PROJECT_DIR$/entirePlateWidget.py" />
+        <option value="$PROJECT_DIR$/COPYING.txt" />
+        <option value="$PROJECT_DIR$/pawswidget.py" />
+        <option value="$PROJECT_DIR$/entireplatewidget.py" />
+        <option value="$PROJECT_DIR$/readme.md" />
+        <option value="$PROJECT_DIR$/mainwindow.py" />
+        <option value="$PROJECT_DIR$/mainwidget.py" />
+        <option value="$PROJECT_DIR$/configuration.config" />
+        <option value="$PROJECT_DIR$/configuration.ini" />
+        <option value="$PROJECT_DIR$/requirements.txt" />
+        <option value="$PROJECT_DIR$/utility.py" />
       </list>
     </option>
   </component>
@@ -163,8 +247,8 @@
     <treeState />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="455" />
-    <option name="width" value="2105" />
+    <option name="x" value="975" />
+    <option name="width" value="1585" />
     <option name="height" value="1400" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
@@ -206,7 +290,7 @@
     <OptionsSetting value="true" id="Update" />
     <OptionsSetting value="true" id="Status" />
     <OptionsSetting value="true" id="Edit" />
-    <ConfirmationsSetting value="0" id="Add" />
+    <ConfirmationsSetting value="2" id="Add" />
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectReloadState">
@@ -572,11 +656,15 @@
       <created>1373283117258</created>
       <updated>1373283117258</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="I think I removed all the CamelCases and changed them to snake_case instead">
+      <created>1373288719923</created>
+      <updated>1373288719923</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="455" y="0" width="2105" height="1400" extended-state="0" />
+    <frame x="975" y="0" width="1585" height="1400" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -590,19 +678,19 @@
       <window_info id="REST Client" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.08125306" sideWeight="0.67069244" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1089954" sideWeight="0.675" order="1" side_tool="false" content_ui="combo" />
       <window_info id="IView" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.35403225" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="SQL" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="JetGradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32769728" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.325" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39919356" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="UML Diagrams" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="RESTClient" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.11062163" sideWeight="0.67069244" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.14839134" sideWeight="0.675" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3295626" sideWeight="0.76693547" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="JSON Formatter" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
@@ -705,40 +793,12 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/mainwindow.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/mainwidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="92" column="30" selection-start="3169" selection-end="3186" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pawswidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="138" column="16" selection-start="5665" selection-end="5665" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="13" column="41" selection-start="402" selection-end="402" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/utility.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="3" column="20" selection-start="92" selection-end="92" vertical-scroll-proportion="0.0">
-          <folding />
+          <folding>
+            <element signature="e#354#380#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -771,42 +831,84 @@
     </entry>
     <entry file="file://$USER_HOME$/.IntelliJIdea12/system/python_stubs/-946255732/PySide/QtCore.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="8049" column="6" selection-start="244793" selection-end="244793" vertical-scroll-proportion="0.47493038" />
+        <state line="8049" column="6" selection-start="244793" selection-end="244793" vertical-scroll-proportion="0.47493038">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mainwindow.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="17" column="13" selection-start="449" selection-end="449" vertical-scroll-proportion="0.0">
+        <state line="11" column="10" selection-start="409" selection-end="414" vertical-scroll-proportion="0.0">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pawswidget.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="160" column="30" selection-start="6238" selection-end="6255" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
+    <entry file="file://$PROJECT_DIR$/readme.md">
+      <provider editor-type-id="MarkdownPreviewEditor">
+        <state />
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utility.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="3" column="20" selection-start="92" selection-end="92" vertical-scroll-proportion="0.0">
+        <state line="30" column="100" selection-start="1178" selection-end="1178" vertical-scroll-proportion="-20.4">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mainwidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="15" column="30" selection-start="360" selection-end="372" vertical-scroll-proportion="0.0">
+        <state line="26" column="23" selection-start="808" selection-end="818" vertical-scroll-proportion="-17.68">
           <folding>
-            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#354#363#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/entirePlateWidget.py">
+    <entry file="file://$PROJECT_DIR$/configuration.ini">
+      <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="8" selection-start="8" selection-end="8" vertical-scroll-proportion="0.0">
+        <state line="8" column="0" selection-start="169" selection-end="169" vertical-scroll-proportion="-5.44">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/COPYING.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="53" column="34" selection-start="2693" selection-end="2693" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pawswidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="8" column="0" selection-start="354" selection-end="354" vertical-scroll-proportion="-5.44">
+          <folding>
+            <element signature="e#354#380#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/entireplatewidget.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1" column="34" selection-start="113" selection-end="113" vertical-scroll-proportion="-0.68">
+          <folding>
+            <element signature="e#354#380#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utility.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="500" column="57" selection-start="22232" selection-end="22232" vertical-scroll-proportion="-340.0">
+          <folding>
+            <element signature="e#354#380#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/requirements.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="3" column="5" selection-start="21" selection-end="21" vertical-scroll-proportion="0.042009886">
           <folding />
         </state>
       </provider>

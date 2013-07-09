@@ -1,12 +1,16 @@
+#-----------------------------------------------------------------------------
+# Copyright (c) 2013, Paw Labeling Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#-----------------------------------------------------------------------------
+
 import sys, os
 
 from mainwidget import MainWidget
-import utility
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
-base_folder = "C:\Dropbox\Public\Examples\\"
-
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -31,7 +35,7 @@ class MainWindow(QMainWindow):
 
         self.status = self.statusBar()
         self.status.showMessage("Ready")
-        self.setWindowTitle("Paw labeling tool")
+        self.setWindowTitle("Paw Labeling tool")
 
         self.track_contacts = self.create_action(text="&Track Contacts",
                                                 shortcut="CTRL+F",
@@ -177,8 +181,8 @@ class MainWindow(QMainWindow):
             action.setShortcutContext(Qt.ApplicationShortcut)
 
         # Install an event filter
-        self.arrowFilter = utility.arrow_filter()
-        self.installEventFilter(self.arrowFilter)
+        self.arrow_filter = ArrowFilter()
+        self.installEventFilter(self.arrow_filter)
 
         self.main_widget.load_file(event=None)
 
@@ -202,6 +206,16 @@ class MainWindow(QMainWindow):
             action.triggered.connect(connection)
         return action
 
+class ArrowFilter(QObject):
+    def eventFilter(self, parent, event):
+        if event.type() == QEvent.KeyPress:
+            if event.key() == Qt.Key_Left:
+                parent.main_widget.slid.ToLeft()
+                return True
+            if event.key() == Qt.Key_Right:
+                parent.main_widget.slid.ToRight()
+                return True
+        return False
 
 class Toolbar(QToolBar):
     def __init__(self, parent=None):

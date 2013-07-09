@@ -1,3 +1,11 @@
+#-----------------------------------------------------------------------------
+# Copyright (c) 2013, Paw Labeling Development Team.
+#
+# Distributed under the terms of the Modified BSD License.
+#
+# The full license is in the file COPYING.txt, distributed with this software.
+#-----------------------------------------------------------------------------
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import utility
@@ -48,16 +56,11 @@ class EntirePlateWidget(QWidget):
         self.height, self.width, self.numFrames = self.measurement.shape
         self.n_max = self.measurement.max()
         self.change_frame(frame=-1)
-
         #self.cop_x, self.cop_y = utility.calculate_cop(self.measurement)
 
     def new_paws(self, paws):
         # Update the paws
         self.paws = paws
-        # TODO shouldn't this be run by update blabla in main_widget?
-        #for paw in self.paws:
-        #    self.draw_bounding_box(paw, paw_label = -2)
-        self.draw_gait_line()
 
     def change_frame(self, frame):
         # Set the frame
@@ -105,8 +108,8 @@ class EntirePlateWidget(QWidget):
 
         for index, paw_label in paw_labels.items():
             # Mark unlabeled paws white if they're not the current paw
-            if index != current_paw_index and paw_label == -1:
-                paw_label = -2
+            #if index != current_paw_index and paw_label == -1:
+            #    paw_label = -2
 
             self.draw_bounding_box(self.paws[index], paw_label)
             if current_paw_index == index:
