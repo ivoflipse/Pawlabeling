@@ -176,6 +176,9 @@ class MainWindow(QMainWindow):
         self.arrow_filter = ArrowFilter()
         self.installEventFilter(self.arrow_filter)
 
+        # Load all the measurements into the measurement tree
+        self.main_widget.add_measurements()
+        # Then load the first measurement
         self.main_widget.load_first_file()
 
 

@@ -11,12 +11,13 @@ import json
 import numpy as np
 from PySide.QtCore import *
 from PySide.QtGui import *
+from collections import defaultdict
 
 from entireplatewidget import EntirePlateWidget
 from pawswidget import PawsWidget
 import utility
 from settings import configuration
-
+from helper_functions import io_functions
 
 class MainWidget(QWidget):
     def __init__(self, parent=None):
@@ -28,7 +29,16 @@ class MainWidget(QWidget):
         self.n_max = 0
         self.mx = 15
         self.my = 15
+        self.dog_name = ""
 
+        # Initialize our variables that will cache results
+        self.average_data = defaultdict(list)
+        self.paw_data = defaultdict(list)
+        self.paw_labels = defaultdict(list)
+        self.paws = defaultdict(list)
+
+        # This contains all the file_names for each dog_name
+        self.file_names = defaultdict(dict)
         self.degree = configuration.degree
 
         # Create a label to display the measurement name
@@ -48,8 +58,6 @@ class MainWidget(QWidget):
         self.measurement_tree.setColumnCount(1)
         self.measurement_tree.setHeaderLabel("Measurements")
         self.measurement_tree.itemActivated.connect(self.load_file)
-        # Load the measurements
-        self.add_measurements(path=self.path)
 
         self.contact_tree = QTreeWidget(self)
         self.contact_tree.setMaximumWidth(300)
@@ -59,7 +67,6 @@ class MainWidget(QWidget):
         # Set the widths of the columns
         for column in range(self.contact_tree.columnCount()):
             self.contact_tree.setColumnWidth(column, 60)
-
         self.contact_tree.itemActivated.connect(self.switch_contacts)
 
         self.entire_plate_widget = EntirePlateWidget(self)
@@ -121,102 +128,89 @@ class MainWidget(QWidget):
         self.entire_plate_widget.change_frame(self.frame)
 
     ## IO Functions
-    def add_measurements(self, path):
-        self.file_names = {}
+    def add_measurements(self):
+        # Clear any existing file names
+        self.file_names.clear()
         # Clear any existing measurements
         self.measurement_tree.clear()
         # Create a green brush for coloring stored results
         green_brush = QBrush(QColor(46, 139, 87))
-        # Walk through the folder and gather up all the files
-        for idx, (root, dirs, files) in enumerate(os.walk(path)):
-            if not dirs: # changed from == []
-                # Add the name of the dog
-                self.dog_name = root.split("\\")[-1]
-                # Create a tree item
-                root_item = QTreeWidgetItem(self.measurement_tree, [self.dog_name])
-                # Create a dictionary to store all the measurements for each dog
-                self.file_names[self.dog_name] = {}
-                for index, file_name in enumerate(files):
-                    # Ignoring the running trials for now
-                    # TODO add a more elegant way to skip parts of the data
-                    if file_name[0] != "d":
-                        name = os.path.join(root, file_name)
-                        # Set the file_name to the first file from the folder
-                        if index is 0:
-                            self.file_name = name
 
-                        # Store the path with the file name
-                        self.file_names[self.dog_name][file_name] = name
-                        childItem = QTreeWidgetItem(root_item, [file_name])
-                        # Check if the measurement has already been store_results_folder
-                        if self.find_stored_file(self.dog_name, file_name) is not None:
-                            # Change the foreground to green
-                            childItem.setForeground(0, green_brush)
+        # Walk through the folder and gather up all the files
+        for idx, (root, dirs, files) in enumerate(os.walk(self.path)):
+            if not dirs:
+                # Add the name of the dog
+                dog_name = root.split("\\")[-1]
+                # Create a tree item
+                root_item = QTreeWidgetItem(self.measurement_tree, [dog_name])
+                # Create a dictionary to store all the measurements for each dog
+                self.file_names[dog_name] = {}
+                for index, file_name in enumerate(files):
+                    name = os.path.join(root, file_name)
+                      # Store the path with the file name
+                    self.file_names[dog_name][file_name] = name
+                    childItem = QTreeWidgetItem(root_item, [file_name])
+                    # Check if the measurement has already been store_results_folder
+                    if io_functions.find_stored_file(dog_name, file_name) is not None:
+                        # Change the foreground to green
+                        childItem.setForeground(0, green_brush)
 
     def load_first_file(self):
         # Select the first item in the tree
         self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
         self.load_file()
 
+    # TODO split this function into more reusable parts
     def load_file(self):
         # Get the text from the currentItem
         self.currentItem = self.measurement_tree.currentItem()
         parentItem = str(self.currentItem.parent().text(0))
         currentItem = str(self.currentItem.text(0))
+
         # Get the path from the file_names dictionary
         self.file_name = self.file_names[parentItem][currentItem]
-        self.measurement_name = self.file_name.split("\\")[-1]
-        self.dog_name = self.file_name.split("\\")[-2]
+        split_name = self.file_name.split("\\")
+        self.measurement_name = split_name[-1]
+        # Check if we have a new dog, in that case, clear the cached values
+        if split_name[-2] != self.dog_name:
+            self.dog_name = split_name[-2]
+            self.clear_cached_values()
+
         # Pass the new measurement through to the widget
         self.measurement = utility.load(self.file_name, padding=True, brand=configuration.brand)
         # Check the orientation of the plate and make sure its left to right
         self.measurement = utility.fix_orientation(self.measurement)
-
-        self.entire_plate_widget.measurement = self.measurement
-
-        # Get the number of Frames for the slider
+        # Get the number of frames for the slider
         self.height, self.width, self.num_frames = self.measurement.shape
+        # Get the normalizing factor for the color bars
         self.n_max = self.measurement.max()
+        # And pass it to the paws_widget, so they all are scaled to the same color bar
         self.paws_widget.update_n_max(self.n_max)
-        # Send the measurement to the widget
-        self.entire_plate_widget.new_measurement(self.measurement)
-        # Remove outdated info from the contact tree
-        self.contact_tree.clear()
+        # Update the measurement data for the entire plate widget
+        self.entire_plate_widget.new_measurement(self.measurement, self.measurement_name)
 
-        # Reset all the stored values
-        # TODO Cache these values in some way, so it makes labeling in subsequent measurements easier
-        self.paws = []
-        self.paw_data = []
-        self.average_data = {0:[], 1:[], 2:[], 3:[]}
-        self.paw_labels = {}
+        ## Manage some GUI elements
         # Reset the frame counter
         self.slider.setValue(-1)
+        # Remove outdated info from the contact tree
         # Update the slider, in case the shape of the file changes
         self.slider.setMaximum(self.num_frames - 1)
         self.nameLabel.setText("Measurement name: {}".format(self.file_name))
+        self.contact_tree.clear()
 
         self.load_all_results()
-        # If we have results, we don't need to track
-        stored_results = self.stored_data[self.measurement_name]
-        if stored_results:
-            self.paw_labels = stored_results["paw_labels"]
-            for index, paw_data in stored_results["paw_data"].items():
-                self.paw_data.append(paw_data)
-                paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
-                self.paws.append(paw)
 
-            for _, results in stored_results.items():
-                paw_labels = stored_results["paw_labels"].values()
-                paw_data = stored_results["paw_data"].values()
-                average_data = utility.calculate_average_data(paw_data)
-
-                for paw_label, data in zip(paw_labels, average_data):
-                    if paw_label >= 0:
-                        self.average_data[paw_label].append(data)
-
+        # Check if there's any data for this measurement
+        if self.paw_data[self.measurement_name]: # This might not return a bool
             self.initialize_widgets()
         else:
             self.track_contacts()
+
+    def clear_cached_values(self):
+        self.average_data.clear()
+        self.paws.clear()
+        self.paw_data.clear()
+        self.paw_labels.clear()
 
     def load_all_results(self):
         """
@@ -228,46 +222,34 @@ class MainWidget(QWidget):
         dog_name = str(self.currentItem.parent().text(0))
         file_names = self.file_names[dog_name]
 
-        self.stored_data = {}
-
         for file_name in file_names:
             measurement_name = file_name
-            self.stored_data[file_name] = self.load_results(dog_name, measurement_name)
+            stored_results = io_functions.load_results(dog_name, measurement_name)
+            # If we have results, stick them in their respective variable
+            if stored_results:
+                self.paw_labels[measurement_name] = stored_results["paw_labels"]
+                for index, paw_data in stored_results["paw_data"].items():
+                    self.paw_data[measurement_name].append(paw_data)
+                    paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
+                    self.paws[measurement_name].append(paw)
 
+                for _, results in stored_results.items():
+                    paw_labels = stored_results["paw_labels"].values()
+                    paw_data = stored_results["paw_data"].values()
+                    average_data = utility.calculate_average_data(paw_data)
 
-    def load_results(self, dog_name, measurement_name):
-        input_path = self.find_stored_file(dog_name, measurement_name)
-        results = {}
-        # If an inputFile has been found, unpickle it
-        if input_path:
-            json_string = ""
-            with open(input_path, "r") as json_file:
-                for line in json_file:
-                    json_string += line
-            results = json.loads(json_string)
-            # Make sure all the keys are not unicode
-            for key, value in results.items():
-                if type(value) == dict:
-                    for index, data in results[key].items():
-                        results[key][int(index)] = data
-                        del results[key][index]  # Delete the unicode key
-
-            for index, paw_data in results["paw_data"].items():
-                data_shape, rows, cols, frames, values = paw_data
-                data = self.reconstruct_data(data_shape, rows, cols, frames, values)
-                # Overwrite the results with the restored version
-                results["paw_data"][int(index)] = data
-        return results
+                    for paw_label, data in zip(paw_labels, average_data):
+                        if paw_label >= 0:
+                            self.average_data[paw_label].append(data)
 
     def store_status(self):
         """
         This function creates a file in the store_results_folder folder if it doesn't exist
         """
         # Try and create a folder to add store the store_results_folder result
-        self.create_results_folder()
-        # Store the store_results_folder result
+        self.new_path = io_functions.create_results_folder(self.dog_name)
+        # Try storing the results
         try:
-            #self.pickle_result()
             self.results_to_json()  # Switched from pickling to JSON
             print("The results have been stored")
             # Change the color of the measurement in the tree to green
@@ -276,17 +258,8 @@ class MainWidget(QWidget):
         except Exception as e:
             print("Pickling failed!", e)
 
-    def create_results_folder(self):
-        """
-        This function takes a path and creates a folder called
-        Returns the path of the folder just created
-        """
-        # The name of the dog is the second last element in file_name
-        self.new_path = os.path.join(self.store_path, self.dog_name)
-        # Create a new folder in the base folder if it doesn't already exist
-        if not os.path.exists(self.new_path):
-            os.mkdir(self.new_path)
 
+    # TODO this might not work, since the structure of the variables has been altered
     def results_to_json(self):
         """
         This creates a json file for the current measurement and stores the results
@@ -296,12 +269,12 @@ class MainWidget(QWidget):
             # Update somewhere in between
             results = {"dog_name": self.dog_name,
                        "measurement_name": self.measurement_name,
-                       "paw_labels": self.paw_labels,
-                       "paw_results": [paw.contact_to_dict() for paw in self.paws],
+                       "paw_labels": self.paw_labels[self.measurement_name],
+                       "paw_results": [paw.contact_to_dict() for paw in self.paws[self.measurement_name]],
                        "paw_data": {}
             }
 
-            for index, data in enumerate(self.paw_data):
+            for index, data in enumerate(self.paw_data[self.measurement_name]):
                 values = []
                 rows, columns, frames = np.nonzero(data)
                 for row, column, frame in zip(rows, columns, frames):
@@ -312,83 +285,23 @@ class MainWidget(QWidget):
             json_file.write(json.dumps(results))
             json_file.truncate()  # In case the new file is smaller
 
-    def reconstruct_data(self, shape, rows, columns, frames, values):
-        data = np.zeros(shape)
-        for row, column, frame, value in zip(rows, columns, frames, values):
-            data[row, column, frame] = float(value)
-        return data
-
-    def pickle_result(self):
-        """
-        Pickles the paws to the pickle folder with the name of the measurement as file name
-        """
-        import pickle
-        # Open a file at this path with the file_name as name
-        output = open("%s//%s.pkl" % (self.new_path, self.measurement_name), 'wb')
-
-        # The result in this case will be the index + 3D slice + sideid
-        results = []
-        for index, paw in enumerate(self.paws):
-            total_centroid, total_min_x, total_max_x, total_min_y, total_max_y = utility.update_bounding_box(
-                paw.contour_list)
-            paw_label = self.paw_labels.get(index, -1)
-            results.append([index, paw_label,
-                            int(total_min_x), int(total_max_x),
-                            int(total_min_y), int(total_max_y),
-                            paw.frames[0], paw.frames[-1]])
-
-        # Pickle dump the file to the hard drive
-        pickle.dump(results, output)
-        # Close the output file
-        output.close()
-        print("Pickled %s at location %s" % (self.file_name, self.new_path))
-
-    def load_pickled(self):
-        import pickle
-
-        input_path = self.find_stored_file(self.dog_name, self.measurement_name)
-        # If an inputFile has been found, unpickle it
-        if input_path:
-            input_file = open(input_path, 'rb')
-            self.paws = pickle.load(input_file)
-            # Sort the paws
-            self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
-            return True
-        return False
-
-    def find_stored_file(self, dog_name, file_name):
-        # For the current file_name, check if the results have been stored, if so load it
-        path = os.path.join(self.store_path, dog_name)
-        # If the folder exists
-        if os.path.exists(path):
-            # Check if the current file's name is in that folder
-            for root, dirs, files in os.walk(path):
-                for f in files:
-                    name, ext = f.split('.')
-                    if name == file_name:
-                        input_file = f
-                        input_path = os.path.join(path, input_file)
-                        return input_path
 
     ## Tracking
     def track_contacts(self):
         print("Track!")
         paws = utility.track_contours_graph(self.measurement)
         # Convert them to class objects
-        self.paws = []
-        self.paw_data = []
-        self.paw_labels = {}
         for index, paw in enumerate(paws):
             paw = utility.Contact(paw)
-            self.paws.append(paw)
+            self.paws[self.measurement_name].append(paw)
 
         # Sort the contacts based on their position along the first dimension    
-        self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
+        self.paws[self.measurement_name] = sorted(self.paws[self.measurement_name], key=lambda paw: paw.frames[0])
 
-        for index, paw in enumerate(self.paws):
+        for index, paw in enumerate(self.paws[self.measurement_name]):
             data_slice = utility.convert_contour_to_slice(self.measurement, paw.contour_list)
             x, y, z = data_slice.shape
-            self.paw_data.append(data_slice)
+            self.paw_data[self.measurement_name].append(data_slice)
             # I've made -2 the label for unlabeled paws, -1 == unlabeled + selected
             paw_label = -2
             # Test if the paw touches the edge of the plate
@@ -396,10 +309,10 @@ class MainWidget(QWidget):
                 paw_label = -3  # Mark it as invalid
             elif utility.incomplete_step(data_slice):
                 paw_label = -3
-            self.paw_labels[index] = paw_label
+            self.paw_labels[self.measurement_name][index] = paw_label
 
         # TODO not happy with how I calculate an overall average yet
-        self.average_data = utility.calculate_average_data(self.paw_data)
+        self.average_data[self.measurement_name] = utility.calculate_average_data(self.paw_data)
         self.initialize_widgets()
 
     ## GUI
@@ -461,8 +374,8 @@ class MainWidget(QWidget):
         self.next_paw()
 
     def update_current_paw(self):
-        if self.current_paw_index <= len(self.paws) and len(self.paws) > 0:
-            for index, paw_label in list(self.paw_labels.items()):
+        if self.current_paw_index <= len(self.paws[self.measurement_name]) and len(self.paws[self.measurement_name]) > 0:
+            for index, paw_label in list(self.paw_labels[self.measurement_name].items()):
                 # Get the current row from the tree
                 item = self.contact_tree.topLevelItem(index)
                 item.setText(1, self.paw_dict[paw_label])
@@ -472,9 +385,9 @@ class MainWidget(QWidget):
                     item.setBackground(idx, self.colors[paw_label])
 
             # Update the bounding boxes
-            self.entire_plate_widget.update_bounding_boxes(self.paw_labels, self.current_paw_index)
+            self.entire_plate_widget.update_bounding_boxes(self.paw_labels[self.measurement_name], self.current_paw_index)
             # Update the paws widget
-            self.paws_widget.update_paws(self.paw_labels, self.paw_data, self.average_data)
+            #self.paws_widget.update_paws(self.paw_labels, self.current_paw_index, self.paw_data, self.average_data)
 
     def contacts_available(self):
         """
@@ -539,16 +452,19 @@ class MainWidget(QWidget):
 
     def add_contacts(self):
         # Print how many contacts we found
-        print("Number of paws found: {}".format(len(self.paws)))
-        print("Starting frames: {}".format([paw.frames[0] for paw in self.paws]))
+        # TODO move this to some logging library
+        print("Number of paws found: {}".format(len(self.paws[self.measurement_name])))
+        print("Starting frames: {}".format(" ".join([str(paw.frames[0]) for paw in self.paws[self.measurement_name]])))
 
         # Clear any existing contacts
         self.contact_tree.clear()
-        for index, paw in enumerate(self.paw_data):
+        for index, paw in enumerate(self.paw_data[self.measurement_name]):
             x, y, z = paw.shape
             rootItem = QTreeWidgetItem(self.contact_tree)
             rootItem.setText(0, str(index))
-            rootItem.setText(1, self.paw_dict[self.paw_labels[index]])
+            print self.paw_labels
+            print self.paw_labels[self.measurement_name]
+            rootItem.setText(1, self.paw_dict[self.paw_labels[self.measurement_name][index]])
             rootItem.setText(2, str(z))  # Sets the frame count
             surface = np.max([np.count_nonzero(paw[:, :, frame]) for frame in range(z)])
             rootItem.setText(3, str(int(surface)))

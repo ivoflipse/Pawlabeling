@@ -6,12 +6,12 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #-----------------------------------------------------------------------------
 
-from PySide.QtCore import *
 from PySide.QtGui import *
 import numpy as np
 import utility
 
 from settings import configuration
+
 
 class PawsWidget(QWidget):
     def __init__(self, parent):
@@ -20,7 +20,7 @@ class PawsWidget(QWidget):
         self.degree = configuration.degree * 2
 
         self.left_front = PawWidget(self, self.degree, label="Left Front")
-        self.left_hind = PawWidget(self, self.degree,  label="Left Hind")
+        self.left_hind = PawWidget(self, self.degree, label="Left Hind")
         self.right_front = PawWidget(self, self.degree, label="Right Front")
         self.right_hind = PawWidget(self, self.degree, label="Right Hind")
         self.current_paw = PawWidget(self, self.degree, label="")
@@ -56,29 +56,32 @@ class PawsWidget(QWidget):
         self.main_layout.addLayout(self.right_paws_layout)
         self.setLayout(self.main_layout)
 
-    # self.paws_widget.update_current_paw(self.paw_labels, self.current_paw_index, self.paw_data)
-    def update_paws(self, paw_labels, paw_data, average_data):
+    def update_paws(self, paw_labels, current_paw_index, paw_data, average_data):
         # Clear the paws, so we can draw new ones
         # TODO only update if the information has changed
         self.clear_paws()
         for index, paw in enumerate(paw_data):
             paw_label = paw_labels[index]
-
             # We don't do anything with unlabeled paws that aren't selected or invalid
             if paw_label < -1:
                 continue
 
             if paw_label not in self.paws:
                 self.paws[paw_label] = []
-                # Add the data to the paws dictionary
+
+            # Add the data to the paws dictionary
             self.paws[paw_label].append(paw)
+
 
         # Update the widgets
         for paw_label, widget in list(self.paws_list.items()):
             if paw_label != -1:
                 widget.update(self.paws[paw_label], average_data[paw_label])
             else:
-                widget.update([paw_data], [paw_data])
+                avg_paw_data = np.zeros((100, 100))
+                x, y, z = paw_data[current_paw_index].shape
+                avg_paw_data[x / 2:(x / 2) + x, y / 2:(y / 2) + y] = paw_data[current_paw_index].max(axis=2)
+                widget.update([paw_data[0]], [avg_paw_data])
 
         try:
             self.predict_label()
@@ -140,7 +143,7 @@ class PawsWidget(QWidget):
         self.clear_paws()
 
     def clear_paws(self):
-        self.paws = {}
+        self.paws.clear()
         for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()
 
@@ -219,7 +222,6 @@ class PawWidget(QWidget):
         self.mean_duration_label.setText("{} frames".format(self.mean_duration))
         self.mean_surface_label.setText("{} pixels".format(self.mean_surface))
 
-        # TODO this might not work so well
         data = np.array(mean_data_list).mean(axis=0)
         # Make sure the paws are facing upright
         self.data = np.rot90(np.rot90(data))
