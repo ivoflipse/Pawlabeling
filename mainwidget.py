@@ -120,6 +120,39 @@ class MainWidget(QWidget):
         self.frame = frame
         self.entire_plate_widget.change_frame(self.frame)
 
+    ## IO Functions
+    def add_measurements(self, path):
+        self.file_names = {}
+        # Clear any existing measurements
+        self.measurement_tree.clear()
+        # Create a green brush for coloring stored results
+        green_brush = QBrush(QColor(46, 139, 87))
+        # Walk through the folder and gather up all the files
+        for idx, (root, dirs, files) in enumerate(os.walk(path)):
+            if not dirs: # changed from == []
+                # Add the name of the dog
+                self.dog_name = root.split("\\")[-1]
+                # Create a tree item
+                root_item = QTreeWidgetItem(self.measurement_tree, [self.dog_name])
+                # Create a dictionary to store all the measurements for each dog
+                self.file_names[self.dog_name] = {}
+                for index, file_name in enumerate(files):
+                    # Ignoring the running trials for now
+                    # TODO add a more elegant way to skip parts of the data
+                    if file_name[0] != "d":
+                        name = os.path.join(root, file_name)
+                        # Set the file_name to the first file from the folder
+                        if index is 0:
+                            self.file_name = name
+
+                        # Store the path with the file name
+                        self.file_names[self.dog_name][file_name] = name
+                        childItem = QTreeWidgetItem(root_item, [file_name])
+                        # Check if the measurement has already been store_results_folder
+                        if self.find_stored_file(self.dog_name, file_name) is not None:
+                            # Change the foreground to green
+                            childItem.setForeground(0, green_brush)
+
     def load_first_file(self):
         # Select the first item in the tree
         self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
@@ -226,7 +259,118 @@ class MainWidget(QWidget):
                 results["paw_data"][int(index)] = data
         return results
 
+    def store_status(self):
+        """
+        This function creates a file in the store_results_folder folder if it doesn't exist
+        """
+        # Try and create a folder to add store the store_results_folder result
+        self.create_results_folder()
+        # Store the store_results_folder result
+        try:
+            #self.pickle_result()
+            self.results_to_json()  # Switched from pickling to JSON
+            print("The results have been stored")
+            # Change the color of the measurement in the tree to green
+            treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green
+            self.currentItem.setForeground(0, treeBrush)
+        except Exception as e:
+            print("Pickling failed!", e)
 
+    def create_results_folder(self):
+        """
+        This function takes a path and creates a folder called
+        Returns the path of the folder just created
+        """
+        # The name of the dog is the second last element in file_name
+        self.new_path = os.path.join(self.store_path, self.dog_name)
+        # Create a new folder in the base folder if it doesn't already exist
+        if not os.path.exists(self.new_path):
+            os.mkdir(self.new_path)
+
+    def results_to_json(self):
+        """
+        This creates a json file for the current measurement and stores the results
+        """
+        json_file_name = "{}//{}.json".format(self.new_path, self.measurement_name)
+        with open(json_file_name, "w+") as json_file:
+            # Update somewhere in between
+            results = {"dog_name": self.dog_name,
+                       "measurement_name": self.measurement_name,
+                       "paw_labels": self.paw_labels,
+                       "paw_results": [paw.contact_to_dict() for paw in self.paws],
+                       "paw_data": {}
+            }
+
+            for index, data in enumerate(self.paw_data):
+                values = []
+                rows, columns, frames = np.nonzero(data)
+                for row, column, frame in zip(rows, columns, frames):
+                    values.append("{:10.4f}".format(data[row, column, frame]))
+                results["paw_data"][index] = [data.shape, rows.tolist(), columns.tolist(), frames.tolist(), values]
+
+            json_file.seek(0)  # Rewind the file, so we overwrite it
+            json_file.write(json.dumps(results))
+            json_file.truncate()  # In case the new file is smaller
+
+    def reconstruct_data(self, shape, rows, columns, frames, values):
+        data = np.zeros(shape)
+        for row, column, frame, value in zip(rows, columns, frames, values):
+            data[row, column, frame] = float(value)
+        return data
+
+    def pickle_result(self):
+        """
+        Pickles the paws to the pickle folder with the name of the measurement as file name
+        """
+        import pickle
+        # Open a file at this path with the file_name as name
+        output = open("%s//%s.pkl" % (self.new_path, self.measurement_name), 'wb')
+
+        # The result in this case will be the index + 3D slice + sideid
+        results = []
+        for index, paw in enumerate(self.paws):
+            total_centroid, total_min_x, total_max_x, total_min_y, total_max_y = utility.update_bounding_box(
+                paw.contour_list)
+            paw_label = self.paw_labels.get(index, -1)
+            results.append([index, paw_label,
+                            int(total_min_x), int(total_max_x),
+                            int(total_min_y), int(total_max_y),
+                            paw.frames[0], paw.frames[-1]])
+
+        # Pickle dump the file to the hard drive
+        pickle.dump(results, output)
+        # Close the output file
+        output.close()
+        print("Pickled %s at location %s" % (self.file_name, self.new_path))
+
+    def load_pickled(self):
+        import pickle
+
+        input_path = self.find_stored_file(self.dog_name, self.measurement_name)
+        # If an inputFile has been found, unpickle it
+        if input_path:
+            input_file = open(input_path, 'rb')
+            self.paws = pickle.load(input_file)
+            # Sort the paws
+            self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
+            return True
+        return False
+
+    def find_stored_file(self, dog_name, file_name):
+        # For the current file_name, check if the results have been stored, if so load it
+        path = os.path.join(self.store_path, dog_name)
+        # If the folder exists
+        if os.path.exists(path):
+            # Check if the current file's name is in that folder
+            for root, dirs, files in os.walk(path):
+                for f in files:
+                    name, ext = f.split('.')
+                    if name == file_name:
+                        input_file = f
+                        input_path = os.path.join(path, input_file)
+                        return input_path
+
+    ## Tracking
     def track_contacts(self):
         print("Track!")
         paws = utility.track_contours_graph(self.measurement)
@@ -258,6 +402,7 @@ class MainWidget(QWidget):
         self.average_data = utility.calculate_average_data(self.paw_data)
         self.initialize_widgets()
 
+    ## GUI
     def initialize_widgets(self):
         # Update the shape of the paws widget
         self.paws_widget.update_shape(self.mx, self.my)
@@ -411,146 +556,3 @@ class MainWidget(QWidget):
             rootItem.setText(4, str(int(force)))
 
         self.current_paw_index = 0
-
-    def add_measurements(self, path):
-        self.file_names = {}
-        # Clear any existing measurements
-        self.measurement_tree.clear()
-        # Create a green brush for coloring stored results
-        green_brush = QBrush(QColor(46, 139, 87))
-        # Walk through the folder and gather up all the files
-        for idx, (root, dirs, files) in enumerate(os.walk(path)):
-            if not dirs: # changed from == []
-                # Add the name of the dog
-                self.dog_name = root.split("\\")[-1]
-                # Create a tree item
-                root_item = QTreeWidgetItem(self.measurement_tree, [self.dog_name])
-                # Create a dictionary to store all the measurements for each dog
-                self.file_names[self.dog_name] = {}
-                for index, file_name in enumerate(files):
-                    # Ignoring the running trials for now
-                    # TODO add a more elegant way to skip parts of the data
-                    if file_name[0] != "d":
-                        name = os.path.join(root, file_name)
-                        # Set the file_name to the first file from the folder
-                        if index is 0:
-                            self.file_name = name
-
-                        # Store the path with the file name
-                        self.file_names[self.dog_name][file_name] = name
-                        childItem = QTreeWidgetItem(root_item, [file_name])
-                        # Check if the measurement has already been store_results_folder
-                        if self.find_stored_file(self.dog_name, file_name) is not None:
-                            # Change the foreground to green
-                            childItem.setForeground(0, green_brush)
-
-    def store_status(self):
-        """
-        This function creates a file in the store_results_folder folder if it doesn't exist
-        """
-        # Try and create a folder to add store the store_results_folder result
-        self.create_results_folder()
-        # Store the store_results_folder result
-        try:
-            #self.pickle_result()
-            self.results_to_json()  # Switched from pickling to JSON
-            print("The results have been stored")
-            # Change the color of the measurement in the tree to green
-            treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green
-            self.currentItem.setForeground(0, treeBrush)
-        except Exception as e:
-            print("Pickling failed!", e)
-
-    def create_results_folder(self):
-        """
-        This function takes a path and creates a folder called
-        Returns the path of the folder just created
-        """
-        # The name of the dog is the second last element in file_name
-        self.new_path = os.path.join(self.store_path, self.dog_name)
-        # Create a new folder in the base folder if it doesn't already exist
-        if not os.path.exists(self.new_path):
-            os.mkdir(self.new_path)
-
-    def results_to_json(self):
-        """
-        This creates a json file for the current measurement and stores the results
-        """
-        json_file_name = "{}//{}.json".format(self.new_path, self.measurement_name)
-        with open(json_file_name, "w+") as json_file:
-            # Update somewhere in between
-            results = {"dog_name": self.dog_name,
-                       "measurement_name": self.measurement_name,
-                       "paw_labels": self.paw_labels,
-                       "paw_results": [paw.contact_to_dict() for paw in self.paws],
-                       "paw_data": {}
-            }
-
-            for index, data in enumerate(self.paw_data):
-                values = []
-                rows, columns, frames = np.nonzero(data)
-                for row, column, frame in zip(rows, columns, frames):
-                    values.append("{:10.4f}".format(data[row, column, frame]))
-                results["paw_data"][index] = [data.shape, rows.tolist(), columns.tolist(), frames.tolist(), values]
-
-            json_file.seek(0)  # Rewind the file, so we overwrite it
-            json_file.write(json.dumps(results))
-            json_file.truncate()  # In case the new file is smaller
-
-    def reconstruct_data(self, shape, rows, columns, frames, values):
-        data = np.zeros(shape)
-        for row, column, frame, value in zip(rows, columns, frames, values):
-            data[row, column, frame] = float(value)
-        return data
-
-    def pickle_result(self):
-        """
-        Pickles the paws to the pickle folder with the name of the measurement as file name
-        """
-        import pickle
-        # Open a file at this path with the file_name as name
-        output = open("%s//%s.pkl" % (self.new_path, self.measurement_name), 'wb')
-
-        # The result in this case will be the index + 3D slice + sideid
-        results = []
-        for index, paw in enumerate(self.paws):
-            total_centroid, total_min_x, total_max_x, total_min_y, total_max_y = utility.update_bounding_box(
-                paw.contour_list)
-            paw_label = self.paw_labels.get(index, -1)
-            results.append([index, paw_label,
-                            int(total_min_x), int(total_max_x),
-                            int(total_min_y), int(total_max_y),
-                            paw.frames[0], paw.frames[-1]])
-
-        # Pickle dump the file to the hard drive
-        pickle.dump(results, output)
-        # Close the output file
-        output.close()
-        print("Pickled %s at location %s" % (self.file_name, self.new_path))
-
-    def load_pickled(self):
-        import pickle
-
-        input_path = self.find_stored_file(self.dog_name, self.measurement_name)
-        # If an inputFile has been found, unpickle it
-        if input_path:
-            input_file = open(input_path, 'rb')
-            self.paws = pickle.load(input_file)
-            # Sort the paws
-            self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
-            return True
-        return False
-
-    def find_stored_file(self, dog_name, file_name):
-        # For the current file_name, check if the results have been stored, if so load it
-        path = os.path.join(self.store_path, dog_name)
-        # If the folder exists
-        if os.path.exists(path):
-            # Check if the current file's name is in that folder
-            for root, dirs, files in os.walk(path):
-                for f in files:
-                    name, ext = f.split('.')
-                    if name == file_name:
-                        input_file = f
-                        input_path = os.path.join(path, input_file)
-                        return input_path
