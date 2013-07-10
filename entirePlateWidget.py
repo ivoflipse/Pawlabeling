@@ -48,7 +48,6 @@ class EntirePlateWidget(QWidget):
         self.height, self.width, self.numFrames = self.measurement.shape
         self.n_max = self.measurement.max()
         self.change_frame(frame=-1)
-        #self.cop_x, self.cop_y = utility.calculate_cop(self.measurement)
 
     def new_paws(self, paws):
         # Update the paws
@@ -99,10 +98,6 @@ class EntirePlateWidget(QWidget):
         self.clear_bounding_box()
 
         for index, paw_label in list(paw_labels.items()):
-            # Mark unlabeled paws white if they're not the current paw
-            #if index != current_paw_index and paw_label == -1:
-            #    paw_label = -2
-
             self.draw_bounding_box(self.paws[index], paw_label)
             if current_paw_index == index:
                 self.draw_bounding_box(self.paws[index], paw_label=-1)
@@ -122,14 +117,6 @@ class EntirePlateWidget(QWidget):
                 [QPointF(prevPaw.total_centroid[0] * self.degree, prevPaw.total_centroid[1] * self.degree),
                  QPointF(curPaw.total_centroid[0] * self.degree, curPaw.total_centroid[1] * self.degree)])
             self.gait_lines.append(self.scene.addPolygon(polygon, self.gait_line_pen))
-
-            # It seems that COP is really a poor indicator in most cases, unless perhaps I can use the shape
-            # points = []
-            # for cop_x, cop_y in zip(self.cop_x, self.cop_y):
-            #     points.append(QPointF(cop_y * self.degree, cop_x * self.degree))
-            #
-            # polygon = QPolygonF(points)
-            # self.gait_lines.append(self.scene.addPolygon(polygon, self.gait_line_pen))
 
 
 

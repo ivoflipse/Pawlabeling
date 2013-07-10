@@ -162,13 +162,15 @@ class MainWidget(QWidget):
 
         self.load_all_results()
         # If we have results, we don't need to track
-        stored_results = self.stored_data[self.file_name]
+        stored_results = self.stored_data[self.measurement_name]
         if stored_results:
             self.paw_labels = stored_results["paw_labels"]
             for index, paw_data in stored_results["paw_data"].items():
                 self.paw_data.append(paw_data)
-            self.paws(utility.Contact(stored_results, restoring=True))
-
+                paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
+                self.paws.append(paw)
+            average_data = utility.calculate_average_data()
+            self.initialize_widgets()
         else:
             self.track_contacts()
 
@@ -199,11 +201,18 @@ class MainWidget(QWidget):
                 for line in json_file:
                     json_string += line
             results = json.loads(json_string)
-            for index in results["paw_data"]:
-                data_shape, rows, cols, frames, values = results["paw_data"][index]
+            # Make sure all the keys are not unicode
+            for key, value in results.items():
+                if type(value) == dict:
+                    for index, data in results[key].items():
+                        results[key][int(index)] = data
+                        del results[key][index]  # Delete the unicode key
+
+            for index, paw_data in results["paw_data"].items():
+                data_shape, rows, cols, frames, values = paw_data
                 data = self.reconstruct_data(data_shape, rows, cols, frames, values)
                 # Overwrite the results with the restored version
-                results["paw_data"] = data
+                results["paw_data"][int(index)] = data
         return results
 
 
@@ -213,7 +222,6 @@ class MainWidget(QWidget):
         # Convert them to class objects
         self.paws = []
         self.paw_data = []
-        self.average_data = []
         self.paw_labels = {}
         for index, paw in enumerate(paws):
             paw = utility.Contact(paw)
@@ -222,16 +230,10 @@ class MainWidget(QWidget):
         # Sort the contacts based on their position along the first dimension    
         self.paws = sorted(self.paws, key=lambda paw: paw.frames[0])
 
-        # TODO refactor out this code so its in a separate function, somewhere else preferably
-        # Get the maximum dimensions of the paws
-        self.mx = 20
-        self.my = 20
         for index, paw in enumerate(self.paws):
             data_slice = utility.convert_contour_to_slice(self.measurement, paw.contour_list)
             x, y, z = data_slice.shape
             self.paw_data.append(data_slice)
-
-
             # I've made -2 the label for unlabeled paws, -1 == unlabeled + selected
             paw_label = -2
             # Test if the paw touches the edge of the plate
@@ -241,13 +243,11 @@ class MainWidget(QWidget):
                 paw_label = -3
             self.paw_labels[index] = paw_label
 
-        for paw in self.paw_data:
-            x, y, z = paw.shape
-            offset_x, offset_y = int((self.mx - x) / 2), int((self.my - y) / 2)
-            average_slice = np.zeros((self.mx, self.my))
-            average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = paw.max(axis=2)
-            self.average_data.append(average_slice)
+        # TODO not happy with how I calculate an overall average yet
+        self.average_data = utility.calculate_average_data()
+        self.initialize_widgets()
 
+    def initialize_widgets(self):
         # Update the shape of the paws widget
         self.paws_widget.update_shape(self.mx, self.my)
         # Add the paws to the contact_tree
@@ -260,17 +260,6 @@ class MainWidget(QWidget):
         item = self.contact_tree.topLevelItem(self.current_paw_index)
         self.contact_tree.setCurrentItem(item)
         self.update_current_paw()
-
-    def calculate_average_data(self):
-        self.mx = 20
-        self.my = 20
-        for index, paw_data in enumerate(self.paw_data):
-            x, y, z = paw_data.shape
-            if x > self.mx:
-                self.mx = x
-            if y > self.my:
-                self.my = y
-
 
     def undo_label(self):
         self.previous_paw()

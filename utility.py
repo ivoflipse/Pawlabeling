@@ -37,16 +37,15 @@ class Contact():
 
     def restore(self, contact):
         self.contour_list = {} # This will sadly not be reconstructed
-        results = contact["paw_results"]
-        self.frames = [x for x in range(results["min_z"], results["max_z"]+1)]
-        self.width = results["width"]
-        self.height = results["height"]
-        self.length = results["length"]
-        self.total_min_x = results["min_x"]
-        self.total_max_x = results["max_x"]
-        self.total_min_y = results["min_y"]
-        self.total_max_y = results["max_y"]
-        self.total_centroid = (results["center_x"], results["center_y"])
+        self.frames = [x for x in range(contact["min_z"], contact["max_z"]+1)]
+        self.width = contact["width"]
+        self.height = contact["height"]
+        self.length = contact["length"]
+        self.total_min_x = contact["min_x"]
+        self.total_max_x = contact["max_x"]
+        self.total_min_y = contact["min_y"]
+        self.total_max_y = contact["max_y"]
+        self.total_centroid = (contact["center_x"], contact["center_y"])
 
     def contact_to_dict(self):
         return {
@@ -69,6 +68,26 @@ class Contact():
             for index, contour in enumerate(self.contour_list[frame]):
                 print("Contour %s: %s" % (index, "".join([str(c) for c in contour])))
 
+
+def calculate_average_data(self, paw_data, mx, my):
+    average_data = []
+    # Get the max shape
+    for paw_data in paw_data:
+        x, y, z = paw_data.shape
+        if x > mx:
+            mx = x
+        if y > my:
+            my = y
+
+    # Pad everything with zeros
+    for paw_data in paw_data:
+        x, y, z = paw_data.shape
+        offset_x, offset_y = int((mx - x) / 2), int((my - y) / 2)
+        average_slice = np.zeros((mx, my))
+        average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = paw_data.max(axis=2)
+        average_data.append(average_slice)
+
+    return average_data
 
 def calculate_bounding_box(contour):
     """

@@ -2,19 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/settings/configuration.py" afterPath="$PROJECT_DIR$/settings/configuration.py" />
+      <change type="DELETED" beforePath="C:\Dropbox\Development\Pawlabeling\settings\configuration.ini" afterPath="" />
+      <change type="MOVED" beforePath="C:\Dropbox\Development\Pawlabeling\entirePlateWidget.py" afterPath="$PROJECT_DIR$/entireplatewidget.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mainwidget.py" afterPath="$PROJECT_DIR$/mainwidget.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mainwindow.py" afterPath="$PROJECT_DIR$/mainwindow.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pawswidget.py" afterPath="$PROJECT_DIR$/pawswidget.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utility.py" afterPath="$PROJECT_DIR$/utility.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Pawlabeling.iws" />
     <ignored path=".idea/workspace.xml" />
     <file path="/mainwindow.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373397105825" ignored="false" />
-    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373402760797" ignored="false" />
-    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373455505138" ignored="false" />
-    <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373455371749" ignored="false" />
+    <file path="/Dummy.txt" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373455534326" ignored="false" />
+    <file path="/mainwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373462856047" ignored="false" />
+    <file path="/utility.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373462769757" ignored="false" />
     <file path="/popupwidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372664863442" ignored="false" />
     <file path="/widget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1372667192968" ignored="false" />
     <file path="/entirePlateWidget.py" changelist="bc1fb0df-f4e9-4506-acd3-ce9f33396af6" time="1373282315449" ignored="false" />
@@ -121,10 +120,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mainwidget.py" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="mainwidget.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mainwidget.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="271" column="27" selection-start="10711" selection-end="10711" vertical-scroll-proportion="0.66190076">
+            <state line="227" column="33" selection-start="9001" selection-end="9001" vertical-scroll-proportion="-24.0">
               <folding>
                 <element signature="e#354#363#0" expanded="true" />
               </folding>
@@ -132,10 +131,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="configuration.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="configuration.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/settings/configuration.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="58" column="24" selection-start="1925" selection-end="1925" vertical-scroll-proportion="0.0">
+            <state line="58" column="24" selection-start="1925" selection-end="1925" vertical-scroll-proportion="0.7759473">
               <folding>
                 <element signature="e#353#362#0" expanded="true" />
               </folding>
@@ -168,7 +167,7 @@
       <file leaf-file-name="utility.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/utility.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="23" selection-start="782" selection-end="807" vertical-scroll-proportion="0.0">
+            <state line="71" column="26" selection-start="2790" selection-end="2812" vertical-scroll-proportion="-9.02">
               <folding>
                 <element signature="e#354#381#0" expanded="true" />
               </folding>
@@ -686,12 +685,16 @@
       <created>1373402810823</created>
       <updated>1373402810823</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="I'm trying to refactor the way average contacts are calculated, so I can bootstrap it with stored results">
+      <created>1373455544024</created>
+      <updated>1373455544024</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="916" y="0" width="1644" height="1400" extended-state="0" />
-    <editor active="true" />
+    <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
@@ -704,7 +707,7 @@
       <window_info id="REST Client" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26864728" sideWeight="0.6701613" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.26864728" sideWeight="0.6701613" order="1" side_tool="false" content_ui="combo" />
       <window_info id="IView" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32930756" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="true" weight="0.35403225" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" x="-806" y="6" width="806" height="969" />
       <window_info id="SQL" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="17" side_tool="false" content_ui="tabs" />
@@ -769,7 +772,7 @@
     <option name="WRAP_WHEN_TYPING_REACHES_RIGHT_MARGIN" value="false" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added a way to store the raw paw data for each paw" />
+    <option name="LAST_COMMIT_MESSAGE" value="I'm trying to refactor the way average contacts are calculated, so I can bootstrap it with stored results" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="false" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -783,7 +786,6 @@
     <option name="UPDATE_FILTER_BY_SCOPE" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="I'm pretty satisfied with how it now selects paws" />
     <MESSAGE value="Added some bound checks for when there are no paws, bit ugly, but I don't know how to ignore events if the tree is empty" />
     <MESSAGE value="Made the test a bit more elegant, I think" />
     <MESSAGE value="The way I update paws has become a bit of a mess, I'll make it loop through the paws that have been labeled and make sure it updates accordingly" />
@@ -808,6 +810,7 @@
     <MESSAGE value="Fixed a couple of errors, which might have some consequences" />
     <MESSAGE value="Ran 2to3 on the codebase" />
     <MESSAGE value="Added a way to store the raw paw data for each paw" />
+    <MESSAGE value="I'm trying to refactor the way average contacts are calculated, so I can bootstrap it with stored results" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -867,16 +870,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/settings/configuration.ini">
-      <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
-        <state />
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="33" selection-start="66" selection-end="66" vertical-scroll-proportion="0.045333333">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state line="38" column="2" selection-start="402" selection-end="402" vertical-scroll-proportion="0.21866295">
@@ -900,15 +893,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/settings/configuration.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="58" column="24" selection-start="1925" selection-end="1925" vertical-scroll-proportion="0.0">
-          <folding>
-            <element signature="e#353#362#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/mainwindow.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="178" column="40" selection-start="10266" selection-end="10266" vertical-scroll-proportion="-5.64">
@@ -929,7 +913,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/utility.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="20" column="23" selection-start="782" selection-end="807" vertical-scroll-proportion="0.0">
+        <state line="71" column="26" selection-start="2790" selection-end="2812" vertical-scroll-proportion="-9.02">
           <folding>
             <element signature="e#354#381#0" expanded="true" />
           </folding>
@@ -938,9 +922,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/mainwidget.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="271" column="27" selection-start="10711" selection-end="10711" vertical-scroll-proportion="0.66190076">
+        <state line="227" column="33" selection-start="9001" selection-end="9001" vertical-scroll-proportion="-24.0">
           <folding>
             <element signature="e#354#363#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/settings/configuration.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="58" column="24" selection-start="1925" selection-end="1925" vertical-scroll-proportion="0.7759473">
+          <folding>
+            <element signature="e#353#362#0" expanded="true" />
           </folding>
         </state>
       </provider>
