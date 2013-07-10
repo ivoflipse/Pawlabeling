@@ -32,8 +32,8 @@ colors = [
 ]
 
 # The first measurement_folder is the folder which stores all the measurement files
-measurement_folder = "C:\\Exports\\"
-store_results_folder = "C:\\LabelsStored\\"
+measurement_folder = "C:\Dropbox\Development\Pawlabeling\samples\Measurements"
+store_results_folder = "C:\Dropbox\Development\Pawlabeling\samples\Labels"
 # Add the folder for the store_results_folder data if it doesn't exist
 if not os.path.exists(store_results_folder):
     os.mkdir(store_results_folder)
@@ -47,18 +47,20 @@ frequency = 124
 # since you'll lose the buttons to min/maximize the window
 main_window_left = 0
 main_window_top = 25
-main_window_width = 2250
-main_window_height = 1250
+main_window_width = 1400
+main_window_height = 900
 main_window_size = QRect(main_window_left, main_window_top, main_window_width, main_window_height)
 
 # These are more size hints, since the other parts of the window set minimum sizes
 # I might make those available here too
 entire_plate_widget_width = 800
-entire_plate_widget_height = 800
+entire_plate_widget_height = 400
+
+paws_widget_height = 200
 
 # This determines the amount of interpolation used to increase the size of the canvas of entire plate and paw
 # Decrease this value if you have a smaller screen
-degree = 6
+degree = 4
 
 # Change the output to a logging file if you want to enable logging
 # TODO what happens if this gets imported multiple times and I would change the logging to something different?

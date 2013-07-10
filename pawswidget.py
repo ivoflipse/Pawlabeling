@@ -14,16 +14,16 @@ import utility
 from settings import configuration
 
 class PawsWidget(QWidget):
-    def __init__(self, parent, n_max):
+    def __init__(self, parent):
         super(PawsWidget, self).__init__(parent)
         self.parent = parent
-        self.degree = configuration.degree * 2  # I want these to be a bit bigger
+        self.degree = configuration.degree * 2
 
-        self.left_front = PawWidget(self, self.degree, n_max, label="LF")
-        self.left_hind = PawWidget(self, self.degree, n_max, label="LH")
-        self.right_front = PawWidget(self, self.degree, n_max, label="RF")
-        self.right_hind = PawWidget(self, self.degree, n_max, label="RH")
-        self.current_paw = PawWidget(self, self.degree, n_max, label="")
+        self.left_front = PawWidget(self, self.degree, label="Left Front")
+        self.left_hind = PawWidget(self, self.degree,  label="Left Hind")
+        self.right_front = PawWidget(self, self.degree, label="Right Front")
+        self.right_hind = PawWidget(self, self.degree, label="Right Hind")
+        self.current_paw = PawWidget(self, self.degree, label="")
 
         self.paws_list = {
             0: self.left_front,
@@ -34,22 +34,20 @@ class PawsWidget(QWidget):
         }
 
         self.paw_dict = configuration.paw_dict
-
+        self.paws = {}
         # This sets every widget to a zero image and initializes paws
         self.clear_paws()
 
         self.left_paws_layout = QVBoxLayout()
-        self.left_paws_layout.addWidget(QLabel("Left Front"))
         self.left_paws_layout.addWidget(self.left_front)
-        self.left_paws_layout.addWidget(QLabel("Left Hind"))
         self.left_paws_layout.addWidget(self.left_hind)
         self.current_paw_layout = QVBoxLayout()
+        self.current_paw_layout.addStretch(1)
         self.current_paw_layout.addWidget(QLabel("Current Paw"))
         self.current_paw_layout.addWidget(self.current_paw)
+        self.current_paw_layout.addStretch(1)
         self.right_paws_layout = QVBoxLayout()
-        self.right_paws_layout.addWidget(QLabel("Right Front"))
         self.right_paws_layout.addWidget(self.right_front)
-        self.right_paws_layout.addWidget(QLabel("Right Hind"))
         self.right_paws_layout.addWidget(self.right_hind)
 
         self.main_layout = QHBoxLayout()
@@ -151,11 +149,11 @@ class PawsWidget(QWidget):
 
 
 class PawWidget(QWidget):
-    def __init__(self, parent, degree, n_max, label):
+    def __init__(self, parent, degree, label):
         super(PawWidget, self).__init__(parent)
         self.parent = parent
         self.degree = degree
-        self.n_max = n_max
+        self.n_max = 0
         self.label = label
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
@@ -192,10 +190,13 @@ class PawWidget(QWidget):
         self.number_layout.addWidget(self.max_pressure_label)
         self.number_layout.addWidget(self.mean_duration_label)
         self.number_layout.addWidget(self.mean_surface_label)
+        self.number_layout.addStretch(1)
 
         self.main_layout = QHBoxLayout(self)
         self.main_layout.addWidget(self.view)
         self.main_layout.addLayout(self.number_layout)
+
+        self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
 
     def update(self, data_list):

@@ -9,7 +9,7 @@
 from PySide.QtCore import *
 from PySide.QtGui import *
 import numpy as np
-
+from settings import configuration
 
 class Contact():
     """
@@ -18,19 +18,35 @@ class Contact():
     and the dimensions + center of the bounding box of the entire contact
     """
 
-    def __init__(self, contact):
-        self.frames = sorted(contact.keys())
-        self.contour_list = {}
-        for frame in self.frames:
-            self.contour_list[frame] = contact[frame]
+    def __init__(self, contact, restoring=False):
+        if not restoring:
+            self.frames = sorted(contact.keys())
+            self.contour_list = {}
+            for frame in self.frames:
+                self.contour_list[frame] = contact[frame]
 
-        center, min_x, max_x, min_y, max_y = update_bounding_box(contact)
-        self.width = int(abs(max_x - min_x))
-        self.height = int(abs(max_y - min_y))
-        self.length = len(self.frames)
-        self.total_min_x, self.total_max_x = int(min_x), int(max_x)
-        self.total_min_y, self.total_max_y = int(min_y), int(max_y)
-        self.total_centroid = (int(center[0]), int(center[1]))
+            center, min_x, max_x, min_y, max_y = update_bounding_box(contact)
+            self.width = int(abs(max_x - min_x))
+            self.height = int(abs(max_y - min_y))
+            self.length = len(self.frames)
+            self.total_min_x, self.total_max_x = int(min_x), int(max_x)
+            self.total_min_y, self.total_max_y = int(min_y), int(max_y)
+            self.total_centroid = (int(center[0]), int(center[1]))
+        else:
+            self.restore(contact)
+
+    def restore(self, contact):
+        self.contour_list = {} # This will sadly not be reconstructed
+        results = contact["paw_results"]
+        self.frames = [x for x in range(results["min_z"], results["max_z"]+1)]
+        self.width = results["width"]
+        self.height = results["height"]
+        self.length = results["length"]
+        self.total_min_x = results["min_x"]
+        self.total_max_x = results["max_x"]
+        self.total_min_y = results["min_y"]
+        self.total_max_y = results["max_y"]
+        self.total_centroid = (results["center_x"], results["center_y"])
 
     def contact_to_dict(self):
         return {
@@ -536,8 +552,7 @@ def fix_orientation(data):
         data = np.rot90(np.rot90(data))
     return data
 
-
-def load_file(infile):
+def load_zebris(filename):
     """
     Input: raw text file, consisting of lines of strings
     Output: stacked numpy array (width x height x number of frames)
@@ -546,31 +561,32 @@ def load_file(infile):
     Then if the first word is Frame, it flips a boolean "frame_number" 
     and parses every line until we hit the closing "}".
     """
-    frame_number = None
-    data_slices = []
-    for line in infile:
-        # This should prevent it from splitting every line
-        if frame_number:
-            if line[0] == 'y':
-                line = line.split()
-                data.append(line[1:])
-                # End of the frame
-            if line[0] == '}':
-                data_slices.append(np.array(data, dtype=np.float32).T)
-                frame_number = None
+    with open(filename, "r") as infile:
+        frame_number = None
+        data_slices = []
+        for line in infile:
+            # This should prevent it from splitting every line
+            if frame_number:
+                if line[0] == 'y':
+                    line = line.split()
+                    data.append(line[1:])
+                    # End of the frame
+                if line[0] == '}':
+                    data_slices.append(np.array(data, dtype=np.float32).T)
+                    frame_number = None
 
-        if line[0] == 'F':
-            line = line.split()
-            if line[0] == "Frame" and line[-1] == "{":
-                frame_number = line[1]
-                data = []
-    results = np.dstack(data_slices)
-    width, height, length = results.shape
-    return results if width > height else results.swapaxes(0, 1)
+            if line[0] == 'F':
+                line = line.split()
+                if line[0] == "Frame" and line[-1] == "{":
+                    frame_number = line[1]
+                    data = []
+        results = np.dstack(data_slices)
+        width, height, length = results.shape
+        return results if width > height else results.swapaxes(0, 1)
 
 # This functions is modified from:
 # http://stackoverflow.com/questions/4087919/how-can-i-improve-my-paw-detection
-def load(filename, padding=False):
+def load_rsscan(filename, padding=False):
     """Reads all data in the datafile. Returns an array of times for each
     slice, and a 3D array of pressure data with shape (nx, ny, nz)."""
     # Open the file
@@ -597,6 +613,12 @@ def load(filename, padding=False):
         result = np.dstack(data_slices)
         return result
 
+def load(filename, padding=False, brand=configuration.brand):
+    if brand == "rsscan":
+        return load_rsscan(filename, padding)
+    if brand == "zebris":
+        # TODO add padding to the Zebris files
+        return load_zebris(filename)
 
 def convert_contour_to_slice(data, contact):
     # Get the bounding box for the entire contact

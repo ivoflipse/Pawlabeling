@@ -176,7 +176,7 @@ class MainWindow(QMainWindow):
         self.arrow_filter = ArrowFilter()
         self.installEventFilter(self.arrow_filter)
 
-        self.main_widget.load_file()
+        self.main_widget.load_first_file()
 
 
     def create_action(self, text, shortcut=None, icon=None,

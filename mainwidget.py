@@ -7,6 +7,7 @@
 #-----------------------------------------------------------------------------
 
 import os
+import json
 import numpy as np
 from PySide.QtCore import *
 from PySide.QtGui import *
@@ -59,14 +60,11 @@ class MainWidget(QWidget):
 
         self.contact_tree.itemActivated.connect(self.switch_contacts)
 
-        # Pick the first item (if any exist)
-        # TODO move this call to mainwindow so its not ran until AFTER everything has been initialized
-        self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
-
         self.entire_plate_widget = EntirePlateWidget(self)
-        self.entire_plate_widget.setMinimumWidth(600)
+        self.entire_plate_widget.setMinimumWidth(configuration.entire_plate_widget_width)
+        self.entire_plate_widget.setMaximumHeight(configuration.entire_plate_widget_height)
 
-        self.paws_widget = PawsWidget(self, self.n_max)
+        self.paws_widget = PawsWidget(self)
 
         # Create a slider
         self.slider = QSlider(self)
@@ -120,6 +118,11 @@ class MainWidget(QWidget):
         self.frame = frame
         self.entire_plate_widget.change_frame(self.frame)
 
+    def load_first_file(self):
+        # Select the first item in the tree
+        self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
+        self.load_file()
+
     def load_file(self):
         # Get the text from the currentItem
         self.currentItem = self.measurement_tree.currentItem()
@@ -130,8 +133,7 @@ class MainWidget(QWidget):
         self.measurement_name = self.file_name.split("\\")[-1]
         self.dog_name = self.file_name.split("\\")[-2]
         # Pass the new measurement through to the widget
-        self.measurement = utility.load(self.file_name, padding=True)
-        #self.measurement = readzebris.load_file(self.file_name) # This enabled reading Zebris files
+        self.measurement = utility.load(self.file_name, padding=True, brand=configuration.brand)
         # Check the orientation of the plate and make sure its left to right
         self.measurement = utility.fix_orientation(self.measurement)
 
@@ -145,6 +147,7 @@ class MainWidget(QWidget):
         self.entire_plate_widget.new_measurement(self.measurement)
         # Remove outdated info from the contact tree
         self.contact_tree.clear()
+
         # Reset all the stored values
         # TODO Cache these values in some way, so it makes labeling in subsequent measurements easier
         self.paws = []
@@ -156,6 +159,53 @@ class MainWidget(QWidget):
         # Update the slider, in case the shape of the file changes
         self.slider.setMaximum(self.num_frames - 1)
         self.nameLabel.setText("Measurement name: {}".format(self.file_name))
+
+        self.load_all_results()
+        # If we have results, we don't need to track
+        stored_results = self.stored_data[self.file_name]
+        if stored_results:
+            self.paw_labels = stored_results["paw_labels"]
+            for index, paw_data in stored_results["paw_data"].items():
+                self.paw_data.append(paw_data)
+            self.paws(utility.Contact(stored_results, restoring=True))
+
+        else:
+            self.track_contacts()
+
+    def load_all_results(self):
+        """
+        Check if there if any measurements for this dog have already been processed
+        If so, retrieve the data and convert them to a usable format
+        """
+        # Iterate through all measurements for this dog
+        self.currentItem = self.measurement_tree.currentItem()
+        dog_name = str(self.currentItem.parent().text(0))
+        file_names = self.file_names[dog_name]
+
+        self.stored_data = {}
+
+        for file_name in file_names:
+            measurement_name = file_name
+            self.stored_data[file_name] = self.load_results(dog_name, measurement_name)
+
+
+    def load_results(self, dog_name, measurement_name):
+        input_path = self.find_stored_file(dog_name, measurement_name)
+        results = {}
+        # If an inputFile has been found, unpickle it
+        if input_path:
+            json_string = ""
+            with open(input_path, "r") as json_file:
+                for line in json_file:
+                    json_string += line
+            results = json.loads(json_string)
+            for index in results["paw_data"]:
+                data_shape, rows, cols, frames, values = results["paw_data"][index]
+                data = self.reconstruct_data(data_shape, rows, cols, frames, values)
+                # Overwrite the results with the restored version
+                results["paw_data"] = data
+        return results
+
 
     def track_contacts(self):
         print("Track!")
@@ -174,16 +224,13 @@ class MainWidget(QWidget):
 
         # TODO refactor out this code so its in a separate function, somewhere else preferably
         # Get the maximum dimensions of the paws
-        self.mx = 0
-        self.my = 0
+        self.mx = 20
+        self.my = 20
         for index, paw in enumerate(self.paws):
             data_slice = utility.convert_contour_to_slice(self.measurement, paw.contour_list)
             x, y, z = data_slice.shape
             self.paw_data.append(data_slice)
-            if x > self.mx:
-                self.mx = x
-            if y > self.my:
-                self.my = y
+
 
             # I've made -2 the label for unlabeled paws, -1 == unlabeled + selected
             paw_label = -2
@@ -209,7 +256,21 @@ class MainWidget(QWidget):
         self.entire_plate_widget.new_paws(self.paws)
         self.entire_plate_widget.draw_gait_line()
         self.current_paw_index = 0
+        # Select the first item in the contacts tree
+        item = self.contact_tree.topLevelItem(self.current_paw_index)
+        self.contact_tree.setCurrentItem(item)
         self.update_current_paw()
+
+    def calculate_average_data(self):
+        self.mx = 20
+        self.my = 20
+        for index, paw_data in enumerate(self.paw_data):
+            x, y, z = paw_data.shape
+            if x > self.mx:
+                self.mx = x
+            if y > self.my:
+                self.my = y
+
 
     def undo_label(self):
         self.previous_paw()
@@ -269,7 +330,6 @@ class MainWidget(QWidget):
             self.entire_plate_widget.update_bounding_boxes(self.paw_labels, self.current_paw_index)
             # Update the paws widget
             self.paws_widget.update_paws(self.paw_labels, self.current_paw_index, self.paw_data, self.average_data)
-
 
     def contacts_available(self):
         """
@@ -416,10 +476,7 @@ class MainWidget(QWidget):
         """
         This creates a json file for the current measurement and stores the results
         """
-        import json
-        import zlib
-
-        json_file_name = "{}//{} labels.json".format(self.new_path, self.measurement_name)
+        json_file_name = "{}//{}.json".format(self.new_path, self.measurement_name)
         with open(json_file_name, "w+") as json_file:
             # Update somewhere in between
             results = {"dog_name": self.dog_name,
@@ -452,7 +509,7 @@ class MainWidget(QWidget):
         """
         import pickle
         # Open a file at this path with the file_name as name
-        output = open("%s//%s labels.pkl" % (self.new_path, self.measurement_name), 'wb')
+        output = open("%s//%s.pkl" % (self.new_path, self.measurement_name), 'wb')
 
         # The result in this case will be the index + 3D slice + sideid
         results = []
@@ -485,15 +542,14 @@ class MainWidget(QWidget):
         return False
 
     def find_stored_file(self, dog_name, file_name):
-        # For the current file_name, check if there's a store_results_folder file, if so load it
-        # Get the name of the dog
+        # For the current file_name, check if the results have been stored, if so load it
         path = os.path.join(self.store_path, dog_name)
         # If the folder exists
         if os.path.exists(path):
             # Check if the current file's name is in that folder
             for root, dirs, files in os.walk(path):
                 for f in files:
-                    name, ext = f.split('.') # name.pkl
+                    name, ext = f.split('.')
                     if name == file_name:
                         input_file = f
                         input_path = os.path.join(path, input_file)
