@@ -57,37 +57,34 @@ class PawsWidget(QWidget):
         self.setLayout(self.main_layout)
 
     # self.paws_widget.update_current_paw(self.paw_labels, self.current_paw_index, self.paw_data)
-    def update_paws(self, paw_labels, current_paw_index, paw_data, average_data):
+    def update_paws(self, paw_labels, paw_data, average_data):
         # Clear the paws, so we can draw new ones
         # TODO only update if the information has changed
         self.clear_paws()
         for index, paw in enumerate(paw_data):
-            average_paw = average_data[index]
             paw_label = paw_labels[index]
+
             # We don't do anything with unlabeled paws that aren't selected or invalid
             if paw_label < -1:
                 continue
-                # If we do have a label, but we have selected it, update the current_paw too
-            if current_paw_index == index and paw_label != -1:
-                self.paws[-1] = [[paw], [average_paw]]
 
             if paw_label not in self.paws:
-                self.paws[paw_label] = [], []
+                self.paws[paw_label] = []
                 # Add the data to the paws dictionary
-            self.paws[paw_label][0].append(paw)
-            self.paws[paw_label][1].append(average_paw)
+            self.paws[paw_label].append(paw)
 
         # Update the widgets
-        for paw_label, data_list in list(self.paws.items()):
-            widget = self.paws_list.get(paw_label, None)
-            # If -2 or -3 there will be no widget
-            if widget:
-                widget.update(data_list)
+        for paw_label, widget in list(self.paws_list.items()):
+            if paw_label != -1:
+                widget.update(self.paws[paw_label], average_data[paw_label])
+            else:
+                widget.update([paw_data], [paw_data])
 
         try:
             self.predict_label()
         except Exception as e:
             print(e)
+
 
     def predict_label(self):
         current_paw = self.paws_list[-1]
@@ -199,9 +196,10 @@ class PawWidget(QWidget):
         self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
 
-    def update(self, data_list):
+    def update(self, data_list, average_data):
         # Calculate an average paw from the list of arrays
-        self.data_list, self.average_data_list = data_list
+        self.data_list = data_list
+        self.average_data_list = average_data
         mean_data_list = []
         pressures = []
         surfaces = []
@@ -225,7 +223,16 @@ class PawWidget(QWidget):
         data = np.array(mean_data_list).mean(axis=0)
         # Make sure the paws are facing upright
         self.data = np.rot90(np.rot90(data))
-        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table))
+        # Only display the non-zero part, regardless of its size
+        x, y = np.nonzero(self.data)
+        if len(x):  # This won't work for empty array's
+            # This might off course go out of bounds some day
+            min_x = np.min(x) - 2
+            max_x = np.max(x) + 2
+            min_y = np.min(y) - 2
+            max_y = np.max(y) + 2
+            sliced_data = self.data[min_x:max_x, min_y:max_y]
+        self.image.setPixmap(utility.get_QPixmap(sliced_data, self.degree, self.n_max, self.color_table))
 
     def clear_paws(self):
         self.data = np.zeros((self.mx, self.my))

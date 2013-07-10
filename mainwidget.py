@@ -26,6 +26,8 @@ class MainWidget(QWidget):
         self.num_frames = 248
         self.frame = 0
         self.n_max = 0
+        self.mx = 15
+        self.my = 15
 
         self.degree = configuration.degree
 
@@ -152,7 +154,7 @@ class MainWidget(QWidget):
         # TODO Cache these values in some way, so it makes labeling in subsequent measurements easier
         self.paws = []
         self.paw_data = []
-        self.average_data = []
+        self.average_data = {0:[], 1:[], 2:[], 3:[]}
         self.paw_labels = {}
         # Reset the frame counter
         self.slider.setValue(-1)
@@ -169,7 +171,16 @@ class MainWidget(QWidget):
                 self.paw_data.append(paw_data)
                 paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
                 self.paws.append(paw)
-            average_data = utility.calculate_average_data()
+
+            for _, results in stored_results.items():
+                paw_labels = stored_results["paw_labels"].values()
+                paw_data = stored_results["paw_data"].values()
+                average_data = utility.calculate_average_data(paw_data)
+
+                for paw_label, data in zip(paw_labels, average_data):
+                    if paw_label >= 0:
+                        self.average_data[paw_label].append(data)
+
             self.initialize_widgets()
         else:
             self.track_contacts()
@@ -244,7 +255,7 @@ class MainWidget(QWidget):
             self.paw_labels[index] = paw_label
 
         # TODO not happy with how I calculate an overall average yet
-        self.average_data = utility.calculate_average_data()
+        self.average_data = utility.calculate_average_data(self.paw_data)
         self.initialize_widgets()
 
     def initialize_widgets(self):
@@ -318,7 +329,7 @@ class MainWidget(QWidget):
             # Update the bounding boxes
             self.entire_plate_widget.update_bounding_boxes(self.paw_labels, self.current_paw_index)
             # Update the paws widget
-            self.paws_widget.update_paws(self.paw_labels, self.current_paw_index, self.paw_data, self.average_data)
+            self.paws_widget.update_paws(self.paw_labels, self.paw_data, self.average_data)
 
     def contacts_available(self):
         """

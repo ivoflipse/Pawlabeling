@@ -69,22 +69,24 @@ class Contact():
                 print("Contour %s: %s" % (index, "".join([str(c) for c in contour])))
 
 
-def calculate_average_data(self, paw_data, mx, my):
+def calculate_average_data(paw_data):
+    mx = 100
+    my = 100
     average_data = []
     # Get the max shape
-    for paw_data in paw_data:
-        x, y, z = paw_data.shape
+    for data in paw_data:
+        x, y, z = data.shape
         if x > mx:
             mx = x
         if y > my:
             my = y
 
     # Pad everything with zeros
-    for paw_data in paw_data:
-        x, y, z = paw_data.shape
+    for data in paw_data:
+        x, y, z= data.shape
         offset_x, offset_y = int((mx - x) / 2), int((my - y) / 2)
         average_slice = np.zeros((mx, my))
-        average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = paw_data.max(axis=2)
+        average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = data.max(axis=2)
         average_data.append(average_slice)
 
     return average_data
