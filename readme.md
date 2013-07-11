@@ -88,9 +88,9 @@ Use the keypad to label the currently selected paw (highlighted in yellow):
 
 You can switch the currently selected contact by pressing `4` or `6`. Remove a label using `5` or undo the previous label using `Ctrl+Z`.
 
-**4. Safe your results**
+**4. Save your results**
 
-After you've labeled all contacts, press `Ctrl+S` to save your results. Now you can select the next measurement for labeling. 
+After you've labeled all contacts, press `Ctrl+S` to save your results. Now you can select the next measurement for labeling. It will automatically load the previous results, so they can aid you while labeling.
 
 Contact
 ----------
