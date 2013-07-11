@@ -1,7 +1,7 @@
 Paw Labeling
 ============
 
-![Paw labeling tool](https://github.com/ivoflipse/Pawlabeling/raw/master/docs/images/Pawlabeling.png)
+![Paw labeling tool](docs/images/Pawlabeling.png)
 
 Overview
 --------
