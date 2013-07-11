@@ -35,12 +35,10 @@ Features
 - Enable manual labeling of the contacts with their respective paw and saving of the results for later use
 
 
-Usage
+Installation
 -----
 
 Requires Python 2 (2.6 or newer), I'm not sure whether my dependencies are supported by Python 3 yet.
-
-**1. Install any missing dependencies.**
 
 I strongly recommend that you consider installing Python packages with pip, as in it is the current preferred method.
 If you are using pip, you can directly install all the dependencies from the requirements file using
@@ -59,12 +57,40 @@ In any case, you need to install:
 - Scipy
 
 
-**2. Run mainwindow.py to start the tool**
+Usage
+-----
 
-It will automatically load the measurements from the measurement path configured in settings/configuration.py and
-look for contacts.
+**1. Edit `settings/configuration.py` for your system**
 
- Contact
- -------
+Apply the following changes:
 
- Post bugs and issues on github. Send other comments to Ivo Flipse: first last at geemail dotcom or @ivoflipse5
+- Change `measurment_folder` to the folder containing all your measurements organized as described above.
+- Change the `store_results_folder` to the folder where you'll be storing the paw labels and other results.
+- Change brand to your specific brand (either "rsscan" or "zebris"), if your brand is not supported, please contact me.
+- Change the frequency to your measurement frequency. Currently only one frequency for all measurements is supported, as this information is not generally available in all export files.
+- Change the main_window height and width depending on your screen resolution and change the degree of interpolation if the images don't fit your screen.
+
+
+**2. Run `pawlabeling.py` to start the tool**
+
+It will automatically load the measurements, select the first one in the tree and look for contacts.
+Furthermore, it will mark any incomplete steps as `Invalid` if they touch the edges of the plate or if they were not finished before the end of the measurement.
+
+**3. Label all your contacts**
+
+Use the keypad to label the currently selected paw (highlighted in yellow):
+
+	7	9		LF	RF	
+			->
+	1	3		LH	RH
+
+You can switch the currently selected contact by pressing `4` or `6`. Remove a label using `5` or undo the previous label using `Ctrl+Z`.
+
+**4. Safe your results**
+
+After you've labeled all contacts, press `Ctrl+S` to save your results. Now you can select the next measurement for labeling. 
+
+Contact
+----------
+
+Post bugs and issues on github. Send other comments to Ivo Flipse: first last at geemail dotcom or @ivoflipse5
