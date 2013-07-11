@@ -1,6 +1,8 @@
 Paw Labeling
 ============
 
+![Paw labeling tool](../docs/images/Pawlabeling.png)
+
 Overview
 --------
 
