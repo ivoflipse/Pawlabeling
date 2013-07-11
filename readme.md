@@ -9,18 +9,16 @@ It can currently import RSscan and Zebris entire plate export-files.
 
 It assumes all measurements are organized in folders as following:
 
-`
-- Dog Name 1
-        |___ Measurement export file 1
-        |___ Measurement export file 2
-        |___ Measurement export file 3
-- Dog Name 2
-        |___ Measurement export file 1
-        |___ Measurement export file 2
-        |___ Measurement export file 3
-- ...
-        |___ ...
-`
+    Dog Name 1
+            |___ Measurement export file 1
+            |___ Measurement export file 2
+            |___ Measurement export file 3
+    Dog Name 2
+            |___ Measurement export file 1
+            |___ Measurement export file 2
+            |___ Measurement export file 3
+    - ...
+            |___ ...
 
 This structure is loaded into a tree for navigation. Selecting a measurement will load it into the entire plate widget.
 It will then try to load meta data, such as the location of the paws and their labels from memory, if available.
@@ -63,7 +61,8 @@ In any case, you need to install:
 
 **2. Run mainwindow.py to start the tool**
 
-
+It will automatically load the measurements from the measurement path configured in settings/configuration.py and
+look for contacts.
 
  Contact
  -------
