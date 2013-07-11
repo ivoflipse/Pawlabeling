@@ -32,13 +32,12 @@ colors = [
 ]
 
 # The first measurement_folder is the folder which stores all the measurement files
-measurement_folder = "C:\Dropbox\Development\Pawlabeling\samples\Measurements"
-store_results_folder = "C:\Dropbox\Development\Pawlabeling\samples\Labels"
+measurement_folder = ".\\samples\\Measurements"
+store_results_folder = ".\\samples\\Labels"
 # Add the folder for the store_results_folder data if it doesn't exist
 if not os.path.exists(store_results_folder):
     os.mkdir(store_results_folder)
 
-# TODO tie in this information to use a different loading function
 brand = "rsscan"
 # TODO use this if you start displaying results and want to display actual milliseconds
 frequency = 124

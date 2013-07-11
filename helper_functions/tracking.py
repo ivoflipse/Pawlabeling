@@ -7,7 +7,7 @@
 #-----------------------------------------------------------------------------
 
 import numpy as np
-from utility import update_bounding_box
+from helper_functions.utility import update_bounding_box
 
 def closest_contact(contact1, contact2, center1, euclidean_distance):
     """
