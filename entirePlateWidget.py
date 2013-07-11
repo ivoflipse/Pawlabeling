@@ -28,23 +28,22 @@ class EntirePlateWidget(QWidget):
         self.pen = QPen(Qt.white)
         # I can also draw with a brush
         self.brush = QBrush(Qt.white)
-        # A cache to store the polygons of the previous frame
-        self.previous_polygons = []
         self.bounding_boxes = []
-        self.current_box = None
         self.gait_lines = []
+        self.measurement_name = ""
 
         self.colors = configuration.colors
         self.degree = configuration.degree
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
 
-    def new_measurement(self, measurement):
+    def new_measurement(self, measurement, measurement_name):
         # Clear the bounding boxes + the line
         self.clear_bounding_box()
         self.clear_gait_line()
         # Update the measurement
         self.measurement = measurement
+        self.measurement_name = measurement_name
         self.height, self.width, self.numFrames = self.measurement.shape
         self.n_max = self.measurement.max()
         self.change_frame(frame=-1)
@@ -98,9 +97,9 @@ class EntirePlateWidget(QWidget):
         self.clear_bounding_box()
 
         for index, paw_label in list(paw_labels.items()):
-            self.draw_bounding_box(self.paws[index], paw_label)
+            self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label)
             if current_paw_index == index:
-                self.draw_bounding_box(self.paws[index], paw_label=-1)
+                self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label=-1)
 
 
     def draw_gait_line(self):
@@ -110,9 +109,9 @@ class EntirePlateWidget(QWidget):
 
         self.clear_gait_line()
 
-        for index in range(1, len(self.paws)):
-            prevPaw = self.paws[index - 1]
-            curPaw = self.paws[index]
+        for index in range(1, len(self.paws[self.measurement_name])):
+            prevPaw = self.paws[self.measurement_name][index - 1]
+            curPaw = self.paws[self.measurement_name][index]
             polygon = QPolygonF(
                 [QPointF(prevPaw.total_centroid[0] * self.degree, prevPaw.total_centroid[1] * self.degree),
                  QPointF(curPaw.total_centroid[0] * self.degree, curPaw.total_centroid[1] * self.degree)])

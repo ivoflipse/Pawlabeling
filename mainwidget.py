@@ -17,7 +17,7 @@ from entireplatewidget import EntirePlateWidget
 from pawswidget import PawsWidget
 import utility
 from settings import configuration
-from helper_functions import io_functions
+from helper_functions import io_functions, tracking
 
 class MainWidget(QWidget):
     def __init__(self, parent=None):
@@ -34,7 +34,7 @@ class MainWidget(QWidget):
         # Initialize our variables that will cache results
         self.average_data = defaultdict(list)
         self.paw_data = defaultdict(list)
-        self.paw_labels = defaultdict(list)
+        self.paw_labels = defaultdict(dict)
         self.paws = defaultdict(list)
 
         # This contains all the file_names for each dog_name
@@ -177,9 +177,9 @@ class MainWidget(QWidget):
             self.clear_cached_values()
 
         # Pass the new measurement through to the widget
-        self.measurement = utility.load(self.file_name, padding=True, brand=configuration.brand)
+        self.measurement = io_functions.load(self.file_name, padding=True, brand=configuration.brand)
         # Check the orientation of the plate and make sure its left to right
-        self.measurement = utility.fix_orientation(self.measurement)
+        self.measurement = io_functions.fix_orientation(self.measurement)
         # Get the number of frames for the slider
         self.height, self.width, self.num_frames = self.measurement.shape
         # Get the normalizing factor for the color bars
@@ -212,6 +212,7 @@ class MainWidget(QWidget):
         self.paw_data.clear()
         self.paw_labels.clear()
 
+    # TODO currently you can't reload a measurement if you've accidentally messed it up
     def load_all_results(self):
         """
         Check if there if any measurements for this dog have already been processed
@@ -224,23 +225,28 @@ class MainWidget(QWidget):
 
         for file_name in file_names:
             measurement_name = file_name
-            stored_results = io_functions.load_results(dog_name, measurement_name)
-            # If we have results, stick them in their respective variable
-            if stored_results:
-                self.paw_labels[measurement_name] = stored_results["paw_labels"]
-                for index, paw_data in stored_results["paw_data"].items():
-                    self.paw_data[measurement_name].append(paw_data)
-                    paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
-                    self.paws[measurement_name].append(paw)
+            # Only load files we haven't already loaded
+            # TODO if a file has been changed since I've loaded it, the cache might get stale
+            # perhaps I should remove the values if you start tracking again or update a measurement in some way
+            if measurement_name not in self.paws:
+                stored_results = io_functions.load_results(dog_name, measurement_name)
+                # If we have results, stick them in their respective variable
+                if stored_results:
+                    self.paw_labels[measurement_name] = stored_results["paw_labels"]
+                    for index, paw_data in stored_results["paw_data"].items():
+                        self.paw_data[measurement_name].append(paw_data)
+                        paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
+                        self.paws[measurement_name].append(paw)
 
-                for _, results in stored_results.items():
-                    paw_labels = stored_results["paw_labels"].values()
-                    paw_data = stored_results["paw_data"].values()
-                    average_data = utility.calculate_average_data(paw_data)
-
-                    for paw_label, data in zip(paw_labels, average_data):
-                        if paw_label >= 0:
-                            self.average_data[paw_label].append(data)
+                    for _, results in stored_results.items():
+                        paw_labels = stored_results["paw_labels"].values()
+                        paw_data = stored_results["paw_data"].values()
+                        for paw_label, data in zip(paw_labels, paw_data):
+                            if paw_label >= 0:
+                                normalized_data = utility.normalize_paw_data(data)
+                                self.average_data[paw_label].append(normalized_data)
+                                # TODO there's a problem now, that if I make a mistake with the labeling,
+                                # I don't know how to reverse it
 
     def store_status(self):
         """
@@ -289,7 +295,7 @@ class MainWidget(QWidget):
     ## Tracking
     def track_contacts(self):
         print("Track!")
-        paws = utility.track_contours_graph(self.measurement)
+        paws = tracking.track_contours_graph(self.measurement)
         # Convert them to class objects
         for index, paw in enumerate(paws):
             paw = utility.Contact(paw)
@@ -300,7 +306,6 @@ class MainWidget(QWidget):
 
         for index, paw in enumerate(self.paws[self.measurement_name]):
             data_slice = utility.convert_contour_to_slice(self.measurement, paw.contour_list)
-            x, y, z = data_slice.shape
             self.paw_data[self.measurement_name].append(data_slice)
             # I've made -2 the label for unlabeled paws, -1 == unlabeled + selected
             paw_label = -2
@@ -311,8 +316,6 @@ class MainWidget(QWidget):
                 paw_label = -3
             self.paw_labels[self.measurement_name][index] = paw_label
 
-        # TODO not happy with how I calculate an overall average yet
-        self.average_data[self.measurement_name] = utility.calculate_average_data(self.paw_data)
         self.initialize_widgets()
 
     ## GUI
@@ -339,8 +342,13 @@ class MainWidget(QWidget):
         if not self.contacts_available():
             return
 
+        # Check if any other paw has the label -1, if so change it to -2
+        for index, paw_label in self.paw_labels[self.measurement_name].items():
+            if paw_label == -1:
+                self.paw_labels[self.measurement_name][index] = -2
+
         # Remove the label
-        self.paw_labels[self.current_paw_index] = -1
+        self.paw_labels[self.measurement_name][self.current_paw_index] = -1
         # Update the screen
         self.update_current_paw()
 
@@ -349,33 +357,33 @@ class MainWidget(QWidget):
         if not self.contacts_available():
             return
             # I've picked -3 as the label for invalid paws
-        self.paw_labels[self.current_paw_index] = -3
+        self.paw_labels[self.measurement_name][self.current_paw_index] = -3
         # Update the screen
         self.update_current_paw()
 
     def select_left_front(self):
-        if self.paw_labels[self.current_paw_index] != -3:
-            self.paw_labels[self.current_paw_index] = 0
+        if self.paw_labels[self.measurement_name][self.current_paw_index] != -3:
+            self.paw_labels[self.measurement_name][self.current_paw_index] = 0
         self.next_paw()
 
     def select_left_hind(self):
-        if self.paw_labels[self.current_paw_index] != -3:
-            self.paw_labels[self.current_paw_index] = 1
+        if self.paw_labels[self.measurement_name][self.current_paw_index] != -3:
+            self.paw_labels[self.measurement_name][self.current_paw_index] = 1
         self.next_paw()
 
     def select_right_front(self):
-        if self.paw_labels[self.current_paw_index] != -3:
-            self.paw_labels[self.current_paw_index] = 2
+        if self.paw_labels[self.measurement_name][self.current_paw_index] != -3:
+            self.paw_labels[self.measurement_name][self.current_paw_index] = 2
         self.next_paw()
 
     def select_right_hind(self):
-        if self.paw_labels[self.current_paw_index] != -3:
-            self.paw_labels[self.current_paw_index] = 3
+        if self.paw_labels[self.measurement_name][self.current_paw_index] != -3:
+            self.paw_labels[self.measurement_name][self.current_paw_index] = 3
         self.next_paw()
 
     def update_current_paw(self):
         if self.current_paw_index <= len(self.paws[self.measurement_name]) and len(self.paws[self.measurement_name]) > 0:
-            for index, paw_label in list(self.paw_labels[self.measurement_name].items()):
+            for index, paw_label in self.paw_labels[self.measurement_name].items():
                 # Get the current row from the tree
                 item = self.contact_tree.topLevelItem(index)
                 item.setText(1, self.paw_dict[paw_label])
@@ -387,7 +395,8 @@ class MainWidget(QWidget):
             # Update the bounding boxes
             self.entire_plate_widget.update_bounding_boxes(self.paw_labels[self.measurement_name], self.current_paw_index)
             # Update the paws widget
-            #self.paws_widget.update_paws(self.paw_labels, self.current_paw_index, self.paw_data, self.average_data)
+            self.paws_widget.update_paws(self.paw_labels, self.paw_data, self.average_data,
+                                         self.current_paw_index, self.measurement_name)
 
     def contacts_available(self):
         """
@@ -398,7 +407,7 @@ class MainWidget(QWidget):
 
     def check_label_status(self):
         results = []
-        for paw_label in list(self.paw_labels.values()):
+        for paw_label in list(self.paw_labels[self.measurement_name].values()):
             if paw_label == -2:
                 results.append(True)
             else:
@@ -434,8 +443,8 @@ class MainWidget(QWidget):
             self.paw_labels[self.current_paw_index] = -2
 
         self.current_paw_index += 1
-        if self.current_paw_index >= len(self.paws):
-            self.current_paw_index = len(self.paws) - 1
+        if self.current_paw_index >= len(self.paws[self.measurement_name]):
+            self.current_paw_index = len(self.paws[self.measurement_name]) - 1
 
         # If we encounter an invalid paw and its not the last paw, skip this one
         if self.paw_labels[self.current_paw_index] == -3 and self.check_label_status():
@@ -462,8 +471,6 @@ class MainWidget(QWidget):
             x, y, z = paw.shape
             rootItem = QTreeWidgetItem(self.contact_tree)
             rootItem.setText(0, str(index))
-            print self.paw_labels
-            print self.paw_labels[self.measurement_name]
             rootItem.setText(1, self.paw_dict[self.paw_labels[self.measurement_name][index]])
             rootItem.setText(2, str(z))  # Sets the frame count
             surface = np.max([np.count_nonzero(paw[:, :, frame]) for frame in range(z)])

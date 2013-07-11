@@ -8,8 +8,8 @@
 
 from PySide.QtGui import *
 import numpy as np
+from collections import defaultdict
 import utility
-
 from settings import configuration
 
 
@@ -34,7 +34,6 @@ class PawsWidget(QWidget):
         }
 
         self.paw_dict = configuration.paw_dict
-        self.paws = {}
         # This sets every widget to a zero image and initializes paws
         self.clear_paws()
 
@@ -56,32 +55,31 @@ class PawsWidget(QWidget):
         self.main_layout.addLayout(self.right_paws_layout)
         self.setLayout(self.main_layout)
 
-    def update_paws(self, paw_labels, current_paw_index, paw_data, average_data):
+    # How do I tell which measurement we're at?
+    def update_paws(self, paw_labels, paw_data, average_data, current_paw_index, current_measurement):
         # Clear the paws, so we can draw new ones
         # TODO only update if the information has changed
         self.clear_paws()
-        for index, paw in enumerate(paw_data):
-            paw_label = paw_labels[index]
-            # We don't do anything with unlabeled paws that aren't selected or invalid
-            if paw_label < -1:
-                continue
 
-            if paw_label not in self.paws:
-                self.paws[paw_label] = []
+        # Group all the data per paw
+        data_array = defaultdict(list)
+        for measurement_name, data_list in paw_data.items():
+            for paw_label, data in zip(paw_labels[measurement_name].values(), data_list):
+                if paw_label >= 0:
+                    data_array[paw_label].append(data)
 
-            # Add the data to the paws dictionary
-            self.paws[paw_label].append(paw)
+        # Do I need to cache information so I can use it later on? Like in predict_label?
+        for paw_label, average_list in average_data.items():
+            data = data_array[paw_label]
+            widget = self.paws_list[paw_label]
+            widget.update(data, average_list)
 
-
-        # Update the widgets
-        for paw_label, widget in list(self.paws_list.items()):
-            if paw_label != -1:
-                widget.update(self.paws[paw_label], average_data[paw_label])
-            else:
-                avg_paw_data = np.zeros((100, 100))
-                x, y, z = paw_data[current_paw_index].shape
-                avg_paw_data[x / 2:(x / 2) + x, y / 2:(y / 2) + y] = paw_data[current_paw_index].max(axis=2)
-                widget.update([paw_data[0]], [avg_paw_data])
+        # Update the current paw widget
+        widget = self.paws_list[-1]
+        current_paw = paw_data[current_measurement][current_paw_index]
+        normalized_current_paw = utility.normalize_paw_data(current_paw)
+        # These are put in lists, because we try to iterate through them
+        widget.update([current_paw], [normalized_current_paw])
 
         try:
             self.predict_label()
@@ -120,8 +118,8 @@ class PawsWidget(QWidget):
             percentages_pressures = [np.sqrt((p - pressure) ** 2) / pressure for p in pressures]
             percentages_surfaces = [np.sqrt((s - surface) ** 2) / surface for s in surfaces]
             percentages_durations = [np.sqrt((d - duration) ** 2) / duration for d in durations]
-            #percentages_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
-            percentages_data = [np.sum(np.sqrt((d - data) ** 2)) for d in data_list]
+            percentages_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
+            #percentages_data = [np.sum(np.sqrt((d - data) ** 2)) for d in data_list]
             results = []
             for p, s, d, d2 in zip(percentages_pressures, percentages_surfaces, percentages_durations,
                                    percentages_data):
@@ -143,7 +141,6 @@ class PawsWidget(QWidget):
         self.clear_paws()
 
     def clear_paws(self):
-        self.paws.clear()
         for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()
 
@@ -207,6 +204,7 @@ class PawWidget(QWidget):
         pressures = []
         surfaces = []
         durations = []
+
         for data, average_data in zip(self.data_list, self.average_data_list):
             mean_data_list.append(average_data)
             pressures.append(np.max(np.sum(np.sum(data, axis=0), axis=0)))
@@ -227,6 +225,7 @@ class PawWidget(QWidget):
         self.data = np.rot90(np.rot90(data))
         # Only display the non-zero part, regardless of its size
         x, y = np.nonzero(self.data)
+        sliced_data = self.data
         if len(x):  # This won't work for empty array's
             # This might off course go out of bounds some day
             min_x = np.min(x) - 2

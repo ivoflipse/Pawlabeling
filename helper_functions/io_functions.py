@@ -11,6 +11,97 @@ import os
 import numpy as np
 from settings import configuration
 
+def calculate_distance(a, b):
+    return np.linalg.norm(np.array(a) - np.array(b))
+
+
+def fix_orientation(data):
+    from scipy.ndimage.measurements import center_of_mass
+    # Find the first and last frame with nonzero data (from z)
+    x, y, z = np.nonzero(data)
+    # For some reason I was loading the file in such a way that it wasn't sorted
+    z = sorted(z)
+    start, end = z[0], z[-1]
+    # Get the COP for those two frames
+    start_x, start_y = center_of_mass(data[:, :, start])
+    end_x, end_y = center_of_mass(data[:, :, end])
+    # We've calculated the start and end point of the measurement (if at all)
+    x_distance = end_x - start_x
+    # If this distance is negative, the dog walked right to left
+    #print .The distance between the start and end is: {}".format(x_distance)
+    if x_distance < 0:
+        # So we flip the data around
+        data = np.rot90(np.rot90(data))
+    return data
+
+def load_zebris(filename):
+    """
+    Input: raw text file, consisting of lines of strings
+    Output: stacked numpy array (width x height x number of frames)
+
+    This very crudely goes through the file, and if the line starts with an F splits it
+    Then if the first word is Frame, it flips a boolean "frame_number"
+    and parses every line until we hit the closing "}".
+    """
+    with open(filename, "r") as infile:
+        frame_number = None
+        data_slices = []
+        for line in infile:
+            # This should prevent it from splitting every line
+            if frame_number:
+                if line[0] == 'y':
+                    line = line.split()
+                    data.append(line[1:])
+                    # End of the frame
+                if line[0] == '}':
+                    data_slices.append(np.array(data, dtype=np.float32).T)
+                    frame_number = None
+
+            if line[0] == 'F':
+                line = line.split()
+                if line[0] == "Frame" and line[-1] == "{":
+                    frame_number = line[1]
+                    data = []
+        results = np.dstack(data_slices)
+        width, height, length = results.shape
+        return results if width > height else results.swapaxes(0, 1)
+
+# This functions is modified from:
+# http://stackoverflow.com/questions/4087919/how-can-i-improve-my-paw-detection
+def load_rsscan(filename, padding=False):
+    """Reads all data in the datafile. Returns an array of times for each
+    slice, and a 3D array of pressure data with shape (nx, ny, nz)."""
+    # Open the file
+    with open(filename, "r") as infile:
+        data_slices = []
+        data = []
+        for line in infile:
+            split_line = line.strip().split()
+            line_length = len(split_line)
+            if line_length == 0:
+                if len(data) != 0:
+                    if padding:
+                        empty_line = data[0]
+                        data = [empty_line] + data + [empty_line]
+                    array_data = np.array(data, dtype=np.float32)
+                    data_slices.append(array_data)
+            elif line_length == 4: # header
+                data = []
+            else:
+                if padding:
+                    split_line = ['0.0'] + split_line + ['0.0']
+                data.append(split_line)
+
+        result = np.dstack(data_slices)
+        return result
+
+def load(filename, padding=False, brand=configuration.brand):
+    if brand == "rsscan":
+        return load_rsscan(filename, padding)
+    if brand == "zebris":
+        # TODO add padding to the Zebris files
+        return load_zebris(filename)
+
 def find_stored_file(dog_name, file_name):
     store_path = configuration.store_results_folder
     # For the current file_name, check if the results have been stored, if so load it
