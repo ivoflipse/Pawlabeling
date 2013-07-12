@@ -24,7 +24,7 @@ class MainWidget(QWidget):
     def __init__(self, parent=None):
         super(MainWidget, self).__init__(parent)
 
-        # Initialize numframes, in case measurements aren't loaded
+        # Initialize num_frames, in case measurements aren't loaded
         self.num_frames = 248
         self.frame = 0
         self.n_max = 0
