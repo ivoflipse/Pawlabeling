@@ -20,9 +20,9 @@ from settings import configuration
 from functions import io, tracking, utility
 
 
-class MainWidget(QWidget):
+class ProcessingWidget(QWidget):
     def __init__(self, parent=None):
-        super(MainWidget, self).__init__(parent)
+        super(ProcessingWidget, self).__init__(parent)
 
         # Initialize num_frames, in case measurements aren't loaded
         self.num_frames = 248

@@ -13,7 +13,8 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 from settings import configuration
 
-from widgets.processingwidget import MainWidget
+from widgets import processingwidget, analysiswidget
+
 
 
 class MainWindow(QMainWindow):
@@ -21,8 +22,9 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.setGeometry(configuration.main_window_size)
 
-        self.main_widget = MainWidget(self)
-        self.setCentralWidget(self.main_widget)
+        self.processing_widget = processingwidget.ProcessingWidget(self)
+        self.analysis_widget = analysiswidget.AnalysisWidget(self)
+
         self.toolbar = Toolbar(self)
         self.addToolBar(Qt.TopToolBarArea, self.toolbar)
 
@@ -30,13 +32,19 @@ class MainWindow(QMainWindow):
         self.status.showMessage("Ready")
         self.setWindowTitle("Paw Labeling tool")
 
+        self.tab_widget = TabWidget(self)
+        self.tab_widget.addTab(self.processing_widget, "Processing")
+        self.tab_widget.addTab(self.analysis_widget, "Analysis")
+
+        self.setCentralWidget(self.tab_widget)
+
         self.track_contacts = self.create_action(text="&Track Contacts",
                                                  shortcut=QKeySequence("CTRL+F"),
                                                  icon=QIcon(
                                                      os.path.join(os.path.dirname(__file__), "images/edit_zoom.png")),
                                                  tip="Using the tracker to find contacts",
                                                  checkable=False,
-                                                 connection=self.main_widget.track_contacts
+                                                 connection=self.processing_widget.track_contacts
         )
 
         self.store_status = self.create_action(text="&Store",
@@ -45,7 +53,7 @@ class MainWindow(QMainWindow):
                                                    os.path.join(os.path.dirname(__file__), "images/save-icon.png")),
                                                tip="Mark the tracking as correct",
                                                checkable=False,
-                                               connection=self.main_widget.store_status
+                                               connection=self.processing_widget.store_status
         )
 
         self.slide_to_left = self.create_action(text="Slide Left",
@@ -55,7 +63,7 @@ class MainWindow(QMainWindow):
                                                                  "images/arrow-left-icon.png")),
                                                 tip="Move the slider to the left",
                                                 checkable=False,
-                                                connection=self.main_widget.slide_to_left
+                                                connection=self.processing_widget.slide_to_left
         )
 
         self.slide_to_right = self.create_action(text="Slide Right",
@@ -64,7 +72,7 @@ class MainWindow(QMainWindow):
                                                                          "images/arrow-right-icon.png")),
                                                  tip="Move the slider to the right",
                                                  checkable=False,
-                                                 connection=self.main_widget.slide_to_right
+                                                 connection=self.processing_widget.slide_to_right
         )
 
         self.fast_backward = self.create_action(text="Fast Back",
@@ -73,7 +81,7 @@ class MainWindow(QMainWindow):
                                                                         "images/arrow-left-icon.png")),
                                                 tip="Move the slider to the left faster",
                                                 checkable=False,
-                                                connection=self.main_widget.fast_backward
+                                                connection=self.processing_widget.fast_backward
         )
 
         self.fast_forward = self.create_action(text="Fast Left Right",
@@ -82,7 +90,7 @@ class MainWindow(QMainWindow):
                                                                        "images/arrow-right-icon.png")),
                                                tip="Move the slider to the right faster",
                                                checkable=False,
-                                               connection=self.main_widget.fast_forward
+                                               connection=self.processing_widget.fast_forward
         )
 
         self.left_front = self.create_action(text="Select Left Front",
@@ -90,7 +98,7 @@ class MainWindow(QMainWindow):
                                              icon=QIcon(os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
                                              tip="Select the Left Front paw",
                                              checkable=False,
-                                             connection=self.main_widget.select_left_front
+                                             connection=self.processing_widget.select_left_front
         )
 
         self.left_hind = self.create_action(text="Select Left Hind",
@@ -98,7 +106,7 @@ class MainWindow(QMainWindow):
                                             icon=QIcon(os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
                                             tip="Select the Left Hind paw",
                                             checkable=False,
-                                            connection=self.main_widget.select_left_hind
+                                            connection=self.processing_widget.select_left_hind
         )
 
         self.right_front = self.create_action(text="Select Right Front",
@@ -107,7 +115,7 @@ class MainWindow(QMainWindow):
                                                                       "images/RF-icon.png")),
                                               tip="Select the Right Front paw",
                                               checkable=False,
-                                              connection=self.main_widget.select_right_front
+                                              connection=self.processing_widget.select_right_front
         )
 
         self.right_hind = self.create_action(text="Select Right Hind",
@@ -115,7 +123,7 @@ class MainWindow(QMainWindow):
                                              icon=QIcon(os.path.join(os.path.dirname(__file__), "images/RH-icon.png")),
                                              tip="Select the Right Hind paw",
                                              checkable=False,
-                                             connection=self.main_widget.select_right_hind
+                                             connection=self.processing_widget.select_right_hind
         )
 
         self.previous_paw = self.create_action(text="Select Previous Paw",
@@ -124,7 +132,7 @@ class MainWindow(QMainWindow):
                                                    os.path.join(os.path.dirname(__file__), "images/backward.png")),
                                                tip="Select the previous paw",
                                                checkable=False,
-                                               connection=self.main_widget.previous_paw
+                                               connection=self.processing_widget.previous_paw
         )
 
         self.next_paw = self.create_action(text="Select Next Paw",
@@ -132,7 +140,7 @@ class MainWindow(QMainWindow):
                                            icon=QIcon(os.path.join(os.path.dirname(__file__), "images/forward.png")),
                                            tip="Select the next paw",
                                            checkable=False,
-                                           connection=self.main_widget.next_paw
+                                           connection=self.processing_widget.next_paw
         )
 
         self.remove_label = self.create_action(text="Delete Label From Paw",
@@ -141,7 +149,7 @@ class MainWindow(QMainWindow):
                                                    os.path.join(os.path.dirname(__file__), "images/cancel-icon.png")),
                                                tip="Delete the label from the paw",
                                                checkable=False,
-                                               connection=self.main_widget.remove_label
+                                               connection=self.processing_widget.remove_label
         )
 
         self.invalid_paw = self.create_action(text="Mark Paw as Invalid",
@@ -150,7 +158,7 @@ class MainWindow(QMainWindow):
                                                   os.path.join(os.path.dirname(__file__), "images/trash-icon.png")),
                                               tip="Mark the paw as invalid",
                                               checkable=False,
-                                              connection=self.main_widget.invalid_paw
+                                              connection=self.processing_widget.invalid_paw
         )
 
         self.undo_label = self.create_action(text="Undo Label From Paw",
@@ -159,7 +167,7 @@ class MainWindow(QMainWindow):
                                                  os.path.join(os.path.dirname(__file__), "images/undo-icon.png")),
                                              tip="Delete the label from the paw",
                                              checkable=False,
-                                             connection=self.main_widget.undo_label
+                                             connection=self.processing_widget.undo_label
         )
 
         self.actions = [self.store_status, self.track_contacts, self.left_front, self.left_hind,
@@ -180,9 +188,9 @@ class MainWindow(QMainWindow):
         self.installEventFilter(self.arrow_filter)
 
         # Load all the measurements into the measurement tree
-        self.main_widget.add_measurements()
+        self.processing_widget.add_measurements()
         # Then load the first measurement
-        self.main_widget.load_first_file()
+        self.processing_widget.load_first_file()
 
 
     def create_action(self, text, shortcut=None, icon=None,
@@ -203,6 +211,10 @@ class MainWindow(QMainWindow):
         if connection:
             action.triggered.connect(connection)
         return action
+
+class TabWidget(QTabWidget):
+    def __init__(self, parent=None):
+        super(TabWidget, self).__init__(parent)
 
 
 class ArrowFilter(QObject):
