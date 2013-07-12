@@ -11,7 +11,7 @@ from collections import defaultdict
 from PySide.QtGui import *
 import numpy as np
 
-from helper_functions import utility
+from functions import utility
 from settings import configuration
 
 

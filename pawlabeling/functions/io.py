@@ -34,7 +34,7 @@ def fix_orientation(data):
         data = np.rot90(np.rot90(data))
     return data
 
-def load_zebris(filename):
+def load_zebris(infile):
     """
     Input: raw text file, consisting of lines of strings
     Output: stacked numpy array (width x height x number of frames)
@@ -43,66 +43,84 @@ def load_zebris(filename):
     Then if the first word is Frame, it flips a boolean "frame_number"
     and parses every line until we hit the closing "}".
     """
-    with open(filename, "r") as infile:
-        frame_number = None
-        data_slices = []
-        for line in infile:
-            # This should prevent it from splitting every line
-            if frame_number:
-                if line[0] == 'y':
-                    line = line.split()
-                    data.append(line[1:])
-                    # End of the frame
-                if line[0] == '}':
-                    data_slices.append(np.array(data, dtype=np.float32).T)
-                    frame_number = None
-
-            if line[0] == 'F':
+    frame_number = None
+    data_slices = []
+    for line in iter(infile.splitlines()):
+        # This should prevent it from splitting every line
+        if frame_number:
+            if line[0] == 'y':
                 line = line.split()
-                if line[0] == "Frame" and line[-1] == "{":
-                    frame_number = line[1]
-                    data = []
-        results = np.dstack(data_slices)
-        width, height, length = results.shape
-        return results if width > height else results.swapaxes(0, 1)
+                data.append(line[1:])
+                # End of the frame
+            if line[0] == '}':
+                data_slices.append(np.array(data, dtype=np.float32).T)
+                frame_number = None
+
+        if line[0] == 'F':
+            line = line.split()
+            if line[0] == "Frame" and line[-1] == "{":
+                frame_number = line[1]
+                data = []
+    results = np.dstack(data_slices)
+    width, height, length = results.shape
+    return results if width > height else results.swapaxes(0, 1)
 
 # This functions is modified from:
 # http://stackoverflow.com/questions/4087919/how-can-i-improve-my-paw-detection
-def load_rsscan(filename, padding=False):
+def load_rsscan(infile, padding=False):
     """Reads all data in the datafile. Returns an array of times for each
     slice, and a 3D array of pressure data with shape (nx, ny, nz)."""
-    # Open the file
-    with open(filename, "r") as infile:
-        data_slices = []
-        data = []
-        for line in infile:
-            split_line = line.strip().split()
-            line_length = len(split_line)
-            if line_length == 0:
-                if len(data) != 0:
-                    if padding:
-                        empty_line = data[0]
-                        data = [empty_line] + data + [empty_line]
-                    array_data = np.array(data, dtype=np.float32)
-                    data_slices.append(array_data)
-            elif line_length == 4: # header
-                data = []
-            else:
+    data_slices = []
+    data = []
+    for line in iter(infile.splitlines()):
+        split_line = line.strip().split()
+        line_length = len(split_line)
+        if line_length == 0:
+            if len(data) != 0:
                 if padding:
-                    split_line = ['0.0'] + split_line + ['0.0']
-                data.append(split_line)
+                    empty_line = data[0]
+                    data = [empty_line] + data + [empty_line]
+                array_data = np.array(data, dtype=np.float32)
+                data_slices.append(array_data)
+        elif line_length == 4: # header
+            data = []
+        else:
+            if padding:
+                split_line = ['0.0'] + split_line + ['0.0']
+            data.append(split_line)
 
-        result = np.dstack(data_slices)
-        return result
+    result = np.dstack(data_slices)
+    return result
 
-def load(filename, padding=False, brand=configuration.brand):
+def load(file_name, padding=False, brand=configuration.brand):
+    import zipfile
+
+    # Check if the file isn't compressed, else zip it and delete the original after loading
+    base_name, extension = os.path.splitext(file_name)
+    if extension != ".zip":
+        convert_file_to_zip(file_name)
+        # Remove the uncompressed file
+        os.remove(file_name)
+        # Add the .zip extension
+        file_name += ".zip"
+
+    # Load the zipped contents and pass them to the load functions
+    infile = zipfile.ZipFile(file_name, "r")
+    for file_name in infile.namelist():
+        input = infile.read(file_name)
+
+    # Note that input is a string, not a file
     if brand == "rsscan":
-        return load_rsscan(filename, padding)
+        data = load_rsscan(input, padding)
     if brand == "zebris":
         # TODO add padding to the Zebris files
-        return load_zebris(filename)
+        data = load_zebris(input)
+
+    return data
 
 def find_stored_file(dog_name, file_name):
+    # Note that the file_name has a ZIP exstension, so we'll ignore that for now
+    file_name, extension = file_name.split(".")
     store_path = configuration.store_results_folder
     # For the current file_name, check if the results have been stored, if so load it
     path = os.path.join(store_path, dog_name)
@@ -159,3 +177,15 @@ def create_results_folder(dog_name):
     if not os.path.exists(new_path):
         os.mkdir(new_path)
     return new_path
+
+def convert_file_to_zip(file_path):
+    import zipfile
+    # Create a new zip file and add .zip to the file_name
+    outfile = zipfile.ZipFile(file_path + ".zip", "w")
+
+    outfile.write(file_path, os.path.basename(file_path), compress_type=zipfile.ZIP_DEFLATED)
+
+
+
+
+

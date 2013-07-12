@@ -8,7 +8,7 @@
 
 from PySide.QtCore import *
 from PySide.QtGui import *
-from helper_functions import utility
+from functions import utility
 from settings import configuration
 
 class EntirePlateWidget(QWidget):

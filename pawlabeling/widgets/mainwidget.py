@@ -17,7 +17,7 @@ from PySide.QtGui import *
 from widgets.entireplatewidget import EntirePlateWidget
 from widgets.pawswidget import PawsWidget
 from settings import configuration
-from helper_functions import io_functions, tracking, utility
+from functions import io, tracking, utility
 
 
 class MainWidget(QWidget):
@@ -152,7 +152,7 @@ class MainWidget(QWidget):
                     self.file_names[dog_name][file_name] = name
                     childItem = QTreeWidgetItem(root_item, [file_name])
                     # Check if the measurement has already been store_results_folder
-                    if io_functions.find_stored_file(dog_name, file_name) is not None:
+                    if io.find_stored_file(dog_name, file_name) is not None:
                         # Change the foreground to green
                         childItem.setForeground(0, green_brush)
 
@@ -178,9 +178,9 @@ class MainWidget(QWidget):
             self.clear_cached_values()
 
         # Pass the new measurement through to the widget
-        self.measurement = io_functions.load(self.file_name, padding=True, brand=configuration.brand)
+        self.measurement = io.load(self.file_name, padding=True, brand=configuration.brand)
         # Check the orientation of the plate and make sure its left to right
-        self.measurement = io_functions.fix_orientation(self.measurement)
+        self.measurement = io.fix_orientation(self.measurement)
         # Get the number of frames for the slider
         self.height, self.width, self.num_frames = self.measurement.shape
         # Get the normalizing factor for the color bars
@@ -230,7 +230,7 @@ class MainWidget(QWidget):
             # TODO if a file has been changed since I've loaded it, the cache might get stale
             # perhaps I should remove the values if you start tracking again or update a measurement in some way
             if measurement_name not in self.paws:
-                stored_results = io_functions.load_results(dog_name, measurement_name)
+                stored_results = io.load_results(dog_name, measurement_name)
                 # If we have results, stick them in their respective variable
                 if stored_results:
                     self.paw_labels[measurement_name] = stored_results["paw_labels"]
@@ -254,7 +254,7 @@ class MainWidget(QWidget):
         This function creates a file in the store_results_folder folder if it doesn't exist
         """
         # Try and create a folder to add store the store_results_folder result
-        self.new_path = io_functions.create_results_folder(self.dog_name)
+        self.new_path = io.create_results_folder(self.dog_name)
         # Try storing the results
         try:
             self.results_to_json()  # Switched from pickling to JSON
