@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
         )
 
         self.previous_paw = self.create_action(text="Select Previous Paw",
-                                               shortcut=[QKeySequence(Qt.Key_4), QKeySequence(Qt.Key_Down)],
+                                               shortcut=[configuration.previous_paw, QKeySequence(Qt.Key_Down)],
                                                icon=QIcon(
                                                    os.path.join(os.path.dirname(__file__), "images/backward.png")),
                                                tip="Select the previous paw",
@@ -128,7 +128,7 @@ class MainWindow(QMainWindow):
         )
 
         self.next_paw = self.create_action(text="Select Next Paw",
-                                           shortcut=[QKeySequence(Qt.Key_6), QKeySequence(Qt.Key_Up)],
+                                           shortcut=[configuration.next_paw, QKeySequence(Qt.Key_Up)],
                                            icon=QIcon(os.path.join(os.path.dirname(__file__), "images/forward.png")),
                                            tip="Select the next paw",
                                            checkable=False,
@@ -163,7 +163,7 @@ class MainWindow(QMainWindow):
         )
 
         self.actions = [self.store_status, self.track_contacts, self.left_front, self.left_hind,
-                        self.right_front, self.hind_right, self.previous_paw, self.next_paw,
+                        self.right_front, self.right_hind, self.previous_paw, self.next_paw,
                         self.remove_label, self.invalid_paw, self.undo_label]
 
         for action in self.actions:

@@ -133,13 +133,6 @@ class PawsWidget(QWidget):
         for paw_label, paw in list(self.paws_list.items()):
             paw.n_max = n_max
 
-    def update_shape(self, mx, my):
-        for paw_label, paw in list(self.paws_list.items()):
-            paw.mx = mx
-            paw.my = my
-
-        self.clear_paws()
-
     def clear_paws(self):
         for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()

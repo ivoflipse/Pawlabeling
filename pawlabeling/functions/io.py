@@ -119,8 +119,8 @@ def load(file_name, padding=False, brand=configuration.brand):
     return data
 
 def find_stored_file(dog_name, file_name):
-    # Note that the file_name has a ZIP exstension, so we'll ignore that for now
-    file_name, extension = file_name.split(".")
+    # Note that the file_name might have a ZIP exstension, so we'll ignore that for now
+    file_name = file_name.split(".")[0]
     store_path = configuration.store_results_folder
     # For the current file_name, check if the results have been stored, if so load it
     path = os.path.join(store_path, dog_name)

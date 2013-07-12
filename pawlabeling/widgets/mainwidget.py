@@ -28,8 +28,6 @@ class MainWidget(QWidget):
         self.num_frames = 248
         self.frame = 0
         self.n_max = 0
-        self.mx = 15
-        self.my = 15
         self.dog_name = ""
 
         # Initialize our variables that will cache results
@@ -323,8 +321,6 @@ class MainWidget(QWidget):
 
     ## GUI
     def initialize_widgets(self):
-        # Update the shape of the paws widget
-        self.paws_widget.update_shape(self.mx, self.my)
         # Add the paws to the contact_tree
         self.add_contacts()
         # Update the widget's paws too

@@ -32,17 +32,26 @@ colors = [
 ]
 
 # Keyboard_shortcuts
+desktop = True
+if desktop:
+    left_front = QKeySequence(Qt.Key_7)
+    left_hind = QKeySequence(Qt.Key_1)
+    right_front = QKeySequence(Qt.Key_9)
+    right_hind = QKeySequence(Qt.Key_3)
+    previous_paw = QKeySequence(Qt.Key_4)
+    next_paw = QKeySequence(Qt.Key_6)
+    remove_label = QKeySequence(Qt.Key_5)
+    invalid_paw = QKeySequence(Qt.Key_Delete)
+else:
+    left_front = QKeySequence(Qt.Key_U)
+    left_hind = QKeySequence(Qt.Key_N)
+    right_front = QKeySequence(Qt.Key_O)
+    right_hind = QKeySequence(Qt.Key_Comma)
+    previous_paw = QKeySequence(Qt.Key_J)
+    next_paw = QKeySequence(Qt.Key_L)
+    remove_label = QKeySequence(Qt.Key_K)
+    invalid_paw = QKeySequence(Qt.Key_Delete)
 
-left_front = QKeySequence(Qt.Key_7)
-left_hind = QKeySequence(Qt.Key_1)
-right_front = QKeySequence(Qt.Key_9)
-right_hind = QKeySequence(Qt.Key_3)
-previous_paw = QKeySequence(Qt.Key_4)
-next_paw = QKeySequence(Qt.Key_6)
-remove_label = QKeySequence(Qt.Key_5)
-# Invalid paws are ignored throughout the measurement
-# TODO allow to undo invalid_paw <- tricky!
-invalid_paw = QKeySequence(Qt.Key_Delete)
 
 # The first measurement_folder is the folder which stores all the measurement files
 measurement_folder = ".\\samples\\Measurements"
@@ -54,6 +63,7 @@ if not os.path.exists(store_results_folder):
 brand = "rsscan"
 # TODO use this if you start displaying results and want to display actual milliseconds
 frequency = 124
+
 
 # These values dictate how large the app will be, best not touch window_top
 # since you'll lose the buttons to min/maximize the window
