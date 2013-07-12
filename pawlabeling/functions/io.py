@@ -101,12 +101,10 @@ def load(file_name, padding=False, brand=configuration.brand):
 
     # Note that input is a string, not a file
     if brand == "rsscan":
-        data = load_rsscan(input, padding)
+        return load_rsscan(input, padding)
     if brand == "zebris":
         # TODO add padding to the Zebris files
-        data = load_zebris(input)
-
-    return data
+        return load_zebris(input)
 
 def find_stored_file(dog_name, file_name):
     # Note that the file_name might have a ZIP exstension, so we'll ignore that for now
@@ -172,8 +170,12 @@ def convert_file_to_zip(file_path):
     import zipfile
     # Create a new zip file and add .zip to the file_name
     outfile = zipfile.ZipFile(file_path + ".zip", "w")
-
-    outfile.write(file_path, os.path.basename(file_path), compress_type=zipfile.ZIP_DEFLATED)
+    try:
+        outfile.write(file_path, os.path.basename(file_path), compress_type=zipfile.ZIP_DEFLATED)
+        # Remove the uncompressed file
+        os.remove(file_path)  # Its possible that this file is open somewhere else, then everything might fail...
+    except Exception, e:
+        print e
 
 
 

@@ -148,10 +148,10 @@ class MainWidget(QWidget):
                 for index, file_name in enumerate(files):
                     # Check if the file isn't compressed, else zip it and delete the original after loading
                     base_name, extension = os.path.splitext(file_name)
+                    # TODO I shouldn't delete if I can't confirm I have the zip file
                     if extension != ".zip":
-                        io.convert_file_to_zip(file_name)
-                        # Remove the uncompressed file
-                        os.remove(file_name)
+                        file_path = os.path.join(root, file_name)
+                        io.convert_file_to_zip(file_path)
                         # Add the .zip extension
                         file_name += ".zip"
 
@@ -231,6 +231,9 @@ class MainWidget(QWidget):
         dog_name = str(self.currentItem.parent().text(0))
         file_names = self.file_names[dog_name]
 
+        # Clear the average data
+        self.average_data.clear()
+
         for file_name in file_names:
             measurement_name = file_name
             # Refresh the cache, it might be stale
@@ -238,7 +241,6 @@ class MainWidget(QWidget):
                 self.paws[measurement_name] = []
                 self.paw_labels[measurement_name] = {}
                 self.paw_data[measurement_name] = []
-                self.average_data[measurement_name] = []
 
             stored_results = io.load_results(dog_name, measurement_name)
             # If we have results, stick them in their respective variable
@@ -256,8 +258,6 @@ class MainWidget(QWidget):
                         if paw_label >= 0:
                             normalized_data = utility.normalize_paw_data(data)
                             self.average_data[paw_label].append(normalized_data)
-                            # TODO there's a problem now, that if I make a mistake with the labeling,
-                            # I don't know how to reverse it
 
     def store_status(self):
         """
