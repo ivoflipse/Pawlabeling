@@ -13,7 +13,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 from settings import configuration
 
-from widgets.mainwidget import MainWidget
+from widgets.processingwidget import MainWidget
 
 
 class MainWindow(QMainWindow):
