@@ -129,7 +129,7 @@ def find_stored_file(dog_name, file_name):
         # Check if the current file's name is in that folder
         for root, dirs, files in os.walk(path):
             for f in files:
-                name, ext = f.split('.')
+                name = f.split('.')[0]  # This was giving problems because of .zip.json == 2 extensions
                 if name == file_name:
                     input_file = f
                     input_path = os.path.join(path, input_file)

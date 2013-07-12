@@ -60,7 +60,6 @@ class PawsWidget(QWidget):
     # How do I tell which measurement we're at?
     def update_paws(self, paw_labels, paw_data, average_data, current_paw_index, current_measurement):
         # Clear the paws, so we can draw new ones
-        # TODO only update if the information has changed
         self.clear_paws()
 
         # Group all the data per paw
@@ -115,7 +114,6 @@ class PawsWidget(QWidget):
             data_list.append(paw.data)
 
         # For each value calculate how much % it varies
-        # TODO this has an obvious risk of divide by zero
         if all([pressure, surface, duration, data_list]):
             percentages_pressures = [np.sqrt((p - pressure) ** 2) / pressure for p in pressures]
             percentages_surfaces = [np.sqrt((s - surface) ** 2) / surface for s in surfaces]
@@ -156,8 +154,8 @@ class PawWidget(QWidget):
         self.label = label
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
-        self.mx = 15
-        self.my = 15
+        self.mx = 100
+        self.my = 100
         self.data = np.zeros((self.mx, self.my))
         self.data_list = []
         self.average_data_list = []

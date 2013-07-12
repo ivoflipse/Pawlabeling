@@ -213,7 +213,6 @@ class MainWidget(QWidget):
         self.paw_data.clear()
         self.paw_labels.clear()
 
-    # TODO currently you can't reload a measurement if you've accidentally messed it up
     def load_all_results(self):
         """
         Check if there if any measurements for this dog have already been processed
@@ -226,28 +225,31 @@ class MainWidget(QWidget):
 
         for file_name in file_names:
             measurement_name = file_name
-            # Only load files we haven't already loaded
-            # TODO if a file has been changed since I've loaded it, the cache might get stale
-            # perhaps I should remove the values if you start tracking again or update a measurement in some way
-            if measurement_name not in self.paws:
-                stored_results = io.load_results(dog_name, measurement_name)
-                # If we have results, stick them in their respective variable
-                if stored_results:
-                    self.paw_labels[measurement_name] = stored_results["paw_labels"]
-                    for index, paw_data in stored_results["paw_data"].items():
-                        self.paw_data[measurement_name].append(paw_data)
-                        paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
-                        self.paws[measurement_name].append(paw)
+            # Refresh the cache, it might be stale
+            if measurement_name in self.paws:
+                self.paws[measurement_name] = []
+                self.paw_labels[measurement_name] = {}
+                self.paw_data[measurement_name] = []
+                self.average_data[measurement_name] = []
 
-                    for _, results in stored_results.items():
-                        paw_labels = stored_results["paw_labels"].values()
-                        paw_data = stored_results["paw_data"].values()
-                        for paw_label, data in zip(paw_labels, paw_data):
-                            if paw_label >= 0:
-                                normalized_data = utility.normalize_paw_data(data)
-                                self.average_data[paw_label].append(normalized_data)
-                                # TODO there's a problem now, that if I make a mistake with the labeling,
-                                # I don't know how to reverse it
+            stored_results = io.load_results(dog_name, measurement_name)
+            # If we have results, stick them in their respective variable
+            if stored_results:
+                self.paw_labels[measurement_name] = stored_results["paw_labels"]
+                for index, paw_data in stored_results["paw_data"].items():
+                    self.paw_data[measurement_name].append(paw_data)
+                    paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
+                    self.paws[measurement_name].append(paw)
+
+                for _, results in stored_results.items():
+                    paw_labels = stored_results["paw_labels"].values()
+                    paw_data = stored_results["paw_data"].values()
+                    for paw_label, data in zip(paw_labels, paw_data):
+                        if paw_label >= 0:
+                            normalized_data = utility.normalize_paw_data(data)
+                            self.average_data[paw_label].append(normalized_data)
+                            # TODO there's a problem now, that if I make a mistake with the labeling,
+                            # I don't know how to reverse it
 
     def store_status(self):
         """
@@ -336,9 +338,9 @@ class MainWidget(QWidget):
 
     def undo_label(self):
         self.previous_paw()
-        self.delete_label()
+        self.remove_label()
 
-    def delete_label(self):
+    def remove_label(self):
         # Check if we have any contacts available, else don't bother
         if not self.contacts_available():
             return

@@ -31,6 +31,19 @@ colors = [
     QColor(Qt.yellow)
 ]
 
+# Keyboard_shortcuts
+
+left_front = QKeySequence(Qt.Key_7)
+left_hind = QKeySequence(Qt.Key_1)
+right_front = QKeySequence(Qt.Key_9)
+right_hind = QKeySequence(Qt.Key_3)
+previous_paw = QKeySequence(Qt.Key_4)
+next_paw = QKeySequence(Qt.Key_6)
+remove_label = QKeySequence(Qt.Key_5)
+# Invalid paws are ignored throughout the measurement
+# TODO allow to undo invalid_paw <- tricky!
+invalid_paw = QKeySequence(Qt.Key_Delete)
+
 # The first measurement_folder is the folder which stores all the measurement files
 measurement_folder = ".\\samples\\Measurements"
 store_results_folder = ".\\samples\\Labels"
