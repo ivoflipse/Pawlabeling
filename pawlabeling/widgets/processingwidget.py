@@ -17,7 +17,7 @@ from PySide.QtGui import *
 from widgets.entireplatewidget import EntirePlateWidget
 from widgets.pawswidget import PawsWidget
 from settings import configuration
-from functions import io, tracking, utility
+from functions import io, tracking, utility, gui
 
 
 class ProcessingWidget(QWidget):
@@ -49,6 +49,10 @@ class ProcessingWidget(QWidget):
         self.paw_dict = configuration.paw_dict
 
         self.current_paw_index = 0
+
+        self.toolbar = Toolbar(self)
+        # Create all the toolbar actions
+        self.create_toolbar_actions()
 
         # Create a list widget
         self.measurement_tree = QTreeWidget(self)
@@ -94,9 +98,12 @@ class ProcessingWidget(QWidget):
         self.vertical_layout = QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
         self.vertical_layout.addWidget(self.contact_tree)
-        self.main_layout = QHBoxLayout(self)
-        self.main_layout.addLayout(self.vertical_layout)
-        self.main_layout.addLayout(self.layout)
+        self.horizontal_layout = QHBoxLayout()
+        self.horizontal_layout.addLayout(self.vertical_layout)
+        self.horizontal_layout.addLayout(self.layout)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.addWidget(self.toolbar)
+        self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
     def fast_backward(self):
@@ -488,3 +495,166 @@ class ProcessingWidget(QWidget):
             rootItem.setText(4, str(int(force)))
 
         self.current_paw_index = 0
+
+
+    def create_toolbar_actions(self):
+        self.track_contacts_action = gui.create_action(text="&Track Contacts",
+                                                 shortcut=QKeySequence("CTRL+F"),
+                                                 icon=QIcon(
+                                                     os.path.join(os.path.dirname(__file__), "images/edit_zoom.png")),
+                                                 tip="Using the tracker to find contacts",
+                                                 checkable=False,
+                                                 connection=self.track_contacts
+        )
+
+        self.store_status_action = gui.create_action(text="&Store",
+                                               shortcut=QKeySequence("CTRL+S"),
+                                               icon=QIcon(
+                                                   os.path.join(os.path.dirname(__file__), "images/save-icon.png")),
+                                               tip="Mark the tracking as correct",
+                                               checkable=False,
+                                               connection=self.store_status
+        )
+
+        self.left_front_action = gui.create_action(text="Select Left Front",
+                                             shortcut=configuration.left_front,
+                                             icon=QIcon(os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
+                                             tip="Select the Left Front paw",
+                                             checkable=False,
+                                             connection=self.select_left_front
+        )
+
+        self.left_hind_action = gui.create_action(text="Select Left Hind",
+                                            shortcut=configuration.left_hind,
+                                            icon=QIcon(os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
+                                            tip="Select the Left Hind paw",
+                                            checkable=False,
+                                            connection=self.select_left_hind
+        )
+
+        self.right_front_action = gui.create_action(text="Select Right Front",
+                                              shortcut=configuration.right_front,
+                                              icon=QIcon(os.path.join(os.path.dirname(__file__),
+                                                                      "images/RF-icon.png")),
+                                              tip="Select the Right Front paw",
+                                              checkable=False,
+                                              connection=self.select_right_front
+        )
+
+        self.right_hind_action = gui.create_action(text="Select Right Hind",
+                                             shortcut=configuration.right_hind,
+                                             icon=QIcon(os.path.join(os.path.dirname(__file__), "images/RH-icon.png")),
+                                             tip="Select the Right Hind paw",
+                                             checkable=False,
+                                             connection=self.select_right_hind
+        )
+
+        self.previous_paw_action = gui.create_action(text="Select Previous Paw",
+                                               shortcut=[configuration.previous_paw, QKeySequence(Qt.Key_Down)],
+                                               icon=QIcon(
+                                                   os.path.join(os.path.dirname(__file__), "images/backward.png")),
+                                               tip="Select the previous paw",
+                                               checkable=False,
+                                               connection=self.previous_paw
+        )
+
+        self.next_paw_action = gui.create_action(text="Select Next Paw",
+                                           shortcut=[configuration.next_paw, QKeySequence(Qt.Key_Up)],
+                                           icon=QIcon(os.path.join(os.path.dirname(__file__), "images/forward.png")),
+                                           tip="Select the next paw",
+                                           checkable=False,
+                                           connection=self.next_paw
+        )
+
+        self.remove_label_action = gui.create_action(text="Delete Label From Paw",
+                                               shortcut=configuration.remove_label,
+                                               icon=QIcon(
+                                                   os.path.join(os.path.dirname(__file__), "images/cancel-icon.png")),
+                                               tip="Delete the label from the paw",
+                                               checkable=False,
+                                               connection=self.remove_label
+        )
+
+        self.invalid_paw_action = gui.create_action(text="Mark Paw as Invalid",
+                                              shortcut=configuration.invalid_paw,
+                                              icon=QIcon(
+                                                  os.path.join(os.path.dirname(__file__), "images/trash-icon.png")),
+                                              tip="Mark the paw as invalid",
+                                              checkable=False,
+                                              connection=self.invalid_paw
+        )
+
+        self.undo_label_action = gui.create_action(text="Undo Label From Paw",
+                                             shortcut=QKeySequence(Qt.CTRL + Qt.Key_Z),
+                                             icon=QIcon(
+                                                 os.path.join(os.path.dirname(__file__), "images/undo-icon.png")),
+                                             tip="Delete the label from the paw",
+                                             checkable=False,
+                                             connection=self.undo_label
+        )
+
+        # Add application-wide shortcuts
+        self.slide_to_left_action = gui.create_action(text="Slide Left",
+                                                      shortcut=QKeySequence(Qt.Key_Left),
+                                                      icon=QIcon(
+                                                          os.path.join(os.path.dirname(__file__),
+                                                                       "widgets/images/arrow-left-icon.png")),
+                                                      tip="Move the slider to the left",
+                                                      checkable=False,
+                                                      connection=self.slide_to_left
+        )
+
+        self.slide_to_right_action = gui.create_action(text="Slide Right",
+                                                       shortcut=QKeySequence(Qt.Key_Right),
+                                                       icon=QIcon(os.path.join(os.path.dirname(__file__),
+                                                                               "widgets/images/arrow-right-icon.png")),
+                                                       tip="Move the slider to the right",
+                                                       checkable=False,
+                                                       connection=self.slide_to_right
+        )
+
+        self.fast_backward_action = gui.create_action(text="Fast Back",
+                                                      shortcut=QKeySequence.MoveToNextWord,#QKeySequence(Qt.CTRL + Qt.Key_Left),
+                                                      icon=QIcon(os.path.join(os.path.dirname(__file__),
+                                                                              "widgets/images/arrow-left-icon.png")),
+                                                      tip="Move the slider to the left faster",
+                                                      checkable=False,
+                                                      connection=self.fast_backward
+        )
+
+        self.fast_forward_action = gui.create_action(text="Fast Forward",
+                                                     shortcut=QKeySequence.MoveToPreviousWord, #QKeySequence(Qt.CTRL + Qt.Key_Right),
+                                                     icon=QIcon(os.path.join(os.path.dirname(__file__),
+                                                                             "widgets/images/arrow-right-icon.png")),
+                                                     tip="Move the slider to the right faster",
+                                                     checkable=False,
+                                                     connection=self.fast_forward
+        )
+
+        # Not adding the forward/backward buttons to the toolbar
+        self.non_toolbar_actions = [self.slide_to_left_action, self.slide_to_right_action,
+                                    self.fast_backward_action, self.fast_forward_action]
+
+        # Install an event filter
+        self.arrow_filter = gui.ArrowFilter()
+        self.installEventFilter(self.arrow_filter)
+
+
+        self.actions = [self.store_status_action, self.track_contacts_action, self.left_front_action, self.left_hind_action,
+                        self.right_front_action, self.right_hind_action, self.previous_paw_action, self.next_paw_action,
+                        self.remove_label_action, self.invalid_paw_action, self.undo_label_action]
+
+        for action in self.actions:
+            #action.setShortcutContext(Qt.WindowShortcut)
+            self.toolbar.addAction(action)
+
+
+class Toolbar(QToolBar):
+    def __init__(self, parent=None):
+        super(Toolbar, self).__init__(parent)
+        # I don't want to see it floating
+        self.setFloatable(False)
+        # I don't want it moved
+        self.setMovable(False)
+        # I want nice and big icons
+        self.setIconSize(QSize(50, 50))
