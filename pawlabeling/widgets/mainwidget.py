@@ -128,6 +128,7 @@ class MainWidget(QWidget):
 
     ## IO Functions
     def add_measurements(self):
+        import zipfile
         # Clear any existing file names
         self.file_names.clear()
         # Clear any existing measurements
@@ -145,6 +146,15 @@ class MainWidget(QWidget):
                 # Create a dictionary to store all the measurements for each dog
                 self.file_names[dog_name] = {}
                 for index, file_name in enumerate(files):
+                    # Check if the file isn't compressed, else zip it and delete the original after loading
+                    base_name, extension = os.path.splitext(file_name)
+                    if extension != ".zip":
+                        io.convert_file_to_zip(file_name)
+                        # Remove the uncompressed file
+                        os.remove(file_name)
+                        # Add the .zip extension
+                        file_name += ".zip"
+
                     name = os.path.join(root, file_name)
                       # Store the path with the file name
                     self.file_names[dog_name][file_name] = name

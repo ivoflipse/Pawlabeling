@@ -94,16 +94,6 @@ def load_rsscan(infile, padding=False):
 
 def load(file_name, padding=False, brand=configuration.brand):
     import zipfile
-
-    # Check if the file isn't compressed, else zip it and delete the original after loading
-    base_name, extension = os.path.splitext(file_name)
-    if extension != ".zip":
-        convert_file_to_zip(file_name)
-        # Remove the uncompressed file
-        os.remove(file_name)
-        # Add the .zip extension
-        file_name += ".zip"
-
     # Load the zipped contents and pass them to the load functions
     infile = zipfile.ZipFile(file_name, "r")
     for file_name in infile.namelist():

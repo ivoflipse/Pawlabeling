@@ -48,15 +48,14 @@ If you are using pip, you can directly install all the dependencies from the req
 
 Alternatively, you can download a package manager like [Anaconda](http://continuum.io/downloads) or
 a scientific distribution like [Python(x,y)](https://code.google.com/p/pythonxy/).
-This is especially recommendable if you're not used to using Python and are a Windows user.
-Please check whether you're using 32 or 64 bit Python, because you'll have to download the respective library versions.
+This is especially recommendable if you're not used to using Python and are a Windows user. Please check whether you're using 32 or 64 bit Python, because you'll have to download the respective library versions.
 
 In any case, you need to install:
 
-- OpenCV
-- PySide
-- Numpy
-- Scipy
+- [OpenCV](http://www.lfd.uci.edu/~gohlke/pythonlibs/#opencv)
+- [PySide](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyside)
+- Numpy (included in Acaconda)
+- Scipy (included in Acaconda)
 
 
 Usage
@@ -70,7 +69,8 @@ Apply the following changes:
 - Change the `store_results_folder` to the folder where you'll be storing the paw labels and other results.
 - Change brand to your specific brand (either "rsscan" or "zebris"), if your brand is not supported, please contact me.
 - Change the frequency to your measurement frequency. Currently only one frequency for all measurements is supported, as this information is not generally available in all export files.
-- Change the main_window height and width depending on your screen resolution and change the degree of interpolation if the images don't fit your screen.
+- Change the main_window_height and width depending on your screen resolution and change the degree of interpolation if the images don't fit your screen.
+- Adjust the keyboard shortcuts in case you lack a keypad (for example on a laptop) by switching from `desktop = True` to `desktop = False` 
 
 
 **2. Run `pawlabeling.py` to start the tool**
