@@ -14,8 +14,7 @@ import numpy as np
 from PySide.QtCore import *
 from PySide.QtGui import *
 
-from widgets.entireplatewidget import EntirePlateWidget
-from widgets.pawswidget import PawsWidget
+from widgets import entireplatewidget, pawswidget, resultswidget
 from settings import configuration
 from functions import io, tracking, utility, gui
 
@@ -50,7 +49,7 @@ class ProcessingWidget(QWidget):
 
         self.current_paw_index = 0
 
-        self.toolbar = Toolbar(self)
+        self.toolbar = gui.Toolbar(self)
         # Create all the toolbar actions
         self.create_toolbar_actions()
 
@@ -72,28 +71,15 @@ class ProcessingWidget(QWidget):
             self.contact_tree.setColumnWidth(column, 60)
         self.contact_tree.itemActivated.connect(self.switch_contacts)
 
-        self.entire_plate_widget = EntirePlateWidget(self)
+        self.entire_plate_widget = entireplatewidget.EntirePlateWidget(self)
         self.entire_plate_widget.setMinimumWidth(configuration.entire_plate_widget_width)
         self.entire_plate_widget.setMaximumHeight(configuration.entire_plate_widget_height)
 
-        self.paws_widget = PawsWidget(self)
+        self.paws_widget = pawswidget.PawsWidget(self)
 
-        # Create a slider
-        self.slider = QSlider(self)
-        self.slider.setOrientation(Qt.Horizontal)
-        self.slider.setMinimum(-1)
-        self.slider.setMaximum(0)
-        self.slider.valueChanged.connect(self.slider_moved)
-        self.slider_text = QLabel(self)
-        self.slider_text.setText("Frame: 0")
-
-        self.slider_layout = QHBoxLayout()
-        self.slider_layout.addWidget(self.slider)
-        self.slider_layout.addWidget(self.slider_text)
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.nameLabel)
         self.layout.addWidget(self.entire_plate_widget)
-        self.layout.addLayout(self.slider_layout)
         self.layout.addWidget(self.paws_widget)
         self.vertical_layout = QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
@@ -105,33 +91,6 @@ class ProcessingWidget(QWidget):
         self.main_layout.addWidget(self.toolbar)
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
-
-    def fast_backward(self):
-        self.change_slider(-1, fast=True)
-
-    def fast_forward(self):
-        self.change_slider(1, fast=True)
-
-    def slide_to_left(self, fast=False):
-        self.change_slider(-1, fast)
-
-    def slide_to_right(self, fast=False):
-        self.change_slider(1, fast)
-
-    def change_slider(self, frame_diff, fast=False):
-        if fast:
-            frame_diff *= 10
-
-        new_frame = self.frame + frame_diff
-        if new_frame > self.num_frames:
-            new_frame = self.num_frames % new_frame
-
-        self.slider.setValue(new_frame)
-
-    def slider_moved(self, frame):
-        self.slider_text.setText("Frame: {}".format(frame))
-        self.frame = frame
-        self.entire_plate_widget.change_frame(self.frame)
 
     ## IO Functions
     def add_measurements(self):
@@ -206,11 +165,6 @@ class ProcessingWidget(QWidget):
         self.entire_plate_widget.new_measurement(self.measurement, self.measurement_name)
 
         ## Manage some GUI elements
-        # Reset the frame counter
-        self.slider.setValue(-1)
-        # Remove outdated info from the contact tree
-        # Update the slider, in case the shape of the file changes
-        self.slider.setMaximum(self.num_frames - 1)
         self.nameLabel.setText("Measurement name: {}".format(self.file_name))
         self.contact_tree.clear()
 
@@ -593,53 +547,6 @@ class ProcessingWidget(QWidget):
                                              connection=self.undo_label
         )
 
-        # Add application-wide shortcuts
-        self.slide_to_left_action = gui.create_action(text="Slide Left",
-                                                      shortcut=QKeySequence(Qt.Key_Left),
-                                                      icon=QIcon(
-                                                          os.path.join(os.path.dirname(__file__),
-                                                                       "widgets/images/arrow-left-icon.png")),
-                                                      tip="Move the slider to the left",
-                                                      checkable=False,
-                                                      connection=self.slide_to_left
-        )
-
-        self.slide_to_right_action = gui.create_action(text="Slide Right",
-                                                       shortcut=QKeySequence(Qt.Key_Right),
-                                                       icon=QIcon(os.path.join(os.path.dirname(__file__),
-                                                                               "widgets/images/arrow-right-icon.png")),
-                                                       tip="Move the slider to the right",
-                                                       checkable=False,
-                                                       connection=self.slide_to_right
-        )
-
-        self.fast_backward_action = gui.create_action(text="Fast Back",
-                                                      shortcut=QKeySequence.MoveToNextWord,#QKeySequence(Qt.CTRL + Qt.Key_Left),
-                                                      icon=QIcon(os.path.join(os.path.dirname(__file__),
-                                                                              "widgets/images/arrow-left-icon.png")),
-                                                      tip="Move the slider to the left faster",
-                                                      checkable=False,
-                                                      connection=self.fast_backward
-        )
-
-        self.fast_forward_action = gui.create_action(text="Fast Forward",
-                                                     shortcut=QKeySequence.MoveToPreviousWord, #QKeySequence(Qt.CTRL + Qt.Key_Right),
-                                                     icon=QIcon(os.path.join(os.path.dirname(__file__),
-                                                                             "widgets/images/arrow-right-icon.png")),
-                                                     tip="Move the slider to the right faster",
-                                                     checkable=False,
-                                                     connection=self.fast_forward
-        )
-
-        # Not adding the forward/backward buttons to the toolbar
-        self.non_toolbar_actions = [self.slide_to_left_action, self.slide_to_right_action,
-                                    self.fast_backward_action, self.fast_forward_action]
-
-        # Install an event filter
-        self.arrow_filter = gui.ArrowFilter()
-        self.installEventFilter(self.arrow_filter)
-
-
         self.actions = [self.store_status_action, self.track_contacts_action, self.left_front_action, self.left_hind_action,
                         self.right_front_action, self.right_hind_action, self.previous_paw_action, self.next_paw_action,
                         self.remove_label_action, self.invalid_paw_action, self.undo_label_action]
@@ -649,12 +556,3 @@ class ProcessingWidget(QWidget):
             self.toolbar.addAction(action)
 
 
-class Toolbar(QToolBar):
-    def __init__(self, parent=None):
-        super(Toolbar, self).__init__(parent)
-        # I don't want to see it floating
-        self.setFloatable(False)
-        # I don't want it moved
-        self.setMovable(False)
-        # I want nice and big icons
-        self.setIconSize(QSize(50, 50))

@@ -9,23 +9,15 @@
 from PySide.QtGui import *
 from PySide.QtCore import *
 
-class ArrowFilter(QObject):
-    def eventFilter(self, parent, event=None):
-        if event.type() == QEvent.KeyPress:
-            # This seems to have some nasty consequences
-            if event.matches(QKeySequence.MoveToNextWord):
-                parent.fast_forward()
-                return True
-            elif event.matches(QKeySequence.MoveToPreviousWord):
-                parent.fast_backward()
-                return True
-            elif event.key() == Qt.Key_Left:
-                parent.slide_to_left()
-                return True
-            elif event.key() == Qt.Key_Right:
-                parent.slide_to_right()
-                return True
-        return False
+class Toolbar(QToolBar):
+    def __init__(self, parent=None):
+        super(Toolbar, self).__init__(parent)
+        # I don't want to see it floating
+        self.setFloatable(False)
+        # I don't want it moved
+        self.setMovable(False)
+        # I want nice and big icons
+        self.setIconSize(QSize(50, 50))
 
 def create_action(parent=None, text="", shortcut=None, icon=None,
                   tip=None, checkable=False, connection=None):

@@ -33,10 +33,33 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
+        # TODO call this function when you switch tabs
         # Load all the measurements into the measurement tree
         self.processing_widget.add_measurements()
         # Then load the first measurement
         self.processing_widget.load_first_file()
+
+        self.installEventFilter(self)
+
+    # TODO make sure that the tree does NOT do this
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.KeyPress:
+            if event.matches(QKeySequence.MoveToNextWord):
+                self.processing_widget.entire_plate_widget.fast_forward()
+                return True
+            elif event.matches(QKeySequence.MoveToPreviousWord):
+                self.processing_widget.entire_plate_widget.fast_backward()
+                return True
+            elif event.key() == Qt.Key_Left:
+                self.processing_widget.entire_plate_widget.slide_to_left()
+                return True
+            elif event.key() == Qt.Key_Right:
+                self.processing_widget.entire_plate_widget.slide_to_right()
+                return True
+        else:
+            return QMainWindow.eventFilter(self, obj, event)
+
+
 
 def main():
     app = QApplication(sys.argv)
