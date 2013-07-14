@@ -34,6 +34,12 @@ class ResultsWidget(QWidget):
         self.main_layout.addWidget(self.tab_widget)
         self.setLayout(self.main_layout)
 
+    def update_widgets(self, paw_labels, paw_data, average_data):
+        self.two_dim_view_widget.update_paws(paw_labels, paw_data, average_data)
+
+    def update_n_max(self, n_max):
+        self.two_dim_view_widget.update_n_max(n_max)
+
 class PressureWidget(QWidget):
     def __init__(self, parent):
         super(PressureWidget, self).__init__(parent)

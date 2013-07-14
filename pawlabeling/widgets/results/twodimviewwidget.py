@@ -20,7 +20,7 @@ class TwoDimViewWidget(QWidget):
         super(TwoDimViewWidget, self).__init__(parent)
         self.label = QLabel("2D View")
         self.parent = parent
-        self.degree = configuration.degree * 2
+        self.degree = configuration.degree * 4
 
         self.left_front = PawView(self, self.degree, label="Left Front")
         self.left_hind = PawView(self, self.degree, label="Left Hind")
@@ -47,6 +47,28 @@ class TwoDimViewWidget(QWidget):
         self.main_layout.addLayout(self.left_paws_layout)
         self.main_layout.addLayout(self.right_paws_layout)
         self.setLayout(self.main_layout)
+
+    # How do I tell which measurement we're at?
+    def update_paws(self, paw_labels, paw_data, average_data):
+        # Clear the paws, so we can draw new ones
+        self.clear_paws()
+
+        # Group all the data per paw
+        data_array = defaultdict(list)
+        for measurement_name, data_list in paw_data.items():
+            for paw_label, data in zip(paw_labels[measurement_name].values(), data_list):
+                if paw_label >= 0:
+                    data_array[paw_label].append(data)
+
+        # Do I need to cache information so I can use it later on? Like in predict_label?
+        for paw_label, average_list in average_data.items():
+            data = data_array[paw_label]
+            widget = self.paws_list[paw_label]
+            widget.update(data, average_list)
+
+    def update_n_max(self, n_max):
+        for paw_label, paw in list(self.paws_list.items()):
+            paw.n_max = n_max
 
     def clear_paws(self):
         for paw_label, paw in list(self.paws_list.items()):
@@ -79,8 +101,23 @@ class PawView(QWidget):
         self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
 
-    def update(self):
-        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table))
+    def update(self, paw_data, average_data):
+        self.data = np.mean(average_data, axis=0)
+        # Make sure the paws are facing upright
+        self.data = np.rot90(np.rot90(self.data))
+        # Only display the non-zero part, regardless of its size
+        x, y = np.nonzero(self.data)
+        self.sliced_data = self.data
+        if len(x):  # This won't work for empty array's
+            # This might off course go out of bounds some day
+            min_x = np.min(x) - 2
+            max_x = np.max(x) + 2
+            min_y = np.min(y) - 2
+            max_y = np.max(y) + 2
+
+            self.sliced_data = self.data[min_x:max_x, min_y:max_y]
+
+        self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
 
     def clear_paws(self):
         # Put the screen to black

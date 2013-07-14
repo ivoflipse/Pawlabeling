@@ -41,6 +41,18 @@ class MainWindow(QMainWindow):
 
         self.installEventFilter(self)
 
+        self.tab_widget.currentChanged.connect(self.change_tabs)
+
+    def change_tabs(self, event):
+        # If the tab is the first tab, reload the measurements
+        if self.tab_widget.currentIndex() == 0:
+            self.processing_widget.add_measurements()
+            self.processing_widget.load_first_file()
+        if self.tab_widget.currentIndex() == 1:
+            self.analysis_widget.add_measurements()
+            self.analysis_widget.load_first_file()
+
+
     # TODO make sure that the tree does NOT do this
     def eventFilter(self, obj, event):
         if event.type() == QEvent.KeyPress:
@@ -57,6 +69,7 @@ class MainWindow(QMainWindow):
                 self.processing_widget.entire_plate_widget.slide_to_right()
                 return True
         else:
+            # TODO this seems to be giving an error
             return QMainWindow.eventFilter(self, obj, event)
 
 
