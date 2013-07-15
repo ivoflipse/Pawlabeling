@@ -14,15 +14,14 @@ import numpy as np
 from PySide.QtCore import *
 from PySide.QtGui import *
 
-from widgets.entireplatewidget import EntirePlateWidget
-from widgets.pawswidget import PawsWidget
+from widgets import entireplatewidget, pawswidget, resultswidget
 from settings import configuration
-from functions import io, tracking, utility
+from functions import io, tracking, utility, gui
 
 
-class MainWidget(QWidget):
+class ProcessingWidget(QWidget):
     def __init__(self, parent=None):
-        super(MainWidget, self).__init__(parent)
+        super(ProcessingWidget, self).__init__(parent)
 
         # Initialize num_frames, in case measurements aren't loaded
         self.num_frames = 248
@@ -50,6 +49,10 @@ class MainWidget(QWidget):
 
         self.current_paw_index = 0
 
+        self.toolbar = gui.Toolbar(self)
+        # Create all the toolbar actions
+        self.create_toolbar_actions()
+
         # Create a list widget
         self.measurement_tree = QTreeWidget(self)
         self.measurement_tree.setMaximumWidth(300)
@@ -68,63 +71,26 @@ class MainWidget(QWidget):
             self.contact_tree.setColumnWidth(column, 60)
         self.contact_tree.itemActivated.connect(self.switch_contacts)
 
-        self.entire_plate_widget = EntirePlateWidget(self)
+        self.entire_plate_widget = entireplatewidget.EntirePlateWidget(self)
         self.entire_plate_widget.setMinimumWidth(configuration.entire_plate_widget_width)
         self.entire_plate_widget.setMaximumHeight(configuration.entire_plate_widget_height)
 
-        self.paws_widget = PawsWidget(self)
+        self.paws_widget = pawswidget.PawsWidget(self)
 
-        # Create a slider
-        self.slider = QSlider(self)
-        self.slider.setOrientation(Qt.Horizontal)
-        self.slider.setMinimum(-1)
-        self.slider.setMaximum(0)
-        self.slider.valueChanged.connect(self.slider_moved)
-        self.slider_text = QLabel(self)
-        self.slider_text.setText("Frame: 0")
-
-        self.slider_layout = QHBoxLayout()
-        self.slider_layout.addWidget(self.slider)
-        self.slider_layout.addWidget(self.slider_text)
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.nameLabel)
         self.layout.addWidget(self.entire_plate_widget)
-        self.layout.addLayout(self.slider_layout)
         self.layout.addWidget(self.paws_widget)
         self.vertical_layout = QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
         self.vertical_layout.addWidget(self.contact_tree)
-        self.main_layout = QHBoxLayout(self)
-        self.main_layout.addLayout(self.vertical_layout)
-        self.main_layout.addLayout(self.layout)
+        self.horizontal_layout = QHBoxLayout()
+        self.horizontal_layout.addLayout(self.vertical_layout)
+        self.horizontal_layout.addLayout(self.layout)
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.addWidget(self.toolbar)
+        self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
-
-    def fast_backward(self):
-        self.change_slider(-1, fast=True)
-
-    def fast_forward(self):
-        self.change_slider(1, fast=True)
-
-    def slide_to_left(self, fast=False):
-        self.change_slider(-1, fast)
-
-    def slide_to_right(self, fast=False):
-        self.change_slider(1, fast)
-
-    def change_slider(self, frame_diff, fast=False):
-        if fast:
-            frame_diff *= 10
-
-        new_frame = self.frame + frame_diff
-        if new_frame > self.num_frames:
-            new_frame = self.num_frames % new_frame
-
-        self.slider.setValue(new_frame)
-
-    def slider_moved(self, frame):
-        self.slider_text.setText("Frame: {}".format(frame))
-        self.frame = frame
-        self.entire_plate_widget.change_frame(self.frame)
 
     ## IO Functions
     def add_measurements(self):
@@ -199,11 +165,6 @@ class MainWidget(QWidget):
         self.entire_plate_widget.new_measurement(self.measurement, self.measurement_name)
 
         ## Manage some GUI elements
-        # Reset the frame counter
-        self.slider.setValue(-1)
-        # Remove outdated info from the contact tree
-        # Update the slider, in case the shape of the file changes
-        self.slider.setMaximum(self.num_frames - 1)
         self.nameLabel.setText("Measurement name: {}".format(self.file_name))
         self.contact_tree.clear()
 
@@ -488,3 +449,110 @@ class MainWidget(QWidget):
             rootItem.setText(4, str(int(force)))
 
         self.current_paw_index = 0
+
+
+    def create_toolbar_actions(self):
+        self.track_contacts_action = gui.create_action(text="&Track Contacts",
+                                                 shortcut=QKeySequence("CTRL+F"),
+                                                 icon=QIcon(
+                                                     os.path.join(os.path.dirname(__file__), "images/edit_zoom.png")),
+                                                 tip="Using the tracker to find contacts",
+                                                 checkable=False,
+                                                 connection=self.track_contacts
+        )
+
+        self.store_status_action = gui.create_action(text="&Store",
+                                               shortcut=QKeySequence("CTRL+S"),
+                                               icon=QIcon(
+                                                   os.path.join(os.path.dirname(__file__), "images/save-icon.png")),
+                                               tip="Mark the tracking as correct",
+                                               checkable=False,
+                                               connection=self.store_status
+        )
+
+        self.left_front_action = gui.create_action(text="Select Left Front",
+                                             shortcut=configuration.left_front,
+                                             icon=QIcon(os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
+                                             tip="Select the Left Front paw",
+                                             checkable=False,
+                                             connection=self.select_left_front
+        )
+
+        self.left_hind_action = gui.create_action(text="Select Left Hind",
+                                            shortcut=configuration.left_hind,
+                                            icon=QIcon(os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
+                                            tip="Select the Left Hind paw",
+                                            checkable=False,
+                                            connection=self.select_left_hind
+        )
+
+        self.right_front_action = gui.create_action(text="Select Right Front",
+                                              shortcut=configuration.right_front,
+                                              icon=QIcon(os.path.join(os.path.dirname(__file__),
+                                                                      "images/RF-icon.png")),
+                                              tip="Select the Right Front paw",
+                                              checkable=False,
+                                              connection=self.select_right_front
+        )
+
+        self.right_hind_action = gui.create_action(text="Select Right Hind",
+                                             shortcut=configuration.right_hind,
+                                             icon=QIcon(os.path.join(os.path.dirname(__file__), "images/RH-icon.png")),
+                                             tip="Select the Right Hind paw",
+                                             checkable=False,
+                                             connection=self.select_right_hind
+        )
+
+        self.previous_paw_action = gui.create_action(text="Select Previous Paw",
+                                               shortcut=[configuration.previous_paw, QKeySequence(Qt.Key_Down)],
+                                               icon=QIcon(
+                                                   os.path.join(os.path.dirname(__file__), "images/backward.png")),
+                                               tip="Select the previous paw",
+                                               checkable=False,
+                                               connection=self.previous_paw
+        )
+
+        self.next_paw_action = gui.create_action(text="Select Next Paw",
+                                           shortcut=[configuration.next_paw, QKeySequence(Qt.Key_Up)],
+                                           icon=QIcon(os.path.join(os.path.dirname(__file__), "images/forward.png")),
+                                           tip="Select the next paw",
+                                           checkable=False,
+                                           connection=self.next_paw
+        )
+
+        self.remove_label_action = gui.create_action(text="Delete Label From Paw",
+                                               shortcut=configuration.remove_label,
+                                               icon=QIcon(
+                                                   os.path.join(os.path.dirname(__file__), "images/cancel-icon.png")),
+                                               tip="Delete the label from the paw",
+                                               checkable=False,
+                                               connection=self.remove_label
+        )
+
+        self.invalid_paw_action = gui.create_action(text="Mark Paw as Invalid",
+                                              shortcut=configuration.invalid_paw,
+                                              icon=QIcon(
+                                                  os.path.join(os.path.dirname(__file__), "images/trash-icon.png")),
+                                              tip="Mark the paw as invalid",
+                                              checkable=False,
+                                              connection=self.invalid_paw
+        )
+
+        self.undo_label_action = gui.create_action(text="Undo Label From Paw",
+                                             shortcut=QKeySequence(Qt.CTRL + Qt.Key_Z),
+                                             icon=QIcon(
+                                                 os.path.join(os.path.dirname(__file__), "images/undo-icon.png")),
+                                             tip="Delete the label from the paw",
+                                             checkable=False,
+                                             connection=self.undo_label
+        )
+
+        self.actions = [self.store_status_action, self.track_contacts_action, self.left_front_action, self.left_hind_action,
+                        self.right_front_action, self.right_hind_action, self.previous_paw_action, self.next_paw_action,
+                        self.remove_label_action, self.invalid_paw_action, self.undo_label_action]
+
+        for action in self.actions:
+            #action.setShortcutContext(Qt.WindowShortcut)
+            self.toolbar.addAction(action)
+
+
