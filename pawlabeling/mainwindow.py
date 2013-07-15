@@ -19,13 +19,15 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.setGeometry(configuration.main_window_size)
+        self.center()
+        self.setWindowTitle("Paw Labeling tool")
+        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), "images\\pawlabeling.png")))
 
         self.processing_widget = processingwidget.ProcessingWidget(self)
         self.analysis_widget = analysiswidget.AnalysisWidget(self)
 
         self.status = self.statusBar()
         self.status.showMessage("Ready")
-        self.setWindowTitle("Paw Labeling tool")
 
         self.tab_widget = QTabWidget(self)
         self.tab_widget.addTab(self.processing_widget, "Processing")
@@ -42,6 +44,12 @@ class MainWindow(QMainWindow):
         self.installEventFilter(self)
 
         self.tab_widget.currentChanged.connect(self.change_tabs)
+
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     def change_tabs(self, event):
         # If the tab is the first tab, reload the measurements

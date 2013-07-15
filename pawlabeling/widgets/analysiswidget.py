@@ -120,8 +120,7 @@ class AnalysisWidget(QTabWidget):
         self.dog_name = str(self.currentItem.text(0))
         file_names = self.file_names[self.dog_name]
 
-        # Clear the average data
-        self.average_data.clear()
+        self.clear_cached_values()
 
         for file_name in file_names:
             measurement_name = file_name
