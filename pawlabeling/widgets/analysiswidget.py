@@ -8,6 +8,7 @@
 
 from collections import defaultdict
 
+from PySide.QtCore import *
 from PySide.QtGui import *
 import numpy as np
 import os
@@ -151,8 +152,34 @@ class AnalysisWidget(QTabWidget):
                             if max_norm > self.n_max:
                                 self.n_max = max_norm
 
+        # Fill up the contacts tree
+        self.add_contacts()
         self.results_widget.update_n_max(self.n_max)
         self.results_widget.update_widgets(self.paw_labels, self.paw_data, self.average_data)
+
+    def add_contacts(self):
+        self.contact_tree.clear()
+        for measurement_name in self.paw_data:
+            for index, paw in enumerate(self.paw_data[measurement_name]):
+                x, y, z = paw.shape
+                paw_label = self.paw_labels[measurement_name][index]
+
+                # Shall I skip invalid paws?
+                if paw_label >= 0:
+                    rootItem = QTreeWidgetItem(self.contact_tree)
+                    rootItem.setText(0, str(index))
+                    rootItem.setText(1, self.paw_dict[paw_label])
+                    rootItem.setText(2, str(z))  # Sets the frame count
+                    surface = np.max([np.count_nonzero(paw[:, :, frame]) for frame in range(z)])
+                    rootItem.setText(3, str(int(surface)))
+                    force = np.max(np.sum(np.sum(paw, axis=0), axis=0))
+                    rootItem.setText(4, str(int(force)))
+
+                    for idx in range(rootItem.columnCount()):
+                        rootItem.setBackground(idx, self.colors[paw_label])
+
+        # Sort the items per label
+        self.contact_tree.sortItems(1, Qt.AscendingOrder)
 
     def clear_cached_values(self):
         self.n_max = 0
