@@ -72,6 +72,11 @@ class ForceViewWidget(QWidget):
         for paw_label, paw in list(self.paws_list.items()):
             paw.n_max = n_max
 
+    def change_frame(self, frame):
+        self.frame = frame
+        for paw_label, paw in list(self.paws_list.items()):
+            paw.change_frame(frame)
+
     def clear_paws(self):
         for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()
@@ -82,6 +87,7 @@ class PawView(QWidget):
         self.label = QLabel(label)
         self.parent = parent
         self.n_max = 0
+        self.frame = 0
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
 
@@ -109,6 +115,7 @@ class PawView(QWidget):
         self.canvas.draw()
 
     def change_frame(self, frame):
+        self.frame = frame
         self.vertical_line.set_xdata(frame)
         self.canvas.draw()
 

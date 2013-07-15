@@ -70,6 +70,9 @@ class TwoDimViewWidget(QWidget):
         for paw_label, paw in list(self.paws_list.items()):
             paw.n_max = n_max
 
+    def change_frame(self, frame):
+        self.frame = frame
+
     def clear_paws(self):
         for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()

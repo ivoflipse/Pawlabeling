@@ -50,3 +50,8 @@ class ResultsWidget(QWidget):
     def update_n_max(self, n_max):
         for widget in self.widgets:
             widget.update_n_max(n_max)
+
+    def change_frame(self, frame):
+        self.frame = frame
+        for widget in self.widgets:
+            widget.change_frame(frame)

@@ -53,6 +53,7 @@ class AnalysisWidget(QTabWidget):
         self.measurement_tree = QTreeWidget(self)
         self.measurement_tree.setMaximumWidth(300)
         self.measurement_tree.setMinimumWidth(300)
+        self.measurement_tree.setMaximumHeight(200)
         self.measurement_tree.setColumnCount(1)
         self.measurement_tree.setHeaderLabel("Measurements")
 
@@ -70,8 +71,22 @@ class AnalysisWidget(QTabWidget):
 
         self.results_widget = resultswidget.ResultsWidget(self)
 
+        # Create a slider
+        self.slider = QSlider(self)
+        self.slider.setOrientation(Qt.Horizontal)
+        self.slider.setMinimum(0)
+        self.slider.setMaximum(0)
+        self.slider.valueChanged.connect(self.change_frame)
+        self.slider_text = QLabel(self)
+        self.slider_text.setText("Frame: 0")
+
+        self.slider_layout = QHBoxLayout()
+        self.slider_layout.addWidget(self.slider)
+        self.slider_layout.addWidget(self.slider_text)
+
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.results_widget)
+        self.layout.addLayout(self.slider_layout)
         self.vertical_layout = QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
         self.vertical_layout.addWidget(self.contact_tree)
@@ -158,9 +173,12 @@ class AnalysisWidget(QTabWidget):
 
     def add_contacts(self):
         self.contact_tree.clear()
+        self.max_length = 0
         for measurement_name in self.paw_data:
             for index, paw in enumerate(self.paw_data[measurement_name]):
                 x, y, z = paw.shape
+                if z > self.max_length:
+                    self.max_length = z
                 paw_label = self.paw_labels[measurement_name][index]
 
                 # Shall I skip invalid paws?
@@ -179,6 +197,8 @@ class AnalysisWidget(QTabWidget):
 
         # Sort the items per label
         self.contact_tree.sortItems(1, Qt.AscendingOrder)
+        # Update the slider's max value
+        self.slider.setMaximum(self.max_length)
 
     def clear_cached_values(self):
         self.n_max = 0
@@ -186,6 +206,13 @@ class AnalysisWidget(QTabWidget):
         self.paws.clear()
         self.paw_data.clear()
         self.paw_labels.clear()
+
+    def change_frame(self, frame):
+        self.slider_text.setText("Frame: {}".format(frame))
+        self.frame = frame
+        # TODO broadcast the new frame number
+        # The frame number should be based on the actual data, perhaps check the tree or cache it
+        self.results_widget.change_frame(frame)
 
     def switch_contacts(self):
         pass
