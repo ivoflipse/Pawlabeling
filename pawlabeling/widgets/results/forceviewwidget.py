@@ -54,6 +54,8 @@ class ForceViewWidget(QWidget):
     def update_paws(self, paw_labels, paw_data, average_data):
         # Clear the paws, so we can draw new ones
         self.clear_paws()
+        max_force = 0
+        max_length = 0
 
         # Group all the data per paw
         data_array = defaultdict(list)
@@ -61,11 +63,20 @@ class ForceViewWidget(QWidget):
             for paw_label, data in zip(paw_labels[measurement_name].values(), data_list):
                 if paw_label >= 0:
                     data_array[paw_label].append(data)
+                    # Get the max values for the plots
+                    x, y, z = data.shape
+                    if z > max_length:
+                        max_length = z
+                    max_val = np.max(np.sum(np.sum(data, axis=0), axis=0))
+                    if max_val > max_force:
+                        max_force = max_val
 
         # Do I need to cache information so I can use it later on? Like in predict_label?
         for paw_label, average_list in average_data.items():
             data = data_array[paw_label]
             widget = self.paws_list[paw_label]
+            widget.x = max_length + 1
+            widget.y = max_force * 1.2
             widget.update(data, average_list)
 
     def update_n_max(self, n_max):
@@ -108,16 +119,22 @@ class PawView(QWidget):
 
     def update(self, paw_data, average_data):
         self.axes.cla()
-        average = []
+        max_length = 0
         for data in paw_data:
             x, y, z = data.shape
-            force_over_time = np.sum(np.sum(data, axis=0), axis=0)
-            normalized_force_over_time = calculations.interpolate_time_series(force_over_time)
-            average.append(normalized_force_over_time)
-            self.axes.plot(force_over_time)
+            if z > max_length:
+                max_length = z
 
-        self.axes.plot(np.mean(average, axis=0), color="r", linewidth=3)
+        force_over_time = np.zeros((len(paw_data), max_length))
+        for index, data in enumerate(paw_data):
+            x, y, z = data.shape
+            force_over_time[index, :z] = np.sum(np.sum(data, axis=0), axis=0)
+            self.axes.plot(force_over_time[index, :])
+
+        self.axes.plot(np.mean(force_over_time, axis=0), color="r", linewidth=3)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
+        self.axes.set_xlim([0, self.x])
+        self.axes.set_ylim([0, self.y])
         self.canvas.draw()
 
     def change_frame(self, frame):

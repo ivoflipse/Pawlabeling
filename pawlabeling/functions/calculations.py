@@ -10,10 +10,10 @@ import numpy as np
 
 def interpolate_time_series(data, length=100):
     from scipy import interpolate
-    length = len(data)
-    x = np.arange(0, length, 1)
+    length_data = len(data)
+    x = np.arange(0, length_data, 1)
     #xnew = np.linspace(0, len(data[:-1]), num=100)
-    x_new = np.linspace(0, length-1, num=100)
+    x_new = np.linspace(0, length_data-1, num=length)
     tck = interpolate.splrep(x, data)
     new_data = interpolate.splev(x_new, tck)
     return new_data

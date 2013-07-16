@@ -54,6 +54,7 @@ class CopViewWidget(QWidget):
     def update_paws(self, paw_labels, paw_data, average_data):
         # Clear the paws, so we can draw new ones
         self.clear_paws()
+        max_length = 0
 
         # Group all the data per paw
         data_array = defaultdict(list)
@@ -61,11 +62,16 @@ class CopViewWidget(QWidget):
             for paw_label, data in zip(paw_labels[measurement_name].values(), data_list):
                 if paw_label >= 0:
                     data_array[paw_label].append(data)
+                    # Get the max values for the plots
+                    x, y, z = data.shape
+                    if z > max_length:
+                        max_length = z
 
         # Do I need to cache information so I can use it later on? Like in predict_label?
         for paw_label, average_list in average_data.items():
             data = data_array[paw_label]
             widget = self.paws_list[paw_label]
+            widget.x = max_length
             widget.update(data, average_list)
 
     def update_n_max(self, n_max):
@@ -132,22 +138,42 @@ class PawView(QWidget):
 
     def draw_cop(self, paw_data):
         color = Qt.white
-        self.pen = QPen(color)
-        self.pen.setWidth(3)
+        self.line_pen = QPen(color)
+        self.line_pen.setWidth(3)
 
-        for data in paw_data:
+        self.dot_pen = QPen(Qt.black)
+        self.dot_pen.setWidth(2)
+        self.dot_brush = QBrush(Qt.white)
+
+        # TODO figure out how to pick a better value for this, so the line is still visible
+        self.x = 15
+
+        num_paws = len(paw_data)
+        cop_xs = np.zeros((num_paws, self.x))
+        cop_ys = np.zeros((num_paws, self.x))
+        for index, data in enumerate(paw_data):
+            x, y, z = data.shape
             # Reversing the left-right direction. I should really figure out where this is coming from
             cop_x, cop_y = calculations.calculate_cop(np.rot90(np.rot90(data[:,::-1,:])))
-            points = []
-            for frame in range(len(cop_x)-1):
-                x1 = cop_x[frame]
-                x2 = cop_x[frame+1]
-                y1 = cop_y[frame]
-                y2 = cop_y[frame+1]
+            cop_xs[index, :] = calculations.interpolate_time_series(cop_x, length=self.x)
+            cop_ys[index, :] = calculations.interpolate_time_series(cop_y, length=self.x)
 
-                line = QLineF(QPointF(x1 * self.degree, y1 * self.degree), QPointF(x2 * self.degree, y2 * self.degree))
+        average_cop_x = np.mean(cop_xs, axis=0)
+        average_cop_y = np.mean(cop_ys, axis=0)
+        for frame in range(len(average_cop_x)-1):
+            x1 = average_cop_x[frame]
+            x2 = average_cop_x[frame+1]
+            y1 = average_cop_y[frame]
+            y2 = average_cop_y[frame+1]
 
-                self.cop_lines.append(self.scene.addLine(line, self.pen))
+            line = QLineF(QPointF(x1 * self.degree, y1 * self.degree), QPointF(x2 * self.degree, y2 * self.degree))
+
+            self.cop_lines.append(self.scene.addLine(line, self.line_pen))
+            self.cop_lines.append(self.scene.addEllipse(x1 * self.degree, y1 * self.degree,
+                                                       5, 5, self.dot_pen, self.dot_brush))
+
+        self.cop_lines.append(self.scene.addEllipse(x2 * self.degree, y2 * self.degree,
+                                                    5, 5, self.dot_pen, self.dot_brush))
 
     def draw_frame(self):
         if self.frame == -1:

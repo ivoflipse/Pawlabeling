@@ -64,6 +64,13 @@ brand = "rsscan"
 # TODO use this if you start displaying results and want to display actual milliseconds
 frequency = 124
 
+if brand == "rsscan":
+    sensor_width = 0.5
+    sensor_height = 0.7
+else:
+    sensor_width = 1
+    sensor_height = 1
+sensor_surface = sensor_width * sensor_height
 
 # These values dictate how large the app will be, best not touch window_top
 # since you'll lose the buttons to min/maximize the window
