@@ -88,6 +88,7 @@ class PawView(QWidget):
         self.parent = parent
         self.n_max = 0
         self.frame = 0
+        # TODO refactor out things like the color table or make this a subclass
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
 

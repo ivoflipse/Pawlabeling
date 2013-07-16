@@ -13,19 +13,21 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 from settings import configuration
-from functions import utility, gui
+from functions import utility, calculations
 
-class TwoDimViewWidget(QWidget):
-    def __init__(self, parent, degree):
-        super(TwoDimViewWidget, self).__init__(parent)
-        self.label = QLabel("2D View")
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
+class CopViewWidget(QWidget):
+    def __init__(self, parent):
+        super(CopViewWidget, self).__init__(parent)
+        self.label = QLabel("Force View")
         self.parent = parent
-        self.degree = configuration.degree * 4
 
-        self.left_front = PawView(self, self.degree, label="Left Front")
-        self.left_hind = PawView(self, self.degree, label="Left Hind")
-        self.right_front = PawView(self, self.degree, label="Right Front")
-        self.right_hind = PawView(self, self.degree, label="Right Hind")
+        self.left_front = PawView(self, label="Left Front")
+        self.left_hind = PawView(self, label="Left Hind")
+        self.right_front = PawView(self,label="Right Front")
+        self.right_hind = PawView(self, label="Right Hind")
 
         self.paws_list = {
             0: self.left_front,
@@ -80,67 +82,60 @@ class TwoDimViewWidget(QWidget):
             paw.clear_paws()
 
 class PawView(QWidget):
-    def __init__(self, parent, degree, label):
+    def __init__(self, parent, label):
         super(PawView, self).__init__(parent)
         self.label = QLabel(label)
         self.parent = parent
-        self.degree = degree
         self.n_max = 0
+        self.frame = 0
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
-        self.mx = 15
-        self.my = 15
-        self.frame = -1
-        self.data = np.zeros((self.mx, self.my))
-        self.max_of_max = self.data.copy()
-        self.sliced_data = self.data.copy()
-        self.data_list = []
-        self.average_data_list = []
 
-        self.scene = QGraphicsScene(self)
-        self.view = QGraphicsView(self.scene)
-        self.view.setGeometry(0, 0, 100, 100)
-        self.image = QGraphicsPixmapItem()
-        self.scene.addItem(self.image)
+        self.dpi = 100
+        self.fig = Figure((3.0, 2.0), dpi=self.dpi)
+        self.canvas = FigureCanvas(self.fig)
+        self.canvas.setParent(self)
+        self.axes = self.fig.add_subplot(111)
+        self.vertical_line = self.axes.axvline(linewidth=4, color='r')
 
         self.main_layout = QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
-        self.main_layout.addWidget(self.view)
+        self.main_layout.addWidget(self.canvas)
+        self.main_layout.addStretch(1)
         self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
 
     def update(self, paw_data, average_data):
-        self.frame = -1
-        self.max_of_max = np.mean(average_data, axis=0)
+        # TODO switch this to a Qt version (blegh)
+        self.axes.cla()
+        for data in paw_data:
+            cop_x, cop_y = calculations.calculate_cop(data)
+            self.axes.plot(cop_x, cop_y)
 
-        # The result of calculate_average_data = (number of paws, rows, colums, frames)
-        # so mean axis=0 is mean over all paws
-        self.average_data = np.mean(utility.calculate_average_data(paw_data), axis=0)
-        x, y, z = np.nonzero(self.average_data)
-        # Pray this never goes out of bounds
-        self.min_x = np.min(x) - 2
-        self.max_x = np.max(x) + 2
-        self.min_y = np.min(y) - 2
-        self.max_y = np.max(y) + 2
-
-        self.draw_frame()
-
-    def draw_frame(self):
-        if self.frame == -1:
-            self.sliced_data = self.max_of_max[self.min_x:self.max_x,self.min_y:self.max_y]
-        else:
-            self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y,self.frame]
-
+        self.data = np.mean(average_data, axis=0)
         # Make sure the paws are facing upright
-        self.sliced_data = np.rot90(np.rot90(self.sliced_data))
-        # Display the average data for the requested frame
-        self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
+        self.data = np.rot90(np.rot90(self.data))
+        # Only display the non-zero part, regardless of its size
+        x, y = np.nonzero(self.data)
+        self.sliced_data = self.data
+        if len(x):  # This won't work for empty array's
+            # This might off course go out of bounds some day
+            min_x = np.min(x) - 2
+            max_x = np.max(x) + 2
+            min_y = np.min(y) - 2
+            max_y = np.max(y) + 2
+
+            self.sliced_data = self.data[min_x:max_x, min_y:max_y]
+
+        self.axes.imshow(self.sliced_data)
+        self.canvas.draw()
 
     def change_frame(self, frame):
         self.frame = frame
-        self.draw_frame()
+        self.vertical_line.set_xdata(frame)
+        self.canvas.draw()
 
     def clear_paws(self):
         # Put the screen to black
-        self.image.setPixmap(utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.n_max, self.color_table))
-
+        self.axes.cla()
+        self.canvas.draw()

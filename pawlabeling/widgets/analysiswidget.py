@@ -45,10 +45,6 @@ class AnalysisWidget(QTabWidget):
         # Create all the toolbar actions
         self.create_toolbar_actions()
 
-
-        # Change it so the measurement tree is now loaded with all the contacts it found
-        # for that dog, organized by paw_label
-
         # Create a list widget
         self.measurement_tree = QTreeWidget(self)
         self.measurement_tree.setMaximumWidth(300)
@@ -56,7 +52,6 @@ class AnalysisWidget(QTabWidget):
         self.measurement_tree.setMaximumHeight(200)
         self.measurement_tree.setColumnCount(1)
         self.measurement_tree.setHeaderLabel("Measurements")
-
         self.measurement_tree.itemActivated.connect(self.load_all_results)
 
         self.contact_tree = QTreeWidget(self)
@@ -66,7 +61,7 @@ class AnalysisWidget(QTabWidget):
         self.contact_tree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
         # Set the widths of the columns
         for column in range(self.contact_tree.columnCount()):
-            self.contact_tree.setColumnWidth(column, 60)
+            self.contact_tree.setColumnWidth(column, 55)
         self.contact_tree.itemActivated.connect(self.switch_contacts)
 
         self.results_widget = resultswidget.ResultsWidget(self)
@@ -74,11 +69,11 @@ class AnalysisWidget(QTabWidget):
         # Create a slider
         self.slider = QSlider(self)
         self.slider.setOrientation(Qt.Horizontal)
-        self.slider.setMinimum(0)
+        self.slider.setMinimum(-1)
         self.slider.setMaximum(0)
         self.slider.valueChanged.connect(self.change_frame)
         self.slider_text = QLabel(self)
-        self.slider_text.setText("Frame: 0")
+        self.slider_text.setText("Frame: -1")
 
         self.slider_layout = QHBoxLayout()
         self.slider_layout.addWidget(self.slider)
@@ -170,6 +165,7 @@ class AnalysisWidget(QTabWidget):
         self.add_contacts()
         self.results_widget.update_n_max(self.n_max)
         self.results_widget.update_widgets(self.paw_labels, self.paw_data, self.average_data)
+        self.change_frame(frame=-1)
 
     def add_contacts(self):
         self.contact_tree.clear()

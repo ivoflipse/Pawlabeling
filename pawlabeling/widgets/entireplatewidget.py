@@ -43,7 +43,7 @@ class EntirePlateWidget(QWidget):
         self.slider.setMaximum(0)
         self.slider.valueChanged.connect(self.slider_moved)
         self.slider_text = QLabel(self)
-        self.slider_text.setText("Frame: 0")
+        self.slider_text.setText("Frame: -1")
 
         self.slider_layout = QHBoxLayout()
         self.slider_layout.addWidget(self.slider)

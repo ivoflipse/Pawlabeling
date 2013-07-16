@@ -83,7 +83,7 @@ def normalize_paw_data(paw_data):
 def calculate_average_data(paw_data):
     mx = 100
     my = 100
-    average_data = []
+    mz = 100
     # Get the max shape
     for data in paw_data:
         x, y, z = data.shape
@@ -91,16 +91,23 @@ def calculate_average_data(paw_data):
             mx = x
         if y > my:
             my = y
+        if z > mz:
+            mz = z
 
     # Pad everything with zeros
+    empty_slice = np.zeros((mx, my, mz))
+    padded_data = []
     for data in paw_data:
         x, y, z = data.shape
-        offset_x, offset_y = int((mx - x) / 2), int((my - y) / 2)
-        average_slice = np.zeros((mx, my))
-        average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = data.max(axis=2)
-        average_data.append(average_slice)
+        offset_x = int((mx - x) / 2)
+        offset_y = int((my - y) / 2)
+        offset_z = int((mz - z) / 2)
+        # Create a deep copy of the empty array to fill up
+        padded_slice = empty_slice.copy()
+        padded_slice[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = data
+        padded_data.append(padded_slice)
 
-    return average_data
+    return np.array(padded_data)
 
 
 def calculate_bounding_box(contour):

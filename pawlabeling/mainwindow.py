@@ -12,7 +12,6 @@ import os
 from PySide.QtCore import *
 from PySide.QtGui import *
 from settings import configuration
-from functions import gui
 from widgets import processingwidget, analysiswidget
 
 class MainWindow(QMainWindow):
