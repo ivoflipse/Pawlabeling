@@ -20,12 +20,11 @@ class TwoDimViewWidget(QWidget):
         super(TwoDimViewWidget, self).__init__(parent)
         self.label = QLabel("2D View")
         self.parent = parent
-        self.degree = configuration.degree * 4
 
-        self.left_front = PawView(self, self.degree, label="Left Front")
-        self.left_hind = PawView(self, self.degree, label="Left Hind")
-        self.right_front = PawView(self, self.degree, label="Right Front")
-        self.right_hind = PawView(self, self.degree, label="Right Hind")
+        self.left_front = PawView(self, label="Left Front")
+        self.left_hind = PawView(self, label="Left Hind")
+        self.right_front = PawView(self, label="Right Front")
+        self.right_hind = PawView(self, label="Right Hind")
 
         self.paws_list = {
             0: self.left_front,
@@ -80,11 +79,11 @@ class TwoDimViewWidget(QWidget):
             paw.clear_paws()
 
 class PawView(QWidget):
-    def __init__(self, parent, degree, label):
+    def __init__(self, parent, label):
         super(PawView, self).__init__(parent)
         self.label = QLabel(label)
         self.parent = parent
-        self.degree = degree
+        self.degree = configuration.degree * 4
         self.n_max = 0
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
