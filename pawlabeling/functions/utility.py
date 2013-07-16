@@ -268,20 +268,6 @@ def contour_to_lines(contour):
     return x, y
 
 
-def normalize(array, n_max):
-    """
-    This rescales all the values to be between 0-255
-    """
-    # If we have a non-zero offset, subtract the minimum
-    if n_max == 0:
-        return array
-
-    scale = 255. / n_max
-    array *= scale
-
-    return array
-
-
 def interpolate_frame(data, degree):
     """
     interpolate_frame interpolates one frame for a given degree. Don't insert a 3D array!
@@ -316,6 +302,34 @@ def average_contacts(contacts):
     return average_array
 
 
+def normalize(array, n_max):
+    """
+    This rescales all the values to be between 0-255
+    """
+    # If we have a non-zero offset, subtract the minimum
+    if n_max == 0:
+        return array
+
+    scale = 255. / n_max
+    array *= scale
+
+    return array
+
+
+def array_to_qimage(array, color_table):
+    """Convert the 2D numpy array  into a 8-bit QImage with a gray
+    colormap.  The first dimension represents the vertical image axis."""
+    array = np.require(array, np.uint8, 'C')
+    width, height = array.shape
+    result = QImage(array.data, height, width, QImage.Format_Indexed8)
+    result.ndarray = array
+    # Use the default one from this library
+    result.setColorTable(color_table)
+    # Convert it to RGB32
+    result = result.convertToFormat(QImage.Format_RGB32)
+    return result
+
+
 def get_QPixmap(data, degree, n_max, color_table):
     """
     This function expects a single frame, it will interpolate/resize it with a given degree and
@@ -336,20 +350,6 @@ def get_QPixmap(data, degree, n_max, color_table):
     #self.pixmap = self.pixmap.scaled(self.degree * self.height, self.degree * self.width,
     #                                 Qt.KeepAspectRatio, Qt.Fas.Transformation) #Qt.Smoot.Transformation
     return pixmap
-
-
-def array_to_qimage(array, color_table):
-    """Convert the 2D numpy array  into a 8-bit QImage with a gray
-    colormap.  The first dimension represents the vertical image axis."""
-    array = np.require(array, np.uint8, 'C')
-    width, height = array.shape
-    result = QImage(array.data, height, width, QImage.Format_Indexed8)
-    result.ndarray = array
-    # Use the default one from this library
-    result.setColorTable(color_table)
-    # Convert it to RGB32
-    result = result.convertToFormat(QImage.Format_RGB32)
-    return result
 
 
 def interpolate_rgb(start_color, start_value, end_color, end_value, actual_value):

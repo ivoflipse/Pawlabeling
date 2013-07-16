@@ -136,7 +136,8 @@ class PawView(QWidget):
         self.pen.setWidth(3)
 
         for data in paw_data:
-            cop_x, cop_y = calculations.calculate_cop(np.rot90(np.rot90(data)))
+            # Reversing the left-right direction. I should really figure out where this is coming from
+            cop_x, cop_y = calculations.calculate_cop(np.rot90(np.rot90(data[:,::-1,:])))
             points = []
             for frame in range(len(cop_x)-1):
                 x1 = cop_x[frame]
@@ -156,6 +157,7 @@ class PawView(QWidget):
 
         # Make sure the paws are facing upright
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
+        self.sliced_data = self.sliced_data[:, ::-1]
         # Display the average data for the requested frame
         self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
 

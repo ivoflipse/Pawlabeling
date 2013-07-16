@@ -132,6 +132,7 @@ class PawView(QWidget):
 
         # Make sure the paws are facing upright
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
+        self.sliced_data = self.sliced_data[:, ::-1]
         # Display the average data for the requested frame
         self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
 
