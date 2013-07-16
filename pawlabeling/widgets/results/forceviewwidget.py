@@ -13,7 +13,7 @@ from PySide.QtCore import *
 from PySide.QtGui import *
 
 from settings import configuration
-from functions import utility, gui
+from functions import utility, calculations
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -108,10 +108,15 @@ class PawView(QWidget):
 
     def update(self, paw_data, average_data):
         self.axes.cla()
+        average = []
         for data in paw_data:
             x, y, z = data.shape
             force_over_time = np.sum(np.sum(data, axis=0), axis=0)
+            normalized_force_over_time = calculations.interpolate_time_series(force_over_time)
+            average.append(normalized_force_over_time)
             self.axes.plot(force_over_time)
+
+        self.axes.plot(np.mean(average, axis=0), color="r", linewidth=3)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.canvas.draw()
 

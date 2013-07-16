@@ -8,6 +8,16 @@
 
 import numpy as np
 
+def interpolate_time_series(data, length=100):
+    from scipy import interpolate
+    length = len(data)
+    x = np.arange(0, length, 1)
+    #xnew = np.linspace(0, len(data[:-1]), num=100)
+    x_new = np.linspace(0, length-1, num=100)
+    tck = interpolate.splrep(x, data)
+    new_data = interpolate.splev(x_new, tck)
+    return new_data
+
 def calculate_cop(data, version="scipy"):
     if version == "scipy":
         return calculate_cop_scipy(data)
