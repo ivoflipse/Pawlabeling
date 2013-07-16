@@ -109,12 +109,13 @@ class PawView(QWidget):
         # TODO switch this to a Qt version (blegh)
         self.axes.cla()
         for data in paw_data:
+            # I always have a problem with the COP :(
             cop_x, cop_y = calculations.calculate_cop(data)
             self.axes.plot(cop_x, cop_y)
 
         self.data = np.mean(average_data, axis=0)
         # Make sure the paws are facing upright
-        self.data = np.rot90(np.rot90(self.data))
+        #self.data = np.rot90(np.rot90(self.data))
         # Only display the non-zero part, regardless of its size
         x, y = np.nonzero(self.data)
         self.sliced_data = self.data
