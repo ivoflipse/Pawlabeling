@@ -202,6 +202,7 @@ class AnalysisWidget(QTabWidget):
         self.paws.clear()
         self.paw_data.clear()
         self.paw_labels.clear()
+        self.results_widget.clear_widgets()
 
     def change_frame(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))

@@ -166,6 +166,31 @@ def create_results_folder(dog_name):
         os.mkdir(new_path)
     return new_path
 
+def results_to_json(new_path, dog_name, measurement_name, paw_labels, paws, paw_data):
+    """
+    This creates a json file for the current measurement and stores the results
+    """
+    json_file_name = "{}//{}.json".format(new_path, measurement_name)
+    with open(json_file_name, "w+") as json_file:
+        # Update somewhere in between
+        results = {"dog_name": dog_name,
+                   "measurement_name": measurement_name,
+                   "paw_labels": paw_labels[measurement_name],
+                   "paw_results": [paw.contact_to_dict() for paw in paws[measurement_name]],
+                   "paw_data": {}
+        }
+
+        for index, data in enumerate(paw_data[measurement_name]):
+            values = []
+            rows, columns, frames = np.nonzero(data)
+            for row, column, frame in zip(rows, columns, frames):
+                values.append("{:10.4f}".format(data[row, column, frame]))
+            results["paw_data"][index] = [data.shape, rows.tolist(), columns.tolist(), frames.tolist(), values]
+
+        json_file.seek(0)  # Rewind the file, so we overwrite it
+        json_file.write(json.dumps(results))
+        json_file.truncate()  # In case the new file is smaller
+
 def convert_file_to_zip(file_path):
     import zipfile
     # Create a new zip file and add .zip to the file_name

@@ -228,41 +228,14 @@ class ProcessingWidget(QWidget):
         self.new_path = io.create_results_folder(self.dog_name)
         # Try storing the results
         try:
-            self.results_to_json()  # Switched from pickling to JSON
+            io.results_to_json(self.new_path, self.dog_name, self.measurement_name,
+                               self.paw_labels, self.paws, self.paw_data)
             print("The results have been stored")
             # Change the color of the measurement in the tree to green
             treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green
             self.currentItem.setForeground(0, treeBrush)
         except Exception as e:
             print("Pickling failed!", e)
-
-
-    # TODO this might not work, since the structure of the variables has been altered
-    def results_to_json(self):
-        """
-        This creates a json file for the current measurement and stores the results
-        """
-        json_file_name = "{}//{}.json".format(self.new_path, self.measurement_name)
-        with open(json_file_name, "w+") as json_file:
-            # Update somewhere in between
-            results = {"dog_name": self.dog_name,
-                       "measurement_name": self.measurement_name,
-                       "paw_labels": self.paw_labels[self.measurement_name],
-                       "paw_results": [paw.contact_to_dict() for paw in self.paws[self.measurement_name]],
-                       "paw_data": {}
-            }
-
-            for index, data in enumerate(self.paw_data[self.measurement_name]):
-                values = []
-                rows, columns, frames = np.nonzero(data)
-                for row, column, frame in zip(rows, columns, frames):
-                    values.append("{:10.4f}".format(data[row, column, frame]))
-                results["paw_data"][index] = [data.shape, rows.tolist(), columns.tolist(), frames.tolist(), values]
-
-            json_file.seek(0)  # Rewind the file, so we overwrite it
-            json_file.write(json.dumps(results))
-            json_file.truncate()  # In case the new file is smaller
-
 
     ## Tracking
     def track_contacts(self):
@@ -332,6 +305,7 @@ class ProcessingWidget(QWidget):
         self.update_current_paw()
 
     def select_left_front(self):
+        print "left front!"
         if self.paw_labels[self.measurement_name][self.current_paw_index] != -3:
             self.paw_labels[self.measurement_name][self.current_paw_index] = 0
         self.next_paw()

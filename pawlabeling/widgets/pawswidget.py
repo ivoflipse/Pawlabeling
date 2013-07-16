@@ -205,6 +205,7 @@ class PawWidget(QWidget):
             durations.append(z)
             surfaces.append(np.max([np.count_nonzero(data[:, :, frame]) for frame in range(z)]))
 
+        # TODO this apparently can be called on empty data
         self.max_pressure = int(np.mean(pressures))
         self.mean_duration = int(np.mean(durations))
         self.mean_surface = int(np.mean(surfaces))

@@ -98,7 +98,7 @@ class PawView(QWidget):
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
 
-        self.cop_polygons = []
+        self.cop_lines = []
 
         self.scene = QGraphicsScene(self)
         self.view = QGraphicsView(self.scene)
@@ -138,11 +138,15 @@ class PawView(QWidget):
         for data in paw_data:
             cop_x, cop_y = calculations.calculate_cop(np.rot90(np.rot90(data)))
             points = []
-            for x, y in zip(cop_x, cop_y):
-                points.append(QPointF(x * self.degree, y * self.degree))
+            for frame in range(len(cop_x)-1):
+                x1 = cop_x[frame]
+                x2 = cop_x[frame+1]
+                y1 = cop_y[frame]
+                y2 = cop_y[frame+1]
 
-            polygon = QPolygonF(points)
-            self.cop_polygons.append(self.scene.addPolygon(polygon, self.pen))
+                line = QLineF(QPointF(x1 * self.degree, y1 * self.degree), QPointF(x2 * self.degree, y2 * self.degree))
+
+                self.cop_lines.append(self.scene.addLine(line, self.pen))
 
     def draw_frame(self):
         if self.frame == -1:
@@ -161,6 +165,6 @@ class PawView(QWidget):
     def clear_paws(self):
         # Put the screen to black
         self.image.setPixmap(utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.n_max, self.color_table))
-        for cop in self.cop_polygons:
+        for cop in self.cop_lines:
             self.scene.removeItem(cop)
-        self.cop_polygons = []
+        self.cop_lines = []

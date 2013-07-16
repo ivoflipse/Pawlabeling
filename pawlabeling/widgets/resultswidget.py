@@ -62,3 +62,7 @@ class ResultsWidget(QWidget):
         current_tab = self.tab_widget.currentIndex()
         widget = self.widgets[current_tab]
         widget.change_frame(frame)
+
+    def clear_widgets(self):
+        for widget in self.widgets:
+            widget.clear_paws()
