@@ -73,7 +73,11 @@ class PawsWidget(QWidget):
         for paw_label, average_list in average_data.items():
             data = data_array[paw_label]
             widget = self.paws_list[paw_label]
-            widget.update(data, average_list)
+            # This can sometimes be empty, if things are reset
+            if data:
+                widget.update(data, average_list)
+            else:
+                widget.clear_paws()
 
         # Update the current paw widget
         widget = self.paws_list[-1]
@@ -205,10 +209,10 @@ class PawWidget(QWidget):
             durations.append(z)
             surfaces.append(np.max([np.count_nonzero(data[:, :, frame]) for frame in range(z)]))
 
-        # TODO this apparently can be called on empty data
         self.max_pressure = int(np.mean(pressures))
         self.mean_duration = int(np.mean(durations))
         self.mean_surface = int(np.mean(surfaces))
+
 
         self.max_pressure_label.setText("{} N".format(self.max_pressure))
         self.mean_duration_label.setText("{} frames".format(self.mean_duration))
@@ -227,6 +231,7 @@ class PawWidget(QWidget):
             min_y = np.min(y) - 2
             max_y = np.max(y) + 2
             sliced_data = self.data[min_x:max_x, min_y:max_y]
+
         self.image.setPixmap(utility.get_QPixmap(sliced_data, self.degree, self.n_max, self.color_table))
 
     def clear_paws(self):

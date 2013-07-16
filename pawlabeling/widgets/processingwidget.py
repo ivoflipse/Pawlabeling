@@ -241,6 +241,12 @@ class ProcessingWidget(QWidget):
     def track_contacts(self):
         print("Track!")
         paws = tracking.track_contours_graph(self.measurement)
+
+        # Make sure we don't have any paws stored if we're tracking again
+        self.paws[self.measurement_name] = []
+        self.paw_labels[self.measurement_name] = {}
+        self.paw_data[self.measurement_name] = []
+
         # Convert them to class objects
         for index, paw in enumerate(paws):
             paw = utility.Contact(paw)

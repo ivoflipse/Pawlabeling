@@ -130,9 +130,6 @@ class EntirePlateWidget(QWidget):
         self.change_frame(self.frame)
 
     def new_measurement(self, measurement, measurement_name):
-        # Clear the bounding boxes + the line
-        self.clear_bounding_box()
-        self.clear_gait_line()
         # Update the measurement
         self.measurement = measurement
         self.measurement_name = measurement_name
@@ -140,7 +137,7 @@ class EntirePlateWidget(QWidget):
         self.n_max = self.measurement.max()
         self.change_frame(frame=-1)
 
-        # Reset the frame counter
+        # Reset the frame slider
         self.slider.setValue(-1)
         # Update the slider, in case the shape of the file changes
         self.slider.setMaximum(self.num_frames - 1)
