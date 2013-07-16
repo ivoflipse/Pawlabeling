@@ -142,7 +142,7 @@ def load_results(dog_name, measurement_name):
         # Make sure all the keys are not unicode
         for key, value in results.items():
             if type(value) == dict:
-                for index, data in results[key].items():
+                for index, data in value.items():
                     results[key][int(index)] = data
                     del results[key][index]  # Delete the unicode key
 

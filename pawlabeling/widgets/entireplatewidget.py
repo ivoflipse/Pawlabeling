@@ -179,6 +179,7 @@ class EntirePlateWidget(QWidget):
         else:
             current_paw = 0
 
+        # TODO these can go out of bounds, so cap them at the max dimensions, kthnxbye!
         polygon = QPolygonF(
             [QPointF((paw.total_min_x - current_paw) * self.degree, (paw.total_min_y - current_paw) * self.degree),
              QPointF((paw.total_max_x + current_paw) * self.degree, (paw.total_min_y - current_paw) * self.degree),
@@ -190,7 +191,7 @@ class EntirePlateWidget(QWidget):
     def update_bounding_boxes(self, paw_labels, current_paw_index):
         self.clear_bounding_box()
 
-        for index, paw_label in list(paw_labels.items()):
+        for index, paw_label in paw_labels.items():
             self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label)
             if current_paw_index == index:
                 self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label=-1)

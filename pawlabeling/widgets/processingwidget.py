@@ -122,7 +122,7 @@ class ProcessingWidget(QWidget):
                         file_name += ".zip"
 
                     name = os.path.join(root, file_name)
-                      # Store the path with the file name
+                    # Store the path with the file name
                     self.file_names[dog_name][file_name] = name
                     childItem = QTreeWidgetItem(root_item, [file_name])
                     # Check if the measurement has already been store_results_folder
@@ -168,6 +168,7 @@ class ProcessingWidget(QWidget):
         self.nameLabel.setText("Measurement name: {}".format(self.file_name))
         self.contact_tree.clear()
 
+        # Try loading the results
         self.load_all_results()
 
         # Check if there's any data for this measurement
@@ -212,13 +213,19 @@ class ProcessingWidget(QWidget):
                     paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
                     self.paws[measurement_name].append(paw)
 
-                for _, results in stored_results.items():
-                    paw_labels = stored_results["paw_labels"].values()
-                    paw_data = stored_results["paw_data"].values()
-                    for paw_label, data in zip(paw_labels, paw_data):
-                        if paw_label >= 0:
-                            normalized_data = utility.normalize_paw_data(data)
-                            self.average_data[paw_label].append(normalized_data)
+                # Until I've moved everything to be dictionary based, here's code to sort the paws + paw_data
+                # Fancy pants code found here:
+                # http://stackoverflow.com/questions/9764298/is-it-possible-to-sort-two-listswhich-reference-each-other-in-the-exact-same-w
+                self.paws[measurement_name], self.paw_data[measurement_name] = zip(*sorted(
+                    zip(self.paws[measurement_name], self.paw_data[measurement_name]),
+                    key=lambda pair: pair[0].frames[0]))
+
+                for index, data in enumerate(self.paw_data[measurement_name]):
+                    paw_label = self.paw_labels[measurement_name][index]
+                    if paw_label >= 0:
+                        normalized_data = utility.normalize_paw_data(data)
+                        self.average_data[paw_label].append(normalized_data)
+
 
     def store_status(self):
         """
@@ -235,7 +242,7 @@ class ProcessingWidget(QWidget):
             treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green
             self.currentItem.setForeground(0, treeBrush)
         except Exception as e:
-            print("Pickling failed!", e)
+            print("Storing failed!", e)
 
     ## Tracking
     def track_contacts(self):
@@ -311,7 +318,6 @@ class ProcessingWidget(QWidget):
         self.update_current_paw()
 
     def select_left_front(self):
-        print "left front!"
         if self.paw_labels[self.measurement_name][self.current_paw_index] != -3:
             self.paw_labels[self.measurement_name][self.current_paw_index] = 0
         self.next_paw()
@@ -332,7 +338,8 @@ class ProcessingWidget(QWidget):
         self.next_paw()
 
     def update_current_paw(self):
-        if self.current_paw_index <= len(self.paws[self.measurement_name]) and len(self.paws[self.measurement_name]) > 0:
+        if self.current_paw_index <= len(self.paws[self.measurement_name]) and len(
+                self.paws[self.measurement_name]) > 0:
             for index, paw_label in self.paw_labels[self.measurement_name].items():
                 # Get the current row from the tree
                 item = self.contact_tree.topLevelItem(index)
@@ -343,7 +350,8 @@ class ProcessingWidget(QWidget):
                     item.setBackground(idx, self.colors[paw_label])
 
             # Update the bounding boxes
-            self.entire_plate_widget.update_bounding_boxes(self.paw_labels[self.measurement_name], self.current_paw_index)
+            self.entire_plate_widget.update_bounding_boxes(self.paw_labels[self.measurement_name],
+                                                           self.current_paw_index)
             # Update the paws widget
             self.paws_widget.update_paws(self.paw_labels, self.paw_data, self.average_data,
                                          self.current_paw_index, self.measurement_name)
@@ -433,101 +441,111 @@ class ProcessingWidget(QWidget):
 
     def create_toolbar_actions(self):
         self.track_contacts_action = gui.create_action(text="&Track Contacts",
-                                                 shortcut=QKeySequence("CTRL+F"),
-                                                 icon=QIcon(
-                                                     os.path.join(os.path.dirname(__file__), "images/edit_zoom.png")),
-                                                 tip="Using the tracker to find contacts",
-                                                 checkable=False,
-                                                 connection=self.track_contacts
+                                                       shortcut=QKeySequence("CTRL+F"),
+                                                       icon=QIcon(
+                                                           os.path.join(os.path.dirname(__file__),
+                                                                        "images/edit_zoom.png")),
+                                                       tip="Using the tracker to find contacts",
+                                                       checkable=False,
+                                                       connection=self.track_contacts
         )
 
         self.store_status_action = gui.create_action(text="&Store",
-                                               shortcut=QKeySequence("CTRL+S"),
-                                               icon=QIcon(
-                                                   os.path.join(os.path.dirname(__file__), "images/save-icon.png")),
-                                               tip="Mark the tracking as correct",
-                                               checkable=False,
-                                               connection=self.store_status
+                                                     shortcut=QKeySequence("CTRL+S"),
+                                                     icon=QIcon(
+                                                         os.path.join(os.path.dirname(__file__),
+                                                                      "images/save-icon.png")),
+                                                     tip="Mark the tracking as correct",
+                                                     checkable=False,
+                                                     connection=self.store_status
         )
 
         self.left_front_action = gui.create_action(text="Select Left Front",
-                                             shortcut=configuration.left_front,
-                                             icon=QIcon(os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
-                                             tip="Select the Left Front paw",
-                                             checkable=False,
-                                             connection=self.select_left_front
+                                                   shortcut=configuration.left_front,
+                                                   icon=QIcon(
+                                                       os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
+                                                   tip="Select the Left Front paw",
+                                                   checkable=False,
+                                                   connection=self.select_left_front
         )
 
         self.left_hind_action = gui.create_action(text="Select Left Hind",
-                                            shortcut=configuration.left_hind,
-                                            icon=QIcon(os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
-                                            tip="Select the Left Hind paw",
-                                            checkable=False,
-                                            connection=self.select_left_hind
+                                                  shortcut=configuration.left_hind,
+                                                  icon=QIcon(
+                                                      os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
+                                                  tip="Select the Left Hind paw",
+                                                  checkable=False,
+                                                  connection=self.select_left_hind
         )
 
         self.right_front_action = gui.create_action(text="Select Right Front",
-                                              shortcut=configuration.right_front,
-                                              icon=QIcon(os.path.join(os.path.dirname(__file__),
-                                                                      "images/RF-icon.png")),
-                                              tip="Select the Right Front paw",
-                                              checkable=False,
-                                              connection=self.select_right_front
+                                                    shortcut=configuration.right_front,
+                                                    icon=QIcon(os.path.join(os.path.dirname(__file__),
+                                                                            "images/RF-icon.png")),
+                                                    tip="Select the Right Front paw",
+                                                    checkable=False,
+                                                    connection=self.select_right_front
         )
 
         self.right_hind_action = gui.create_action(text="Select Right Hind",
-                                             shortcut=configuration.right_hind,
-                                             icon=QIcon(os.path.join(os.path.dirname(__file__), "images/RH-icon.png")),
-                                             tip="Select the Right Hind paw",
-                                             checkable=False,
-                                             connection=self.select_right_hind
+                                                   shortcut=configuration.right_hind,
+                                                   icon=QIcon(
+                                                       os.path.join(os.path.dirname(__file__), "images/RH-icon.png")),
+                                                   tip="Select the Right Hind paw",
+                                                   checkable=False,
+                                                   connection=self.select_right_hind
         )
 
         self.previous_paw_action = gui.create_action(text="Select Previous Paw",
-                                               shortcut=[configuration.previous_paw, QKeySequence(Qt.Key_Down)],
-                                               icon=QIcon(
-                                                   os.path.join(os.path.dirname(__file__), "images/backward.png")),
-                                               tip="Select the previous paw",
-                                               checkable=False,
-                                               connection=self.previous_paw
+                                                     shortcut=[configuration.previous_paw, QKeySequence(Qt.Key_Down)],
+                                                     icon=QIcon(
+                                                         os.path.join(os.path.dirname(__file__),
+                                                                      "images/backward.png")),
+                                                     tip="Select the previous paw",
+                                                     checkable=False,
+                                                     connection=self.previous_paw
         )
 
         self.next_paw_action = gui.create_action(text="Select Next Paw",
-                                           shortcut=[configuration.next_paw, QKeySequence(Qt.Key_Up)],
-                                           icon=QIcon(os.path.join(os.path.dirname(__file__), "images/forward.png")),
-                                           tip="Select the next paw",
-                                           checkable=False,
-                                           connection=self.next_paw
+                                                 shortcut=[configuration.next_paw, QKeySequence(Qt.Key_Up)],
+                                                 icon=QIcon(
+                                                     os.path.join(os.path.dirname(__file__), "images/forward.png")),
+                                                 tip="Select the next paw",
+                                                 checkable=False,
+                                                 connection=self.next_paw
         )
 
         self.remove_label_action = gui.create_action(text="Delete Label From Paw",
-                                               shortcut=configuration.remove_label,
-                                               icon=QIcon(
-                                                   os.path.join(os.path.dirname(__file__), "images/cancel-icon.png")),
-                                               tip="Delete the label from the paw",
-                                               checkable=False,
-                                               connection=self.remove_label
+                                                     shortcut=configuration.remove_label,
+                                                     icon=QIcon(
+                                                         os.path.join(os.path.dirname(__file__),
+                                                                      "images/cancel-icon.png")),
+                                                     tip="Delete the label from the paw",
+                                                     checkable=False,
+                                                     connection=self.remove_label
         )
 
         self.invalid_paw_action = gui.create_action(text="Mark Paw as Invalid",
-                                              shortcut=configuration.invalid_paw,
-                                              icon=QIcon(
-                                                  os.path.join(os.path.dirname(__file__), "images/trash-icon.png")),
-                                              tip="Mark the paw as invalid",
-                                              checkable=False,
-                                              connection=self.invalid_paw
+                                                    shortcut=configuration.invalid_paw,
+                                                    icon=QIcon(
+                                                        os.path.join(os.path.dirname(__file__),
+                                                                     "images/trash-icon.png")),
+                                                    tip="Mark the paw as invalid",
+                                                    checkable=False,
+                                                    connection=self.invalid_paw
         )
 
         self.undo_label_action = gui.create_action(text="Undo Label From Paw",
-                                             shortcut=QKeySequence(Qt.CTRL + Qt.Key_Z),
-                                             icon=QIcon(
-                                                 os.path.join(os.path.dirname(__file__), "images/undo-icon.png")),
-                                             tip="Delete the label from the paw",
-                                             checkable=False,
-                                             connection=self.undo_label
+                                                   shortcut=QKeySequence(Qt.CTRL + Qt.Key_Z),
+                                                   icon=QIcon(
+                                                       os.path.join(os.path.dirname(__file__), "images/undo-icon.png")),
+                                                   tip="Delete the label from the paw",
+                                                   checkable=False,
+                                                   connection=self.undo_label
         )
 
-        self.actions = [self.store_status_action, self.track_contacts_action, self.left_front_action, self.left_hind_action,
+        self.actions = [self.store_status_action, self.track_contacts_action, self.left_front_action,
+                        self.left_hind_action,
                         self.right_front_action, self.right_hind_action, self.previous_paw_action, self.next_paw_action,
                         self.remove_label_action, self.invalid_paw_action, self.undo_label_action]
 
