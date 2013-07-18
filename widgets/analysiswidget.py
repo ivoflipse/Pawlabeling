@@ -233,7 +233,8 @@ class AnalysisWidget(QTabWidget):
     def create_toolbar_actions(self):
         self.left_front_action = gui.create_action(text="Select Left Front",
                                                    shortcut=configuration.left_front,
-                                                   icon=QIcon(os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
+                                                   icon=QIcon(os.path.join(os.path.dirname(__file__),
+                                                                           "images/LF-icon.png")),
                                                    tip="Select the Left Front paw",
                                                    checkable=False,
                                                    connection=self.select_left_front
@@ -241,7 +242,8 @@ class AnalysisWidget(QTabWidget):
 
         self.left_hind_action = gui.create_action(text="Select Left Hind",
                                                   shortcut=configuration.left_hind,
-                                                  icon=QIcon(os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
+                                                  icon=QIcon(os.path.join(os.path.dirname(__file__),
+                                                                          "images/LH-icon.png")),
                                                   tip="Select the Left Hind paw",
                                                   checkable=False,
                                                   connection=self.select_left_hind
@@ -258,7 +260,8 @@ class AnalysisWidget(QTabWidget):
 
         self.right_hind_action = gui.create_action(text="Select Right Hind",
                                                    shortcut=configuration.right_hind,
-                                                   icon=QIcon(os.path.join(os.path.dirname(__file__), "images/RH-icon.png")),
+                                                   icon=QIcon(os.path.join(os.path.dirname(__file__),
+                                                                           "images/RH-icon.png")),
                                                    tip="Select the Right Hind paw",
                                                    checkable=False,
                                                    connection=self.select_right_hind

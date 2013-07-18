@@ -12,7 +12,7 @@ import os
 from PySide.QtCore import *
 from PySide.QtGui import *
 from settings import configuration
-from widgets import processingwidget, analysiswidget
+import processingwidget, analysiswidget
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):

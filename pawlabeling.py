@@ -6,7 +6,7 @@
 # The full license is in the file COPYING.txt, distributed with this software.
 #-----------------------------------------------------------------------------
 
-from pawlabeling.mainwindow import main
+from widgets.mainwindow import main
 
 
 if __name__ == "__main__":
