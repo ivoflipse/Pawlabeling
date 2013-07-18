@@ -234,7 +234,7 @@ class PawWidget(QWidget):
 
         # Flip around the vertical axis (god knows why)
         sliced_data = sliced_data[:, ::-1]
-        self.image.setPixmap(utility.get_QPixmap(sliced_data, self.degree, self.n_max, self.color_table))
+        self.image.setPixmap(utility.get_QPixmap(sliced_data, self.degree, self.n_max, self.color_table, interpolation="linear"))
 
     def clear_paws(self):
         self.data = np.zeros((self.mx, self.my))

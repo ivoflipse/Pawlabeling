@@ -312,7 +312,6 @@ def normalize(array, n_max):
 
     scale = 255. / n_max
     array *= scale
-
     return array
 
 
@@ -330,16 +329,24 @@ def array_to_qimage(array, color_table):
     return result
 
 
-def get_QPixmap(data, degree, n_max, color_table):
+def get_QPixmap(data, degree, n_max, color_table, interpolation="linear"):
     """
     This function expects a single frame, it will interpolate/resize it with a given degree and
     return a pixmap
     """
-    from cv2 import resize, INTER_LINEAR
+    from cv2 import resize, INTER_LINEAR, INTER_CUBIC, INTER_NEAREST
     # Need the sizes before reshaping
     width, height = data.shape
+
+    if interpolation == "linear":
+        interpolation = INTER_LINEAR
+    elif interpolation == "nearest":
+        interpolation = INTER_NEAREST
+    elif interpolation == "cubic":
+        interpolation = INTER_CUBIC
+
     # This can be used to interpolate, but it doesn't seem to work entirely correct yet...
-    data = resize(data, (height * degree, width * degree), interpolation=INTER_LINEAR)
+    data = resize(data, (height * degree, width * degree), interpolation=interpolation)
     # Normalize the data
     data = normalize(data, n_max)
     # Convert it from numpy to qimage
