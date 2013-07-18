@@ -210,6 +210,14 @@ class ProcessingWidget(QWidget):
                 self.paw_labels[measurement_name] = stored_results["paw_labels"]
                 for index, paw_data in stored_results["paw_data"].items():
                     self.paw_data[measurement_name].append(paw_data)
+
+                    # Check if n_max happens to be larger here
+                    max_data = np.max(paw_data)
+                    if max_data > self.n_max:
+                        self.n_max = max_data
+                        # And don't forget to send an update. Though this would only have to happen once
+                        self.paws_widget.update_n_max(self.n_max)
+
                     paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
                     self.paws[measurement_name].append(paw)
 

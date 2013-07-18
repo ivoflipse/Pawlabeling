@@ -310,6 +310,9 @@ def normalize(array, n_max):
     if n_max == 0:
         return array
 
+    # Make sure all negative values get set to zero
+    array[array < 0] = 0
+    # Get the scaling factor, so everything fits into a uint8
     scale = 255. / n_max
     array *= scale
     return array
