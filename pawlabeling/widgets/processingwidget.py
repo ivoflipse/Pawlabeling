@@ -211,6 +211,7 @@ class ProcessingWidget(QWidget):
                 for index, paw_data in stored_results["paw_data"].items():
                     self.paw_data[measurement_name].append(paw_data)
 
+                    # TODO make sure this is never called when there isn't actually any data
                     # Check if n_max happens to be larger here
                     max_data = np.max(paw_data)
                     if max_data > self.n_max:

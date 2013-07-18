@@ -241,7 +241,18 @@ def convert_contour_to_slice(data, contact):
         # We need to slice around the contacts a little wider, I wonder what problems this might cause
         min_x, max_x, min_y, max_y = int(min_x), int(max_x) + 2, int(min_y), int(max_y) + 2
         newData[min_x:max_x, min_y:max_y, frame] = data[min_x:max_x, min_y:max_y, frame]
-    return newData[min_x1 - 1:max_x1 + 2, min_y1 - 1:max_y1 + 2, min_z:max_z + 1]
+
+    x, y, z = data.shape
+    # Check bounds
+    if min_x1 < 0:
+        min_x1 = 0
+    if max_x1 > x:
+        max_x1 = x
+    if min_y1 < 0:
+        min_y1 = 0
+    if max_y1 > y:
+        max_y1 = y
+    return newData[min_x1:max_x1, min_y1:max_y1, min_z:max_z]
 
 
 def contour_to_polygon(contour, degree, offset_x=0, offset_y=0):
@@ -332,7 +343,7 @@ def array_to_qimage(array, color_table):
     return result
 
 
-def get_QPixmap(data, degree, n_max, color_table, interpolation="linear"):
+def get_QPixmap(data, degree, n_max, color_table, interpolation="cubic"):
     """
     This function expects a single frame, it will interpolate/resize it with a given degree and
     return a pixmap
@@ -470,6 +481,8 @@ class ImageColorTable():
                     elif val <= self.red_threshold:
                         color_table[val] = interpolate_rgb(self.orange, self.orange_threshold,
                                                            self.red, self.red_threshold, val)
+                    else:
+                        print "Holy crap batman!"
         return color_table
 
 

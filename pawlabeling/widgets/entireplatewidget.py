@@ -154,7 +154,8 @@ class EntirePlateWidget(QWidget):
         else:
             # Slice out the data from the measurement
             self.data = self.measurement[:, :, self.frame].T
-            # Update the pixmap
+
+        # Update the pixmap
         self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table))
 
     def clear_bounding_box(self):
