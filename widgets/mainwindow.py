@@ -14,6 +14,7 @@ from PySide.QtGui import *
 from settings import configuration
 import processingwidget, analysiswidget
 
+
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -76,9 +77,7 @@ class MainWindow(QMainWindow):
                 self.processing_widget.entire_plate_widget.slide_to_right()
                 return True
         else:
-            # TODO this seems to be giving an error
-            return QMainWindow.eventFilter(self, obj, event)
-
+            return False
 
 
 def main():

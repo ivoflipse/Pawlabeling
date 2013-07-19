@@ -151,8 +151,10 @@ class ProcessingWidget(QWidget):
             self.dog_name = split_name[-2]
             self.clear_cached_values()
 
+        # TODO perhaps use try/except to try with zebris is rsscan fails?
         # Pass the new measurement through to the widget
         self.measurement = io.load(self.file_name, padding=True, brand=configuration.brand)
+
         # Check the orientation of the plate and make sure its left to right
         self.measurement = io.fix_orientation(self.measurement)
         # Get the number of frames for the slider

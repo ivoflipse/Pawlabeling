@@ -252,6 +252,7 @@ def convert_contour_to_slice(data, contact):
         min_y1 = 0
     if max_y1 > y:
         max_y1 = y
+
     return newData[min_x1:max_x1, min_y1:max_y1, min_z:max_z]
 
 

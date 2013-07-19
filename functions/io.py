@@ -78,7 +78,8 @@ def load_rsscan(infile, padding=False):
         if line_length == 0:
             if len(data) != 0:
                 if padding:
-                    empty_line = data[0]
+                    # If I knew the dimensions I could pre-compute this
+                    empty_line = np.zeros((len(data[0])))
                     data = [empty_line] + data + [empty_line]
                 array_data = np.array(data, dtype=np.float32)
                 data_slices.append(array_data)
