@@ -289,6 +289,11 @@ class ProcessingWidget(QWidget):
                 paw_label = -3
             self.paw_labels[self.measurement_name][index] = paw_label
 
+        # Initialize average_data if there's an empty paw
+        for key in range(4):
+            if not self.average_data:
+                self.average_data[key] = np.zeros((15,15))
+
         self.initialize_widgets()
 
     ## GUI
