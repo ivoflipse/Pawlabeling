@@ -62,15 +62,20 @@ class PawsWidget(QWidget):
         # Clear the paws, so we can draw new ones
         self.clear_paws()
 
+        # Make a copy
+        from copy import deepcopy
+        self.average_data = deepcopy(average_data)
         # Group all the data per paw
         data_array = defaultdict(list)
         for measurement_name, data_list in paw_data.items():
             for paw_label, data in zip(paw_labels[measurement_name].values(), data_list):
                 if paw_label >= 0:
                     data_array[paw_label].append(data)
+                    normalized_data = utility.normalize_paw_data(data)
+                    self.average_data[paw_label].append(normalized_data)  # I wonder if this mutates the list...
 
         # Do I need to cache information so I can use it later on? Like in predict_label?
-        for paw_label, average_list in average_data.items():
+        for paw_label, average_list in self.average_data.items():
             data = data_array[paw_label]
             widget = self.paws_list[paw_label]
             # This can sometimes be empty, if things are reset
@@ -218,7 +223,11 @@ class PawWidget(QWidget):
         self.mean_duration_label.setText("{} frames".format(self.mean_duration))
         self.mean_surface_label.setText("{} pixels".format(self.mean_surface))
 
-        data = np.array(mean_data_list).mean(axis=0)
+        if len(mean_data_list) > 1:
+            data = np.array(mean_data_list).mean(axis=0)
+        else:
+            data = np.array(mean_data_list[0])
+
         # Make sure the paws are facing upright
         self.data = np.rot90(np.rot90(data))
         # Only display the non-zero part, regardless of its size
