@@ -67,7 +67,7 @@ def load_zebris(infile):
 
 # This functions is modified from:
 # http://stackoverflow.com/questions/4087919/how-can-i-improve-my-paw-detection
-def load_rsscan(infile, padding=False):
+def load_rsscan(infile):
     """Reads all data in the datafile. Returns an array of times for each
     slice, and a 3D array of pressure data with shape (nx, ny, nz)."""
     data_slices = []
@@ -77,35 +77,34 @@ def load_rsscan(infile, padding=False):
         line_length = len(split_line)
         if line_length == 0:
             if len(data) != 0:
-                if padding:
-                    # If I knew the dimensions I could pre-compute this
-                    empty_line = np.zeros((len(data[0])))
-                    data = [empty_line] + data + [empty_line]
                 array_data = np.array(data, dtype=np.float32)
                 data_slices.append(array_data)
         elif line_length == 4: # header
             data = []
         else:
-            if padding:
-                split_line = ['0.0'] + split_line + ['0.0']
             data.append(split_line)
-
     result = np.dstack(data_slices)
     return result
 
-def load(file_name, padding=False, brand=configuration.brand):
+def load(file_name, brand=configuration.brand):
     import zipfile
     # Load the zipped contents and pass them to the load functions
     infile = zipfile.ZipFile(file_name, "r")
     for file_name in infile.namelist():
         input = infile.read(file_name)
 
-    # Note that input is a string, not a file
-    if brand == "rsscan":
-        return load_rsscan(input, padding)
-    if brand == "zebris":
-        # TODO add padding to the Zebris files
-        return load_zebris(input)
+    # This way you wouldn't have to specify it, it would just try, fail and return
+    try:
+        data = load_rsscan(input)
+    except Exception, e:
+        data = load_zebris(input)
+    finally:
+        return data
+    # # Note that input is a string, not a file
+    # if brand == "rsscan":
+    #     return load_rsscan(input)
+    # if brand == "zebris":
+    #     return load_zebris(input)
 
 def find_stored_file(dog_name, file_name):
     # Note that the file_name might have a ZIP exstension, so we'll ignore that for now
