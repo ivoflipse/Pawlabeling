@@ -152,7 +152,13 @@ class ProcessingWidget(QWidget):
             self.clear_cached_values()
 
         # Pass the new measurement through to the widget
-        self.measurement = io.load(self.file_name,  brand=configuration.brand)
+        data = io.load(self.file_name,  brand=configuration.brand)
+        # I have to add padding globally again, because it messes up everything downstream
+        # Pad the data, so it will find things that touch the edges
+        x, y, z = data.shape
+        self.measurement = np.zeros((x+2, y+2, z), np.float32)
+        self.measurement[1:-1, 1:-1, :] = data
+
         # Check the orientation of the plate and make sure its left to right
         self.measurement = io.fix_orientation(self.measurement)
         # Get the number of frames for the slider

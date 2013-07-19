@@ -335,16 +335,9 @@ def track_contours_graph(data):
     based on the average duration and width/height of the connected components.
     These are then used to merge connected components with sufficient overlap.
     """
-    # Pad the data, so it will find things that touch the edges
-    x, y, z = data.shape
-    new_data = np.zeros((x+2, y+2, z), np.float32)
-    new_data[1:-1, 1:-1, :] = data
-
-    # Damnit, this means everything will be off by one after this...
-
     # Find all the contours, put them in a dictionary where the keys are the frames
     # and the values are the contours
-    contour_dict = find_contours(new_data)
+    contour_dict = find_contours(data)
     # Create a graph by connecting contours that have overlap with contours in the
     # previous frame
     G = create_graph(contour_dict, euclideanDistance=15)
