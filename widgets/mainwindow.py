@@ -18,6 +18,8 @@ import processingwidget, analysiswidget
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
+        # Set the screen dimensions, useful for when its not being run full screen
+        self.setGeometry(configuration.main_window_size)
         # This will simply set the screen size to whatever is maximally possible,
         # while leaving the menubar + taskbar visible
         self.showMaximized()

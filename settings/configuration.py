@@ -72,14 +72,25 @@ else:
     sensor_height = 1
 sensor_surface = sensor_width * sensor_height
 
-
+# These values dictate how large the app will be, best not touch window_top
+# since you'll lose the buttons to min/maximize the window
 if desktop:
+    main_window_left = 0
+    main_window_top = 25
+    main_window_width = 1400
+    main_window_height = 900
+    main_window_size = QRect(main_window_left, main_window_top, main_window_width, main_window_height)
     # These are more size hints, since the other parts of the window set minimum sizes
     # I might make those available here too
     entire_plate_widget_width = 800
     entire_plate_widget_height = 400
     paws_widget_height = 200
 else:
+    main_window_left = 0
+    main_window_top = 25
+    main_window_width = 1440
+    main_window_height = 830
+    main_window_size = QRect(main_window_left, main_window_top, main_window_width, main_window_height)
     entire_plate_widget_width = 800
     entire_plate_widget_height = 450
     paws_widget_height = 170
