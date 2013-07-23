@@ -277,7 +277,6 @@ class ProcessingWidget(QWidget):
         # Sort the contacts based on their position along the first dimension    
         self.paws[self.measurement_name] = sorted(self.paws[self.measurement_name], key=lambda paw: paw.frames[0])
 
-        print self.measurement.shape
         for index, paw in enumerate(self.paws[self.measurement_name]):
             data_slice = utility.convert_contour_to_slice(self.measurement, paw.contour_list)
             self.paw_data[self.measurement_name].append(data_slice)

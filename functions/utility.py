@@ -26,13 +26,13 @@ class Contact():
                 self.contour_list[frame] = contact[frame]
 
             center, min_x, max_x, min_y, max_y = update_bounding_box(contact)
-            self.width = int(abs(max_x - min_x))
-            self.height = int(abs(max_y - min_y))
+            self.width = int(round(abs(max_x - min_x)))
+            self.height = int(round(abs(max_y - min_y)))
             self.length = len(self.frames)
             print min_x, min_y
-            self.total_min_x, self.total_max_x = int(min_x), int(max_x)
-            self.total_min_y, self.total_max_y = int(min_y), int(max_y)
-            self.total_centroid = (int(center[0]), int(center[1]))
+            self.total_min_x, self.total_max_x = int(round(min_x)), int(round(max_x))
+            self.total_min_y, self.total_max_y = int(round(min_y)), int(round(max_y))
+            self.total_centroid = (int(round(center[0])), int(round(center[1])))
         else:
             self.restore(contact)
 
@@ -75,7 +75,7 @@ def normalize_paw_data(paw_data):
     my = 100
 
     x, y, z = paw_data.shape
-    offset_x, offset_y = int((mx - x) / 2), int((my - y) / 2)
+    offset_x, offset_y = int(round((mx - x) / 2)), int(round((my - y) / 2))
     average_slice = np.zeros((mx, my))
     average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = paw_data.max(axis=2)
     return average_slice
@@ -100,9 +100,8 @@ def calculate_average_data(paw_data):
     padded_data = []
     for data in paw_data:
         x, y, z = data.shape
-        offset_x = int((mx - x) / 2)
-        offset_y = int((my - y) / 2)
-        offset_z = int((mz - z) / 2)
+        offset_x = int(round((mx - x) / 2))
+        offset_y = int(round((my - y) / 2))
         # Create a deep copy of the empty array to fill up
         padded_slice = empty_slice.copy()
         padded_slice[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = data
@@ -129,13 +128,13 @@ def calculate_bounding_box(contour):
         length, width = size
 
     x, y = center
-    xdist = width / 2
-    ydist = length / 2
+    x_distance = int(width / 2)
+    y_distance = int(length / 2)
     # Calculate the distance from the center to the edges
-    min_x = x - xdist
-    max_x = x + xdist
-    min_y = y - ydist
-    max_y = y + ydist
+    min_x = x - x_distance
+    max_x = x + x_distance
+    min_y = y - y_distance
+    max_y = y + y_distance
     return center, min_x, max_x, min_y, max_y
 
 
