@@ -7,6 +7,7 @@
 #-----------------------------------------------------------------------------
 
 import numpy as np
+import cv2
 from functions.utility import update_bounding_box
 
 def closest_contact(contact1, contact2, center1, euclidean_distance):
@@ -228,24 +229,22 @@ def merging_contacts(contacts):
 
 
 def find_contours(data):
-    from cv2 import threshold, findContours, THRESH_BINARY, RETR_EXTERNAL, CHAIN_APPROX_NONE
     # Dictionary to fill with results
     contour_dict = {}
     # Find the contours in this frame
     rows, cols, numFrames = data.shape
     for frame in range(numFrames):
-        # Threshold the data
         copy_data = data[:, :, frame].T * 1.
-        _, copy_data = threshold(copy_data, 0.0, 1, THRESH_BINARY)
+        # Threshold the data
+        _, copy_data = cv2.threshold(copy_data, 0.0, 1, cv2.THRESH_BINARY)
         # The astype conversion here is quite expensive!
-        contour_list, _ = findContours(copy_data.astype('uint8'), RETR_EXTERNAL, CHAIN_APPROX_NONE)
+        contour_list, _ = cv2.findContours(copy_data.astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # CHAIN_APPROX_NONE
         if contour_list:
             contour_dict[frame] = contour_list
     return contour_dict
 
 
-def create_graph(contour_dict, euclideanDistance=15):
-    from cv2 import pointPolygonTest
+def create_graph(contour_dict, euclidean_distance=15):
     # Create a graph
     G = {}
     # Now go through the contour_dict and for each contour, check if there's a matching contour in the adjacent frame
@@ -273,7 +272,7 @@ def create_graph(contour_dict, euclideanDistance=15):
                         coord2 = long_contour[0]
                         distance = coord1[0][0] - coord2[0][0]
                         # Taking a safe margin
-                        if distance <= 2 * euclideanDistance:
+                        if distance <= 2 * euclidean_distance:
                             match = False
                             # We iterate through all the coordinates in the short contour and test if
                             # they fall within or on the border of the larger contour. We stop comparing
@@ -281,7 +280,7 @@ def create_graph(contour_dict, euclideanDistance=15):
                             for coordinates in short_contour:
                                 if not match:
                                     coordinates = (coordinates[0][0], coordinates[0][1])
-                                    if pointPolygonTest(long_contour, coordinates, 0) > -1.0:
+                                    if cv2.pointPolygonTest(long_contour, coordinates, 0) > -1.0:
                                         match = True
                                         # Create a bi-directional edge between the two keys
                                         G[(frame, index1)].add((f, index2))
@@ -340,7 +339,7 @@ def track_contours_graph(data):
     contour_dict = find_contours(data)
     # Create a graph by connecting contours that have overlap with contours in the
     # previous frame
-    G = create_graph(contour_dict, euclideanDistance=15)
+    G = create_graph(contour_dict, euclidean_distance=15)
     # Search through the graph for all connected components
     contacts = search_graph(G, contour_dict)
     # Merge connected components using a minimal spanning tree, where

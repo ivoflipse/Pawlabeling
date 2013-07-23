@@ -277,6 +277,7 @@ class ProcessingWidget(QWidget):
         # Sort the contacts based on their position along the first dimension    
         self.paws[self.measurement_name] = sorted(self.paws[self.measurement_name], key=lambda paw: paw.frames[0])
 
+        print self.measurement.shape
         for index, paw in enumerate(self.paws[self.measurement_name]):
             data_slice = utility.convert_contour_to_slice(self.measurement, paw.contour_list)
             self.paw_data[self.measurement_name].append(data_slice)
@@ -284,6 +285,7 @@ class ProcessingWidget(QWidget):
             paw_label = -2
             # Test if the paw touches the edge of the plate
             if utility.touches_edges(self.measurement, paw, padding=True):
+                print paw.total_min_x, paw.total_min_y
                 paw_label = -3  # Mark it as invalid
             elif utility.incomplete_step(data_slice):
                 paw_label = -3

@@ -29,6 +29,7 @@ class Contact():
             self.width = int(abs(max_x - min_x))
             self.height = int(abs(max_y - min_y))
             self.length = len(self.frames)
+            print min_x, min_y
             self.total_min_x, self.total_max_x = int(min_x), int(max_x)
             self.total_min_y, self.total_max_y = int(min_y), int(max_y)
             self.total_centroid = (int(center[0]), int(center[1]))
@@ -483,7 +484,7 @@ class ImageColorTable():
                         color_table[val] = interpolate_rgb(self.orange, self.orange_threshold,
                                                            self.red, self.red_threshold, val)
                     else:
-                        print "Holy crap batman!"
+                        print "Holy crap batman! There's an error in your color table"
         return color_table
 
 
@@ -504,7 +505,7 @@ def incomplete_step(data_slice):
     pressure_over_time = np.sum(np.sum(data_slice, axis=0), axis=0)
     max_pressure = np.max(pressure_over_time)
     incomplete = False
-    if pressure_over_time[0] > (0.1 * max_pressure) or pressure_over_time[-1] > (0.1 * max_pressure):
+    if pressure_over_time[0] > (0.25 * max_pressure) or pressure_over_time[-1] > (0.25 * max_pressure):
         incomplete = True
     return incomplete
 
@@ -525,7 +526,6 @@ def agglomerative_clustering(data, num_clusters):
         for index2, trial2 in enumerate(data):
             if index1 != index2:
                 dist = np.sum(np.sqrt((trial1 - trial2) ** 2))
-                #dist = np.sum(trial1 - trial2)
                 distances[index1][index2] = dist
                 heapq.heappush(heap, (dist, (index1, index2)))
 
@@ -538,7 +538,6 @@ def agglomerative_clustering(data, num_clusters):
 
         if leader1 != leader2 and index1 not in explored:
             explored.add(index1)
-            #explored.add(index2)
             for node in clusters[leader2]:
                 clusters[leader1].add(node)
                 leaders[node] = leader1
