@@ -26,13 +26,12 @@ class Contact():
                 self.contour_list[frame] = contact[frame]
 
             center, min_x, max_x, min_y, max_y = update_bounding_box(contact)
-            self.width = int(round(abs(max_x - min_x)))
-            self.height = int(round(abs(max_y - min_y)))
+            self.width = int(abs(max_x - min_x))
+            self.height = int(abs(max_y - min_y))
             self.length = len(self.frames)
-            print min_x, min_y
-            self.total_min_x, self.total_max_x = int(round(min_x)), int(round(max_x))
-            self.total_min_y, self.total_max_y = int(round(min_y)), int(round(max_y))
-            self.total_centroid = (int(round(center[0])), int(round(center[1])))
+            self.total_min_x, self.total_max_x = int(min_x), int(max_x)
+            self.total_min_y, self.total_max_y = int(min_y), int(max_y)
+            self.total_centroid = (int(center[0]), int(center[1]))
         else:
             self.restore(contact)
 
@@ -69,81 +68,13 @@ class Contact():
             for index, contour in enumerate(self.contour_list[frame]):
                 print("Contour %s: %s" % (index, "".join([str(c) for c in contour])))
 
-
-def normalize_paw_data(paw_data):
-    mx = 100
-    my = 100
-
-    x, y, z = paw_data.shape
-    offset_x, offset_y = int(round((mx - x) / 2)), int(round((my - y) / 2))
-    average_slice = np.zeros((mx, my))
-    average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = paw_data.max(axis=2)
-    return average_slice
-
-
-def calculate_average_data(paw_data):
-    mx = 100
-    my = 100
-    mz = 100
-    # Get the max shape
-    for data in paw_data:
-        x, y, z = data.shape
-        if x > mx:
-            mx = x
-        if y > my:
-            my = y
-        if z > mz:
-            mz = z
-
-    # Pad everything with zeros
-    empty_slice = np.zeros((mx, my, mz))
-    padded_data = []
-    for data in paw_data:
-        x, y, z = data.shape
-        offset_x = int(round((mx - x) / 2))
-        offset_y = int(round((my - y) / 2))
-        # Create a deep copy of the empty array to fill up
-        padded_slice = empty_slice.copy()
-        padded_slice[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = data
-        padded_data.append(padded_slice)
-
-    return np.array(padded_data)
-
-
-def calculate_bounding_box(contour):
-    """
-    This function calculates the bounding box based on an individual contour
-    For this is uses OpenCV's area rectangle, which fits a rectangle around a
-    contour. Depending on the 'angle' of the rectangle, I switch around the
-    definition of the width and length, so it lines up with the orientation
-    of the plate. By subtracting the halves of the center, we get the extremes.
-    """
-    # Calculate a minimum bounding rectangle, can be rotated!
-    from cv2 import minAreaRect
-
-    center, size, angle = minAreaRect(contour)
-    if -45 <= angle <= 45:
-        width, length = size
-    else:
-        length, width = size
-
-    x, y = center
-    x_distance = int(width / 2)
-    y_distance = int(length / 2)
-    # Calculate the distance from the center to the edges
-    min_x = x - x_distance
-    max_x = x + x_distance
-    min_y = y - y_distance
-    max_y = y + y_distance
-    return center, min_x, max_x, min_y, max_y
-
-
 def update_bounding_box(contact):
     """
     Given a contact, it will iterate through all the frames and calculate the bounding box
     It then compares the dimensions of the bounding box to determine the total shape of that
     contacts bounding box
     """
+    import cv2
     # Don't accept empty contacts
     assert len(contact) > 0
 
@@ -153,13 +84,15 @@ def update_bounding_box(contact):
     # For each contour, get the sizes
     for frame in list(contact.keys()):
         for contour in contact[frame]:
-            center, min_x, max_x, min_y, max_y = calculate_bounding_box(contour)
-            if min_x < total_min_x:
-                total_min_x = min_x
+            x, y, width, height = cv2.boundingRect(contour)
+            if x < total_min_x:
+                total_min_x = x
+            max_x = x + width
             if max_x > total_max_x:
                 total_max_x = max_x
-            if min_y < total_min_y:
-                total_min_y = min_y
+            if y < total_min_y:
+                total_min_y = y
+            max_y = y + height
             if max_y > total_max_y:
                 total_max_y = max_y
 
@@ -190,6 +123,44 @@ def standardize_paw(paw, std_num_x=20, std_num_y=20):
     zi -= zi.mean() #<- Helps distinguish front from hind paws...
     return zi
 
+def normalize_paw_data(paw_data):
+    mx = 100
+    my = 100
+
+    x, y, z = paw_data.shape
+    offset_x, offset_y = int((mx - x) / 2), int((my - y) / 2)
+    average_slice = np.zeros((mx, my))
+    average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = paw_data.max(axis=2)
+    return average_slice
+
+
+def calculate_average_data(paw_data):
+    mx = 100
+    my = 100
+    mz = 100
+    # Get the max shape
+    for data in paw_data:
+        x, y, z = data.shape
+        if x > mx:
+            mx = x
+        if y > my:
+            my = y
+        if z > mz:
+            mz = z
+
+    # Pad everything with zeros
+    empty_slice = np.zeros((mx, my, mz))
+    padded_data = []
+    for data in paw_data:
+        x, y, z = data.shape
+        offset_x = int((mx - x) / 2)
+        offset_y = int((my - y) / 2)
+        # Create a deep copy of the empty array to fill up
+        padded_slice = empty_slice.copy()
+        padded_slice[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = data
+        padded_data.append(padded_slice)
+
+    return np.array(padded_data)
 
 def find_max_shape(data, data_slices):
     mx, my = 0, 0
@@ -253,6 +224,7 @@ def convert_contour_to_slice(data, contact):
     if max_y1 > y:
         max_y1 = y
 
+    print min_x1, max_x1, min_y1, max_y1, min_z, max_z
     return newData[min_x1:max_x1, min_y1:max_y1, min_z:max_z]
 
 
@@ -344,24 +316,24 @@ def array_to_qimage(array, color_table):
     return result
 
 
-def get_QPixmap(data, degree, n_max, color_table, interpolation="cubic"):
+def get_QPixmap(data, degree, n_max, color_table, interpolation="nearest"):
     """
     This function expects a single frame, it will interpolate/resize it with a given degree and
     return a pixmap
     """
-    from cv2 import resize, INTER_LINEAR, INTER_CUBIC, INTER_NEAREST
+    import cv2
     # Need the sizes before reshaping
     width, height = data.shape
 
     if interpolation == "linear":
-        interpolation = INTER_LINEAR
+        interpolation = cv2.INTER_LINEAR
     elif interpolation == "nearest":
-        interpolation = INTER_NEAREST
+        interpolation = cv2.INTER_NEAREST
     elif interpolation == "cubic":
-        interpolation = INTER_CUBIC
+        interpolation = cv2.INTER_CUBIC
 
     # This can be used to interpolate, but it doesn't seem to work entirely correct yet...
-    data = resize(data, (height * degree, width * degree), interpolation=interpolation)
+    data = cv2.resize(data, (height * degree, width * degree), interpolation=interpolation)
     # Normalize the data
     data = normalize(data, n_max)
     # Convert it from numpy to qimage
