@@ -18,8 +18,9 @@ import processingwidget, analysiswidget
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        self.setGeometry(configuration.main_window_size)
-        self.center()
+        # This will simply set the screen size to whatever is maximally possible,
+        # while leaving the menubar + taskbar visible
+        self.showMaximized()
         self.setWindowTitle("Paw Labeling tool")
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), "images\\pawlabeling.png")))
 
