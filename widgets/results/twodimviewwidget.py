@@ -7,7 +7,7 @@ from settings import configuration
 from functions import utility
 
 class TwoDimViewWidget(QtGui.QWidget):
-    def __init__(self, parent, degree):
+    def __init__(self, parent):
         super(TwoDimViewWidget, self).__init__(parent)
         self.label = QtGui.QLabel("2D View")
         self.parent = parent

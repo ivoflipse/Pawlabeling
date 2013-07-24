@@ -50,7 +50,7 @@ class EntirePlateWidget(QtGui.QWidget):
                                                       shortcut=QtGui.QKeySequence(QtCore.Qt.Key_Left),
                                                       icon=QtGui.QIcon(
                                                           os.path.join(os.path.dirname(__file__),
-                                                                       "widgets/images/arrow-left-icon.png")),
+                                                                       "images/arrow-left-icon.png")),
                                                       tip="Move the slider to the left",
                                                       checkable=False,
                                                       connection=self.slide_to_left
@@ -59,7 +59,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.slide_to_right_action = gui.create_action(text="Slide Right",
                                                        shortcut=QtGui.QKeySequence(QtCore.Qt.Key_Right),
                                                        icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                               "widgets/images/arrow-right-icon.png")),
+                                                                               "images/arrow-right-icon.png")),
                                                        tip="Move the slider to the right",
                                                        checkable=False,
                                                        connection=self.slide_to_right
@@ -68,7 +68,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.fast_backward_action = gui.create_action(text="Fast Back",
                                                       shortcut=QtGui.QKeySequence.MoveToNextWord,#QKeySequence(Qt.CTRL + Qt.Key_Left),
                                                       icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                              "widgets/images/arrow-left-icon.png")),
+                                                                              "images/arrow-left-icon.png")),
                                                       tip="Move the slider to the left faster",
                                                       checkable=False,
                                                       connection=self.fast_backward
@@ -77,7 +77,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.fast_forward_action = gui.create_action(text="Fast Forward",
                                                      shortcut=QtGui.QKeySequence.MoveToPreviousWord, #QKeySequence(Qt.CTRL + Qt.Key_Right),
                                                      icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                             "widgets/images/arrow-right-icon.png")),
+                                                                             "images/arrow-right-icon.png")),
                                                      tip="Move the slider to the right faster",
                                                      checkable=False,
                                                      connection=self.fast_forward
@@ -172,7 +172,6 @@ class EntirePlateWidget(QtGui.QWidget):
         else:
             current_paw = 0
 
-        # TODO these can go out of bounds, so cap them at the max dimensions, kthnxbye!
         polygon = QtGui.QPolygonF(
             [QtCore.QPointF((paw.total_min_x - current_paw) * self.degree, (paw.total_min_y - current_paw) * self.degree),
              QtCore.QPointF((paw.total_max_x + current_paw) * self.degree, (paw.total_min_y - current_paw) * self.degree),

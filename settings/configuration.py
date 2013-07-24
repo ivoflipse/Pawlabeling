@@ -1,6 +1,9 @@
 import os
 import sys
 from PySide import QtGui, QtCore
+import logging
+
+app_name = "Paw Labeling tool"
 
 # Lookup table for converting indices to labels
 paw_dict = {
@@ -53,7 +56,6 @@ if not os.path.exists(store_results_folder):
     os.mkdir(store_results_folder)
 
 brand = "rsscan"
-# TODO use this if you start displaying results and want to display actual milliseconds
 frequency = 124
 
 if brand == "rsscan":
@@ -91,7 +93,38 @@ else:
 # Decrease this value if you have a smaller screen
 degree = 4
 
-# Change the output to a logging file if you want to enable logging
-# TODO what happens if this gets imported multiple times and I would change the logging to something different?
-logging = True
-print_location = sys.stdout
+logger_name = "pawlabeling"
+logging_levels = {
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+    "critical": logging.CRITICAL
+}
+# Choose from: debug, info, warning, error, critical
+level = "debug"
+logging_level = logging_levels.get(level, "debug")
+
+def setup_logging():
+    # create logger with the application
+    logger = logging.getLogger(logger_name)
+
+    # Add the lower check just in case
+    logger.setLevel(logging_level)
+    # create file handler which logs even debug messages
+    file_handler = logging.FileHandler("pawlabeling.log")
+    file_handler.setLevel(logging_level)
+
+    # create console handler with a higher log level
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.WARNING)
+
+    # create formatter and add it to the handlers
+    file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    console_formatter = logging.Formatter('%(levelname)s - %(filename)s - Line: %(lineno)d - %(message)s')
+    console_handler.setFormatter(console_formatter)
+    file_handler.setFormatter(file_formatter)
+
+    # add the handlers to the logger
+    logger.addHandler(file_handler)
+    return logger

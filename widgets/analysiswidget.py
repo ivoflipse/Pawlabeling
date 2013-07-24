@@ -89,7 +89,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         ## IO Functions
 
     def add_measurements(self):
-        import zipfile
         # Clear any existing file names
         self.file_names.clear()
         # Clear any existing measurements
@@ -100,8 +99,6 @@ class AnalysisWidget(QtGui.QTabWidget):
             if not dirs:
                 # Add the name of the dog
                 dog_name = root.split("\\")[-1]
-                # Create a tree item
-                root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
                 # Create a dictionary to store all the measurements for each dog
                 self.file_names[dog_name] = {}
                 for index, file_name in enumerate(files):
@@ -201,7 +198,6 @@ class AnalysisWidget(QtGui.QTabWidget):
     def change_frame(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))
         self.frame = frame
-        # TODO broadcast the new frame number
         # The frame number should be based on the actual data, perhaps check the tree or cache it
         self.results_widget.change_frame(frame)
 

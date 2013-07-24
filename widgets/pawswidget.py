@@ -125,7 +125,7 @@ class PawsWidget(QtGui.QWidget):
             for p, s, d, d2 in zip(percentages_pressures, percentages_surfaces, percentages_durations,
                                    percentages_data):
                 results.append(p + s + d + d2)
-                # TODO I'm also not so satisfied with this heuristic, though it might get better with more data
+
             best_result = np.argmin(results)
             current_paw.label_prediction.setText("{}".format(self.paw_dict[best_result]))
 

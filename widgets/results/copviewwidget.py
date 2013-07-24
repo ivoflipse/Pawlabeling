@@ -6,9 +6,6 @@ from PySide import QtGui, QtCore
 from settings import configuration
 from functions import utility, calculations
 
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-
 class CopViewWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(CopViewWidget, self).__init__(parent)
@@ -136,13 +133,14 @@ class PawView(QtGui.QWidget):
         self.dot_pen.setWidth(2)
         self.dot_brush = QtGui.QBrush(QtCore.Qt.white)
 
-        # TODO figure out how to pick a better value for this, so the line is still visible
+        # This value determines how many points of the COP are being plotted.
         self.x = 15
 
         num_paws = len(paw_data)
         cop_xs = np.zeros((num_paws, self.x))
         cop_ys = np.zeros((num_paws, self.x))
         for index, data in enumerate(paw_data):
+            # I first interpolated using the length, but then I switched to a default for now. Fix later
             x, y, z = data.shape
             # Reversing the left-right direction. I should really figure out where this is coming from
             cop_x, cop_y = calculations.calculate_cop(np.rot90(np.rot90(data[:,::-1,:])))
@@ -151,6 +149,9 @@ class PawView(QtGui.QWidget):
 
         average_cop_x = np.mean(cop_xs, axis=0)
         average_cop_y = np.mean(cop_ys, axis=0)
+        # Initialize these values just in case
+        x1, x2, y1, y2 = 0, 0, 0, 0
+
         for frame in range(len(average_cop_x)-1):
             x1 = average_cop_x[frame]
             x2 = average_cop_x[frame+1]

@@ -83,15 +83,17 @@ def load(file_name, brand=configuration.brand):
     # Load the zipped contents and pass them to the load functions
     infile = zipfile.ZipFile(file_name, "r")
     for file_name in infile.namelist():
-        input = infile.read(file_name)
+        input_file = infile.read(file_name)
 
+    data = None
     # This way you wouldn't have to specify it, it would just try, fail and return
     try:
-        data = load_rsscan(input)
-    except Exception, e:
-        data = load_zebris(input)
+        data = load_rsscan(input_file)
+    except Exception, e:  # I'm expecting this to fail on anything not RSscan like
+        data = load_zebris(input_file)
     finally:
         return data
+
     # # Note that input is a string, not a file
     # if brand == "rsscan":
     #     return load_rsscan(input)

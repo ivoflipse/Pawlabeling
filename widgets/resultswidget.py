@@ -7,7 +7,7 @@ class ResultsWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(ResultsWidget, self).__init__(parent)
 
-        self.two_dim_view_widget = twodimviewwidget.TwoDimViewWidget(self, degree=4)
+        self.two_dim_view_widget = twodimviewwidget.TwoDimViewWidget(self)
         self.pressure_view_widget = pressureviewwidget.PressureViewWidget(self)
         self.force_view_widget = forceviewwidget.ForceViewWidget(self)
         self.cop_view_widget = copviewwidget.CopViewWidget(self)

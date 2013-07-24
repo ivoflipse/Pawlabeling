@@ -84,7 +84,6 @@ class ProcessingWidget(QtGui.QWidget):
 
     ## IO Functions
     def add_measurements(self):
-        import zipfile
         # Clear any existing file names
         self.file_names.clear()
         # Clear any existing measurements
@@ -104,7 +103,6 @@ class ProcessingWidget(QtGui.QWidget):
                 for index, file_name in enumerate(files):
                     # Check if the file isn't compressed, else zip it and delete the original after loading
                     base_name, extension = os.path.splitext(file_name)
-                    # TODO I shouldn't delete if I can't confirm I have the zip file
                     if extension != ".zip":
                         file_path = os.path.join(root, file_name)
                         io.convert_file_to_zip(file_path)
@@ -125,7 +123,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
         self.load_file()
 
-    # TODO split this function into more reusable parts
     def load_file(self):
         # Get the text from the currentItem
         self.currentItem = self.measurement_tree.currentItem()
@@ -425,7 +422,6 @@ class ProcessingWidget(QtGui.QWidget):
 
     def add_contacts(self):
         # Print how many contacts we found
-        # TODO move this to some logging library
         print("Number of paws found: {}".format(len(self.paws[self.measurement_name])))
         print("Starting frames: {}".format(" ".join([str(paw.frames[0]) for paw in self.paws[self.measurement_name]])))
 

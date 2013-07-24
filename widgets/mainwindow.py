@@ -5,7 +5,6 @@ from PySide import QtGui, QtCore
 from settings import configuration
 import processingwidget, analysiswidget
 
-
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -30,7 +29,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.setCentralWidget(self.tab_widget)
 
-        # TODO call this function when you switch tabs
         # Load all the measurements into the measurement tree
         self.processing_widget.add_measurements()
         # Then load the first measurement
@@ -40,13 +38,15 @@ class MainWindow(QtGui.QMainWindow):
 
         self.tab_widget.currentChanged.connect(self.change_tabs)
 
+        self.logger = configuration.setup_logging()
+
     def center(self):
         qr = self.frameGeometry()
         cp = QtGui.QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def change_tabs(self, event):
+    def change_tabs(self, event=None):
         # If the tab is the first tab, reload the measurements
         if self.tab_widget.currentIndex() == 0:
             self.processing_widget.add_measurements()
@@ -56,7 +56,6 @@ class MainWindow(QtGui.QMainWindow):
             self.analysis_widget.load_first_file()
 
 
-    # TODO make sure that the tree does NOT do this
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.KeyPress:
             if event.matches(QtGui.QKeySequence.MoveToNextWord):

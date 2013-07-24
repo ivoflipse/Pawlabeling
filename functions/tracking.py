@@ -230,7 +230,8 @@ def find_contours(data):
         # Threshold the data
         _, copy_data = cv2.threshold(copy_data, 0.0, 1, cv2.THRESH_BINARY)
         # The astype conversion here is quite expensive!
-        contour_list, _ = cv2.findContours(copy_data.astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # CHAIN_APPROX_NONE
+        # Also replaced # CHAIN_APPROX_NONE with CHAIN APPROX SIMPLE
+        contour_list, _ = cv2.findContours(copy_data.astype('uint8'), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if contour_list:
             contour_dict[frame] = contour_list
     return contour_dict
