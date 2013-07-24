@@ -93,6 +93,7 @@ class PawView(QtGui.QWidget):
         self.color_table = self.image_color_table.create_color_table()
 
         self.cop_lines = []
+        self.cop_ellipses = []
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
@@ -162,10 +163,10 @@ class PawView(QtGui.QWidget):
                                  QtCore.QPointF(x2 * self.degree, y2 * self.degree))
 
             self.cop_lines.append(self.scene.addLine(line, self.line_pen))
-            self.cop_lines.append(self.scene.addEllipse(x1 * self.degree, y1 * self.degree,
+            self.cop_ellipses.append(self.scene.addEllipse(x1 * self.degree, y1 * self.degree,
                                                        5, 5, self.dot_pen, self.dot_brush))
 
-        self.cop_lines.append(self.scene.addEllipse(x2 * self.degree, y2 * self.degree,
+        self.cop_ellipses.append(self.scene.addEllipse(x2 * self.degree, y2 * self.degree,
                                                     5, 5, self.dot_pen, self.dot_brush))
 
     def draw_frame(self):
@@ -182,10 +183,22 @@ class PawView(QtGui.QWidget):
 
     def change_frame(self, frame):
         self.frame = frame
+        # If we're not displaying the empty array
+        if self.max_of_max.shape != (self.mx, self.my):
+            self.draw_frame()
 
     def clear_paws(self):
+        self.sliced_data = np.zeros((self.mx, self.my))
+        self.average_data = self.sliced_data
+        self.max_of_max = self.sliced_data
+        self.min_x, self.max_x, self.min_y, self.max_y = 0, self.mx, 0, self.my
         # Put the screen to black
         self.image.setPixmap(utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.n_max, self.color_table))
+        for point in self.cop_ellipses:
+            self.scene.removeItem(point)
+        self.cop_ellipses = []
+
         for cop in self.cop_lines:
             self.scene.removeItem(cop)
         self.cop_lines = []
+

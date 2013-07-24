@@ -118,7 +118,7 @@ class PawView(QtGui.QWidget):
         if self.frame == -1:
             self.sliced_data = self.max_of_max[self.min_x:self.max_x,self.min_y:self.max_y]
         else:
-            self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y,self.frame]
+            self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y, self.frame]
 
         # Make sure the paws are facing upright
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
@@ -129,7 +129,9 @@ class PawView(QtGui.QWidget):
 
     def change_frame(self, frame):
         self.frame = frame
-        self.draw_frame()
+        # If we're not displaying the empty array
+        if self.max_of_max.shape != (self.mx, self.my):
+            self.draw_frame()
 
     def clear_paws(self):
         self.sliced_data = np.zeros((self.mx, self.my))
