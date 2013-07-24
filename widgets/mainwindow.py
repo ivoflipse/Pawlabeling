@@ -1,11 +1,3 @@
-#-----------------------------------------------------------------------------
-# Copyright (c) 2013, Paw Labeling Development Team.
-#
-# Distributed under the terms of the Modified BSD License.
-#
-# The full license is in the file COPYING.txt, distributed with this software.
-#-----------------------------------------------------------------------------
-
 import sys
 import os
 
@@ -22,7 +14,8 @@ class MainWindow(QMainWindow):
         self.setGeometry(configuration.main_window_size)
         # This will simply set the screen size to whatever is maximally possible,
         # while leaving the menubar + taskbar visible
-        self.showMaximized()
+        if not configuration.desktop:
+            self.showMaximized()
         self.setWindowTitle("Paw Labeling tool")
         self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), "images\\pawlabeling.png")))
 

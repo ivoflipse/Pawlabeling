@@ -1,11 +1,3 @@
-#-----------------------------------------------------------------------------
-# Copyright (c) 2013, Paw Labeling Development Team.
-#
-# Distributed under the terms of the Modified BSD License.
-#
-# The full license is in the file COPYING.txt, distributed with this software.
-#-----------------------------------------------------------------------------
-
 import numpy as np
 import cv2
 from functions.utility import update_bounding_box

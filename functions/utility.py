@@ -1,11 +1,3 @@
-#-----------------------------------------------------------------------------
-# Copyright (c) 2013, Paw Labeling Development Team.
-#
-# Distributed under the terms of the Modified BSD License.
-#
-# The full license is in the file COPYING.txt, distributed with this software.
-#-----------------------------------------------------------------------------
-
 from PySide.QtCore import *
 from PySide.QtGui import *
 import numpy as np
@@ -224,7 +216,6 @@ def convert_contour_to_slice(data, contact):
     if max_y1 > y:
         max_y1 = y
 
-    print min_x1, max_x1, min_y1, max_y1, min_z, max_z
     return newData[min_x1:max_x1, min_y1:max_y1, min_z:max_z]
 
 

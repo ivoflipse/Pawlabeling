@@ -1,11 +1,3 @@
-#-----------------------------------------------------------------------------
-# Copyright (c) 2013, Paw Labeling Development Team.
-#
-# Distributed under the terms of the Modified BSD License.
-#
-# The full license is in the file COPYING.txt, distributed with this software.
-#-----------------------------------------------------------------------------
-
 import os
 import json
 from collections import defaultdict
@@ -272,13 +264,14 @@ class ProcessingWidget(QWidget):
         # Convert them to class objects
         for index, paw in enumerate(paws):
             paw = utility.Contact(paw)
-            self.paws[self.measurement_name].append(paw)
+            # Skip paws that have only been around for one frame
+            if len(paw.frames) > 1:
+                self.paws[self.measurement_name].append(paw)
 
         # Sort the contacts based on their position along the first dimension    
         self.paws[self.measurement_name] = sorted(self.paws[self.measurement_name], key=lambda paw: paw.frames[0])
 
         for index, paw in enumerate(self.paws[self.measurement_name]):
-            print paw.total_min_x, paw.total_max_x, paw.total_min_y, paw.total_max_y, paw.frames[0], paw.frames[-1]
             data_slice = utility.convert_contour_to_slice(self.measurement, paw.contour_list)
             self.paw_data[self.measurement_name].append(data_slice)
             # I've made -2 the label for unlabeled paws, -1 == unlabeled + selected
