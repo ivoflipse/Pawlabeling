@@ -5,7 +5,7 @@ import numpy as np
 
 from functions import utility
 from settings import configuration
-
+import logging
 
 class PawsWidget(QtGui.QWidget):
     def __init__(self, parent):
@@ -26,6 +26,8 @@ class PawsWidget(QtGui.QWidget):
             3: self.right_hind,
             -1: self.current_paw
         }
+
+        self.logger = logging.getLogger("logger")
 
         self.paw_dict = configuration.paw_dict
         # This sets every widget to a zero image and initializes paws
@@ -86,7 +88,7 @@ class PawsWidget(QtGui.QWidget):
         try:
             self.predict_label()
         except Exception as e:
-            print(e)
+            self.logger("Couldn't predict the labels. Exception: {}".format(e))
 
 
     def predict_label(self):

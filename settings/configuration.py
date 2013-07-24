@@ -93,7 +93,6 @@ else:
 # Decrease this value if you have a smaller screen
 degree = 4
 
-logger_name = "pawlabeling"
 logging_levels = {
     "debug": logging.DEBUG,
     "info": logging.INFO,
@@ -107,12 +106,12 @@ logging_level = logging_levels.get(level, "debug")
 
 def setup_logging():
     # create logger with the application
-    logger = logging.getLogger(logger_name)
+    logger = logging.getLogger("logger")
 
     # Add the lower check just in case
     logger.setLevel(logging_level)
     # create file handler which logs even debug messages
-    file_handler = logging.FileHandler("pawlabeling.log")
+    file_handler = logging.FileHandler("pawlabeling_log.log")
     file_handler.setLevel(logging_level)
 
     # create console handler with a higher log level
@@ -127,4 +126,10 @@ def setup_logging():
 
     # add the handlers to the logger
     logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+
+    logger.info("-----------------------------------")
+    logger.info("Log system successfully initialised")
+    logger.info("-----------------------------------")
+
     return logger

@@ -1,9 +1,11 @@
 import sys
 import os
+import logging
 
 from PySide import QtGui, QtCore
 from settings import configuration
 import processingwidget, analysiswidget
+from functions.pubsub import pub
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -40,6 +42,8 @@ class MainWindow(QtGui.QMainWindow):
 
         self.logger = configuration.setup_logging()
 
+        pub.subscribe(self.change_status, "update_statusbar")
+
     def center(self):
         qr = self.frameGeometry()
         cp = QtGui.QDesktopWidget().availableGeometry().center()
@@ -54,6 +58,10 @@ class MainWindow(QtGui.QMainWindow):
         if self.tab_widget.currentIndex() == 1:
             self.analysis_widget.add_measurements()
             self.analysis_widget.load_first_file()
+
+    def change_status(self, status):
+        print status
+        self.status.showMessage(status)
 
 
     def eventFilter(self, obj, event):
@@ -70,6 +78,8 @@ class MainWindow(QtGui.QMainWindow):
             elif event.key() == QtCore.Qt.Key_Right:
                 self.processing_widget.entire_plate_widget.slide_to_right()
                 return True
+            else:
+                return False
         else:
             return False
 
@@ -80,6 +90,9 @@ def main():
     window.show()
     window.raise_()
     app.exec_()
+
+    logger = logging.getLogger("logger")
+    logger.info("Application Shutdown\n")
 
 
 if __name__ == "__main__":

@@ -7,6 +7,8 @@ from PySide import QtGui, QtCore
 from widgets import entireplatewidget, pawswidget
 from settings import configuration
 from functions import io, tracking, utility, gui
+from functions.pubsub import pub
+import logging
 
 
 class ProcessingWidget(QtGui.QWidget):
@@ -18,6 +20,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.frame = 0
         self.n_max = 0
         self.dog_name = ""
+
+        self.logger = logging.getLogger("logger")
 
         # Initialize our variables that will cache results
         self.average_data = defaultdict(list)
@@ -82,7 +86,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
-    ## IO Functions
     def add_measurements(self):
         # Clear any existing file names
         self.file_names.clear()
@@ -139,11 +142,11 @@ class ProcessingWidget(QtGui.QWidget):
             self.clear_cached_values()
 
         # Pass the new measurement through to the widget
-        data = io.load(self.file_name,  brand=configuration.brand)
+        data = io.load(self.file_name, brand=configuration.brand)
         # I have to add padding globally again, because it messes up everything downstream
         # Pad the data, so it will find things that touch the edges
         x, y, z = data.shape
-        self.measurement = np.zeros((x+2, y+2, z), np.float32)
+        self.measurement = np.zeros((x + 2, y + 2, z), np.float32)
         self.measurement[1:-1, 1:-1, :] = data
 
         # Check the orientation of the plate and make sure its left to right
@@ -238,16 +241,17 @@ class ProcessingWidget(QtGui.QWidget):
         try:
             io.results_to_json(self.new_path, self.dog_name, self.measurement_name,
                                self.paw_labels, self.paws, self.paw_data)
-            print("The results have been stored")
+            self.logger.info("Results for {} have been successfully saved".format(self.measurement_name))
+            pub.sendMessage("update_statusbar", status="Results saved")
             # Change the color of the measurement in the tree to green
             treeBrush = QtGui.QBrush(QtGui.QColor(46, 139, 87)) # RGB Sea Green
             self.currentItem.setForeground(0, treeBrush)
         except Exception as e:
-            print("Storing failed!", e)
+            self.logger.critical("Storing failed! {}".format(e))
+            pub.sendMessage("update_statusbar", status="Storing results failed!")
 
-    ## Tracking
     def track_contacts(self):
-        print("Track!")
+        pub.sendMessage("update_statusbar", status="Starting tracking")
         paws = tracking.track_contours_graph(self.measurement)
 
         # Make sure we don't have any paws stored if we're tracking again
@@ -278,8 +282,9 @@ class ProcessingWidget(QtGui.QWidget):
             self.paw_labels[self.measurement_name][index] = paw_label
 
         self.initialize_widgets()
+        status = "Number of paws found: {}".format(len(self.paws[self.measurement_name]))
+        pub.sendMessage("update_statusbar", status=status)
 
-    ## GUI
     def initialize_widgets(self):
         # Add the paws to the contact_tree
         self.add_contacts()
@@ -342,7 +347,7 @@ class ProcessingWidget(QtGui.QWidget):
 
     def update_current_paw(self):
         if (self.current_paw_index <= len(self.paws[self.measurement_name]) and
-            len(self.paws[self.measurement_name]) > 0):
+                    len(self.paws[self.measurement_name]) > 0):
             for index, paw_label in self.paw_labels[self.measurement_name].items():
                 # Get the current row from the tree
                 item = self.contact_tree.topLevelItem(index)
@@ -421,10 +426,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.update_current_paw()
 
     def add_contacts(self):
-        # Print how many contacts we found
-        print("Number of paws found: {}".format(len(self.paws[self.measurement_name])))
-        print("Starting frames: {}".format(" ".join([str(paw.frames[0]) for paw in self.paws[self.measurement_name]])))
-
         # Clear any existing contacts
         self.contact_tree.clear()
         for index, paw in enumerate(self.paw_data[self.measurement_name]):
@@ -464,7 +465,8 @@ class ProcessingWidget(QtGui.QWidget):
 
         self.left_front_action = gui.create_action(text="Select Left Front",
                                                    shortcut=configuration.left_front,
-                                                   icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
+                                                   icon=QtGui.QIcon(
+                                                       os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
                                                    tip="Select the Left Front paw",
                                                    checkable=False,
                                                    connection=self.select_left_front
@@ -472,7 +474,8 @@ class ProcessingWidget(QtGui.QWidget):
 
         self.left_hind_action = gui.create_action(text="Select Left Hind",
                                                   shortcut=configuration.left_hind,
-                                                  icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
+                                                  icon=QtGui.QIcon(
+                                                      os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
                                                   tip="Select the Left Hind paw",
                                                   checkable=False,
                                                   connection=self.select_left_hind
@@ -481,7 +484,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.right_front_action = gui.create_action(text="Select Right Front",
                                                     shortcut=configuration.right_front,
                                                     icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                            "images/RF-icon.png")),
+                                                                                  "images/RF-icon.png")),
                                                     tip="Select the Right Front paw",
                                                     checkable=False,
                                                     connection=self.select_right_front

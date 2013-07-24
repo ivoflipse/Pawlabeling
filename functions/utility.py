@@ -1,6 +1,7 @@
 from PySide import QtGui, QtCore
 import numpy as np
-
+import logging
+logger = logging.getLogger("logger")
 
 class Contact():
     """
@@ -59,6 +60,7 @@ class Contact():
             for index, contour in enumerate(self.contour_list[frame]):
                 print("Contour %s: %s" % (index, "".join([str(c) for c in contour])))
 
+
 def update_bounding_box(contact):
     """
     Given a contact, it will iterate through all the frames and calculate the bounding box
@@ -114,6 +116,7 @@ def standardize_paw(paw, std_num_x=20, std_num_y=20):
     zi -= zi.mean() #<- Helps distinguish front from hind paws...
     return zi
 
+
 def normalize_paw_data(paw_data):
     mx = 100
     my = 100
@@ -152,6 +155,7 @@ def calculate_average_data(paw_data):
         padded_data.append(padded_slice)
 
     return np.array(padded_data)
+
 
 def find_max_shape(data, data_slices):
     mx, my = 0, 0
@@ -229,7 +233,8 @@ def contour_to_polygon(contour, degree, offset_x=0, offset_y=0):
         # If the contour has only a single point, add another point, that's right beside it
     if len(contour) == 1:
         polygon.append(QtCore.QPointF((coordinates[0][0] + 1 - offset_x) * degree,
-                               (coordinates[0][1] + 1 - offset_y) * degree)) # Pray this doesn't go out of bounds!
+                                      (
+                                      coordinates[0][1] + 1 - offset_y) * degree)) # Pray this doesn't go out of bounds!
     return QtGui.QPolygonF(polygon)
 
 
@@ -445,7 +450,8 @@ class ImageColorTable():
                         color_table[val] = interpolate_rgb(self.orange, self.orange_threshold,
                                                            self.red, self.red_threshold, val)
                     else:
-                        print "Holy crap batman! There's an error in your color table"
+                        logger.warning(
+                            "There's an error in your color table. This is likely caused by incorrect normalization")
         return color_table
 
 
@@ -576,9 +582,8 @@ def timeseries2symbol(data, N, n, alphabet_size):
     Use as: current_string = timeseries2symbol(data, data_len, nseg, alphabet_size)
     """
     from math import floor
-
     if alphabet_size > 20:
-        print("Alphabet is too large!")
+        logger.critical("The alphabet size for timeseries2symbol is too large.")
 
     win_size = int(floor(N / n))
     piecewise_aggregate_approximation = []  # Dummy variable
@@ -705,12 +710,13 @@ def min_dist(str1, str2, alphabet_size, compression_ratio):
     """
     if len(str1) != len(str2):
         print("Error: strings must have equal length!")
+        logger.critical("min_dist: Strings must have equal length")
         return
 
     # Wait does this check whether any of the chars
     # Matlab: if (any(str1 > alphabet_size) | any(str2 > alphabet_size))
     if any(str1 > alphabet_size) or any(str2 > alphabet_size):
-        print("Error: some symbols in the string exceed the alphabet_size!")
+        logger.critical("min_dist: Some symbols in the string exceed the alphabet_size")
         return
 
     distances = calc_distances(str1, str2, alphabet_size)

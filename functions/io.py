@@ -1,7 +1,11 @@
 import json
 import os
+import logging
 import numpy as np
+from functions.pubsub import pub
 from settings import configuration
+
+logger = logging.getLogger("logger")
 
 def calculate_distance(a, b):
     return np.linalg.norm(np.array(a) - np.array(b))
@@ -37,7 +41,10 @@ def load_zebris(infile):
     """
     frame_number = None
     data_slices = []
-    for line in iter(infile.splitlines()):
+    # Clean up the file
+    split_input = [line for line in infile.split("\n") if len(line) > 0]
+
+    for line in iter(split_input):
         # This should prevent it from splitting every line
         if frame_number:
             if line[0] == 'y':
@@ -78,27 +85,27 @@ def load_rsscan(infile):
     result = np.dstack(data_slices)
     return result
 
-def load(file_name, brand=configuration.brand):
+def load(file_name):
     import zipfile
+
     # Load the zipped contents and pass them to the load functions
     infile = zipfile.ZipFile(file_name, "r")
     for file_name in infile.namelist():
         input_file = infile.read(file_name)
 
-    data = None
-    # This way you wouldn't have to specify it, it would just try, fail and return
     try:
-        data = load_rsscan(input_file)
-    except Exception, e:  # I'm expecting this to fail on anything not RSscan like
-        data = load_zebris(input_file)
-    finally:
-        return data
+        return load_rsscan(input_file)
+    except Exception as e:
+        logger.info("Loading with RSscan format failed. Exception: {}".format(e))
 
-    # # Note that input is a string, not a file
-    # if brand == "rsscan":
-    #     return load_rsscan(input)
-    # if brand == "zebris":
-    #     return load_zebris(input)
+    try:
+        return load_zebris(input_file)
+    except Exception as e:
+        logger.info("Loading with Zebris format failed. Exception: {}".format(e))
+
+    pub.sendMessage("update_statusbar", status="Couldn't load file")
+    logger.warning("Couldn't load file. Please contact me for support.")
+
 
 def find_stored_file(dog_name, file_name):
     # Note that the file_name might have a ZIP exstension, so we'll ignore that for now
@@ -191,10 +198,13 @@ def convert_file_to_zip(file_path):
     outfile = zipfile.ZipFile(file_path + ".zip", "w")
     try:
         outfile.write(file_path, os.path.basename(file_path), compress_type=zipfile.ZIP_DEFLATED)
+    except Exception as e:
+        logger.critical("Couldn't write to ZIP file. Exception: {}".format(e))
+    try:
         # Remove the uncompressed file
         os.remove(file_path)  # Its possible that this file is open somewhere else, then everything might fail...
-    except Exception, e:
-        print e
+    except Exception as e:
+        logger.critical("Couldn't remove file original file. Exception: {}".format(e))
 
 
 
