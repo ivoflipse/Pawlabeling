@@ -64,6 +64,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.slider.setOrientation(Qt.Horizontal)
         self.slider.setMinimum(-1)
         self.slider.setMaximum(0)
+        self.slider.setValue(-1)
         self.slider.valueChanged.connect(self.change_frame)
         self.slider_text = QtGui.QLabel(self)
         self.slider_text.setText("Frame: -1")
@@ -99,6 +100,8 @@ class AnalysisWidget(QtGui.QTabWidget):
             if not dirs:
                 # Add the name of the dog
                 dog_name = root.split("\\")[-1]
+                # Create a tree item
+                root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
                 # Create a dictionary to store all the measurements for each dog
                 self.file_names[dog_name] = {}
                 for index, file_name in enumerate(files):
@@ -156,7 +159,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.add_contacts()
         self.results_widget.update_n_max(self.n_max)
         self.results_widget.update_widgets(self.paw_labels, self.paw_data, self.average_data)
-        self.change_frame(frame=-1)
 
     def add_contacts(self):
         self.contact_tree.clear()

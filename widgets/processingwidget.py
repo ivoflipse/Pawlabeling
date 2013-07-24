@@ -142,7 +142,7 @@ class ProcessingWidget(QtGui.QWidget):
             self.clear_cached_values()
 
         # Pass the new measurement through to the widget
-        data = io.load(self.file_name, brand=configuration.brand)
+        data = io.load(self.file_name)
         # I have to add padding globally again, because it messes up everything downstream
         # Pad the data, so it will find things that touch the edges
         x, y, z = data.shape

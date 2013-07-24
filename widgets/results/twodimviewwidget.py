@@ -102,7 +102,6 @@ class PawView(QtGui.QWidget):
     def update(self, paw_data, average_data):
         self.frame = -1
         self.max_of_max = np.mean(average_data, axis=0)
-
         # The result of calculate_average_data = (number of paws, rows, colums, frames)
         # so mean axis=0 is mean over all paws
         self.average_data = np.mean(utility.calculate_average_data(paw_data), axis=0)
@@ -124,6 +123,7 @@ class PawView(QtGui.QWidget):
         # Make sure the paws are facing upright
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
         self.sliced_data = self.sliced_data[:, ::-1]
+
         # Display the average data for the requested frame
         self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
 
@@ -132,6 +132,9 @@ class PawView(QtGui.QWidget):
         self.draw_frame()
 
     def clear_paws(self):
+        self.sliced_data = np.zeros((self.mx, self.my))
+        self.average_data = self.sliced_data
+        self.max_of_max = self.sliced_data
+        self.min_x, self.max_x, self.min_y, self.max_y = 0, self.mx, 0, self.my
         # Put the screen to black
         self.image.setPixmap(utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.n_max, self.color_table))
-

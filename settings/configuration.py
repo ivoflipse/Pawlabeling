@@ -59,8 +59,8 @@ brand = "rsscan"
 frequency = 124
 
 if brand == "rsscan":
-    sensor_width = 0.5
-    sensor_height = 0.7
+    sensor_width = 0.508
+    sensor_height = 0.762
 else:
     sensor_width = 1
     sensor_height = 1
@@ -119,7 +119,7 @@ def setup_logging():
     console_handler.setLevel(logging.WARNING)
 
     # create formatter and add it to the handlers
-    file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_formatter = logging.Formatter('%(asctime)s - %(name)% - %(levelname)s - %(message)s')
     console_formatter = logging.Formatter('%(levelname)s - %(filename)s - Line: %(lineno)d - %(message)s')
     console_handler.setFormatter(console_formatter)
     file_handler.setFormatter(file_formatter)

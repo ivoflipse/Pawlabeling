@@ -96,12 +96,12 @@ def load(file_name):
     try:
         return load_rsscan(input_file)
     except Exception as e:
-        logger.info("Loading with RSscan format failed. Exception: {}".format(e))
+        logger.debug("Loading with RSscan format failed. Exception: {}".format(e))
 
     try:
         return load_zebris(input_file)
     except Exception as e:
-        logger.info("Loading with Zebris format failed. Exception: {}".format(e))
+        logger.debug("Loading with Zebris format failed. Exception: {}".format(e))
 
     pub.sendMessage("update_statusbar", status="Couldn't load file")
     logger.warning("Couldn't load file. Please contact me for support.")
