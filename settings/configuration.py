@@ -1,7 +1,6 @@
 import os
 import sys
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide import QtGui, QtCore
 
 # Lookup table for converting indices to labels
 paw_dict = {
@@ -15,35 +14,35 @@ paw_dict = {
 }
 # Colors for displaying bounding boxes
 colors = [
-    QColor(Qt.green),
-    QColor(Qt.darkGreen),
-    QColor(Qt.red),
-    QColor(Qt.darkRed),
-    QColor(Qt.gray),
-    QColor(Qt.white),
-    QColor(Qt.yellow)
+    QtGui.QColor(QtCore.Qt.green),
+    QtGui.QColor(QtCore.Qt.darkGreen),
+    QtGui.QColor(QtCore.Qt.red),
+    QtGui.QColor(QtCore.Qt.darkRed),
+    QtGui.QColor(QtCore.Qt.gray),
+    QtGui.QColor(QtCore.Qt.white),
+    QtGui.QColor(QtCore.Qt.yellow)
 ]
 
 # Keyboard_shortcuts
 desktop = True
 if desktop:
-    left_front = QKeySequence(Qt.Key_7)
-    left_hind = QKeySequence(Qt.Key_1)
-    right_front = QKeySequence(Qt.Key_9)
-    right_hind = QKeySequence(Qt.Key_3)
-    previous_paw = QKeySequence(Qt.Key_4)
-    next_paw = QKeySequence(Qt.Key_6)
-    remove_label = QKeySequence(Qt.Key_5)
-    invalid_paw = QKeySequence(Qt.Key_Delete)
+    left_front = QtGui.QKeySequence(QtCore.Qt.Key_7)
+    left_hind = QtGui.QKeySequence(QtCore.Qt.Key_1)
+    right_front = QtGui.QKeySequence(QtCore.Qt.Key_9)
+    right_hind = QtGui.QKeySequence(QtCore.Qt.Key_3)
+    previous_paw = QtGui.QKeySequence(QtCore.Qt.Key_4)
+    next_paw = QtGui.QKeySequence(QtCore.Qt.Key_6)
+    remove_label = QtGui.QKeySequence(QtCore.Qt.Key_5)
+    invalid_paw = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
 else:
-    left_front = QKeySequence(Qt.Key_U)
-    left_hind = QKeySequence(Qt.Key_N)
-    right_front = QKeySequence(Qt.Key_O)
-    right_hind = QKeySequence(Qt.Key_Comma)
-    previous_paw = QKeySequence(Qt.Key_J)
-    next_paw = QKeySequence(Qt.Key_L)
-    remove_label = QKeySequence(Qt.Key_K)
-    invalid_paw = QKeySequence(Qt.Key_Delete)
+    left_front = QtGui.QKeySequence(QtCore.Qt.Key_U)
+    left_hind = QtGui.QKeySequence(QtCore.Qt.Key_N)
+    right_front = QtGui.QKeySequence(QtCore.Qt.Key_O)
+    right_hind = QtGui.QKeySequence(QtCore.Qt.Key_Comma)
+    previous_paw = QtGui.QKeySequence(QtCore.Qt.Key_J)
+    next_paw = QtGui.QKeySequence(QtCore.Qt.Key_L)
+    remove_label = QtGui.QKeySequence(QtCore.Qt.Key_K)
+    invalid_paw = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
 
 
 # The first measurement_folder is the folder which stores all the measurement files
@@ -72,7 +71,7 @@ if desktop:
     main_window_top = 25
     main_window_width = 1400
     main_window_height = 900
-    main_window_size = QRect(main_window_left, main_window_top, main_window_width, main_window_height)
+    main_window_size = QtCore.QRect(main_window_left, main_window_top, main_window_width, main_window_height)
     # These are more size hints, since the other parts of the window set minimum sizes
     # I might make those available here too
     entire_plate_widget_width = 800
@@ -83,7 +82,7 @@ else:
     main_window_top = 25
     main_window_width = 1440
     main_window_height = 830
-    main_window_size = QRect(main_window_left, main_window_top, main_window_width, main_window_height)
+    main_window_size = QtCore.QRect(main_window_left, main_window_top, main_window_width, main_window_height)
     entire_plate_widget_width = 800
     entire_plate_widget_height = 450
     paws_widget_height = 170

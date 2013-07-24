@@ -1,7 +1,7 @@
 from collections import defaultdict
 
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide import QtGui
+from PySide.QtCore import Qt
 import numpy as np
 import os
 
@@ -9,7 +9,8 @@ from functions import utility, gui, io
 from settings import configuration
 from widgets import resultswidget
 
-class AnalysisWidget(QTabWidget):
+
+class AnalysisWidget(QtGui.QTabWidget):
     def __init__(self, parent):
         super(AnalysisWidget, self).__init__(parent)
 
@@ -38,7 +39,7 @@ class AnalysisWidget(QTabWidget):
         self.create_toolbar_actions()
 
         # Create a list widget
-        self.measurement_tree = QTreeWidget(self)
+        self.measurement_tree = QtGui.QTreeWidget(self)
         self.measurement_tree.setMaximumWidth(300)
         self.measurement_tree.setMinimumWidth(300)
         self.measurement_tree.setMaximumHeight(200)
@@ -46,7 +47,7 @@ class AnalysisWidget(QTabWidget):
         self.measurement_tree.setHeaderLabel("Measurements")
         self.measurement_tree.itemActivated.connect(self.load_all_results)
 
-        self.contact_tree = QTreeWidget(self)
+        self.contact_tree = QtGui.QTreeWidget(self)
         self.contact_tree.setMaximumWidth(300)
         self.contact_tree.setMinimumWidth(300)
         self.contact_tree.setColumnCount(5)
@@ -59,33 +60,34 @@ class AnalysisWidget(QTabWidget):
         self.results_widget = resultswidget.ResultsWidget(self)
 
         # Create a slider
-        self.slider = QSlider(self)
+        self.slider = QtGui.QSlider(self)
         self.slider.setOrientation(Qt.Horizontal)
         self.slider.setMinimum(-1)
         self.slider.setMaximum(0)
         self.slider.valueChanged.connect(self.change_frame)
-        self.slider_text = QLabel(self)
+        self.slider_text = QtGui.QLabel(self)
         self.slider_text.setText("Frame: -1")
 
-        self.slider_layout = QHBoxLayout()
+        self.slider_layout = QtGui.QHBoxLayout()
         self.slider_layout.addWidget(self.slider)
         self.slider_layout.addWidget(self.slider_text)
 
-        self.layout = QVBoxLayout()
+        self.layout = QtGui.QVBoxLayout()
         self.layout.addWidget(self.results_widget)
         self.layout.addLayout(self.slider_layout)
-        self.vertical_layout = QVBoxLayout()
+        self.vertical_layout = QtGui.QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
         self.vertical_layout.addWidget(self.contact_tree)
-        self.horizontal_layout = QHBoxLayout()
+        self.horizontal_layout = QtGui.QHBoxLayout()
         self.horizontal_layout.addLayout(self.vertical_layout)
         self.horizontal_layout.addLayout(self.layout)
-        self.main_layout = QVBoxLayout(self)
+        self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.toolbar)
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
         ## IO Functions
+
     def add_measurements(self):
         import zipfile
         # Clear any existing file names
@@ -99,7 +101,7 @@ class AnalysisWidget(QTabWidget):
                 # Add the name of the dog
                 dog_name = root.split("\\")[-1]
                 # Create a tree item
-                root_item = QTreeWidgetItem(self.measurement_tree, [dog_name])
+                root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
                 # Create a dictionary to store all the measurements for each dog
                 self.file_names[dog_name] = {}
                 for index, file_name in enumerate(files):
@@ -171,7 +173,7 @@ class AnalysisWidget(QTabWidget):
 
                 # Shall I skip invalid paws?
                 if paw_label >= 0:
-                    rootItem = QTreeWidgetItem(self.contact_tree)
+                    rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
                     rootItem.setText(0, str(index))
                     rootItem.setText(1, self.paw_dict[paw_label])
                     rootItem.setText(2, str(z))  # Sets the frame count
@@ -225,8 +227,8 @@ class AnalysisWidget(QTabWidget):
     def create_toolbar_actions(self):
         self.left_front_action = gui.create_action(text="Select Left Front",
                                                    shortcut=configuration.left_front,
-                                                   icon=QIcon(os.path.join(os.path.dirname(__file__),
-                                                                           "images/LF-icon.png")),
+                                                   icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                                                 "images/LF-icon.png")),
                                                    tip="Select the Left Front paw",
                                                    checkable=False,
                                                    connection=self.select_left_front
@@ -234,8 +236,8 @@ class AnalysisWidget(QTabWidget):
 
         self.left_hind_action = gui.create_action(text="Select Left Hind",
                                                   shortcut=configuration.left_hind,
-                                                  icon=QIcon(os.path.join(os.path.dirname(__file__),
-                                                                          "images/LH-icon.png")),
+                                                  icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                                                "images/LH-icon.png")),
                                                   tip="Select the Left Hind paw",
                                                   checkable=False,
                                                   connection=self.select_left_hind
@@ -243,8 +245,8 @@ class AnalysisWidget(QTabWidget):
 
         self.right_front_action = gui.create_action(text="Select Right Front",
                                                     shortcut=configuration.right_front,
-                                                    icon=QIcon(os.path.join(os.path.dirname(__file__),
-                                                                            "images/RF-icon.png")),
+                                                    icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                                                  "images/RF-icon.png")),
                                                     tip="Select the Right Front paw",
                                                     checkable=False,
                                                     connection=self.select_right_front
@@ -252,8 +254,8 @@ class AnalysisWidget(QTabWidget):
 
         self.right_hind_action = gui.create_action(text="Select Right Hind",
                                                    shortcut=configuration.right_hind,
-                                                   icon=QIcon(os.path.join(os.path.dirname(__file__),
-                                                                           "images/RH-icon.png")),
+                                                   icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                                                 "images/RH-icon.png")),
                                                    tip="Select the Right Hind paw",
                                                    checkable=False,
                                                    connection=self.select_right_hind
@@ -261,8 +263,8 @@ class AnalysisWidget(QTabWidget):
 
         self.invalid_paw_action = gui.create_action(text="Mark Paw as Invalid",
                                                     shortcut=configuration.invalid_paw,
-                                                    icon=QIcon(
-                                                        os.path.join(os.path.dirname(__file__), "images/trash-icon.png")),
+                                                    icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                                     "images/trash-icon.png")),
                                                     tip="Mark the paw as invalid",
                                                     checkable=False,
                                                     connection=self.invalid_paw

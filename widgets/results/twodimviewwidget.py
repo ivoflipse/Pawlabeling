@@ -1,16 +1,15 @@
 from collections import defaultdict
 
 import numpy as np
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide import QtGui
 
 from settings import configuration
-from functions import utility, gui
+from functions import utility
 
-class TwoDimViewWidget(QWidget):
+class TwoDimViewWidget(QtGui.QWidget):
     def __init__(self, parent, degree):
         super(TwoDimViewWidget, self).__init__(parent)
-        self.label = QLabel("2D View")
+        self.label = QtGui.QLabel("2D View")
         self.parent = parent
 
         self.left_front = PawView(self, label="Left Front")
@@ -27,14 +26,14 @@ class TwoDimViewWidget(QWidget):
 
         self.clear_paws()
 
-        self.left_paws_layout = QVBoxLayout()
+        self.left_paws_layout = QtGui.QVBoxLayout()
         self.left_paws_layout.addWidget(self.left_front)
         self.left_paws_layout.addWidget(self.left_hind)
-        self.right_paws_layout = QVBoxLayout()
+        self.right_paws_layout = QtGui.QVBoxLayout()
         self.right_paws_layout.addWidget(self.right_front)
         self.right_paws_layout.addWidget(self.right_hind)
 
-        self.main_layout = QHBoxLayout()
+        self.main_layout = QtGui.QHBoxLayout()
         self.main_layout.addLayout(self.left_paws_layout)
         self.main_layout.addLayout(self.right_paws_layout)
         self.setLayout(self.main_layout)
@@ -70,10 +69,10 @@ class TwoDimViewWidget(QWidget):
         for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()
 
-class PawView(QWidget):
+class PawView(QtGui.QWidget):
     def __init__(self, parent, label):
         super(PawView, self).__init__(parent)
-        self.label = QLabel(label)
+        self.label = QtGui.QLabel(label)
         self.parent = parent
         self.degree = configuration.degree * 4
         self.n_max = 0
@@ -88,13 +87,13 @@ class PawView(QWidget):
         self.data_list = []
         self.average_data_list = []
 
-        self.scene = QGraphicsScene(self)
-        self.view = QGraphicsView(self.scene)
+        self.scene = QtGui.QGraphicsScene(self)
+        self.view = QtGui.QGraphicsView(self.scene)
         self.view.setGeometry(0, 0, 100, 100)
-        self.image = QGraphicsPixmapItem()
+        self.image = QtGui.QGraphicsPixmapItem()
         self.scene.addItem(self.image)
 
-        self.main_layout = QVBoxLayout(self)
+        self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.view)
         self.setMinimumHeight(configuration.paws_widget_height)

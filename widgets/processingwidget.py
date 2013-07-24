@@ -1,17 +1,15 @@
 import os
-import json
 from collections import defaultdict
 
 import numpy as np
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide import QtGui, QtCore
 
-from widgets import entireplatewidget, pawswidget, resultswidget
+from widgets import entireplatewidget, pawswidget
 from settings import configuration
 from functions import io, tracking, utility, gui
 
 
-class ProcessingWidget(QWidget):
+class ProcessingWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ProcessingWidget, self).__init__(parent)
 
@@ -32,7 +30,7 @@ class ProcessingWidget(QWidget):
         self.degree = configuration.degree
 
         # Create a label to display the measurement name
-        self.nameLabel = QLabel(self)
+        self.nameLabel = QtGui.QLabel(self)
 
         self.path = configuration.measurement_folder
         self.store_path = configuration.store_results_folder
@@ -46,14 +44,14 @@ class ProcessingWidget(QWidget):
         self.create_toolbar_actions()
 
         # Create a list widget
-        self.measurement_tree = QTreeWidget(self)
+        self.measurement_tree = QtGui.QTreeWidget(self)
         self.measurement_tree.setMaximumWidth(300)
         self.measurement_tree.setMinimumWidth(300)
         self.measurement_tree.setColumnCount(1)
         self.measurement_tree.setHeaderLabel("Measurements")
         self.measurement_tree.itemActivated.connect(self.load_file)
 
-        self.contact_tree = QTreeWidget(self)
+        self.contact_tree = QtGui.QTreeWidget(self)
         self.contact_tree.setMaximumWidth(300)
         self.contact_tree.setMinimumWidth(300)
         self.contact_tree.setColumnCount(5)
@@ -69,17 +67,17 @@ class ProcessingWidget(QWidget):
 
         self.paws_widget = pawswidget.PawsWidget(self)
 
-        self.layout = QVBoxLayout()
+        self.layout = QtGui.QVBoxLayout()
         self.layout.addWidget(self.nameLabel)
         self.layout.addWidget(self.entire_plate_widget)
         self.layout.addWidget(self.paws_widget)
-        self.vertical_layout = QVBoxLayout()
+        self.vertical_layout = QtGui.QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
         self.vertical_layout.addWidget(self.contact_tree)
-        self.horizontal_layout = QHBoxLayout()
+        self.horizontal_layout = QtGui.QHBoxLayout()
         self.horizontal_layout.addLayout(self.vertical_layout)
         self.horizontal_layout.addLayout(self.layout)
-        self.main_layout = QVBoxLayout(self)
+        self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.toolbar)
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
@@ -92,7 +90,7 @@ class ProcessingWidget(QWidget):
         # Clear any existing measurements
         self.measurement_tree.clear()
         # Create a green brush for coloring stored results
-        green_brush = QBrush(QColor(46, 139, 87))
+        green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
 
         # Walk through the folder and gather up all the files
         for idx, (root, dirs, files) in enumerate(os.walk(self.path)):
@@ -100,7 +98,7 @@ class ProcessingWidget(QWidget):
                 # Add the name of the dog
                 dog_name = root.split("\\")[-1]
                 # Create a tree item
-                root_item = QTreeWidgetItem(self.measurement_tree, [dog_name])
+                root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
                 # Create a dictionary to store all the measurements for each dog
                 self.file_names[dog_name] = {}
                 for index, file_name in enumerate(files):
@@ -116,7 +114,7 @@ class ProcessingWidget(QWidget):
                     name = os.path.join(root, file_name)
                     # Store the path with the file name
                     self.file_names[dog_name][file_name] = name
-                    childItem = QTreeWidgetItem(root_item, [file_name])
+                    childItem = QtGui.QTreeWidgetItem(root_item, [file_name])
                     # Check if the measurement has already been store_results_folder
                     if io.find_stored_file(dog_name, file_name) is not None:
                         # Change the foreground to green
@@ -209,7 +207,6 @@ class ProcessingWidget(QWidget):
                 for index, paw_data in stored_results["paw_data"].items():
                     self.paw_data[measurement_name].append(paw_data)
 
-                    # TODO make sure this is never called when there isn't actually any data
                     # Check if n_max happens to be larger here
                     max_data = np.max(paw_data)
                     if max_data > self.n_max:
@@ -246,7 +243,7 @@ class ProcessingWidget(QWidget):
                                self.paw_labels, self.paws, self.paw_data)
             print("The results have been stored")
             # Change the color of the measurement in the tree to green
-            treeBrush = QBrush(QColor(46, 139, 87)) # RGB Sea Green
+            treeBrush = QtGui.QBrush(QtGui.QColor(46, 139, 87)) # RGB Sea Green
             self.currentItem.setForeground(0, treeBrush)
         except Exception as e:
             print("Storing failed!", e)
@@ -436,7 +433,7 @@ class ProcessingWidget(QWidget):
         self.contact_tree.clear()
         for index, paw in enumerate(self.paw_data[self.measurement_name]):
             x, y, z = paw.shape
-            rootItem = QTreeWidgetItem(self.contact_tree)
+            rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
             rootItem.setText(0, str(index))
             rootItem.setText(1, self.paw_dict[self.paw_labels[self.measurement_name][index]])
             rootItem.setText(2, str(z))  # Sets the frame count
@@ -450,8 +447,8 @@ class ProcessingWidget(QWidget):
 
     def create_toolbar_actions(self):
         self.track_contacts_action = gui.create_action(text="&Track Contacts",
-                                                       shortcut=QKeySequence("CTRL+F"),
-                                                       icon=QIcon(
+                                                       shortcut=QtGui.QKeySequence("CTRL+F"),
+                                                       icon=QtGui.QIcon(
                                                            os.path.join(os.path.dirname(__file__),
                                                                         "images/edit_zoom.png")),
                                                        tip="Using the tracker to find contacts",
@@ -460,8 +457,8 @@ class ProcessingWidget(QWidget):
         )
 
         self.store_status_action = gui.create_action(text="&Store",
-                                                     shortcut=QKeySequence("CTRL+S"),
-                                                     icon=QIcon(
+                                                     shortcut=QtGui.QKeySequence("CTRL+S"),
+                                                     icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
                                                                       "images/save-icon.png")),
                                                      tip="Mark the tracking as correct",
@@ -471,8 +468,7 @@ class ProcessingWidget(QWidget):
 
         self.left_front_action = gui.create_action(text="Select Left Front",
                                                    shortcut=configuration.left_front,
-                                                   icon=QIcon(
-                                                       os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
+                                                   icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
                                                    tip="Select the Left Front paw",
                                                    checkable=False,
                                                    connection=self.select_left_front
@@ -480,8 +476,7 @@ class ProcessingWidget(QWidget):
 
         self.left_hind_action = gui.create_action(text="Select Left Hind",
                                                   shortcut=configuration.left_hind,
-                                                  icon=QIcon(
-                                                      os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
+                                                  icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
                                                   tip="Select the Left Hind paw",
                                                   checkable=False,
                                                   connection=self.select_left_hind
@@ -489,7 +484,7 @@ class ProcessingWidget(QWidget):
 
         self.right_front_action = gui.create_action(text="Select Right Front",
                                                     shortcut=configuration.right_front,
-                                                    icon=QIcon(os.path.join(os.path.dirname(__file__),
+                                                    icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                             "images/RF-icon.png")),
                                                     tip="Select the Right Front paw",
                                                     checkable=False,
@@ -498,7 +493,7 @@ class ProcessingWidget(QWidget):
 
         self.right_hind_action = gui.create_action(text="Select Right Hind",
                                                    shortcut=configuration.right_hind,
-                                                   icon=QIcon(
+                                                   icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__), "images/RH-icon.png")),
                                                    tip="Select the Right Hind paw",
                                                    checkable=False,
@@ -506,8 +501,9 @@ class ProcessingWidget(QWidget):
         )
 
         self.previous_paw_action = gui.create_action(text="Select Previous Paw",
-                                                     shortcut=[configuration.previous_paw, QKeySequence(Qt.Key_Down)],
-                                                     icon=QIcon(
+                                                     shortcut=[configuration.previous_paw,
+                                                               QtGui.QKeySequence(QtCore.Qt.Key_Down)],
+                                                     icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
                                                                       "images/backward.png")),
                                                      tip="Select the previous paw",
@@ -516,8 +512,9 @@ class ProcessingWidget(QWidget):
         )
 
         self.next_paw_action = gui.create_action(text="Select Next Paw",
-                                                 shortcut=[configuration.next_paw, QKeySequence(Qt.Key_Up)],
-                                                 icon=QIcon(
+                                                 shortcut=[configuration.next_paw,
+                                                           QtGui.QKeySequence(QtCore.Qt.Key_Up)],
+                                                 icon=QtGui.QIcon(
                                                      os.path.join(os.path.dirname(__file__), "images/forward.png")),
                                                  tip="Select the next paw",
                                                  checkable=False,
@@ -526,7 +523,7 @@ class ProcessingWidget(QWidget):
 
         self.remove_label_action = gui.create_action(text="Delete Label From Paw",
                                                      shortcut=configuration.remove_label,
-                                                     icon=QIcon(
+                                                     icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
                                                                       "images/cancel-icon.png")),
                                                      tip="Delete the label from the paw",
@@ -536,7 +533,7 @@ class ProcessingWidget(QWidget):
 
         self.invalid_paw_action = gui.create_action(text="Mark Paw as Invalid",
                                                     shortcut=configuration.invalid_paw,
-                                                    icon=QIcon(
+                                                    icon=QtGui.QIcon(
                                                         os.path.join(os.path.dirname(__file__),
                                                                      "images/trash-icon.png")),
                                                     tip="Mark the paw as invalid",
@@ -545,8 +542,8 @@ class ProcessingWidget(QWidget):
         )
 
         self.undo_label_action = gui.create_action(text="Undo Label From Paw",
-                                                   shortcut=QKeySequence(Qt.CTRL + Qt.Key_Z),
-                                                   icon=QIcon(
+                                                   shortcut=QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Z),
+                                                   icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__), "images/undo-icon.png")),
                                                    tip="Delete the label from the paw",
                                                    checkable=False,

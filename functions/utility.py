@@ -1,5 +1,4 @@
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide import QtGui, QtCore
 import numpy as np
 
 
@@ -226,12 +225,12 @@ def contour_to_polygon(contour, degree, offset_x=0, offset_y=0):
     for coordinates in contour:
         # Convert the points from the contour to QPointFs and add them to the list
         # The offset is used when you only display a slice, so you basically move the origin
-        polygon.append(QPointF((coordinates[0][0] - offset_x) * degree, (coordinates[0][1] - offset_y) * degree))
+        polygon.append(QtCore.QPointF((coordinates[0][0] - offset_x) * degree, (coordinates[0][1] - offset_y) * degree))
         # If the contour has only a single point, add another point, that's right beside it
     if len(contour) == 1:
-        polygon.append(QPointF((coordinates[0][0] + 1 - offset_x) * degree,
+        polygon.append(QtCore.QPointF((coordinates[0][0] + 1 - offset_x) * degree,
                                (coordinates[0][1] + 1 - offset_y) * degree)) # Pray this doesn't go out of bounds!
-    return QPolygonF(polygon)
+    return QtGui.QPolygonF(polygon)
 
 
 def contour_to_lines(contour):
@@ -298,12 +297,12 @@ def array_to_qimage(array, color_table):
     colormap.  The first dimension represents the vertical image axis."""
     array = np.require(array, np.uint8, 'C')
     width, height = array.shape
-    result = QImage(array.data, height, width, QImage.Format_Indexed8)
+    result = QtGui.QImage(array.data, height, width, QtGui.QImage.Format_Indexed8)
     result.ndarray = array
     # Use the default one from this library
     result.setColorTable(color_table)
     # Convert it to RGB32
-    result = result.convertToFormat(QImage.Format_RGB32)
+    result = result.convertToFormat(QtGui.QImage.Format_RGB32)
     return result
 
 
@@ -330,7 +329,7 @@ def get_QPixmap(data, degree, n_max, color_table, interpolation="nearest"):
     # Convert it from numpy to qimage
     qimage = array_to_qimage(data, color_table)
     # Convert the image to a pixmap
-    pixmap = QPixmap.fromImage(qimage)
+    pixmap = QtGui.QPixmap.fromImage(qimage)
     # Scale up the image so its better visible
     #self.pixmap = self.pixmap.scaled(self.degree * self.height, self.degree * self.width,
     #                                 Qt.KeepAspectRatio, Qt.Fas.Transformation) #Qt.Smoot.Transformation
@@ -392,20 +391,20 @@ def interpolate_rgb(start_color, start_value, end_color, end_value, actual_value
         elif blue < end_blue:
             blue = end_blue
 
-    return qRgb(red, green, blue)
+    return QtGui.qRgb(red, green, blue)
 
 
 class ImageColorTable():
     def __init__(self):
-        self.black = QColor(0, 0, 0).rgb()
-        self.lightblue = QColor(0, 0, 255).rgb()
-        self.blue = QColor(0, 0, 255).rgb()
-        self.cyan = QColor(0, 255, 255).rgb()
-        self.green = QColor(0, 255, 0).rgb()
-        self.yellow = QColor(255, 255, 0).rgb()
-        self.orange = QColor(255, 128, 0).rgb()
-        self.red = QColor(255, 0, 0).rgb()
-        self.white = QColor(255, 255, 255).rgb()
+        self.black = QtGui.QColor(0, 0, 0).rgb()
+        self.lightblue = QtGui.QColor(0, 0, 255).rgb()
+        self.blue = QtGui.QColor(0, 0, 255).rgb()
+        self.cyan = QtGui.QColor(0, 255, 255).rgb()
+        self.green = QtGui.QColor(0, 255, 0).rgb()
+        self.yellow = QtGui.QColor(255, 255, 0).rgb()
+        self.orange = QtGui.QColor(255, 128, 0).rgb()
+        self.red = QtGui.QColor(255, 0, 0).rgb()
+        self.white = QtGui.QColor(255, 255, 255).rgb()
 
         self.black_threshold = 0.01
         self.lightblue_threshold = 1.00

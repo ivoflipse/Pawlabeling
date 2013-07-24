@@ -1,8 +1,7 @@
 from collections import defaultdict
 
 import numpy as np
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide import QtGui, QtCore
 
 from settings import configuration
 from functions import utility, calculations
@@ -10,10 +9,10 @@ from functions import utility, calculations
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-class CopViewWidget(QWidget):
+class CopViewWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(CopViewWidget, self).__init__(parent)
-        self.label = QLabel("Force View")
+        self.label = QtGui.QLabel("Force View")
         self.parent = parent
 
         self.left_front = PawView(self, label="Left Front")
@@ -30,14 +29,14 @@ class CopViewWidget(QWidget):
 
         self.clear_paws()
 
-        self.left_paws_layout = QVBoxLayout()
+        self.left_paws_layout = QtGui.QVBoxLayout()
         self.left_paws_layout.addWidget(self.left_front)
         self.left_paws_layout.addWidget(self.left_hind)
-        self.right_paws_layout = QVBoxLayout()
+        self.right_paws_layout = QtGui.QVBoxLayout()
         self.right_paws_layout.addWidget(self.right_front)
         self.right_paws_layout.addWidget(self.right_hind)
 
-        self.main_layout = QHBoxLayout()
+        self.main_layout = QtGui.QHBoxLayout()
         self.main_layout.addLayout(self.left_paws_layout)
         self.main_layout.addLayout(self.right_paws_layout)
         self.setLayout(self.main_layout)
@@ -79,10 +78,10 @@ class CopViewWidget(QWidget):
         for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()
 
-class PawView(QWidget):
+class PawView(QtGui.QWidget):
     def __init__(self, parent, label):
         super(PawView, self).__init__(parent)
-        self.label = QLabel(label)
+        self.label = QtGui.QLabel(label)
         self.parent = parent
         self.n_max = 0
         self.degree = configuration.degree * 4
@@ -98,13 +97,13 @@ class PawView(QWidget):
 
         self.cop_lines = []
 
-        self.scene = QGraphicsScene(self)
-        self.view = QGraphicsView(self.scene)
+        self.scene = QtGui.QGraphicsScene(self)
+        self.view = QtGui.QGraphicsView(self.scene)
         self.view.setGeometry(0, 0, 100, 100)
-        self.image = QGraphicsPixmapItem()
+        self.image = QtGui.QGraphicsPixmapItem()
         self.scene.addItem(self.image)
 
-        self.main_layout = QVBoxLayout(self)
+        self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.view)
         self.main_layout.addStretch(1)
@@ -129,13 +128,13 @@ class PawView(QWidget):
         self.draw_cop(paw_data)
 
     def draw_cop(self, paw_data):
-        color = Qt.white
-        self.line_pen = QPen(color)
+        color = QtCore.Qt.white
+        self.line_pen = QtGui.QPen(color)
         self.line_pen.setWidth(3)
 
-        self.dot_pen = QPen(Qt.black)
+        self.dot_pen = QtGui.QPen(QtCore.Qt.black)
         self.dot_pen.setWidth(2)
-        self.dot_brush = QBrush(Qt.white)
+        self.dot_brush = QtGui.QBrush(QtCore.Qt.white)
 
         # TODO figure out how to pick a better value for this, so the line is still visible
         self.x = 15
@@ -158,7 +157,8 @@ class PawView(QWidget):
             y1 = average_cop_y[frame]
             y2 = average_cop_y[frame+1]
 
-            line = QLineF(QPointF(x1 * self.degree, y1 * self.degree), QPointF(x2 * self.degree, y2 * self.degree))
+            line = QtCore.QLineF(QtCore.QPointF(x1 * self.degree, y1 * self.degree),
+                                 QtCore.QPointF(x2 * self.degree, y2 * self.degree))
 
             self.cop_lines.append(self.scene.addLine(line, self.line_pen))
             self.cop_lines.append(self.scene.addEllipse(x1 * self.degree, y1 * self.degree,

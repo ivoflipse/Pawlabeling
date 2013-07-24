@@ -1,13 +1,12 @@
 import sys
 import os
 
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide import QtGui, QtCore
 from settings import configuration
 import processingwidget, analysiswidget
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         # Set the screen dimensions, useful for when its not being run full screen
@@ -17,7 +16,7 @@ class MainWindow(QMainWindow):
         if not configuration.desktop:
             self.showMaximized()
         self.setWindowTitle("Paw Labeling tool")
-        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(__file__), "images\\pawlabeling.png")))
+        self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images\\pawlabeling.png")))
 
         self.processing_widget = processingwidget.ProcessingWidget(self)
         self.analysis_widget = analysiswidget.AnalysisWidget(self)
@@ -25,7 +24,7 @@ class MainWindow(QMainWindow):
         self.status = self.statusBar()
         self.status.showMessage("Ready")
 
-        self.tab_widget = QTabWidget(self)
+        self.tab_widget = QtGui.QTabWidget(self)
         self.tab_widget.addTab(self.processing_widget, "Processing")
         self.tab_widget.addTab(self.analysis_widget, "Analysis")
 
@@ -43,7 +42,7 @@ class MainWindow(QMainWindow):
 
     def center(self):
         qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
@@ -59,17 +58,17 @@ class MainWindow(QMainWindow):
 
     # TODO make sure that the tree does NOT do this
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.KeyPress:
-            if event.matches(QKeySequence.MoveToNextWord):
+        if event.type() == QtCore.QEvent.KeyPress:
+            if event.matches(QtGui.QKeySequence.MoveToNextWord):
                 self.processing_widget.entire_plate_widget.fast_forward()
                 return True
-            elif event.matches(QKeySequence.MoveToPreviousWord):
+            elif event.matches(QtGui.QKeySequence.MoveToPreviousWord):
                 self.processing_widget.entire_plate_widget.fast_backward()
                 return True
-            elif event.key() == Qt.Key_Left:
+            elif event.key() == QtCore.Qt.Key_Left:
                 self.processing_widget.entire_plate_widget.slide_to_left()
                 return True
-            elif event.key() == Qt.Key_Right:
+            elif event.key() == QtCore.Qt.Key_Right:
                 self.processing_widget.entire_plate_widget.slide_to_right()
                 return True
         else:
@@ -77,7 +76,7 @@ class MainWindow(QMainWindow):
 
 
 def main():
-    app = QApplication(sys.argv)
+    app = QtGui.QApplication(sys.argv)
     window = MainWindow()
     window.show()
     window.raise_()

@@ -1,7 +1,6 @@
-from PySide.QtGui import *
-from PySide.QtCore import *
+from PySide import QtGui, QtCore
 
-class Toolbar(QToolBar):
+class Toolbar(QtGui.QToolBar):
     def __init__(self, parent=None):
         super(Toolbar, self).__init__(parent)
         # I don't want to see it floating
@@ -9,11 +8,11 @@ class Toolbar(QToolBar):
         # I don't want it moved
         self.setMovable(False)
         # I want nice and big icons
-        self.setIconSize(QSize(50, 50))
+        self.setIconSize(QtCore.QSize(50, 50))
 
 def create_action(parent=None, text="", shortcut=None, icon=None,
                   tip=None, checkable=False, connection=None):
-    action = QAction(text, parent)
+    action = QtGui.QAction(text, parent)
     if text:
         action.setText(text)
     if icon is not None:

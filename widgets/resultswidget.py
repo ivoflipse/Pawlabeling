@@ -1,10 +1,9 @@
-from PySide.QtCore import *
-from PySide.QtGui import *
+from PySide import QtGui
 
 from widgets.results import twodimviewwidget, pressureviewwidget, forceviewwidget, copviewwidget
 
 
-class ResultsWidget(QWidget):
+class ResultsWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(ResultsWidget, self).__init__(parent)
 
@@ -20,7 +19,7 @@ class ResultsWidget(QWidget):
 
         self.frame = -1
 
-        self.tab_widget = QTabWidget(self)
+        self.tab_widget = QtGui.QTabWidget(self)
         self.tab_widget.addTab(self.two_dim_view_widget, "2D view")
         self.tab_widget.addTab(self.pressure_view_widget, "Pressure")
         self.tab_widget.addTab(self.force_view_widget, "Force")
@@ -28,7 +27,7 @@ class ResultsWidget(QWidget):
 
         self.tab_widget.currentChanged.connect(self.update_active_widget)
 
-        self.main_layout = QHBoxLayout()
+        self.main_layout = QtGui.QHBoxLayout()
         self.main_layout.addWidget(self.tab_widget)
         self.setLayout(self.main_layout)
 

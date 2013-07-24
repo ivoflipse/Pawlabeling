@@ -1,13 +1,13 @@
 from collections import defaultdict
 
-from PySide.QtGui import *
+from PySide import QtGui
 import numpy as np
 
 from functions import utility
 from settings import configuration
 
 
-class PawsWidget(QWidget):
+class PawsWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(PawsWidget, self).__init__(parent)
         self.parent = parent
@@ -31,19 +31,19 @@ class PawsWidget(QWidget):
         # This sets every widget to a zero image and initializes paws
         self.clear_paws()
 
-        self.left_paws_layout = QVBoxLayout()
+        self.left_paws_layout = QtGui.QVBoxLayout()
         self.left_paws_layout.addWidget(self.left_front)
         self.left_paws_layout.addWidget(self.left_hind)
-        self.current_paw_layout = QVBoxLayout()
+        self.current_paw_layout = QtGui.QVBoxLayout()
         self.current_paw_layout.addStretch(1)
-        self.current_paw_layout.addWidget(QLabel("Current Paw"))
+        self.current_paw_layout.addWidget(QtGui.QLabel("Current Paw"))
         self.current_paw_layout.addWidget(self.current_paw)
         self.current_paw_layout.addStretch(1)
-        self.right_paws_layout = QVBoxLayout()
+        self.right_paws_layout = QtGui.QVBoxLayout()
         self.right_paws_layout.addWidget(self.right_front)
         self.right_paws_layout.addWidget(self.right_hind)
 
-        self.main_layout = QHBoxLayout()
+        self.main_layout = QtGui.QHBoxLayout()
         self.main_layout.addLayout(self.left_paws_layout)
         self.main_layout.addLayout(self.current_paw_layout)
         self.main_layout.addLayout(self.right_paws_layout)
@@ -139,7 +139,7 @@ class PawsWidget(QWidget):
             paw.clear_paws()
 
 
-class PawWidget(QWidget):
+class PawWidget(QtGui.QWidget):
     def __init__(self, parent, degree, label):
         super(PawWidget, self).__init__(parent)
         self.parent = parent
@@ -154,20 +154,20 @@ class PawWidget(QWidget):
         self.data_list = []
         self.average_data_list = []
 
-        self.scene = QGraphicsScene(self)
-        self.view = QGraphicsView(self.scene)
+        self.scene = QtGui.QGraphicsScene(self)
+        self.view = QtGui.QGraphicsView(self.scene)
         self.view.setGeometry(0, 0, 100, 100)
-        self.image = QGraphicsPixmapItem()
+        self.image = QtGui.QGraphicsPixmapItem()
         self.scene.addItem(self.image)
 
         self.max_pressure = float("inf")
         self.mean_duration = float("inf")
         self.mean_surface = float("inf")
 
-        self.label_prediction = QLabel(self)
-        self.max_pressure_label = QLabel(self)
-        self.mean_duration_label = QLabel(self)
-        self.mean_surface_label = QLabel(self)
+        self.label_prediction = QtGui.QLabel(self)
+        self.max_pressure_label = QtGui.QLabel(self)
+        self.mean_duration_label = QtGui.QLabel(self)
+        self.mean_surface_label = QtGui.QLabel(self)
 
         self.label_prediction.setText("{}".format(self.label))
         self.max_pressure_label.setText("{} N".format(0 if self.max_pressure == float("inf") else self.max_pressure))
@@ -176,14 +176,14 @@ class PawWidget(QWidget):
         self.mean_surface_label.setText(
             "{} pixels".format(0 if self.mean_surface == float("inf") else self.mean_surface))
 
-        self.number_layout = QVBoxLayout()
+        self.number_layout = QtGui.QVBoxLayout()
         self.number_layout.addWidget(self.label_prediction)
         self.number_layout.addWidget(self.max_pressure_label)
         self.number_layout.addWidget(self.mean_duration_label)
         self.number_layout.addWidget(self.mean_surface_label)
         self.number_layout.addStretch(1)
 
-        self.main_layout = QHBoxLayout(self)
+        self.main_layout = QtGui.QHBoxLayout(self)
         self.main_layout.addWidget(self.view)
         self.main_layout.addLayout(self.number_layout)
 
