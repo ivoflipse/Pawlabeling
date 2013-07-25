@@ -121,14 +121,18 @@ class PawView(QtGui.QWidget):
             x, y, z = data.shape
             lengths.append(z)
             force = np.sum(np.sum(data, axis=0), axis=0)
+            force = np.append(force, 0)
             force_over_time = calculations.interpolate_time_series(force, interpolate_length)
             pixel_count = np.array([np.count_nonzero(data[:, :, frame]) for frame in range(z)])
+            pixel_count = np.append(pixel_count, 0)
             pixel_count = calculations.interpolate_time_series(pixel_count, interpolate_length)
 
             pressure = []
             for force, num_pixels in zip(force_over_time, pixel_count):
                 if num_pixels > 0:
                     pressure.append(force / (num_pixels*configuration.sensor_surface))  # Remember, sensors are small!
+                else:
+                    pressure.append(0)
             pressure_over_time[index, :] = pressure
             self.axes.plot(calculations.interpolate_time_series(range(z), interpolate_length),
                            pressure_over_time[index, :])
