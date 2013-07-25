@@ -135,10 +135,10 @@ class PawView(QtGui.QWidget):
         mean_force = np.mean(force_over_time, axis=0)
         std_force = np.std(force_over_time, axis=0)
         self.axes.plot(interpolated_timeline, mean_force, color="r", linewidth=3)
-        self.axes.plot(interpolated_timeline, mean_force + std_force, color="g", linewidth=1)
-        self.axes.fill_between(interpolated_timeline, mean_force - std_force, mean_force + std_force, facecolor="green",
+        self.axes.plot(interpolated_timeline, mean_force + std_force, color="r", linewidth=1)
+        self.axes.fill_between(interpolated_timeline, mean_force - std_force, mean_force + std_force, facecolor="r",
                                alpha=0.5)
-        self.axes.plot(interpolated_timeline, mean_force - std_force, color="g", linewidth=1)
+        self.axes.plot(interpolated_timeline, mean_force - std_force, color="r", linewidth=1)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.axes.set_xlim([0, self.x])
         self.axes.set_ylim([0, self.y])
