@@ -120,21 +120,21 @@ class PawView(QtGui.QWidget):
         for index, data in enumerate(paw_data):
             x, y, z = data.shape
             lengths.append(z)
-            force_over_time = calculations.interpolate_time_series(np.sum(np.sum(data, axis=0), axis=0)+[0],
-                                                                   interpolate_length)
+            force = np.sum(np.sum(data, axis=0), axis=0)
+            force_over_time = calculations.interpolate_time_series(force, interpolate_length)
             pixel_count = np.array([np.count_nonzero(data[:, :, frame]) for frame in range(z)])
-            pixel_count = calculations.interpolate_time_series(pixel_count+[0], interpolate_length)
+            pixel_count = calculations.interpolate_time_series(pixel_count, interpolate_length)
 
             pressure = []
             for force, num_pixels in zip(force_over_time, pixel_count):
                 if num_pixels > 0:
                     pressure.append(force / (num_pixels*configuration.sensor_surface))  # Remember, sensors are small!
             pressure_over_time[index, :] = pressure
-            self.axes.plot(calculations.interpolate_time_series(range(z+1), interpolate_length),
+            self.axes.plot(calculations.interpolate_time_series(range(z), interpolate_length),
                            pressure_over_time[index, :])
 
         mean_length = np.mean(lengths)
-        self.axes.plot(calculations.interpolate_time_series(range(int(mean_length)+1), interpolate_length),
+        self.axes.plot(calculations.interpolate_time_series(range(int(mean_length)), interpolate_length),
                        np.mean(pressure_over_time, axis=0), color="r", linewidth=3)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.axes.set_xlim([0, self.x])
