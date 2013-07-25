@@ -124,14 +124,21 @@ class PawView(QtGui.QWidget):
         for index, data in enumerate(paw_data):
             x, y, z = data.shape
             lengths.append(z)
-            force_over_time[index, :] = calculations.interpolate_time_series(np.sum(np.sum(data, axis=0), axis=0),
-                                                                             interpolate_length)
+            force = np.sum(np.sum(data, axis=0), axis=0)
+            force = np.append(force, 0)
+            force_over_time[index, :] = calculations.interpolate_time_series(force, interpolate_length)
             self.axes.plot(calculations.interpolate_time_series(range(z), interpolate_length),
-                           force_over_time[index, :])
+                           force_over_time[index, :], alpha=0.5)
 
         mean_length = np.mean(lengths)
-        self.axes.plot(calculations.interpolate_time_series(range(int(mean_length)), interpolate_length),
-                       np.mean(force_over_time, axis=0), color="r", linewidth=3)
+        interpolated_timeline = calculations.interpolate_time_series(range(int(mean_length)), interpolate_length)
+        mean_force = np.mean(force_over_time, axis=0)
+        std_force = np.std(force_over_time, axis=0)
+        self.axes.plot(interpolated_timeline, mean_force, color="r", linewidth=3)
+        self.axes.plot(interpolated_timeline, mean_force + std_force, color="g", linewidth=1)
+        self.axes.fill_between(interpolated_timeline, mean_force - std_force, mean_force + std_force, facecolor="green",
+                               alpha=0.5)
+        self.axes.plot(interpolated_timeline, mean_force - std_force, color="g", linewidth=1)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.axes.set_xlim([0, self.x])
         self.axes.set_ylim([0, self.y])

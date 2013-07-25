@@ -1,7 +1,7 @@
 from PySide import QtGui
 
 from widgets.results import twodimviewwidget, pressureviewwidget, forceviewwidget, copviewwidget
-
+from functions.pubsub import pub
 
 class ResultsWidget(QtGui.QWidget):
     def __init__(self, parent):
@@ -40,9 +40,13 @@ class ResultsWidget(QtGui.QWidget):
     def update_active_widget(self):
         current_tab = self.tab_widget.currentIndex()
         widget = self.widgets[current_tab]
+        # Tell the user we're calculating some results
+        pub.sendMessage("update_statusbar", status="Calculating results for {}".format(widget.label.text()))
         widget.update_paws(self.paw_labels, self.paw_data, self.average_data)
         # Make sure the currently active widget gets the current frame number too
         self.change_frame(self.frame)
+        # After the results have been calculated, clear the previous message
+        pub.sendMessage("update_statusbar", status="")
 
     def update_n_max(self, n_max):
         for widget in self.widgets:

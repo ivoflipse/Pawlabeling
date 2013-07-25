@@ -60,9 +60,8 @@ class MainWindow(QtGui.QMainWindow):
             self.analysis_widget.load_first_file()
 
     def change_status(self, status):
-        print status
+        self.logger.info(status)
         self.status.showMessage(status)
-
 
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.KeyPress:

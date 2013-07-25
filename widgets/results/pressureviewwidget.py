@@ -9,6 +9,7 @@ from functions import utility, calculations
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+
 class PressureViewWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(PressureViewWidget, self).__init__(parent)
@@ -17,7 +18,7 @@ class PressureViewWidget(QtGui.QWidget):
 
         self.left_front = PawView(self, label="Left Front")
         self.left_hind = PawView(self, label="Left Hind")
-        self.right_front = PawView(self,label="Right Front")
+        self.right_front = PawView(self, label="Right Front")
         self.right_hind = PawView(self, label="Right Hind")
 
         self.paws_list = {
@@ -25,7 +26,7 @@ class PressureViewWidget(QtGui.QWidget):
             1: self.left_hind,
             2: self.right_front,
             3: self.right_hind,
-            }
+        }
 
         self.clear_paws()
 
@@ -86,6 +87,7 @@ class PressureViewWidget(QtGui.QWidget):
         for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()
 
+
 class PawView(QtGui.QWidget):
     def __init__(self, parent, label):
         super(PawView, self).__init__(parent)
@@ -130,16 +132,22 @@ class PawView(QtGui.QWidget):
             pressure = []
             for force, num_pixels in zip(force_over_time, pixel_count):
                 if num_pixels > 0:
-                    pressure.append(force / (num_pixels*configuration.sensor_surface))  # Remember, sensors are small!
+                    pressure.append(force / (num_pixels * configuration.sensor_surface))  # Remember, sensors are small!
                 else:
                     pressure.append(0)
             pressure_over_time[index, :] = pressure
             self.axes.plot(calculations.interpolate_time_series(range(z), interpolate_length),
-                           pressure_over_time[index, :])
+                           pressure_over_time[index, :], alpha=0.5)
 
         mean_length = np.mean(lengths)
-        self.axes.plot(calculations.interpolate_time_series(range(int(mean_length)), interpolate_length),
-                       np.mean(pressure_over_time, axis=0), color="r", linewidth=3)
+        interpolated_timeline = calculations.interpolate_time_series(range(int(mean_length)), interpolate_length)
+        mean_pressure = np.mean(pressure_over_time, axis=0)
+        std_pressure = np.std(pressure_over_time, axis=0)
+        self.axes.plot(interpolated_timeline, mean_pressure, color="r", linewidth=3)
+        self.axes.plot(interpolated_timeline, mean_pressure + std_pressure, color="r", linewidth=1)
+        self.axes.fill_between(interpolated_timeline, mean_pressure - std_pressure, mean_pressure + std_pressure,
+                               facecolor="r",alpha=0.5)
+        self.axes.plot(interpolated_timeline, mean_pressure - std_pressure, color="r", linewidth=1)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.axes.set_xlim([0, self.x])
         self.axes.set_ylim([0, self.y])
