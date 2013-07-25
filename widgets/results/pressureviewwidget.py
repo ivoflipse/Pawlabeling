@@ -4,7 +4,7 @@ import numpy as np
 from PySide import QtGui
 
 from settings import configuration
-from functions import utility
+from functions import utility, calculations
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -114,19 +114,28 @@ class PawView(QtGui.QWidget):
 
     def update(self, paw_data, average_data):
         self.axes.cla()
-        pressure_over_time = np.zeros((len(paw_data), self.x))
+        interpolate_length = 100
+        pressure_over_time = np.zeros((len(paw_data), interpolate_length))
+        lengths = []
         for index, data in enumerate(paw_data):
             x, y, z = data.shape
-            force_over_time = np.sum(np.sum(data, axis=0), axis=0)
+            lengths.append(z)
+            force_over_time = calculations.interpolate_time_series(np.sum(np.sum(data, axis=0), axis=0)+[0],
+                                                                   interpolate_length)
             pixel_count = np.array([np.count_nonzero(data[:, :, frame]) for frame in range(z)])
+            pixel_count = calculations.interpolate_time_series(pixel_count+[0], interpolate_length)
+
             pressure = []
             for force, num_pixels in zip(force_over_time, pixel_count):
                 if num_pixels > 0:
                     pressure.append(force / (num_pixels*configuration.sensor_surface))  # Remember, sensors are small!
-            pressure_over_time[index, :z] = pressure
-            self.axes.plot(pressure_over_time[index, :])
+            pressure_over_time[index, :] = pressure
+            self.axes.plot(calculations.interpolate_time_series(range(z+1), interpolate_length),
+                           pressure_over_time[index, :])
 
-        self.axes.plot(np.mean(pressure_over_time, axis=0), color="r", linewidth=3)
+        mean_length = np.mean(lengths)
+        self.axes.plot(calculations.interpolate_time_series(range(int(mean_length)+1), interpolate_length),
+                       np.mean(pressure_over_time, axis=0), color="r", linewidth=3)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.axes.set_xlim([0, self.x])
         self.axes.set_ylim([0, self.y])

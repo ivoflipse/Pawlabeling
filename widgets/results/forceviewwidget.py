@@ -9,6 +9,7 @@ from functions import utility, calculations
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+
 class ForceViewWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(ForceViewWidget, self).__init__(parent)
@@ -17,7 +18,7 @@ class ForceViewWidget(QtGui.QWidget):
 
         self.left_front = PawView(self, label="Left Front")
         self.left_hind = PawView(self, label="Left Hind")
-        self.right_front = PawView(self,label="Right Front")
+        self.right_front = PawView(self, label="Right Front")
         self.right_hind = PawView(self, label="Right Hind")
 
         self.paws_list = {
@@ -25,7 +26,7 @@ class ForceViewWidget(QtGui.QWidget):
             1: self.left_hind,
             2: self.right_front,
             3: self.right_hind,
-            }
+        }
 
         self.clear_paws()
 
@@ -83,6 +84,7 @@ class ForceViewWidget(QtGui.QWidget):
         for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()
 
+
 class PawView(QtGui.QWidget):
     def __init__(self, parent, label):
         super(PawView, self).__init__(parent)
@@ -115,13 +117,21 @@ class PawView(QtGui.QWidget):
             if z > max_length:
                 max_length = z
 
-        force_over_time = np.zeros((len(paw_data), max_length))
+        interpolate_length = 100
+        force_over_time = np.zeros((len(paw_data), interpolate_length))
+        lengths = []
+
         for index, data in enumerate(paw_data):
             x, y, z = data.shape
-            force_over_time[index, :z] = np.sum(np.sum(data, axis=0), axis=0)
-            self.axes.plot(force_over_time[index, :])
+            lengths.append(z)
+            force_over_time[index, :] = calculations.interpolate_time_series(np.sum(np.sum(data, axis=0), axis=0),
+                                                                             interpolate_length)
+            self.axes.plot(calculations.interpolate_time_series(range(z), interpolate_length),
+                           force_over_time[index, :])
 
-        self.axes.plot(np.mean(force_over_time, axis=0), color="r", linewidth=3)
+        mean_length = np.mean(lengths)
+        self.axes.plot(calculations.interpolate_time_series(range(int(mean_length)), interpolate_length),
+                       np.mean(force_over_time, axis=0), color="r", linewidth=3)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.axes.set_xlim([0, self.x])
         self.axes.set_ylim([0, self.y])

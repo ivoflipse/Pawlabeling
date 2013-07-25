@@ -6,6 +6,7 @@ import numpy as np
 import os
 
 from functions import utility, gui, io
+from functions.pubsub import pub
 from settings import configuration
 from widgets import resultswidget
 
@@ -126,7 +127,9 @@ class AnalysisWidget(QtGui.QTabWidget):
 
         self.clear_cached_values()
 
-        for file_name in file_names:
+        for index, file_name in enumerate(file_names):
+            pub.sendMessage("update_statusbar",
+                            status="Loading results for measurement {}/{}".format(index + 1, len(file_names)))
             measurement_name = file_name
             # Refresh the cache, it might be stale
             if measurement_name in self.paws:
@@ -158,6 +161,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Fill up the contacts tree
         self.add_contacts()
         self.results_widget.update_n_max(self.n_max)
+        pub.sendMessage("update_statusbar", status="Finished loading results")
         self.results_widget.update_widgets(self.paw_labels, self.paw_data, self.average_data)
 
     def add_contacts(self):
@@ -262,7 +266,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.invalid_paw_action = gui.create_action(text="Mark Paw as Invalid",
                                                     shortcut=configuration.invalid_paw,
                                                     icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                     "images/trash-icon.png")),
+                                                                                  "images/trash-icon.png")),
                                                     tip="Mark the paw as invalid",
                                                     checkable=False,
                                                     connection=self.invalid_paw
