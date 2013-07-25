@@ -311,7 +311,7 @@ def array_to_qimage(array, color_table):
     return result
 
 
-def get_QPixmap(data, degree, n_max, color_table, interpolation="nearest"):
+def get_QPixmap(data, degree, n_max, color_table, interpolation="cubic"):
     """
     This function expects a single frame, it will interpolate/resize it with a given degree and
     return a pixmap

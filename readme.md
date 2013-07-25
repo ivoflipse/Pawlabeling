@@ -24,18 +24,37 @@ It assumes all measurements are organized in folders as following:
 
 This structure is loaded into a tree for navigation. Selecting a measurement will load it into the entire plate widget.
 It will then try to load meta data, such as the location of the paws and their labels from memory, if available.
-If this information is not available, it will try to track the individual contacts using a custom tracking algorithm
-(which might not work for anything other than dogs) and let you manually label the contacts with their respective labels
+If this information is not available, it will try to track the individual contacts using a custom tracking algorithm and let you manually label the contacts with their respective labels
 (Left Front, LF; Left Hind, LH; Right Front, RF; Right Hind, RH).
 
-The tool currently offers no options for viewing the results or fixing any issues with the tracking.
+After the results have been saved, you can analyse the data by switching to the Analysis tab. The current version displays:
+
+- an image of the maximal pressure for each sensor for the average of all contacts for each paw;
+- graphs of the pressure over time with an average + std's;
+- graphs of the force over time with an average + std's;
+- an image of the maximal pressure with the COP.
+
+There's a slider for the results which allows you to make the average results roll off or scroll a line along the graphs.
+
 
 Features
 --------
 
 - Load measurements and track where the paws have made contact
 - Enable manual labeling of the contacts with their respective paw and saving of the results for later use
+- Analysis of the average results
 
+
+Screenshots
+-----------
+
+![Processing](docs/images/Processing.png)
+
+![Processing](docs/images/2D_view.png)
+
+![Processing](docs/images/Force.png)
+
+![Processing](docs/images/COP.png)
 
 Installation
 -----
@@ -91,6 +110,10 @@ You can switch the currently selected contact by pressing `4` or `6`. Remove a l
 **4. Save your results**
 
 After you've labeled all contacts, press `Ctrl+S` to save your results. Now you can select the next measurement for labeling. It will automatically load the previous results, so they can aid you while labeling.
+
+**5. Analyse your results**
+
+When you've saved the labels for several measurements you can switch to the Analysis mode (click the tab at the top) and start looking at your results. Averages for each paw are calculated automatically.
 
 Contact
 ----------
