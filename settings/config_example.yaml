@@ -19,3 +19,7 @@ interpolation_degree:
   entire_plate: 4
   paws_widget: 8
   results: 16
+
+thresholds:
+  start_force_percentage: 0.25
+  end_force_percentage: 0.25

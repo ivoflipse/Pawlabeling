@@ -257,12 +257,17 @@ class PawWidget(QtGui.QWidget):
         self.mean_surface_label.setText(
             "{} pixels".format(0 if self.mean_surface == float("inf") else self.mean_surface))
 
-    # def resizeEvent(self, event):
-    #     item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
-    #     ratio = min(self.view.viewport().width()/float(item_size.width()),
-    #                 self.view.viewport().height()/float(item_size.height()))
-    #
-    #     if abs(1-ratio) > 0.1:
-    #         self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
-    #         #self.view.fitInView(self.rect(), Qt.KeepAspectRatio)
-    #         self.view.centerOn(self.image)
+    def resizeEvent(self, event):
+        item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
+        ratio = min(self.view.viewport().width()/float(item_size.width()),
+                    self.view.viewport().height()/float(item_size.height()))
+
+        if abs(1-ratio) > 0.1:
+            # Slightly regularize the ratio
+            self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
+            #self.view.fitInView(self.rect(), Qt.KeepAspectRatio)
+            self.view.centerOn(self.image)
+            self.scene.setSceneRect(self.rect())
+            #print self.view.rect()
+            #print self.rect()
+            #print self.scene.sceneRect()

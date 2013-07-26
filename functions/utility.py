@@ -469,11 +469,13 @@ def touches_edges(data, paw, padding=False):
 
 
 def incomplete_step(data_slice):
+    from settings import configuration
     pressure_over_time = np.sum(np.sum(data_slice, axis=0), axis=0)
     max_pressure = np.max(pressure_over_time)
     incomplete = False
     #print max_pressure, 0.25*max_pressure, pressure_over_time[0], pressure_over_time[-1]
-    if pressure_over_time[0] > (0.4 * max_pressure) or pressure_over_time[-1] > (0.4 * max_pressure):
+    if (pressure_over_time[0] > (configuration.start_force_percentage * max_pressure) or
+        pressure_over_time[-1] > (configuration.end_force_percentage * max_pressure)):
         incomplete = True
     return incomplete
 

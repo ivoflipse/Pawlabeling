@@ -97,6 +97,10 @@ else:
     sensor_height = config["sensors"]["height"]
 sensor_surface = sensor_width * sensor_height
 
+# Thresholds for utility.incomplete_step
+start_force_percentage = config["thresholds"]["start_force_percentage"]
+end_force_percentage = config["thresholds"]["end_force_percentage"]
+
 main_window_left = config["widgets"]["main_window_left"]
 main_window_top = config["widgets"]["main_window_top"]
 main_window_width = config["widgets"]["main_window_width"]
