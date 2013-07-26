@@ -1,4 +1,5 @@
 import numpy as np
+from settings import configuration
 
 def interpolate_time_series(data, length=100):
     from scipy import interpolate
@@ -40,6 +41,16 @@ def calculate_cop_scipy(data):
         cop_y.append(y + 1)
     return cop_x, cop_y
 
+def force_over_time(data):
+    return np.sum(np.sum(data, axis=0), axis=0)
 
+def pixel_count_over_time(data):
+    x, y, z = data.shape
+    return np.array([np.count_nonzero(data[:, :, frame]) for frame in range(z)])
+
+def pressure_over_time(data):
+    force = force_over_time(data)
+    pixel_counts = pixel_count_over_time(data)
+    return np.divide(force, pixel_counts)
 
 

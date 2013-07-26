@@ -59,7 +59,8 @@ class ForceViewWidget(QtGui.QWidget):
                     x, y, z = data.shape
                     if z > max_length:
                         max_length = z
-                    max_val = np.max(np.sum(np.sum(data, axis=0), axis=0))
+                    force_over_time = calculations.force_over_time(data)
+                    max_val = np.max(force_over_time)
                     if max_val > max_force:
                         max_force = max_val
 
@@ -124,7 +125,7 @@ class PawView(QtGui.QWidget):
         for index, data in enumerate(paw_data):
             x, y, z = data.shape
             lengths.append(z)
-            force = np.sum(np.sum(data, axis=0), axis=0)
+            force = calculations.force_over_time(data)
             force = np.append(force, 0)
             force_over_time[index, :] = calculations.interpolate_time_series(force, interpolate_length)
             self.axes.plot(calculations.interpolate_time_series(range(z), interpolate_length),

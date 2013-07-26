@@ -479,6 +479,8 @@ def incomplete_step(data_slice):
         incomplete = True
     return incomplete
 
+def filter_outliers(paw_data):
+    pass
 
 def agglomerative_clustering(data, num_clusters):
     from collections import defaultdict

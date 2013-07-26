@@ -5,7 +5,7 @@ from PySide.QtCore import Qt
 import numpy as np
 import os
 
-from functions import utility, gui, io
+from functions import utility, gui, io, calculations
 from functions.pubsub import pub
 from settings import configuration
 from widgets import resultswidget
@@ -172,6 +172,7 @@ class AnalysisWidget(QtGui.QTabWidget):
     def add_contacts(self):
         self.contact_tree.clear()
         self.max_length = 0
+
         for measurement_name in self.paw_data:
             for index, paw in enumerate(self.paw_data[measurement_name]):
                 x, y, z = paw.shape
@@ -185,9 +186,9 @@ class AnalysisWidget(QtGui.QTabWidget):
                     rootItem.setText(0, str(index))
                     rootItem.setText(1, self.paw_dict[paw_label])
                     rootItem.setText(2, str(z))  # Sets the frame count
-                    surface = np.max([np.count_nonzero(paw[:, :, frame]) for frame in range(z)])
+                    surface = np.max(calculations.pixel_count_over_time(paw))
                     rootItem.setText(3, str(int(surface)))
-                    force = np.max(np.sum(np.sum(paw, axis=0), axis=0))
+                    force = np.max(calculations.force_over_time(paw))
                     rootItem.setText(4, str(int(force)))
 
                     for idx in range(rootItem.columnCount()):
