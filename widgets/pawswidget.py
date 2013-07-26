@@ -11,13 +11,12 @@ class PawsWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(PawsWidget, self).__init__(parent)
         self.parent = parent
-        self.degree = configuration.degree * 2
 
-        self.left_front = PawWidget(self, self.degree, label="Left Front")
-        self.left_hind = PawWidget(self, self.degree, label="Left Hind")
-        self.right_front = PawWidget(self, self.degree, label="Right Front")
-        self.right_hind = PawWidget(self, self.degree, label="Right Hind")
-        self.current_paw = PawWidget(self, self.degree, label="")
+        self.left_front = PawWidget(self, label="Left Front")
+        self.left_hind = PawWidget(self, label="Left Hind")
+        self.right_front = PawWidget(self,label="Right Front")
+        self.right_hind = PawWidget(self,label="Right Hind")
+        self.current_paw = PawWidget(self, label="")
 
         self.paws_list = {
             0: self.left_front,
@@ -142,10 +141,10 @@ class PawsWidget(QtGui.QWidget):
 
 
 class PawWidget(QtGui.QWidget):
-    def __init__(self, parent, degree, label):
+    def __init__(self, parent, label):
         super(PawWidget, self).__init__(parent)
         self.parent = parent
-        self.degree = degree
+        self.degree = configuration.interpolation_paws_widget
         self.n_max = 0
         self.label = label
         self.image_color_table = utility.ImageColorTable()

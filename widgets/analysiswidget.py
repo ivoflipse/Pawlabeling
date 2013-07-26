@@ -28,7 +28,6 @@ class AnalysisWidget(QtGui.QTabWidget):
 
         # This contains all the file_names for each dog_name
         self.file_names = defaultdict(dict)
-        self.degree = configuration.degree
 
         self.path = configuration.measurement_folder
         self.store_path = configuration.store_results_folder
@@ -111,9 +110,15 @@ class AnalysisWidget(QtGui.QTabWidget):
                     self.file_names[dog_name][file_name] = name
 
     def load_first_file(self):
-        # Select the first item in the tree
-        self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0))
-        self.load_all_results()
+        # Check if the tree isn't empty, because else we can't load anything
+        if self.measurement_tree.topLevelItemCount() > 0:
+            # Select the first item in the tree
+            self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0))
+            self.load_all_results()
+        else:
+            pub.sendMessage("update_statusbar", status="No results found")
+            self.logger.warning(
+                "No results found, please check the location for the results and restart the program")
 
     def load_all_results(self):
         """

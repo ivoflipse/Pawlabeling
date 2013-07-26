@@ -1,9 +1,37 @@
 import os
-import sys
+import yaml
 from PySide import QtGui, QtCore
 import logging
 
 app_name = "Paw Labeling tool"
+
+# Check if there's a config.yaml, else copy the example version and write it to config.yaml
+if not os.path.exists(".\\settings\\config.yaml"):
+    with open(".\\settings\\config_example.yaml","r") as input_file:
+        output_string = ""
+        for line in input_file:
+            output_string += line
+
+    with open(".\\settings\\config.yaml", "w") as output_file:
+        for line in output_string:
+            output_file.write(line)
+
+# To use settings other than my default ones, change config.yaml
+with open(".\\settings\\config.yaml","r") as input_file:
+    config = yaml.load(input_file)
+
+# Check if the existing yaml file is complete
+with open(".\\settings\\config_example.yaml","r") as input_file:
+    config_example = yaml.load(input_file)
+
+# Go through all the keys, even the nested ones (only one level!)
+for key, value in config_example.items():
+    if key not in config:
+        config[key] = config_example[key]
+    if type(value) == dict:
+        for nested_key, nested_value in value.items():
+            if nested_key not in config[key]:
+                config[key][nested_key] = nested_value
 
 # Lookup table for converting indices to labels
 paw_dict = {
@@ -47,10 +75,9 @@ else:
     remove_label = QtGui.QKeySequence(QtCore.Qt.Key_K)
     invalid_paw = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
 
+measurement_folder = config["folders"]["measurement_folder"]
+store_results_folder = config["folders"]["store_results_folder"]
 
-# The first measurement_folder is the folder which stores all the measurement files
-measurement_folder = ".\\samples\\Measurements"
-store_results_folder = ".\\samples\\Labels"
 # Add the folder for the store_results_folder data if it doesn't exist
 if not os.path.exists(store_results_folder):
     os.mkdir(store_results_folder)
@@ -62,36 +89,25 @@ if brand == "rsscan":
     sensor_width = 0.508
     sensor_height = 0.762
 else:
-    sensor_width = 1
-    sensor_height = 1
+    sensor_width = config["sensors"]["width"]
+    sensor_height = config["sensors"]["height"]
 sensor_surface = sensor_width * sensor_height
 
-# These values dictate how large the app will be, best not touch window_top
-# since you'll lose the buttons to min/maximize the window
-if desktop:
-    main_window_left = 0
-    main_window_top = 25
-    main_window_width = 1400
-    main_window_height = 900
-    main_window_size = QtCore.QRect(main_window_left, main_window_top, main_window_width, main_window_height)
-    # These are more size hints, since the other parts of the window set minimum sizes
-    # I might make those available here too
-    entire_plate_widget_width = 800
-    entire_plate_widget_height = 400
-    paws_widget_height = 200
-else:
-    main_window_left = 0
-    main_window_top = 25
-    main_window_width = 1440
-    main_window_height = 830
-    main_window_size = QtCore.QRect(main_window_left, main_window_top, main_window_width, main_window_height)
-    entire_plate_widget_width = 800
-    entire_plate_widget_height = 450
-    paws_widget_height = 170
+main_window_left = config["widgets"]["main_window_left"]
+main_window_top = config["widgets"]["main_window_top"]
+main_window_width = config["widgets"]["main_window_width"]
+main_window_height = config["widgets"]["main_window_height"]
+main_window_size = QtCore.QRect(main_window_left, main_window_top, main_window_width, main_window_height)
+
+entire_plate_widget_width = config["widgets"]["entire_plate_widget_width"]
+entire_plate_widget_height = config["widgets"]["entire_plate_widget_height"]
+paws_widget_height = config["widgets"]["paws_widget_height"]
 
 # This determines the amount of interpolation used to increase the size of the canvas of entire plate and paw
 # Decrease this value if you have a smaller screen
-degree = 4
+interpolation_entire_plate = config["interpolation_degree"]["entire_plate"]
+interpolation_paws_widget = config["interpolation_degree"]["paws_widget"]
+interpolation_results = config["interpolation_degree"]["results"]
 
 logging_levels = {
     "debug": logging.DEBUG,

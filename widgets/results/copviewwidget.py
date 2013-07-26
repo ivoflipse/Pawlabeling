@@ -81,7 +81,7 @@ class PawView(QtGui.QWidget):
         self.label = QtGui.QLabel(label)
         self.parent = parent
         self.n_max = 0
-        self.degree = configuration.degree * 4
+        self.degree = configuration.interpolation_results
         self.mx = 15
         self.my = 15
         self.min_x = 0

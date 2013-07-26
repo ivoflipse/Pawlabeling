@@ -31,7 +31,6 @@ class ProcessingWidget(QtGui.QWidget):
 
         # This contains all the file_names for each dog_name
         self.file_names = defaultdict(dict)
-        self.degree = configuration.degree
 
         # Create a label to display the measurement name
         self.nameLabel = QtGui.QLabel(self)
@@ -122,9 +121,15 @@ class ProcessingWidget(QtGui.QWidget):
                         childItem.setForeground(0, green_brush)
 
     def load_first_file(self):
-        # Select the first item in the tree
-        self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
-        self.load_file()
+        # Check if the tree isn't empty, because else we can't load anything
+        if self.measurement_tree.topLevelItemCount() > 0:
+            # Select the first item in the tree
+            self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
+            self.load_file()
+        else:
+            pub.sendMessage("update_statusbar", status="No measurements found")
+            self.logger.warning(
+                "No measurements found, please check the location for the measurements and restart the program")
 
     def load_file(self):
         # Get the text from the currentItem

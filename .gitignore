@@ -65,3 +65,6 @@ Desktop.ini
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 .idea/workspace.xml
+
+# Project specific files #
+./settings/config.yaml

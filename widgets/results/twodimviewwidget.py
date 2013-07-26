@@ -74,7 +74,7 @@ class PawView(QtGui.QWidget):
         super(PawView, self).__init__(parent)
         self.label = QtGui.QLabel(label)
         self.parent = parent
-        self.degree = configuration.degree * 4
+        self.degree = configuration.interpolation_results
         self.n_max = 0
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
