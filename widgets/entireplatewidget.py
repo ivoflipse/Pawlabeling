@@ -8,7 +8,7 @@ class EntirePlateWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(EntirePlateWidget, self).__init__(parent)
         self.parent = parent
-        self.resize(configuration.entire_plate_widget_width, configuration.entire_plate_widget_height)
+        #self.resize(configuration.entire_plate_widget_width, configuration.entire_plate_widget_height)
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
@@ -148,7 +148,8 @@ class EntirePlateWidget(QtGui.QWidget):
             self.data = self.measurement[:, :, self.frame].T
 
         # Update the pixmap
-        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table))
+        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table)
+        self.image.setPixmap(self.pixmap)
 
     def clear_bounding_box(self):
         # Remove the old ones and redraw
@@ -205,5 +206,7 @@ class EntirePlateWidget(QtGui.QWidget):
             self.gait_lines.append(self.scene.addPolygon(polygon, self.gait_line_pen))
 
 
+    def resizeEvent(self, event):
+        pass
 
 

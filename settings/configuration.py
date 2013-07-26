@@ -33,6 +33,10 @@ for key, value in config_example.items():
             if nested_key not in config[key]:
                 config[key][nested_key] = nested_value
 
+# Write any changes back to the config.yaml file
+with open(".\\settings\\config.yaml", "w") as output_file:
+    output_file.write(yaml.dump(config,  default_flow_style=False))
+
 # Lookup table for converting indices to labels
 paw_dict = {
     0: "LF",

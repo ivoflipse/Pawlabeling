@@ -188,7 +188,7 @@ class PawWidget(QtGui.QWidget):
         self.main_layout.addWidget(self.view)
         self.main_layout.addLayout(self.number_layout)
 
-        self.setMinimumHeight(configuration.paws_widget_height)
+        #self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
 
     def update(self, data_list, average_data):
