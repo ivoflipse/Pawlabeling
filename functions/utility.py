@@ -1,7 +1,9 @@
 from PySide import QtGui, QtCore
 import numpy as np
 import logging
+
 logger = logging.getLogger("logger")
+
 
 class Contact():
     """
@@ -234,7 +236,8 @@ def contour_to_polygon(contour, degree, offset_x=0, offset_y=0):
     if len(contour) == 1:
         polygon.append(QtCore.QPointF((coordinates[0][0] + 1 - offset_x) * degree,
                                       (
-                                      coordinates[0][1] + 1 - offset_y) * degree)) # Pray this doesn't go out of bounds!
+                                          coordinates[0][
+                                              1] + 1 - offset_y) * degree)) # Pray this doesn't go out of bounds!
     return QtGui.QPolygonF(polygon)
 
 
@@ -470,17 +473,48 @@ def touches_edges(data, paw, padding=False):
 
 def incomplete_step(data_slice):
     from settings import configuration
+
     pressure_over_time = np.sum(np.sum(data_slice, axis=0), axis=0)
     max_pressure = np.max(pressure_over_time)
     incomplete = False
     #print max_pressure, 0.25*max_pressure, pressure_over_time[0], pressure_over_time[-1]
     if (pressure_over_time[0] > (configuration.start_force_percentage * max_pressure) or
-        pressure_over_time[-1] > (configuration.end_force_percentage * max_pressure)):
+                pressure_over_time[-1] > (configuration.end_force_percentage * max_pressure)):
         incomplete = True
     return incomplete
 
-def filter_outliers(paw_data):
-    pass
+
+def filter_outliers(data, num_std=2):
+    import calculations
+    lengths = np.array([d.shape[2] for d in data])
+    forces = np.array([np.max(calculations.force_over_time(d)) for d in data])
+    pixel_counts = np.array([np.max(calculations.pixel_count_over_time(d)) for d in data])
+
+    # Get mean +/- num_std's * std
+    mean_length = np.mean(lengths)
+    std_length = np.std(lengths)
+    min_std_lengths = mean_length - num_std * std_length
+    max_std_lengths = mean_length + num_std * std_length
+
+    mean_forces = np.mean(forces)
+    std_forces = np.std(forces)
+    min_std_forces = mean_forces - num_std * std_forces
+    max_std_forces = mean_forces + num_std * std_forces
+
+    mean_pixel_counts = np.mean(pixel_counts)
+    std_pixel_counts = np.std(pixel_counts)
+    min_std_pixel_counts = mean_pixel_counts - num_std * std_pixel_counts
+    max_std_pixel_counts = mean_pixel_counts + num_std * std_pixel_counts
+
+    new_data = []
+    for index, (l, f, p, d) in enumerate(zip(lengths, forces, pixel_counts, data)):
+        if (min_std_lengths < l < max_std_lengths and
+                        min_std_forces < f < max_std_forces and
+                        min_std_pixel_counts < p < max_std_pixel_counts):
+            new_data.append(d)
+
+    return new_data
+
 
 def agglomerative_clustering(data, num_clusters):
     from collections import defaultdict
@@ -557,18 +591,22 @@ def map_to_string(piecewise_aggregate_approximation, alphabet_size):
         12: [float("-inf"), -1.38, -0.97, -0.67, -0.43, -0.21, 0, 0.21, 0.43, 0.67, 0.97, 1.38],
         13: [float("-inf"), -1.43, -1.02, -0.74, -0.5, -0.29, -0.1, 0.1, 0.29, 0.5, 0.74, 1.02, 1.43],
         14: [float("-inf"), -1.47, -1.07, -0.79, -0.57, -0.37, -0.18, 0, 0.18, 0.37, 0.57, 0.79, 1.07, 1.47],
-        15: [float("-inf"), -1.5, -1.11, -0.84, -0.62, -0.43, -0.25, -0.08, 0.08, 0.25, 0.43, 0.62, 0.84, 1.11, 1.5],
+        15: [float("-inf"), -1.5, -1.11, -0.84, -0.62, -0.43, -0.25, -0.08, 0.08, 0.25, 0.43, 0.62, 0.84, 1.11,
+             1.5],
         16: [float("-inf"), -1.53, -1.15, -0.89, -0.67, -0.49, -0.32, -0.16, 0, 0.16, 0.32, 0.49, 0.67, 0.89, 1.15,
              1.53],
-        17: [float("-inf"), -1.56, -1.19, -0.93, -0.72, -0.54, -0.38, -0.22, -0.07, 0.07, 0.22, 0.38, 0.54, 0.72, 0.93,
+        17: [float("-inf"), -1.56, -1.19, -0.93, -0.72, -0.54, -0.38, -0.22, -0.07, 0.07, 0.22, 0.38, 0.54, 0.72,
+             0.93,
              1.19, 1.56],
         18: [float("-inf"), -1.59, -1.22, -0.97, -0.76, -0.59, -0.43, -0.28, -0.14, 0, 0.14, 0.28, 0.43, 0.59, 0.76,
              0.97,
              1.22, 1.59],
-        19: [float("-inf"), -1.62, -1.25, -1, -0.8, -0.63, -0.48, -0.34, -0.2 - 0.07, 0.07, 0.2, 0.34, 0.48, 0.63, 0.8,
+        19: [float("-inf"), -1.62, -1.25, -1, -0.8, -0.63, -0.48, -0.34, -0.2 - 0.07, 0.07, 0.2, 0.34, 0.48, 0.63,
+             0.8,
              1,
              1.25, 1.62],
-        20: [float("-inf"), -1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39, 0.52,
+        20: [float("-inf"), -1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39,
+             0.52,
              0.67,
              0.84, 1.04, 1.28, 1.64],
     }
@@ -587,6 +625,7 @@ def timeseries2symbol(data, N, n, alphabet_size):
     Use as: current_string = timeseries2symbol(data, data_len, nseg, alphabet_size)
     """
     from math import floor
+
     if alphabet_size > 20:
         logger.critical("The alphabet size for timeseries2symbol is too large.")
 
@@ -674,10 +713,14 @@ def build_dist_table(alphabet_size):
         13: [-1.47, -1.07, -0.79, -0.57, -0.37, -0.18, 0, 0.18, 0.37, 0.57, 0.79, 1.07, 1.47],
         14: [-1.5, -1.11, -0.84, -0.62, -0.43, -0.25, -0.08, 0.08, 0.25, 0.43, 0.62, 0.84, 1.11, 1.5],
         15: [-1.53, -1.15, -0.89, -0.67, -0.49, -0.32, -0.16, 0, 0.16, 0.32, 0.49, 0.67, 0.89, 1.15, 1.53],
-        16: [-1.56, -1.19, -0.93, -0.72, -0.54, -0.38, -0.22, -0.07, 0.07, 0.22, 0.38, 0.54, 0.72, 0.93, 1.19, 1.56],
-        17: [-1.59, -1.22, -0.97, -0.76, -0.59, -0.43, -0.28, -0.14, 0, 0.14, 0.28, 0.43, 0.59, 0.76, 0.97, 1.22, 1.59],
-        18: [-1.62, -1.25, -1, -0.8, -0.63, -0.48, -0.34, -0.2 - 0.07, 0.07, 0.2, 0.34, 0.48, 0.63, 0.8, 1, 1.25, 1.62],
-        19: [-1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39, 0.52, 0.67, 0.84, 1.04,
+        16: [-1.56, -1.19, -0.93, -0.72, -0.54, -0.38, -0.22, -0.07, 0.07, 0.22, 0.38, 0.54, 0.72, 0.93, 1.19,
+             1.56],
+        17: [-1.59, -1.22, -0.97, -0.76, -0.59, -0.43, -0.28, -0.14, 0, 0.14, 0.28, 0.43, 0.59, 0.76, 0.97, 1.22,
+             1.59],
+        18: [-1.62, -1.25, -1, -0.8, -0.63, -0.48, -0.34, -0.2 - 0.07, 0.07, 0.2, 0.34, 0.48, 0.63, 0.8, 1, 1.25,
+             1.62],
+        19: [-1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39, 0.52, 0.67, 0.84,
+             1.04,
              1.28, 1.64],
     }
     cutlines = mapping[alphabet_size]
@@ -753,14 +796,18 @@ mapping = {
     13: [float("-inf"), -1.43, -1.02, -0.74, -0.5, -0.29, -0.1, 0.1, 0.29, 0.5, 0.74, 1.02, 1.43],
     14: [float("-inf"), -1.47, -1.07, -0.79, -0.57, -0.37, -0.18, 0, 0.18, 0.37, 0.57, 0.79, 1.07, 1.47],
     15: [float("-inf"), -1.5, -1.11, -0.84, -0.62, -0.43, -0.25, -0.08, 0.08, 0.25, 0.43, 0.62, 0.84, 1.11, 1.5],
-    16: [float("-inf"), -1.53, -1.15, -0.89, -0.67, -0.49, -0.32, -0.16, 0, 0.16, 0.32, 0.49, 0.67, 0.89, 1.15, 1.53],
+    16: [float("-inf"), -1.53, -1.15, -0.89, -0.67, -0.49, -0.32, -0.16, 0, 0.16, 0.32, 0.49, 0.67, 0.89, 1.15,
+         1.53],
     17: [float("-inf"), -1.56, -1.19, -0.93, -0.72, -0.54, -0.38, -0.22, -0.07, 0.07, 0.22, 0.38, 0.54, 0.72, 0.93,
          1.19, 1.56],
-    18: [float("-inf"), -1.59, -1.22, -0.97, -0.76, -0.59, -0.43, -0.28, -0.14, 0, 0.14, 0.28, 0.43, 0.59, 0.76, 0.97,
+    18: [float("-inf"), -1.59, -1.22, -0.97, -0.76, -0.59, -0.43, -0.28, -0.14, 0, 0.14, 0.28, 0.43, 0.59, 0.76,
+         0.97,
          1.22, 1.59],
-    19: [float("-inf"), -1.62, -1.25, -1, -0.8, -0.63, -0.48, -0.34, -0.2 - 0.07, 0.07, 0.2, 0.34, 0.48, 0.63, 0.8, 1,
+    19: [float("-inf"), -1.62, -1.25, -1, -0.8, -0.63, -0.48, -0.34, -0.2 - 0.07, 0.07, 0.2, 0.34, 0.48, 0.63, 0.8,
+         1,
          1.25, 1.62],
-    20: [float("-inf"), -1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39, 0.52, 0.67,
+    20: [float("-inf"), -1.64, -1.28, -1.04, -0.84, -0.67, -0.52, -0.39, -0.25, -0.13, 0, 0.13, 0.25, 0.39, 0.52,
+         0.67,
          0.84, 1.04, 1.28, 1.64],
 }
 

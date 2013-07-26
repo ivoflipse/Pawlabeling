@@ -58,6 +58,7 @@ class CopViewWidget(QtGui.QWidget):
         # Do I need to cache information so I can use it later on? Like in predict_label?
         for paw_label, average_list in average_data.items():
             data = data_array[paw_label]
+            data = utility.filter_outliers(data)
             widget = self.paws_list[paw_label]
             widget.x = max_length
             widget.update(data, average_list)
