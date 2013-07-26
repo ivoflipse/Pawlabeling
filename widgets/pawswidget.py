@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from PySide import QtGui
+from PySide.QtCore import Qt
 import numpy as np
 
 from functions import utility
@@ -157,7 +158,7 @@ class PawWidget(QtGui.QWidget):
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
-        self.view.setGeometry(0, 0, 100, 100)
+        self.view.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform)
         self.image = QtGui.QGraphicsPixmapItem()
         self.scene.addItem(self.image)
 
@@ -188,7 +189,7 @@ class PawWidget(QtGui.QWidget):
         self.main_layout.addWidget(self.view)
         self.main_layout.addLayout(self.number_layout)
 
-        #self.setMinimumHeight(configuration.paws_widget_height)
+        self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
 
     def update(self, data_list, average_data):
@@ -236,7 +237,8 @@ class PawWidget(QtGui.QWidget):
 
         # Flip around the vertical axis (god knows why)
         sliced_data = sliced_data[:, ::-1]
-        self.image.setPixmap(utility.get_QPixmap(sliced_data, self.degree, self.n_max, self.color_table, interpolation="cubic"))
+        self.pixmap = utility.get_QPixmap(sliced_data, self.degree, self.n_max, self.color_table, interpolation="cubic")
+        self.image.setPixmap(self.pixmap)
 
     def clear_paws(self):
         self.data = np.zeros((self.mx, self.my))
@@ -254,3 +256,13 @@ class PawWidget(QtGui.QWidget):
             "{} frames".format(0 if self.mean_duration == float("inf") else self.mean_duration))
         self.mean_surface_label.setText(
             "{} pixels".format(0 if self.mean_surface == float("inf") else self.mean_surface))
+
+    # def resizeEvent(self, event):
+    #     item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
+    #     ratio = min(self.view.viewport().width()/float(item_size.width()),
+    #                 self.view.viewport().height()/float(item_size.height()))
+    #
+    #     if abs(1-ratio) > 0.1:
+    #         self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
+    #         #self.view.fitInView(self.rect(), Qt.KeepAspectRatio)
+    #         self.view.centerOn(self.image)
