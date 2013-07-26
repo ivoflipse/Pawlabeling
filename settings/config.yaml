@@ -1,0 +1,21 @@
+folders:
+  measurement_folder: ".\\samples\\Measurements"
+  store_results_folder: ".\\samples\\Labels"
+
+sensors:
+  width: 1
+  height: 1
+
+widgets:
+  main_window_left: 0
+  main_window_top: 25
+  main_window_width: 1440
+  main_window_height: 830
+  entire_plate_widget_width: 800
+  entire_plate_widget_height: 450
+  paws_widget_height: 170
+
+interpolation_degree:
+  entire_plate: 4
+  paws_widget: 8
+  results: 16

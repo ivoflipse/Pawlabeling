@@ -464,7 +464,7 @@ def touches_edges(data, paw, padding=False):
     else:
         x_touch = (paw.total_min_x <= 1) or (paw.total_max_x >= ny - 1)
         y_touch = (paw.total_min_y <= 1) or (paw.total_max_y >= nx - 1)
-        z_touch = (paw.frames[-1] >= nt - 1)
+        z_touch = (paw.frames[-1] >= nt)
     return x_touch or y_touch or z_touch
 
 
@@ -472,7 +472,8 @@ def incomplete_step(data_slice):
     pressure_over_time = np.sum(np.sum(data_slice, axis=0), axis=0)
     max_pressure = np.max(pressure_over_time)
     incomplete = False
-    if pressure_over_time[0] > (0.25 * max_pressure) or pressure_over_time[-1] > (0.25 * max_pressure):
+    #print max_pressure, 0.25*max_pressure, pressure_over_time[0], pressure_over_time[-1]
+    if pressure_over_time[0] > (0.4 * max_pressure) or pressure_over_time[-1] > (0.4 * max_pressure):
         incomplete = True
     return incomplete
 

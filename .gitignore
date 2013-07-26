@@ -67,4 +67,4 @@ $RECYCLE.BIN/
 .idea/workspace.xml
 
 # Project specific files #
-./settings/config.yaml
+settings/config.yaml
