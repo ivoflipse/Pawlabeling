@@ -89,7 +89,9 @@ def shutdown_check():
 def main():
     appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A2'
     app = QtSingleApplication(appGuid, sys.argv)
-    if app.isRunning(): sys.exit(0)
+    if app.isRunning():
+        print "Please close all other instances of the application before restarting"
+        sys.exit(0)
 
     app.setApplicationName(configuration.app_name)
     window = MainWindow()

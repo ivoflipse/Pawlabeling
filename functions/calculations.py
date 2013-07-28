@@ -12,23 +12,27 @@ def interpolate_time_series(data, length=100):
 def calculate_cop(data, version="scipy"):
     if version == "scipy":
         return calculate_cop_scipy(data)
-    else:
+    elif version == "numpy":
         return calculate_cop_manually(data)
 
 def calculate_cop_manually(data):
-    cop_x, cop_y = [], []
     y, x, z = np.shape(data)
+    cop_x = np.zeros(z, dtype=np.float32)
+    cop_y = np.zeros(z, dtype=np.float32)
+
     x_coordinate, y_coordinate = np.arange(1, x + 1), np.arange(1, y + 1)
-    temp_x, temp_y = np.zeros((y, z)), np.zeros((x, z))
+    temp_x, temp_y = np.zeros(y), np.zeros(x)
     for frame in range(z):
-        if np.sum(data[:, :, frame]) != 0.0: # Else divide by zero
+        #print frame, np.sum(data[:, :, frame])
+        if np.sum(data[:, :, frame]) > 0.0: # Else divide by zero
+            # This can be rewritten as a vector calculation
             for col in range(y):
-                temp_x[col, frame] = np.sum(data[col, :, frame] * x_coordinate)
+                temp_x[col] = np.sum(data[col, :, frame] * x_coordinate)
             for row in range(x):
-                temp_y[row, frame] = np.sum(data[:, row, frame] * y_coordinate)
-            if np.sum(temp_x[:, frame]) != 0.0 and np.sum(temp_y[:, frame]) != 0.0:
-                cop_x.append(np.round(np.sum(temp_x[:, frame]) / np.sum(data[:, :, frame]), 2))
-                cop_y.append(np.round(np.sum(temp_y[:, frame]) / np.sum(data[:, :, frame]), 2))
+                temp_y[row] = np.sum(data[:, row, frame] * y_coordinate)
+            # np.divide should guard against divide by zero
+            cop_x[frame] = np.divide(np.sum(temp_x), np.sum(data[:, :, frame]))
+            cop_y[frame] = np.divide(np.sum(temp_y), np.sum(data[:, :, frame]))
     return cop_x, cop_y
 
 def calculate_cop_scipy(data):

@@ -5,6 +5,8 @@ from PySide import QtGui
 
 from settings import configuration
 from functions import utility
+import logging
+logger = logging.getLogger("logger")
 
 class TwoDimViewWidget(QtGui.QWidget):
     def __init__(self, parent):
@@ -53,7 +55,13 @@ class TwoDimViewWidget(QtGui.QWidget):
         # Do I need to cache information so I can use it later on? Like in predict_label?
         for paw_label, average_list in average_data.items():
             data = data_array[paw_label]
-            data = utility.filter_outliers(data)
+            # Skip updating if there's no data
+            if len(data) == 0:
+                logger.info("No data found for {}".format(configuration.paw_dict[paw_label]))
+                continue
+            # Filtering outliers makes no sense when there's only one value
+            elif len(data) > 1:
+                data = utility.filter_outliers(data)
             widget = self.paws_list[paw_label]
             widget.update(data, average_list)
 
@@ -104,15 +112,23 @@ class PawView(QtGui.QWidget):
     def update(self, paw_data, average_data):
         self.frame = -1
         self.max_of_max = np.mean(average_data, axis=0)
-        # The result of calculate_average_data = (number of paws, rows, colums, frames)
-        # so mean axis=0 is mean over all paws
-        self.average_data = np.mean(utility.calculate_average_data(paw_data), axis=0)
+        if len(paw_data) == 0:
+            return
+        # If there's only one measurement, than average_data is not the mean
+        elif len(paw_data) == 1:
+            self.average_data = utility.calculate_average_data(paw_data)[0,:,:,:]
+        else:
+            # The result of calculate_average_data = (number of paws, rows, colums, frames)
+            # so mean axis=0 is mean over all paws
+            self.average_data = np.mean(utility.calculate_average_data(paw_data), axis=0)
+
         x, y, z = np.nonzero(self.average_data)
         # Pray this never goes out of bounds
         self.min_x = np.min(x) - 2
         self.max_x = np.max(x) + 2
         self.min_y = np.min(y) - 2
         self.max_y = np.max(y) + 2
+        self.max_z = np.max(z)
 
         self.draw_frame()
 
@@ -120,7 +136,11 @@ class PawView(QtGui.QWidget):
         if self.frame == -1:
             self.sliced_data = self.max_of_max[self.min_x:self.max_x,self.min_y:self.max_y]
         else:
-            self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y, self.frame]
+            if self.frame < self.max_z:
+                self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y, self.frame]
+            else:
+                # Pray self.max_z + 1 isn't out of bounds!
+                self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y, self.max_z+1]
 
         # Make sure the paws are facing upright
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
@@ -132,12 +152,12 @@ class PawView(QtGui.QWidget):
     def change_frame(self, frame):
         self.frame = frame
         # If we're not displaying the empty array
-        if self.max_of_max.shape != (self.mx, self.my):
+        if self.max_of_max.shape != (self.mx, self.my) or self.max_z < self.frame:
             self.draw_frame()
 
     def clear_paws(self):
         self.sliced_data = np.zeros((self.mx, self.my))
-        self.average_data = self.sliced_data
+        self.average_data = np.zeros((self.mx, self.my, 15))
         self.max_of_max = self.sliced_data
         self.min_x, self.max_x, self.min_y, self.max_y = 0, self.mx, 0, self.my
         # Put the screen to black

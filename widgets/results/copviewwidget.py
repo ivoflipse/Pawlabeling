@@ -6,6 +6,8 @@ from PySide import QtGui, QtCore
 from settings import configuration
 from functions import utility, calculations
 
+import logging
+logger = logging.getLogger("logger")
 
 class CopViewWidget(QtGui.QWidget):
     def __init__(self, parent):
@@ -59,7 +61,13 @@ class CopViewWidget(QtGui.QWidget):
         # Do I need to cache information so I can use it later on? Like in predict_label?
         for paw_label, average_list in average_data.items():
             data = data_array[paw_label]
-            data = utility.filter_outliers(data)
+            # Skip updating if there's no data
+            if len(data) == 0:
+                logger.info("No data found for {}".format(configuration.paw_dict[paw_label]))
+                continue
+            # Filtering outliers makes no sense when there's only one value
+            elif len(data) > 1:
+                data = utility.filter_outliers(data)
             widget = self.paws_list[paw_label]
             widget.x = max_length
             widget.update(data, average_list)
@@ -127,6 +135,7 @@ class PawView(QtGui.QWidget):
         self.max_x = np.max(x) + 2
         self.min_y = np.min(y) - 2
         self.max_y = np.max(y) + 2
+        self.max_z = np.max(z)
 
         self.draw_frame()
 
@@ -147,27 +156,22 @@ class PawView(QtGui.QWidget):
         # This value determines how many points of the COP are being plotted.
         self.x = 15
 
-        num_paws = len(self.paw_data)
-        cop_xs = np.zeros((num_paws, self.x))
-        cop_ys = np.zeros((num_paws, self.x))
-        for index, data in enumerate(self.paw_data):
-            # I first interpolated using the length, but then I switched to a default for now. Fix later
-            x, y, z = data.shape
-            # Reversing the left-right direction. I should really figure out where this is coming from
-            cop_x, cop_y = calculations.calculate_cop(np.rot90(np.rot90(data[:, ::-1, :])))
-            cop_xs[index, :] = calculations.interpolate_time_series(cop_x, length=self.x)
-            cop_ys[index, :] = calculations.interpolate_time_series(cop_y, length=self.x)
+        # Just calculate the COP over the average data
+        average_data = np.rot90(np.rot90(self.average_data[self.min_x:self.max_x, self.min_y:self.max_y, :self.max_z]))
+        # For some reason I can't do the slicing in the above call
+        average_data = average_data[:,::-1,:]
+        self.cop_x, self.cop_y = calculations.calculate_cop(average_data, version="numpy")
 
-        average_cop_x = np.mean(cop_xs, axis=0)
-        average_cop_y = np.mean(cop_ys, axis=0)
-        # Initialize these values just in case
-        x1, x2, y1, y2 = 0, 0, 0, 0
+        # Create a strided index
+        index = [x for x in range(0, self.max_z, int(self.max_z / self.x))]
 
-        for frame in range(len(average_cop_x) - 1):
-            x1 = average_cop_x[frame]
-            x2 = average_cop_x[frame + 1]
-            y1 = average_cop_y[frame]
-            y2 = average_cop_y[frame + 1]
+        x2, y2 = 0, 0
+
+        for frame in range(len(self.cop_x)-1):
+            x1 = self.cop_x[frame]
+            x2 = self.cop_x[frame + 1]
+            y1 = self.cop_y[frame]
+            y2 = self.cop_y[frame + 1]
 
             line = QtCore.QLineF(QtCore.QPointF(x1 * self.degree, y1 * self.degree),
                                  QtCore.QPointF(x2 * self.degree, y2 * self.degree))
@@ -175,9 +179,12 @@ class PawView(QtGui.QWidget):
             line = self.scene.addLine(line, self.line_pen)
             line.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
             self.cop_lines.append(line)
-            ellipse = self.scene.addEllipse(x1 * self.degree, y1 * self.degree, 5, 5, self.dot_pen, self.dot_brush)
-            ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
-            self.cop_ellipses.append(ellipse)
+
+            # We only plot a couple of the ellipses
+            if frame in index:
+                ellipse = self.scene.addEllipse(x1 * self.degree, y1 * self.degree, 5, 5, self.dot_pen, self.dot_brush)
+                ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
+                self.cop_ellipses.append(ellipse)
 
         ellipse = self.scene.addEllipse(x2 * self.degree, y2 * self.degree, 5, 5, self.dot_pen, self.dot_brush)
         ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
@@ -189,18 +196,11 @@ class PawView(QtGui.QWidget):
             self.scene.removeItem(item)
         self.cop_ellipses = []
 
-        # Check if the paw still has any contact, else there's nothing to draw
-        if self.frame < self.average_data.shape[2]:
-            # Calculate the COP for the current frame
-            # Remember, the average data has a shape of [100,100,max_frames]
-            cop_x, cop_y = calculations.calculate_cop(
-                np.rot90(np.rot90(
-                    self.average_data[self.min_x:self.max_x, self.min_y:self.max_y:-1, self.frame:self.frame + 1])))
-
-            cop_x = cop_x[0]
-            cop_y = cop_y[0]
-            ellipse = self.scene.addEllipse(cop_x * self.degree, cop_y * self.degree,
-                                            5, 5, self.dot_pen, self.dot_brush)
+        # Only draw if the frame is actually available
+        if self.frame < self.cop_x.shape[0]:
+            cop_x = self.cop_x[self.frame]
+            cop_y = self.cop_y[self.frame]
+            ellipse = self.scene.addEllipse(cop_x * self.degree, cop_y * self.degree, 5, 5, self.dot_pen, self.dot_brush)
             ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
             self.cop_ellipses.append(ellipse)
 
@@ -209,7 +209,7 @@ class PawView(QtGui.QWidget):
             self.sliced_data = self.max_of_max[self.min_x:self.max_x, self.min_y:self.max_y]
             self.draw_cop()
         else:
-            self.sliced_data = self.average_data[self.min_x:self.max_x, self.min_y:self.max_y, self.frame]
+            self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y, self.frame]
             self.update_cop()
 
         # Make sure the paws are facing upright
@@ -226,7 +226,7 @@ class PawView(QtGui.QWidget):
 
     def clear_paws(self):
         self.sliced_data = np.zeros((self.mx, self.my))
-        self.average_data = self.sliced_data
+        self.average_data = np.zeros((self.mx, self.my, 15))
         self.max_of_max = self.sliced_data
         self.paw_data = []
         self.min_x, self.max_x, self.min_y, self.max_y = 0, self.mx, 0, self.my

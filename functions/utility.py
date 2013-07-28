@@ -2,6 +2,7 @@ from PySide import QtGui, QtCore
 import numpy as np
 import logging
 from functions.pubsub import pub
+
 logger = logging.getLogger("logger")
 
 
@@ -133,7 +134,7 @@ def normalize_paw_data(paw_data):
 def calculate_average_data(paw_data):
     mx = 100
     my = 100
-    mz = 100
+    mz = 200
     # Get the max shape
     for data in paw_data:
         x, y, z = data.shape
@@ -146,17 +147,18 @@ def calculate_average_data(paw_data):
 
     # Pad everything with zeros
     empty_slice = np.zeros((mx, my, mz))
-    padded_data = []
-    for data in paw_data:
+    num_paws = len(paw_data)
+    padded_data = np.zeros((num_paws, mx, my, mz))
+    for index, data in enumerate(paw_data):
         x, y, z = data.shape
         offset_x = int((mx - x) / 2)
         offset_y = int((my - y) / 2)
         # Create a deep copy of the empty array to fill up
         padded_slice = empty_slice.copy()
         padded_slice[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = data
-        padded_data.append(padded_slice)
+        padded_data[index,:,:,:] = padded_slice
 
-    return np.array(padded_data)
+    return padded_data
 
 
 def find_max_shape(data, data_slices):
@@ -477,7 +479,7 @@ def incomplete_step(data_slice):
     pressure_over_time = np.sum(np.sum(data_slice, axis=0), axis=0)
     max_pressure = np.max(pressure_over_time)
     incomplete = False
-    #print max_pressure, 0.25*max_pressure, pressure_over_time[0], pressure_over_time[-1]
+    #print max_pressure, configuration.start_force_percentage*max_pressure, pressure_over_time[0], pressure_over_time[-1]
     if (pressure_over_time[0] > (configuration.start_force_percentage * max_pressure) or
                 pressure_over_time[-1] > (configuration.end_force_percentage * max_pressure)):
         incomplete = True
@@ -486,6 +488,7 @@ def incomplete_step(data_slice):
 
 def filter_outliers(data, num_std=2):
     import calculations
+
     lengths = np.array([d.shape[2] for d in data])
     forces = np.array([np.max(calculations.force_over_time(d)) for d in data])
     pixel_counts = np.array([np.max(calculations.pixel_count_over_time(d)) for d in data])
@@ -510,8 +513,8 @@ def filter_outliers(data, num_std=2):
     filtered = []
     for index, (l, f, p, d) in enumerate(zip(lengths, forces, pixel_counts, data)):
         if (min_std_lengths < l < max_std_lengths and
-            min_std_forces < f < max_std_forces and
-            min_std_pixel_counts < p < max_std_pixel_counts):
+                        min_std_forces < f < max_std_forces and
+                        min_std_pixel_counts < p < max_std_pixel_counts):
             new_data.append(d)
         else:
             filtered.append(index)
