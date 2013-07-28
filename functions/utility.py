@@ -1,7 +1,7 @@
 from PySide import QtGui, QtCore
 import numpy as np
 import logging
-
+from functions.pubsub import pub
 logger = logging.getLogger("logger")
 
 
@@ -507,12 +507,18 @@ def filter_outliers(data, num_std=2):
     max_std_pixel_counts = mean_pixel_counts + num_std * std_pixel_counts
 
     new_data = []
+    filtered = []
     for index, (l, f, p, d) in enumerate(zip(lengths, forces, pixel_counts, data)):
         if (min_std_lengths < l < max_std_lengths and
                         min_std_forces < f < max_std_forces and
                         min_std_pixel_counts < p < max_std_pixel_counts):
             new_data.append(d)
+        else:
+            filtered.append(index)
 
+    # Notify the system which contacts you deleted
+    pub.sendMessage("updata_statusbar", status="Removed {} contacts".format(len(filtered)))
+    logger.info("Removed contacts: {}".format(" ".join([x for x in filtered])))
     return new_data
 
 
