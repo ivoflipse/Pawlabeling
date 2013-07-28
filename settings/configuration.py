@@ -100,6 +100,10 @@ sensor_surface = sensor_width * sensor_height
 # Thresholds for utility.incomplete_step
 start_force_percentage = config["thresholds"]["start_force_percentage"]
 end_force_percentage = config["thresholds"]["end_force_percentage"]
+# Thresholds for tracking
+tracking_temporal = config["thresholds"]["tracking_temporal"]
+tracking_spatial = config["thresholds"]["tracking_spatial"]
+tracking_surface = config["thresholds"]["tracking_surface"]
 
 main_window_left = config["widgets"]["main_window_left"]
 main_window_top = config["widgets"]["main_window_top"]

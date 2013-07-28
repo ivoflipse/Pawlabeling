@@ -134,7 +134,12 @@ class ProcessingWidget(QtGui.QWidget):
     def load_file(self):
         # Get the text from the currentItem
         self.currentItem = self.measurement_tree.currentItem()
-        parentItem = str(self.currentItem.parent().text(0))
+        # Check if you didn't accidentally double clicked the dog instead of a measurement:
+        try:
+            parentItem = str(self.currentItem.parent().text(0))
+        except AttributeError:
+            print("Double the measurements, not the dog names!")
+            return
         currentItem = str(self.currentItem.text(0))
 
         # Get the path from the file_names dictionary
@@ -144,6 +149,7 @@ class ProcessingWidget(QtGui.QWidget):
         # Check if we have a new dog, in that case, clear the cached values
         if split_name[-2] != self.dog_name:
             self.dog_name = split_name[-2]
+            self.logger.info("Loading {} for dog: {}".format(self.measurement_name, self.dog_name))
             self.clear_cached_values()
 
         # Pass the new measurement through to the widget

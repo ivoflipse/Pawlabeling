@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from functions.utility import update_bounding_box
+from settings import configuration
 
 def closest_contact(contact1, contact2, center1, euclidean_distance):
     """
@@ -101,9 +102,9 @@ def merging_contacts(contacts):
     # Get the important temporal spatial variables
     sides, centerList, surfaces, lengths = calculate_temporal_spatial_variables(contacts)
     # Get their averages and adjust them when needed
-    frame_threshold = np.mean(lengths) * 0.5
-    euclideanDistance = np.mean(sides)
-    averageSurface = np.mean(surfaces) * 0.25
+    frame_threshold = np.mean(lengths) * configuration.tracking_temporal
+    euclidean_distance = np.mean(sides) * configuration.tracking_spatial
+    average_surface = np.mean(surfaces) * configuration.tracking_surface
     # Initialize two dictionaries for calculating the Minimal Spanning Tree
     leaders = {}
     clusters = {}
@@ -128,9 +129,10 @@ def merging_contacts(contacts):
                 x2 = center2[0]
                 y2 = center2[1]
                 distance = (abs(x1 - x2) ** 2 + abs(y1 - y2) ** 2) ** 0.5
+
                 # We only check for merges if the distance between the two contacts
                 # is less than the euclidean distance
-                if distance <= euclideanDistance:
+                if distance <= euclidean_distance:
                     frames2 = set(contact2.keys())
                     #length2 = len(frames2)
                     # Calculate how many frames of overlap there is between two contacts
@@ -144,7 +146,7 @@ def merging_contacts(contacts):
                         # If the overlap is larger than the frame_threshold we always merge
                         if overlap >= frame_threshold:
                             merge = True
-                            value = (euclideanDistance - distance) * overlap
+                            value = (euclidean_distance - distance) * overlap
                         # If the first contact is too short, but we have overlap nonetheless,
                         # we also merge, we'll deal with picking the best value later
                         elif length1 <= frame_threshold and overlap:
@@ -156,7 +158,7 @@ def merging_contacts(contacts):
                             merge = True
                         # This deals with the edge cases where a contact is really small
                         # yet because its duration is quite long, it wouldn't get merged
-                        elif ratio >= 0.2 and surface1 < averageSurface:
+                        elif ratio >= 0.2 and surface1 < average_surface:
                             merge = True
                     # In some cases we don't get a merge because there's no overlap
                     # But still its clear these pixels belong to a paw in adjacent frames
@@ -173,7 +175,7 @@ def merging_contacts(contacts):
                         if not value:
                             # For short contacts we calculate the average distance to the contact
                             # Which seems to be much more reliable, yet is computationally more expensive
-                            value = closest_contact(contact1, contact2, center1, euclideanDistance)
+                            value = closest_contact(contact1, contact2, center1, euclidean_distance)
                             # Use a heap to get the minimum item
                         heapq.heappush(edges, (-value, index1, index2))
 
