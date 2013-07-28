@@ -9,6 +9,7 @@ class EntirePlateWidget(QtGui.QWidget):
         super(EntirePlateWidget, self).__init__(parent)
         self.parent = parent
         #self.resize(configuration.entire_plate_widget_width, configuration.entire_plate_widget_height)
+        self.ratio = 1
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
@@ -179,7 +180,9 @@ class EntirePlateWidget(QtGui.QWidget):
              QtCore.QPointF((paw.total_max_x + current_paw) * self.degree, (paw.total_max_y + current_paw) * self.degree),
              QtCore.QPointF((paw.total_min_x - current_paw) * self.degree, (paw.total_max_y + current_paw) * self.degree)])
 
-        self.bounding_boxes.append(self.scene.addPolygon(polygon, self.bounding_box_pen))
+        bounding_box = self.scene.addPolygon(polygon, self.bounding_box_pen)
+        bounding_box.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
+        self.bounding_boxes.append(bounding_box)
 
     def update_bounding_boxes(self, paw_labels, current_paw_index):
         self.clear_bounding_box()
@@ -188,7 +191,6 @@ class EntirePlateWidget(QtGui.QWidget):
             self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label)
             if current_paw_index == index:
                 self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label=-1)
-
 
     def draw_gait_line(self):
         self.gait_line_pen = QtGui.QPen(Qt.white)
@@ -203,21 +205,25 @@ class EntirePlateWidget(QtGui.QWidget):
             polygon = QtGui.QPolygonF(
                 [QtCore.QPointF(prevPaw.total_centroid[0] * self.degree, prevPaw.total_centroid[1] * self.degree),
                  QtCore.QPointF(curPaw.total_centroid[0] * self.degree, curPaw.total_centroid[1] * self.degree)])
-            self.gait_lines.append(self.scene.addPolygon(polygon, self.gait_line_pen))
+            gait_line = self.scene.addPolygon(polygon, self.gait_line_pen)
+            gait_line.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
+            self.gait_lines.append(gait_line)
 
 
-    # def resizeEvent(self, event):
-    #     item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
-    #     ratio = min(self.view.viewport().width()/float(item_size.width()),
-    #                 self.view.viewport().height()/float(item_size.height()))
-    #
-    #     if abs(1-ratio) > 0.1:
-    #         self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
-    #         for item in self.bounding_boxes:
-    #             item.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
-    #         for item in self.gait_lines:
-    #             item.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
-    #         #self.view.fitInView(self.rect(), Qt.KeepAspectRatio)
-    #         self.view.centerOn(self.image)
+    def resizeEvent(self, event=None):
+        item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
+        ratio = min(self.view.viewport().width()/float(item_size.width()),
+                    self.view.viewport().height()/float(item_size.height()))
+
+        if abs(1-ratio) > 0.1:
+            # Store the ratio and use it to draw the bounding boxes
+            self.ratio = self.ratio * ratio
+            self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
+            self.view.setSceneRect(self.view.rect())
+            for item in self.bounding_boxes:
+                item.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
+            for item in self.gait_lines:
+                item.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
+            self.view.centerOn(self.image)
 
 

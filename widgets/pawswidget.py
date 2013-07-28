@@ -40,6 +40,7 @@ class PawsWidget(QtGui.QWidget):
         self.current_paw_layout.addStretch(1)
         self.current_paw_layout.addWidget(QtGui.QLabel("Current Paw"))
         self.current_paw_layout.addWidget(self.current_paw)
+        self.current_paw_layout.setStretchFactor(self.current_paw, 3)
         self.current_paw_layout.addStretch(1)
         self.right_paws_layout = QtGui.QVBoxLayout()
         self.right_paws_layout.addWidget(self.right_front)
@@ -263,11 +264,6 @@ class PawWidget(QtGui.QWidget):
                     self.view.viewport().height()/float(item_size.height()))
 
         if abs(1-ratio) > 0.1:
-            # Slightly regularize the ratio
             self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
-            #self.view.fitInView(self.rect(), Qt.KeepAspectRatio)
+            self.view.setSceneRect(self.view.rect())
             self.view.centerOn(self.image)
-            self.scene.setSceneRect(self.rect())
-            #print self.view.rect()
-            #print self.rect()
-            #print self.scene.sceneRect()
