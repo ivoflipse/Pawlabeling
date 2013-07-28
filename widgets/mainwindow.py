@@ -6,10 +6,13 @@ from PySide import QtGui, QtCore
 from settings import configuration
 import processingwidget, analysiswidget
 from functions.pubsub import pub
+from functions.qsingleapplication import QSingleApplication
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
+
+    def initialize(self):
         # Set the screen dimensions, useful for when its not being run full screen
         self.setGeometry(configuration.main_window_size)
         # This will simply set the screen size to whatever is maximally possible,
@@ -84,14 +87,20 @@ class MainWindow(QtGui.QMainWindow):
 
 
 def main():
-    app = QtGui.QApplication(sys.argv)
+    app = QSingleApplication(sys.argv)
+    app.setApplicationName(configuration.app_name)
     window = MainWindow()
+    app.singleStart(window)
+    # Delaying initialization until AFTER I checked if its not a duplicate instance
+    window.initialize()
+
     window.show()
     window.raise_()
     app.exec_()
 
     logger = logging.getLogger("logger")
     logger.info("Application Shutdown\n")
+
 
 
 if __name__ == "__main__":

@@ -119,6 +119,8 @@ class PawView(QtGui.QWidget):
         # The result of calculate_average_data = (number of paws, rows, colums, frames)
         # so mean axis=0 is mean over all paws
         self.average_data = np.mean(utility.calculate_average_data(paw_data), axis=0)
+        self.paw_data = paw_data
+
         x, y, z = np.nonzero(self.average_data)
         # Pray this never goes out of bounds
         self.min_x = np.min(x) - 2
@@ -127,12 +129,11 @@ class PawView(QtGui.QWidget):
         self.max_y = np.max(y) + 2
 
         self.draw_frame()
-        self.draw_cop(paw_data)
 
-    def draw_cop(self, paw_data):
+    def draw_cop(self):
         color = QtCore.Qt.white
         self.line_pen = QtGui.QPen(color)
-        self.line_pen.setWidth(3)
+        self.line_pen.setWidth(2)
 
         self.dot_pen = QtGui.QPen(QtCore.Qt.black)
         self.dot_pen.setWidth(2)
@@ -141,10 +142,10 @@ class PawView(QtGui.QWidget):
         # This value determines how many points of the COP are being plotted.
         self.x = 15
 
-        num_paws = len(paw_data)
+        num_paws = len(self.paw_data)
         cop_xs = np.zeros((num_paws, self.x))
         cop_ys = np.zeros((num_paws, self.x))
-        for index, data in enumerate(paw_data):
+        for index, data in enumerate(self.paw_data):
             # I first interpolated using the length, but then I switched to a default for now. Fix later
             x, y, z = data.shape
             # Reversing the left-right direction. I should really figure out where this is coming from
@@ -177,11 +178,32 @@ class PawView(QtGui.QWidget):
         ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
         self.cop_ellipses.append(ellipse)
 
+    def update_cop(self):
+        # Remove all the previous ellipses
+        for item in self.cop_ellipses:
+            self.scene.removeItem(item)
+        self.cop_ellipses = []
+
+        # Check if the paw still has any contact, else there's nothing to draw
+        if self.frame < self.average_data.shape[2]:
+            # Calculate the COP for the current frame
+            cop_x, cop_y = calculations.calculate_cop(
+                np.rot90(np.rot90(self.average_data[:, ::-1, self.frame:self.frame + 1])))
+            # Remember, the average data has a shape of [100,100,max_frames]
+            cop_x = cop_x[0] - self.max_x
+            cop_y = cop_y[0] - self.max_y
+            ellipse = self.scene.addEllipse(cop_x * self.degree, cop_y * self.degree,
+                                            5, 5, self.dot_pen, self.dot_brush)
+            ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
+            self.cop_ellipses.append(ellipse)
+
     def draw_frame(self):
         if self.frame == -1:
             self.sliced_data = self.max_of_max[self.min_x:self.max_x, self.min_y:self.max_y]
+            self.draw_cop()
         else:
             self.sliced_data = self.average_data[self.min_x:self.max_x, self.min_y:self.max_y, self.frame]
+            self.update_cop()
 
         # Make sure the paws are facing upright
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
@@ -199,6 +221,7 @@ class PawView(QtGui.QWidget):
         self.sliced_data = np.zeros((self.mx, self.my))
         self.average_data = self.sliced_data
         self.max_of_max = self.sliced_data
+        self.paw_data = []
         self.min_x, self.max_x, self.min_y, self.max_y = 0, self.mx, 0, self.my
         # Put the screen to black
         self.image.setPixmap(
@@ -212,7 +235,6 @@ class PawView(QtGui.QWidget):
         self.cop_lines = []
 
     def resizeEvent(self, event):
-        print "resize, cop"
         item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
         ratio = min(self.view.viewport().width() / float(item_size.width()),
                     self.view.viewport().height() / float(item_size.height()))

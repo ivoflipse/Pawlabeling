@@ -107,7 +107,7 @@ class PawView(QtGui.QWidget):
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.canvas)
-        self.main_layout.addStretch(1)
+        self.main_layout.setStretchFactor(self.canvas, 3)
         self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
 
