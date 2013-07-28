@@ -98,7 +98,7 @@ class PawView(QtGui.QWidget):
         self.color_table = self.image_color_table.create_color_table()
 
         self.dpi = 100
-        self.fig = Figure((3.0, 2.0), dpi=self.dpi)
+        self.fig = Figure(figsize=(3.0, 2.0), dpi=self.dpi)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self)
         self.axes = self.fig.add_subplot(111)

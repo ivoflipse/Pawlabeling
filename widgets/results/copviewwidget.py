@@ -6,6 +6,7 @@ from PySide import QtGui, QtCore
 from settings import configuration
 from functions import utility, calculations
 
+
 class CopViewWidget(QtGui.QWidget):
     def __init__(self, parent):
         super(CopViewWidget, self).__init__(parent)
@@ -14,7 +15,7 @@ class CopViewWidget(QtGui.QWidget):
 
         self.left_front = PawView(self, label="Left Front")
         self.left_hind = PawView(self, label="Left Hind")
-        self.right_front = PawView(self,label="Right Front")
+        self.right_front = PawView(self, label="Right Front")
         self.right_hind = PawView(self, label="Right Hind")
 
         self.paws_list = {
@@ -22,7 +23,7 @@ class CopViewWidget(QtGui.QWidget):
             1: self.left_hind,
             2: self.right_front,
             3: self.right_hind,
-            }
+        }
 
         self.clear_paws()
 
@@ -76,6 +77,7 @@ class CopViewWidget(QtGui.QWidget):
         for paw_label, paw in list(self.paws_list.items()):
             paw.clear_paws()
 
+
 class PawView(QtGui.QWidget):
     def __init__(self, parent, label):
         super(PawView, self).__init__(parent)
@@ -90,6 +92,7 @@ class PawView(QtGui.QWidget):
         self.min_y = 0
         self.max_y = 15
         self.frame = 0
+        self.ratio = 1
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
 
@@ -98,14 +101,14 @@ class PawView(QtGui.QWidget):
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
-        self.view.setGeometry(0, 0, 100, 100)
+        #self.view.setGeometry(0, 0, 100, 100)
+        self.view.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform)
         self.image = QtGui.QGraphicsPixmapItem()
         self.scene.addItem(self.image)
 
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.view)
-        self.main_layout.addStretch(1)
         self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
 
@@ -145,7 +148,7 @@ class PawView(QtGui.QWidget):
             # I first interpolated using the length, but then I switched to a default for now. Fix later
             x, y, z = data.shape
             # Reversing the left-right direction. I should really figure out where this is coming from
-            cop_x, cop_y = calculations.calculate_cop(np.rot90(np.rot90(data[:,::-1,:])))
+            cop_x, cop_y = calculations.calculate_cop(np.rot90(np.rot90(data[:, ::-1, :])))
             cop_xs[index, :] = calculations.interpolate_time_series(cop_x, length=self.x)
             cop_ys[index, :] = calculations.interpolate_time_series(cop_y, length=self.x)
 
@@ -154,27 +157,31 @@ class PawView(QtGui.QWidget):
         # Initialize these values just in case
         x1, x2, y1, y2 = 0, 0, 0, 0
 
-        for frame in range(len(average_cop_x)-1):
+        for frame in range(len(average_cop_x) - 1):
             x1 = average_cop_x[frame]
-            x2 = average_cop_x[frame+1]
+            x2 = average_cop_x[frame + 1]
             y1 = average_cop_y[frame]
-            y2 = average_cop_y[frame+1]
+            y2 = average_cop_y[frame + 1]
 
             line = QtCore.QLineF(QtCore.QPointF(x1 * self.degree, y1 * self.degree),
                                  QtCore.QPointF(x2 * self.degree, y2 * self.degree))
 
-            self.cop_lines.append(self.scene.addLine(line, self.line_pen))
-            self.cop_ellipses.append(self.scene.addEllipse(x1 * self.degree, y1 * self.degree,
-                                                       5, 5, self.dot_pen, self.dot_brush))
+            line = self.scene.addLine(line, self.line_pen)
+            line.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
+            self.cop_lines.append(line)
+            ellipse = self.scene.addEllipse(x1 * self.degree, y1 * self.degree, 5, 5, self.dot_pen, self.dot_brush)
+            ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
+            self.cop_ellipses.append(ellipse)
 
-        self.cop_ellipses.append(self.scene.addEllipse(x2 * self.degree, y2 * self.degree,
-                                                    5, 5, self.dot_pen, self.dot_brush))
+        ellipse = self.scene.addEllipse(x2 * self.degree, y2 * self.degree, 5, 5, self.dot_pen, self.dot_brush)
+        ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
+        self.cop_ellipses.append(ellipse)
 
     def draw_frame(self):
         if self.frame == -1:
-            self.sliced_data = self.max_of_max[self.min_x:self.max_x,self.min_y:self.max_y]
+            self.sliced_data = self.max_of_max[self.min_x:self.max_x, self.min_y:self.max_y]
         else:
-            self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y,self.frame]
+            self.sliced_data = self.average_data[self.min_x:self.max_x, self.min_y:self.max_y, self.frame]
 
         # Make sure the paws are facing upright
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
@@ -194,7 +201,8 @@ class PawView(QtGui.QWidget):
         self.max_of_max = self.sliced_data
         self.min_x, self.max_x, self.min_y, self.max_y = 0, self.mx, 0, self.my
         # Put the screen to black
-        self.image.setPixmap(utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.n_max, self.color_table))
+        self.image.setPixmap(
+            utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.n_max, self.color_table))
         for point in self.cop_ellipses:
             self.scene.removeItem(point)
         self.cop_ellipses = []
@@ -203,3 +211,18 @@ class PawView(QtGui.QWidget):
             self.scene.removeItem(cop)
         self.cop_lines = []
 
+    def resizeEvent(self, event):
+        print "resize, cop"
+        item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
+        ratio = min(self.view.viewport().width() / float(item_size.width()),
+                    self.view.viewport().height() / float(item_size.height()))
+
+        if abs(1 - ratio) > 0.1:
+            self.ratio = self.ratio * ratio
+            self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
+            for item in self.cop_ellipses:
+                item.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
+            for item in self.cop_lines:
+                item.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
+            self.view.setSceneRect(self.view.rect())
+            self.view.centerOn(self.image)

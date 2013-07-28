@@ -90,7 +90,8 @@ class PawView(QtGui.QWidget):
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
-        self.view.setGeometry(0, 0, 100, 100)
+        #self.view.setGeometry(0, 0, 100, 100)
+        self.view.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform)
         self.image = QtGui.QGraphicsPixmapItem()
         self.scene.addItem(self.image)
 
@@ -141,3 +142,13 @@ class PawView(QtGui.QWidget):
         self.min_x, self.max_x, self.min_y, self.max_y = 0, self.mx, 0, self.my
         # Put the screen to black
         self.image.setPixmap(utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.n_max, self.color_table))
+
+    def resizeEvent(self, event):
+        item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
+        ratio = min(self.view.viewport().width()/float(item_size.width()),
+                    self.view.viewport().height()/float(item_size.height()))
+
+        if abs(1-ratio) > 0.1:
+            self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
+            self.view.setSceneRect(self.view.rect())
+            self.view.centerOn(self.image)
