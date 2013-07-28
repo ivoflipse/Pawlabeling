@@ -1,92 +1,79 @@
-"""
-    The MIT License
+from PySide.QtCore import *
+from PySide.QtGui import *
+from PySide.QtNetwork import *
 
-    Copyright 2011 Thomas Dall'Agnese <thomas.dallagnese@gmail.com>
+# Code from: http://stackoverflow.com/a/12712362/77595
+class QtSingleApplication(QApplication):
+    messageReceived = Signal(unicode)
 
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
+    def __init__(self, id, *argv):
 
-    The above copyright notice and this permission notice shall be included in
-    all copies or substantial portions of the Software.
+        super(QtSingleApplication, self).__init__(*argv)
+        self._id = id
+        self._activationWindow = None
+        self._activateOnMessage = False
 
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-    THE SOFTWARE.
+        # Is there another instance running?
+        self._outSocket = QLocalSocket()
+        self._outSocket.connectToServer(self._id)
+        self._isRunning = self._outSocket.waitForConnected()
 
-"""
-__author__ = "Thomas Dall'Agnese"
-__email__ = "thomas.dallagnese@gmail.com"
-__version__ = "1.0"
-__URL__ = "http://www.dallagnese.fr"
-
-from PySide.QtGui import QMessageBox, QApplication
-from PySide.QtCore import QIODevice, QTimer, QCoreApplication
-from PySide.QtNetwork import QLocalServer, QLocalSocket
-import sys
-
-
-class QSingleApplication(QApplication):
-    def singleStart(self, mainWindow):
-        self.mainWindow = mainWindow
-        # Socket
-        self.m_socket = QLocalSocket()
-        self.m_socket.connected.connect(self.connectToExistingApp)
-        self.m_socket.error.connect(self.startApplication)
-        self.m_socket.connectToServer(self.applicationName(), QIODevice.WriteOnly)
-
-    def connectToExistingApp(self):
-        if len(sys.argv) > 1 and sys.argv[1] is not None:
-            self.m_socket.write(sys.argv[1])
-            self.m_socket.bytesWritten.connect(self.quit)
+        if self._isRunning:
+            # Yes, there is.
+            self._outStream = QTextStream(self._outSocket)
+            self._outStream.setCodec('UTF-8')
         else:
-            QMessageBox.warning(None, self.tr("Already running"), self.tr("The program is already running."))
-            # Quit application in 250 ms
-            QTimer.singleShot(250, self.quit)
+            # No, there isn't.
+            self._outSocket = None
+            self._outStream = None
+            self._inSocket = None
+            self._inStream = None
+            self._server = QLocalServer()
+            self._server.listen(self._id)
+            self._server.newConnection.connect(self._onNewConnection)
 
-    def startApplication(self):
-        self.m_server = QLocalServer()
-        if self.m_server.listen(self.applicationName()):
-            self.m_server.newConnection.connect(self.getNewConnection)
-            self.mainWindow.show()
-        else:
-            QMessageBox.critical(None, self.tr("Error"), self.tr("Error listening the socket."))
+    def isRunning(self):
+        return self._isRunning
 
-    def getNewConnection(self):
-        self.new_socket = self.m_server.nextPendingConnection()
-        self.new_socket.readyRead.connect(self.readSocket)
+    def id(self):
+        return self._id
 
-    def readSocket(self):
-        f = self.new_socket.readLine()
-        self.mainWindow.getArgsFromOtherInstance(str(f))
-        self.mainWindow.activateWindow()
-        self.mainWindow.show()
+    def activationWindow(self):
+        return self._activationWindow
 
+    def setActivationWindow(self, activationWindow, activateOnMessage=True):
+        self._activationWindow = activationWindow
+        self._activateOnMessage = activateOnMessage
 
-if __name__ == '__main__':
-    from PySide.QtGui import QMainWindow, QLabel
+    def activateWindow(self):
+        if not self._activationWindow:
+            return
+        self._activationWindow.setWindowState(
+            self._activationWindow.windowState() & ~Qt.WindowMinimized)
+        self._activationWindow.raise_()
+        self._activationWindow.activateWindow()
 
-    class DallAgneseWindow(QMainWindow):
-        def __init__(self):
-            QMainWindow.__init__(self)
-            self.setWindowTitle("QSingleApplication Demo")
-            labelText = "<b>dallagnese.fr recipe</b><br /><br />\
-                        Allows you to start your program only once.<br />\
-                        Parameters of later calls can be handled by this application."
-            self.setCentralWidget(QLabel(labelText))
+    def sendMessage(self, msg):
+        if not self._outStream:
+            return False
+        self._outStream << msg << '\n'
+        self._outStream.flush()
+        return self._outSocket.waitForBytesWritten()
 
-        def getArgsFromOtherInstance(self, args):
-            QMessageBox.information(self, self.tr("Received args from another instance"), args)
+    def _onNewConnection(self):
+        if self._inSocket:
+            self._inSocket.readyRead.disconnect(self._onReadyRead)
+        self._inSocket = self._server.nextPendingConnection()
+        if not self._inSocket:
+            return
+        self._inStream = QTextStream(self._inSocket)
+        self._inStream.setCodec('UTF-8')
+        self._inSocket.readyRead.connect(self._onReadyRead)
+        if self._activateOnMessage:
+            self.activateWindow()
 
-    app = QSingleApplication(sys.argv)
-    app.setApplicationName("dallagnese.fr recipe 01")
-    myWindow = DallAgneseWindow()
-    app.singleStart(myWindow)
-    sys.exit(app.exec_())
+    def _onReadyRead(self):
+        while True:
+            msg = self._inStream.readLine()
+            if not msg: break
+            self.messageReceived.emit(msg)

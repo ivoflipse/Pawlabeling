@@ -131,6 +131,11 @@ class PawView(QtGui.QWidget):
         self.draw_frame()
 
     def draw_cop(self):
+        # Remove all the previous ellipses if coming back from update_cop
+        for item in self.cop_ellipses:
+            self.scene.removeItem(item)
+        self.cop_ellipses = []
+
         color = QtCore.Qt.white
         self.line_pen = QtGui.QPen(color)
         self.line_pen.setWidth(2)
@@ -187,11 +192,13 @@ class PawView(QtGui.QWidget):
         # Check if the paw still has any contact, else there's nothing to draw
         if self.frame < self.average_data.shape[2]:
             # Calculate the COP for the current frame
-            cop_x, cop_y = calculations.calculate_cop(
-                np.rot90(np.rot90(self.average_data[:, ::-1, self.frame:self.frame + 1])))
             # Remember, the average data has a shape of [100,100,max_frames]
-            cop_x = cop_x[0] - self.max_x
-            cop_y = cop_y[0] - self.max_y
+            cop_x, cop_y = calculations.calculate_cop(
+                np.rot90(np.rot90(
+                    self.average_data[self.min_x:self.max_x, self.min_y:self.max_y:-1, self.frame:self.frame + 1])))
+
+            cop_x = cop_x[0]
+            cop_y = cop_y[0]
             ellipse = self.scene.addEllipse(cop_x * self.degree, cop_y * self.degree,
                                             5, 5, self.dot_pen, self.dot_brush)
             ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
