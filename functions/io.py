@@ -195,7 +195,8 @@ def results_to_json(new_path, dog_name, measurement_name, paw_labels, paws, paw_
 def convert_file_to_zip(file_path):
     import zipfile
     # Create a new zip file and add .zip to the file_name
-    outfile = zipfile.ZipFile(file_path + ".zip", "w")
+    new_file_path = file_path + ".zip"
+    outfile = zipfile.ZipFile(new_file_path, "w")
     try:
         outfile.write(file_path, os.path.basename(file_path), compress_type=zipfile.ZIP_DEFLATED)
     except Exception as e:
@@ -203,6 +204,7 @@ def convert_file_to_zip(file_path):
     try:
         # Remove the uncompressed file
         os.remove(file_path)  # Its possible that this file is open somewhere else, then everything might fail...
+        return new_file_path
     except Exception as e:
         logger.critical("Couldn't remove file original file. Exception: {}".format(e))
 

@@ -149,8 +149,10 @@ class ProcessingWidget(QtGui.QWidget):
         # Check if we have a new dog, in that case, clear the cached values
         if split_name[-2] != self.dog_name:
             self.dog_name = split_name[-2]
-            self.logger.info("Loading {} for dog: {}".format(self.measurement_name, self.dog_name))
             self.clear_cached_values()
+
+        # Log which measurement we're loading
+        self.logger.info("Loading measurement for dog: {} - {}".format(self.dog_name, self.measurement_name))
 
         # Pass the new measurement through to the widget
         data = io.load(self.file_name)
