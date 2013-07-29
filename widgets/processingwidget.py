@@ -10,6 +10,7 @@ from functions import io, tracking, utility, gui
 from functions.pubsub import pub
 import logging
 
+from models import processingmodel
 
 class ProcessingWidget(QtGui.QWidget):
     def __init__(self, parent=None):
@@ -22,6 +23,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.dog_name = ""
 
         self.logger = logging.getLogger("logger")
+        self.processing_model = processingmodel.ProcessingModel()
 
         # Initialize our variables that will cache results
         self.average_data = defaultdict(list)
@@ -29,8 +31,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.paw_labels = defaultdict(dict)
         self.paws = defaultdict(list)
 
-        # This contains all the file_names for each dog_name
-        self.file_names = defaultdict(dict)
+        # This contains all the file paths for each dog_name
+        self.file_paths = defaultdict(dict)
 
         # Create a label to display the measurement name
         self.nameLabel = QtGui.QLabel(self)
@@ -86,46 +88,37 @@ class ProcessingWidget(QtGui.QWidget):
         self.setLayout(self.main_layout)
 
     def add_measurements(self):
-        # Clear any existing file names
-        self.file_names.clear()
+        """
+        This function calls the processing model to search for measurements in the measurement_folder
+        It will then fill the tree making root nodes for each dog and making child nodes for each measurement
+        If the measurement has already been labeled it will also be marked as green instead of the default black.
+        """
+        # Find all the file_paths and load them into self.file_paths
+        self.file_paths = self.processing_model.load_measurements()
         # Clear any existing measurements
         self.measurement_tree.clear()
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
 
-        # Walk through the folder and gather up all the files
-        for idx, (root, dirs, files) in enumerate(os.walk(self.path)):
-            if not dirs:
-                # Add the name of the dog
-                dog_name = root.split("\\")[-1]
-                # Create a tree item
-                root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
-                # Create a dictionary to store all the measurements for each dog
-                self.file_names[dog_name] = {}
-                for index, file_name in enumerate(files):
-                    # Check if the file isn't compressed, else zip it and delete the original after loading
-                    base_name, extension = os.path.splitext(file_name)
-                    if extension != ".zip":
-                        file_path = os.path.join(root, file_name)
-                        io.convert_file_to_zip(file_path)
-                        # Add the .zip extension
-                        file_name += ".zip"
-
-                    name = os.path.join(root, file_name)
-                    # Store the path with the file name
-                    self.file_names[dog_name][file_name] = name
-                    childItem = QtGui.QTreeWidgetItem(root_item, [file_name])
-                    # Check if the measurement has already been store_results_folder
-                    if io.find_stored_file(dog_name, file_name) is not None:
-                        # Change the foreground to green
-                        childItem.setForeground(0, green_brush)
+        for dog_name, file_paths in self.file_paths.items():
+            root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
+            for file_path in file_paths:
+                childItem = QtGui.QTreeWidgetItem(root_item, [file_path])
+                # Check if the measurement has already been store_results_folder
+                if io.find_stored_file(dog_name, file_path) is not None:
+                    # Change the foreground to green
+                    childItem.setForeground(0, green_brush)
 
     def load_first_file(self):
+        """
+        To bootstrap the application, the main window calls this function to select the first item in the tree
+        if there are any nodes in it, else it'll log a warning. Selecting an item in the tree will cause
+        load_file to be called
+        """
         # Check if the tree isn't empty, because else we can't load anything
         if self.measurement_tree.topLevelItemCount() > 0:
             # Select the first item in the tree
             self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
-            self.load_file()
         else:
             pub.sendMessage("update_statusbar", status="No measurements found")
             self.logger.warning(
@@ -138,12 +131,12 @@ class ProcessingWidget(QtGui.QWidget):
         try:
             parentItem = str(self.currentItem.parent().text(0))
         except AttributeError:
-            print("Double the measurements, not the dog names!")
+            print("Double click the measurements, not the dog names!")
             return
         currentItem = str(self.currentItem.text(0))
 
-        # Get the path from the file_names dictionary
-        self.file_name = self.file_names[parentItem][currentItem]
+        # Get the path from the file_paths dictionary
+        self.file_name = self.file_paths[parentItem][currentItem]
         split_name = self.file_name.split("\\")
         self.measurement_name = split_name[-1]
         # Check if we have a new dog, in that case, clear the cached values
@@ -200,12 +193,12 @@ class ProcessingWidget(QtGui.QWidget):
         # Iterate through all measurements for this dog
         self.currentItem = self.measurement_tree.currentItem()
         dog_name = str(self.currentItem.parent().text(0))
-        file_names = self.file_names[dog_name]
+        file_paths = self.file_paths[dog_name]
 
         # Clear the average data
         self.average_data.clear()
 
-        for file_name in file_names:
+        for file_name in file_paths:
             measurement_name = file_name
             # Refresh the cache, it might be stale
             if measurement_name in self.paws:
