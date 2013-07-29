@@ -4,6 +4,8 @@ from PySide.QtCore import Qt
 from functions import utility, gui
 from settings import configuration
 
+from functions.pubsub import pub
+
 class EntirePlateWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(EntirePlateWidget, self).__init__(parent)
@@ -92,8 +94,11 @@ class EntirePlateWidget(QtGui.QWidget):
             action.setShortcutContext(Qt.ApplicationShortcut)  # WidgetWithChildrenShortcut
 
         # # Install an event filter
-        # self.slider.installEventFilter(self)
-
+        pub.subscribe(self.update_n_max, "update_n_max")
+        pub.subscribe(self.new_measurement, "load_file")
+        pub.subscribe(self.update_bounding_boxes, "update_current_paw")
+        pub.subscribe(self.new_results, "loaded_all_results")
+        pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
     def fast_backward(self):
         self.change_slider(-1, fast=True)
@@ -122,27 +127,31 @@ class EntirePlateWidget(QtGui.QWidget):
         self.frame = frame
         self.change_frame(self.frame)
 
-    def new_measurement(self, measurement, measurement_name):
+    def update_n_max(self, n_max):
+        self.n_max = n_max
+
+    def new_measurement(self, measurement, measurement_name, shape):
         # Update the measurement
         self.measurement = measurement
         self.measurement_name = measurement_name
-        self.height, self.width, self.num_frames = self.measurement.shape
-        self.n_max = self.measurement.max()
-        self.change_frame(frame=-1)
-
-        # Reset the frame slider
-        self.slider.setValue(-1)
+        self.height, self.width, self.num_frames = shape
         # Update the slider, in case the shape of the file changes
         self.slider.setMaximum(self.num_frames - 1)
+        # Reset the frame slider
+        self.slider.setValue(-1)
+        self.update_entire_plate()
 
-    def new_paws(self, paws):
-        # Update the paws
+    def new_results(self, paws, paw_labels, paw_data, average_data):
         self.paws = paws
+        self.draw_gait_line()
 
     def change_frame(self, frame):
         # Set the frame
         self.frame = frame
-        if frame == -1:
+        self.update_entire_plate()
+
+    def update_entire_plate(self):
+        if self.frame == -1:
             self.data = self.measurement.max(axis=2).T
         else:
             # Slice out the data from the measurement
@@ -151,6 +160,10 @@ class EntirePlateWidget(QtGui.QWidget):
         # Update the pixmap
         self.pixmap = utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table)
         self.image.setPixmap(self.pixmap)
+
+    def clear_cached_values(self):
+        self.clear_bounding_box()
+        self.clear_gait_line()
 
     def clear_bounding_box(self):
         # Remove the old ones and redraw
@@ -184,10 +197,10 @@ class EntirePlateWidget(QtGui.QWidget):
         bounding_box.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
         self.bounding_boxes.append(bounding_box)
 
-    def update_bounding_boxes(self, paw_labels, current_paw_index):
+    def update_bounding_boxes(self, paw_labels, current_paw_index, paws, paw_data, average_data):
         self.clear_bounding_box()
 
-        for index, paw_label in paw_labels.items():
+        for index, paw_label in paw_labels[self.measurement_name].items():
             self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label)
             if current_paw_index == index:
                 self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label=-1)

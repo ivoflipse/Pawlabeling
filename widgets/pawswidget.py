@@ -1,12 +1,11 @@
-from collections import defaultdict
-
 from PySide import QtGui
 from PySide.QtCore import Qt
 import numpy as np
 
-from functions import utility
+from functions import utility, calculations
 from settings import configuration
 import logging
+from functions.pubsub import pub
 
 class PawsWidget(QtGui.QWidget):
     def __init__(self, parent):
@@ -28,10 +27,7 @@ class PawsWidget(QtGui.QWidget):
         }
 
         self.logger = logging.getLogger("logger")
-
         self.paw_dict = configuration.paw_dict
-        # This sets every widget to a zero image and initializes paws
-        self.clear_paws()
 
         self.left_paws_layout = QtGui.QVBoxLayout()
         self.left_paws_layout.addWidget(self.left_front)
@@ -57,34 +53,21 @@ class PawsWidget(QtGui.QWidget):
         # Clear the paws, so we can draw new ones
         self.clear_paws()
 
-        # Make a copy
-        from copy import deepcopy
-        self.average_data = deepcopy(average_data)
-        # Group all the data per paw
-        data_array = defaultdict(list)
-        for measurement_name, data_list in paw_data.items():
-            for paw_label, data in zip(paw_labels[measurement_name].values(), data_list):
-                if paw_label >= 0:
-                    data_array[paw_label].append(data)
-                    normalized_data = utility.normalize_paw_data(data)
-                    self.average_data[paw_label].append(normalized_data)  # I wonder if this mutates the list...
-
         # Do I need to cache information so I can use it later on? Like in predict_label?
         for paw_label, average_list in self.average_data.items():
-            data = data_array[paw_label]
             widget = self.paws_list[paw_label]
             # This can sometimes be empty, if things are reset
-            if data:
-                widget.update(data, average_list)
+            if average_list:
+                widget.update(average_list)
             else:
-                widget.clear_paws()
+                widget.clear_cached_values()
 
         # Update the current paw widget
         widget = self.paws_list[-1]
         current_paw = paw_data[current_measurement][current_paw_index]
         normalized_current_paw = utility.normalize_paw_data(current_paw)
         # These are put in lists, because we try to iterate through them
-        widget.update([current_paw], [normalized_current_paw])
+        widget.update([normalized_current_paw])
 
         try:
             self.predict_label()
@@ -133,15 +116,6 @@ class PawsWidget(QtGui.QWidget):
             current_paw.label_prediction.setText("{}".format(self.paw_dict[best_result]))
 
 
-    def update_n_max(self, n_max):
-        for paw_label, paw in list(self.paws_list.items()):
-            paw.n_max = n_max
-
-    def clear_paws(self):
-        for paw_label, paw in list(self.paws_list.items()):
-            paw.clear_paws()
-
-
 class PawWidget(QtGui.QWidget):
     def __init__(self, parent, label):
         super(PawWidget, self).__init__(parent)
@@ -155,7 +129,7 @@ class PawWidget(QtGui.QWidget):
         self.my = 100
         self.data = np.zeros((self.mx, self.my))
         self.data_list = []
-        self.average_data_list = []
+        self.average_data = []
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
@@ -193,26 +167,31 @@ class PawWidget(QtGui.QWidget):
         self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
 
-    def update(self, data_list, average_data):
+        pub.subscribe(self.update_n_max, "update_n_max")
+        pub.subscribe(self.clear_cached_values, "clear_cached_values")
+
+    def update_n_max(self, n_max):
+        self.n_max = n_max
+
+    def update(self, average_data):
+        print "update paw"
         # Calculate an average paw from the list of arrays
-        self.data_list = data_list
-        self.average_data_list = average_data
+        self.average_data = average_data
         mean_data_list = []
         pressures = []
         surfaces = []
         durations = []
 
-        for data, average_data in zip(self.data_list, self.average_data_list):
-            mean_data_list.append(average_data)
-            pressures.append(np.max(np.sum(np.sum(data, axis=0), axis=0)))
+        for data in self.average_data:
+            mean_data_list.append(data.mean(axis=2))
+            pressures.append(np.max(calculations.force_over_time(data)))
             x, y, z = data.shape
             durations.append(z)
-            surfaces.append(np.max([np.count_nonzero(data[:, :, frame]) for frame in range(z)]))
+            surfaces.append(np.max(calculations.pixel_count_over_time(data)*configuration.sensor_surface))
 
         self.max_pressure = int(np.mean(pressures))
         self.mean_duration = int(np.mean(durations))
         self.mean_surface = int(np.mean(surfaces))
-
 
         self.max_pressure_label.setText("{} N".format(self.max_pressure))
         self.mean_duration_label.setText("{} frames".format(self.mean_duration))
@@ -241,10 +220,10 @@ class PawWidget(QtGui.QWidget):
         self.pixmap = utility.get_QPixmap(sliced_data, self.degree, self.n_max, self.color_table, interpolation="cubic")
         self.image.setPixmap(self.pixmap)
 
-    def clear_paws(self):
+    def clear_cached_values(self):
         self.data = np.zeros((self.mx, self.my))
         self.data_list = []
-        self.average_data_list = []
+        self.average_data = []
         # Put the screen to black
         self.image.setPixmap(utility.get_QPixmap(np.zeros((15, 15)), self.degree, self.n_max, self.color_table))
         self.max_pressure = float("inf")

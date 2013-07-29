@@ -6,7 +6,7 @@ from PySide import QtGui, QtCore
 
 from widgets import entireplatewidget, pawswidget
 from settings import configuration
-from functions import io, tracking, utility, gui
+from functions import io, utility, gui, calculations
 from functions.pubsub import pub
 import logging
 
@@ -94,13 +94,13 @@ class ProcessingWidget(QtGui.QWidget):
         If the measurement has already been labeled it will also be marked as green instead of the default black.
         """
         # Find all the file_paths and load them into self.file_paths
-        self.file_paths = self.processing_model.load_measurements()
+        file_paths = self.processing_model.load_measurements()
         # Clear any existing measurements
         self.measurement_tree.clear()
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
 
-        for dog_name, file_paths in self.file_paths.items():
+        for dog_name, file_paths in file_paths.items():
             root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
             for file_path in file_paths:
                 childItem = QtGui.QTreeWidgetItem(root_item, [file_path])
@@ -119,6 +119,8 @@ class ProcessingWidget(QtGui.QWidget):
         if self.measurement_tree.topLevelItemCount() > 0:
             # Select the first item in the tree
             self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
+            # TODO figure out why this isn't automatically triggered
+            self.load_file()
         else:
             pub.sendMessage("update_statusbar", status="No measurements found")
             self.logger.warning(
@@ -126,182 +128,72 @@ class ProcessingWidget(QtGui.QWidget):
 
     def load_file(self):
         # Get the text from the currentItem
-        self.currentItem = self.measurement_tree.currentItem()
+        current_item = self.measurement_tree.currentItem()
         # Check if you didn't accidentally double clicked the dog instead of a measurement:
         try:
-            parentItem = str(self.currentItem.parent().text(0))
+            self.dog_name = str(current_item.parent().text(0))
         except AttributeError:
             print("Double click the measurements, not the dog names!")
             return
-        currentItem = str(self.currentItem.text(0))
 
-        # Get the path from the file_paths dictionary
-        self.file_name = self.file_paths[parentItem][currentItem]
-        split_name = self.file_name.split("\\")
-        self.measurement_name = split_name[-1]
-        # Check if we have a new dog, in that case, clear the cached values
-        if split_name[-2] != self.dog_name:
-            self.dog_name = split_name[-2]
-            self.clear_cached_values()
+        # Notify the model to update the dog_name + measurement_name if necessary
+        self.measurement_name = str(current_item.text(0))
+        self.processing_model.switch_measurements(self.measurement_name)
+        self.processing_model.switch_dogs(self.dog_name)
 
-        # Log which measurement we're loading
-        self.logger.info("Loading measurement for dog: {} - {}".format(self.dog_name, self.measurement_name))
-
-        # Pass the new measurement through to the widget
-        data = io.load(self.file_name)
-        # I have to add padding globally again, because it messes up everything downstream
-        # Pad the data, so it will find things that touch the edges
-        x, y, z = data.shape
-        self.measurement = np.zeros((x + 2, y + 2, z), np.float32)
-        self.measurement[1:-1, 1:-1, :] = data
-
-        # Check the orientation of the plate and make sure its left to right
-        self.measurement = io.fix_orientation(self.measurement)
-        # Get the number of frames for the slider
-        self.height, self.width, self.num_frames = self.measurement.shape
-        # Get the normalizing factor for the color bars
-        self.n_max = self.measurement.max()
-        # And pass it to the paws_widget, so they all are scaled to the same color bar
-        self.paws_widget.update_n_max(self.n_max)
-        # Update the measurement data for the entire plate widget
-        self.entire_plate_widget.new_measurement(self.measurement, self.measurement_name)
+        self.processing_model.load_file()
 
         ## Manage some GUI elements
-        self.nameLabel.setText("Measurement name: {}".format(self.file_name))
+        self.nameLabel.setText("Measurement name: {}".format(self.measurement_name))
         self.contact_tree.clear()
 
-        # Try loading the results
-        self.load_all_results()
+        # Try loading the results or track them if no results are found
+        self.processing_model.load_all_results()
 
-        # Check if there's any data for this measurement
-        if self.paw_data[self.measurement_name]: # This might not return a bool
-            self.initialize_widgets()
-        else:
-            self.track_contacts()
+        # Update the contact tree
+        self.update_contact_tree()
 
-    def clear_cached_values(self):
-        self.average_data.clear()
-        self.paws.clear()
-        self.paw_data.clear()
-        self.paw_labels.clear()
-
-    def load_all_results(self):
-        """
-        Check if there if any measurements for this dog have already been processed
-        If so, retrieve the data and convert them to a usable format
-        """
-        # Iterate through all measurements for this dog
-        self.currentItem = self.measurement_tree.currentItem()
-        dog_name = str(self.currentItem.parent().text(0))
-        file_paths = self.file_paths[dog_name]
-
-        # Clear the average data
-        self.average_data.clear()
-
-        for file_name in file_paths:
-            measurement_name = file_name
-            # Refresh the cache, it might be stale
-            if measurement_name in self.paws:
-                self.paws[measurement_name] = []
-                self.paw_labels[measurement_name] = {}
-                self.paw_data[measurement_name] = []
-
-            stored_results = io.load_results(dog_name, measurement_name)
-            # If we have results, stick them in their respective variable
-            if stored_results:
-                self.paw_labels[measurement_name] = stored_results["paw_labels"]
-                for index, paw_data in stored_results["paw_data"].items():
-                    self.paw_data[measurement_name].append(paw_data)
-
-                    # Check if n_max happens to be larger here
-                    max_data = np.max(paw_data)
-                    if max_data > self.n_max:
-                        self.n_max = max_data
-                        # And don't forget to send an update. Though this would only have to happen once
-                        self.paws_widget.update_n_max(self.n_max)
-
-                    paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
-                    self.paws[measurement_name].append(paw)
-
-                # Until I've moved everything to be dictionary based, here's code to sort the paws + paw_data
-                # Fancy pants code found here:
-                # http://stackoverflow.com/questions/9764298/is-it-possible-to-sort-two-listswhich-reference-each-other-in-the-exact-same-w
-                self.paws[measurement_name], self.paw_data[measurement_name] = zip(*sorted(
-                    zip(self.paws[measurement_name], self.paw_data[measurement_name]),
-                    key=lambda pair: pair[0].frames[0]))
-
-                for index, data in enumerate(self.paw_data[measurement_name]):
-                    paw_label = self.paw_labels[measurement_name][index]
-                    if paw_label >= 0:
-                        normalized_data = utility.normalize_paw_data(data)
-                        self.average_data[paw_label].append(normalized_data)
-
-
-    def store_status(self):
-        """
-        This function creates a file in the store_results_folder folder if it doesn't exist
-        """
-        # Try and create a folder to add store the store_results_folder result
-        self.new_path = io.create_results_folder(self.dog_name)
-        # Try storing the results
-        try:
-            io.results_to_json(self.new_path, self.dog_name, self.measurement_name,
-                               self.paw_labels, self.paws, self.paw_data)
-            self.logger.info("Results for {} have been successfully saved".format(self.measurement_name))
-            pub.sendMessage("update_statusbar", status="Results saved")
-            # Change the color of the measurement in the tree to green
-            treeBrush = QtGui.QBrush(QtGui.QColor(46, 139, 87)) # RGB Sea Green
-            self.currentItem.setForeground(0, treeBrush)
-        except Exception as e:
-            self.logger.critical("Storing failed! {}".format(e))
-            pub.sendMessage("update_statusbar", status="Storing results failed!")
-
-    def track_contacts(self):
-        pub.sendMessage("update_statusbar", status="Starting tracking")
-        paws = tracking.track_contours_graph(self.measurement)
-
-        # Make sure we don't have any paws stored if we're tracking again
-        self.paws[self.measurement_name] = []
-        self.paw_labels[self.measurement_name] = {}
-        self.paw_data[self.measurement_name] = []
-
-        # Convert them to class objects
-        for index, paw in enumerate(paws):
-            paw = utility.Contact(paw)
-            # Skip paws that have only been around for one frame
-            if len(paw.frames) > 1:
-                self.paws[self.measurement_name].append(paw)
-
-        # Sort the contacts based on their position along the first dimension    
-        self.paws[self.measurement_name] = sorted(self.paws[self.measurement_name], key=lambda paw: paw.frames[0])
-
-        for index, paw in enumerate(self.paws[self.measurement_name]):
-            data_slice = utility.convert_contour_to_slice(self.measurement, paw.contour_list)
-            self.paw_data[self.measurement_name].append(data_slice)
-            # I've made -2 the label for unlabeled paws, -1 == unlabeled + selected
-            paw_label = -2
-            # Test if the paw touches the edge of the plate
-            if utility.touches_edges(self.measurement, paw, padding=True):
-                paw_label = -3  # Mark it as invalid
-            elif utility.incomplete_step(data_slice):
-                paw_label = -3
-            self.paw_labels[self.measurement_name][index] = paw_label
-
-        self.initialize_widgets()
-        status = "Number of paws found: {}".format(len(self.paws[self.measurement_name]))
-        pub.sendMessage("update_statusbar", status=status)
-
-    def initialize_widgets(self):
-        # Add the paws to the contact_tree
-        self.add_contacts()
-        # Update the widget's paws too
-        self.entire_plate_widget.new_paws(self.paws)
-        self.entire_plate_widget.draw_gait_line()
+        # Initialize the current paw index, which we'll need for keep track of the labeling
         self.current_paw_index = 0
+
         # Select the first item in the contacts tree
         item = self.contact_tree.topLevelItem(self.current_paw_index)
         self.contact_tree.setCurrentItem(item)
         self.update_current_paw()
+
+    def update_contact_tree(self):
+        self.paw_labels = self.processing_model.paw_labels
+        self.paw_data = self.processing_model.paw_data
+        self.paws = self.processing_model.paws
+
+        # Clear any existing contacts
+        self.contact_tree.clear()
+        # Add the paws to the contact_tree
+        for index, paw in enumerate(self.paw_data[self.measurement_name]):
+            rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
+            rootItem.setText(0, str(index))
+            rootItem.setText(1, self.paw_dict[self.paw_labels[self.measurement_name][index]])
+            x, y, z = paw.shape
+            rootItem.setText(2, str(z))  # Sets the frame count
+            surface = np.max(calculations.pixel_count_over_time(paw) * configuration.sensor_surface)
+            rootItem.setText(3, str(int(surface)))
+            force = np.max(calculations.force_over_time(paw))
+            rootItem.setText(4, str(int(force)))
+
+    def update_current_paw(self):
+        if (self.current_paw_index <= len(self.paws[self.measurement_name]) and
+                    len(self.paws[self.measurement_name]) > 0):
+            for index, paw_label in self.paw_labels[self.measurement_name].items():
+                # Get the current row from the tree
+                item = self.contact_tree.topLevelItem(index)
+                item.setText(1, self.paw_dict[paw_label])
+
+                # Update the colors in the contact tree
+                for idx in range(item.columnCount()):
+                    item.setBackground(idx, self.colors[paw_label])
+
+
+            self.processing_model.update_current_paw(self.current_paw_index)
 
     def undo_label(self):
         self.previous_paw()
@@ -351,31 +243,12 @@ class ProcessingWidget(QtGui.QWidget):
             self.paw_labels[self.measurement_name][self.current_paw_index] = 3
         self.next_paw()
 
-    def update_current_paw(self):
-        if (self.current_paw_index <= len(self.paws[self.measurement_name]) and
-                    len(self.paws[self.measurement_name]) > 0):
-            for index, paw_label in self.paw_labels[self.measurement_name].items():
-                # Get the current row from the tree
-                item = self.contact_tree.topLevelItem(index)
-                item.setText(1, self.paw_dict[paw_label])
-
-                # Update the colors in the contact tree
-                for idx in range(item.columnCount()):
-                    item.setBackground(idx, self.colors[paw_label])
-
-            # Update the bounding boxes
-            self.entire_plate_widget.update_bounding_boxes(self.paw_labels[self.measurement_name],
-                                                           self.current_paw_index)
-            # Update the paws widget
-            self.paws_widget.update_paws(self.paw_labels, self.paw_data, self.average_data,
-                                         self.current_paw_index, self.measurement_name)
-
     def contacts_available(self):
         """
         This function checks if there is a contact with index 0, if not, the tree must be empty
         """
         #return False if self.contact_tree.findItems("0", Qt.MatchExactly, 0) == [] else True
-        return True if self.paw_labels else False
+        return True if self.paw_labels[self.measurement_name] else False
 
     def check_label_status(self):
         results = []
@@ -431,22 +304,11 @@ class ProcessingWidget(QtGui.QWidget):
         self.current_paw_index = int(item.text(0))
         self.update_current_paw()
 
-    def add_contacts(self):
-        # Clear any existing contacts
-        self.contact_tree.clear()
-        for index, paw in enumerate(self.paw_data[self.measurement_name]):
-            x, y, z = paw.shape
-            rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
-            rootItem.setText(0, str(index))
-            rootItem.setText(1, self.paw_dict[self.paw_labels[self.measurement_name][index]])
-            rootItem.setText(2, str(z))  # Sets the frame count
-            surface = np.max([np.count_nonzero(paw[:, :, frame]) for frame in range(z)])
-            rootItem.setText(3, str(int(surface)))
-            force = np.max(np.sum(np.sum(paw, axis=0), axis=0))
-            rootItem.setText(4, str(int(force)))
+    def track_contacts(self, event=None):
+        self.processing_model.track_contacts()
 
-        self.current_paw_index = 0
-
+    def store_status(self, event=None):
+        self.processing_model.store_status()
 
     def create_toolbar_actions(self):
         self.track_contacts_action = gui.create_action(text="&Track Contacts",
