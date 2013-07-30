@@ -7,6 +7,7 @@ from settings import configuration
 import processingwidget, analysiswidget
 from functions.pubsub import pub
 from functions.qsingleapplication import QtSingleApplication
+from models import model
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -23,6 +24,9 @@ class MainWindow(QtGui.QMainWindow):
         self.processing_widget = processingwidget.ProcessingWidget(self)
         self.analysis_widget = analysiswidget.AnalysisWidget(self)
 
+        # Create the base model for the entire application
+        self.model = model.Model()
+
         self.status = self.statusBar()
         self.status.showMessage("Ready")
 
@@ -33,7 +37,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
         # Load all the measurements into the measurement tree
-        self.processing_widget.add_measurements()
+        self.model.load_file_paths()
         # Then load the first measurement
         self.processing_widget.load_first_file()
 

@@ -10,8 +10,6 @@ from functions import io, utility, gui, calculations
 from functions.pubsub import pub
 import logging
 
-from models import processingmodel
-
 class ProcessingWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ProcessingWidget, self).__init__(parent)
@@ -23,7 +21,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.dog_name = ""
 
         self.logger = logging.getLogger("logger")
-        self.processing_model = processingmodel.ProcessingModel()
 
         # This contains all the file paths for each dog_name
         self.file_paths = defaultdict(dict)
@@ -81,14 +78,16 @@ class ProcessingWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
-    def add_measurements(self):
+        pub.subscribe(self.add_measurements, "load_file_paths")
+        pub.subscribe(self.update_contact_tree, "loaded_all_results")
+        pub.subscribe(self.stored_status, "stored_status")
+
+    def add_measurements(self, file_paths):
         """
         This function calls the processing model to search for measurements in the measurement_folder
         It will then fill the tree making root nodes for each dog and making child nodes for each measurement
         If the measurement has already been labeled it will also be marked as green instead of the default black.
         """
-        # Find all the file_paths and load them into self.file_paths
-        file_paths = self.processing_model.load_measurements()
         # Clear any existing measurements
         self.measurement_tree.clear()
         # Create a green brush for coloring stored results
@@ -131,34 +130,21 @@ class ProcessingWidget(QtGui.QWidget):
             return
 
         # Notify the model to update the dog_name + measurement_name if necessary
+        pub.sendMessage("switch_dogs", dog_name=self.dog_name)
         self.measurement_name = str(current_item.text(0))
-        self.processing_model.switch_measurements(self.measurement_name)
-        self.processing_model.switch_dogs(self.dog_name)
-
-        self.processing_model.load_file()
+        pub.sendMessage("switch_measurements", measurement_name=self.measurement_name)
 
         ## Manage some GUI elements
         self.nameLabel.setText("Measurement name: {}".format(self.measurement_name))
         self.contact_tree.clear()
 
-        # Try loading the results or track them if no results are found
-        self.processing_model.load_all_results()
+        # Send a message so the model starts loading results
+        pub.sendMessage("load_all_results")
 
-        # Update the contact tree
-        self.update_contact_tree()
-
-        # Initialize the current paw index, which we'll need for keep track of the labeling
-        self.current_paw_index = 0
-
-        # Select the first item in the contacts tree
-        item = self.contact_tree.topLevelItem(self.current_paw_index)
-        self.contact_tree.setCurrentItem(item)
-        self.update_current_paw()
-
-    def update_contact_tree(self):
-        self.paw_labels = self.processing_model.paw_labels
-        self.paw_data = self.processing_model.paw_data
-        self.paws = self.processing_model.paws
+    def update_contact_tree(self, paws, paw_labels, paw_data, average_data):
+        self.paw_labels = paw_labels
+        self.paw_data = paw_data
+        self.paws = paws
 
         # Clear any existing contacts
         self.contact_tree.clear()
@@ -174,6 +160,14 @@ class ProcessingWidget(QtGui.QWidget):
             force = np.max(calculations.force_over_time(paw))
             rootItem.setText(4, str(int(force)))
 
+        # Initialize the current paw index, which we'll need for keep track of the labeling
+        self.current_paw_index = 0
+
+        # Select the first item in the contacts tree
+        item = self.contact_tree.topLevelItem(self.current_paw_index)
+        self.contact_tree.setCurrentItem(item)
+        self.update_current_paw()
+
     def update_current_paw(self):
         if (self.current_paw_index <= len(self.paws[self.measurement_name]) and
                     len(self.paws[self.measurement_name]) > 0):
@@ -186,7 +180,7 @@ class ProcessingWidget(QtGui.QWidget):
                 for idx in range(item.columnCount()):
                     item.setForeground(idx, self.colors[paw_label])
 
-            self.processing_model.update_current_paw(self.current_paw_index)
+            pub.sendMessage("update_current_paw", current_paw_index=self.current_paw_index, paw_labels=self.paw_labels)
 
     def undo_label(self):
         self.previous_paw()
@@ -298,10 +292,15 @@ class ProcessingWidget(QtGui.QWidget):
         self.update_current_paw()
 
     def track_contacts(self, event=None):
-        self.processing_model.track_contacts()
+        # Make the model track new contacts
+        pub.sendMessage("track_contacts")
+        # Make sure every widget gets updated
+        self.update_current_paw()
 
     def store_status(self, event=None):
-        success = self.processing_model.store_status()
+        pub.sendMessage("store_status")
+
+    def stored_status(self, success):
         # If we were successful, change the color of the tree
         if success:
             current_item = self.measurement_tree.currentItem()

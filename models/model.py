@@ -7,7 +7,7 @@ from functions.pubsub import pub
 import logging
 
 
-class ProcessingModel():
+class Model():
     def __init__(self):
         self.file_paths = defaultdict(dict)
         self.path = configuration.measurement_folder
@@ -25,44 +25,47 @@ class ProcessingModel():
 
         self.logger = logging.getLogger("logger")
 
-    def load_measurements(self):
-        self.file_paths = io.load_measurements()
-        return self.file_paths
+        pub.subscribe(self.switch_dogs, "switch_dogs")
+        pub.subscribe(self.switch_measurements, "switch_measurements")
+        pub.subscribe(self.load_all_results, "load_all_results")
+        pub.subscribe(self.update_current_paw, "update_current_paw")
+        pub.subscribe(self.store_status, "store_status")
+        pub.subscribe(self.track_contacts, "track_contacts")
+
+    def load_file_paths(self):
+        self.logger.info("Model.load_file_paths: Loading file paths")
+        self.file_paths = io.load_file_paths()
+        pub.sendMessage("load_file_paths", file_paths=self.file_paths)
 
     def switch_dogs(self, dog_name):
         """
         This function should always be called when you want to access other dog's results
-		Returns True when switching to a new dog
         """
         if dog_name != self.dog_name:
             self.logger.info(
-                "ProcessingModel.switch_dogs: Switching dogs from {} to {}".format(self.dog_name, dog_name))
+                "Model.switch_dogs: Switching dogs from {} to {}".format(self.dog_name, dog_name))
             self.dog_name = dog_name
 
             # If switching dogs, we also want to clear our caches, because those values are useless
             self.clear_cached_values()
-            return True
-        return False
 
     def switch_measurements(self, measurement_name):
         """
         This function should always be called when you want to access a new measurement
-        Returns True when switching to a new measurement
         """
         if measurement_name != self.measurement_name:
             self.logger.info(
-                "ProcessingModel.switch_measurements: Switching measurements from {} to {}".format(
-                    self.measurement_name, measurement_name))
+                "Model.switch_measurements: Switching measurements to {}".format(measurement_name))
             self.measurement_name = measurement_name
-            return True
-        return False
+            # Load the new file
+            self.load_file()
 
     def load_file(self):
         # Get the path from the file_paths dictionary
         self.file_path = self.file_paths[self.dog_name][self.measurement_name]
 
         # Log which measurement we're loading
-        self.logger.info("ProcessingModel.load_file: Loading measurement for dog: {} - {}".format(self.dog_name,
+        self.logger.info("Model.load_file: Loading measurement for dog: {} - {}".format(self.dog_name,
                                                                                                   self.measurement_name))
 
         # Pass the new measurement through to the widget
@@ -90,7 +93,7 @@ class ProcessingModel():
         Check if there if any measurements for this dog have already been processed
         If so, retrieve the data and convert them to a usable format
         """
-        self.logger.info("ProcessingModel.load_all_results: Loading all results for dog: {}".format(self.dog_name))
+        self.logger.info("Model.load_all_results: Loading all results for dog: {}".format(self.dog_name))
         for measurement_name in self.file_paths[self.dog_name]:
             # Refresh the cache, it might be stale
             if measurement_name in self.paws:
@@ -174,12 +177,13 @@ class ProcessingModel():
         status = "Number of paws found: {}".format(len(self.paws[self.measurement_name]))
         pub.sendMessage("update_statusbar", status=status)
 
-    def update_current_paw(self, current_paw_index):
+    def update_current_paw(self, current_paw_index, paw_labels):
+        self.paw_labels = paw_labels
         self.current_paw_index = current_paw_index
         # Refresh the average data
         self.calculate_average()
 
-        pub.sendMessage("update_current_paw", paws=self.paws, paw_labels=self.paw_labels, paw_data=self.paw_data,
+        pub.sendMessage("updated_current_paw", paws=self.paws, paw_labels=self.paw_labels, paw_data=self.paw_data,
                         average_data=self.average_data, current_paw_index=self.current_paw_index)
 
     def calculate_average(self):
@@ -208,18 +212,18 @@ class ProcessingModel():
         try:
             io.results_to_json(self.new_path, self.dog_name, self.measurement_name,
                                self.paw_labels, self.paws, self.paw_data)
-            self.logger.info("ProcessingModel.store_status: Results for {} have been successfully saved".format(
+            self.logger.info("Model.store_status: Results for {} have been successfully saved".format(
                 self.measurement_name))
             pub.sendMessage("update_statusbar", status="Results saved")
-            return True
+            pub.sendMessage("stored_status", success=True)
         except Exception as e:
-            self.logger.critical("ProcessingModel.store_status: Storing failed! {}".format(e))
+            self.logger.critical("Model.store_status: Storing failed! {}".format(e))
             pub.sendMessage("update_statusbar", status="Storing results failed!")
-            return False
+            pub.sendMessage("stored_status", success=False)
 
 
     def clear_cached_values(self):
-        self.logger.info("ProcessingModel.clear_cached_values")
+        self.logger.info("Model.clear_cached_values")
         self.average_data.clear()
         self.paws.clear()
         self.paw_data.clear()

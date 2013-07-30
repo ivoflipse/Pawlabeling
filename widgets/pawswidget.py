@@ -49,7 +49,7 @@ class PawsWidget(QtGui.QWidget):
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.new_measurement, "load_file")
-        pub.subscribe(self.update_paws, "update_current_paw")
+        pub.subscribe(self.update_paws, "updated_current_paw")
 
     def new_measurement(self, measurement, measurement_name, shape):
         self.measurement_name = measurement_name
