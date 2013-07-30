@@ -55,6 +55,8 @@ class PawView(QtGui.QWidget):
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
         self.active = False
+        self.filtered = []
+        self.outlier_toggle = False
 
         self.dpi = 100
         self.fig = Figure((3.0, 2.0), dpi=self.dpi)
@@ -75,6 +77,11 @@ class PawView(QtGui.QWidget):
         pub.subscribe(self.update, "analysis_results")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.check_active, "active_widget")
+        pub.subscribe(self.filter_outliers, "filter_outliers")
+
+    def filter_outliers(self, toggle):
+        self.outlier_toggle = toggle
+        self.draw()
 
     def check_active(self, widget):
         self.active = False
@@ -86,20 +93,31 @@ class PawView(QtGui.QWidget):
         self.n_max = n_max
 
     def update(self, paws, paw_labels, paw_data, average_data, results, max_results):
-        pressures = results[self.paw_label]["pressure"]
-        max_duration = max_results["duration"]
-        max_pressure = max_results["pressure"]
+        self.pressures = results[self.paw_label]["pressure"]
+        self.max_duration = max_results["duration"]
+        self.max_pressure = max_results["pressure"]
+        self.filtered = results[self.paw_label]["filtered"]
+        self.draw()
+
+    def draw(self):
+        self.axes.cla()
         interpolate_length = 100
-        pressure_over_time = np.zeros((len(pressures), interpolate_length))
+        pressure_over_time = np.zeros((len(self.pressures), interpolate_length))
         lengths = []
 
-        for index, pressure in enumerate(pressures):
-            lengths.append(len(pressure))
-            pressure = np.insert(pressure, 0, 0)
-            pressure = np.append(pressure, 0)
-            pressure_over_time[index, :] = calculations.interpolate_time_series(pressure, interpolate_length)
-            self.axes.plot(calculations.interpolate_time_series(range(np.max(len(pressure))), interpolate_length),
-                           pressure_over_time[index, :], alpha=0.5)
+        if self.outlier_toggle:
+            filtered = self.filtered
+        else:
+            filtered = []
+
+        for index, pressure in enumerate(self.pressures):
+            if index not in filtered:
+                lengths.append(len(pressure))
+                pressure = np.insert(pressure, 0, 0)
+                pressure = np.append(pressure, 0)
+                pressure_over_time[index, :] = calculations.interpolate_time_series(pressure, interpolate_length)
+                self.axes.plot(calculations.interpolate_time_series(range(np.max(len(pressure))), interpolate_length),
+                               pressure_over_time[index, :], alpha=0.5)
 
         mean_length = np.mean(lengths)
         interpolated_timeline = calculations.interpolate_time_series(range(int(mean_length)), interpolate_length)
@@ -110,16 +128,15 @@ class PawView(QtGui.QWidget):
         self.axes.fill_between(interpolated_timeline, mean_pressure - std_pressure, mean_pressure + std_pressure,
                                facecolor="r", alpha=0.5)
         self.axes.plot(interpolated_timeline, mean_pressure - std_pressure, color="r", linewidth=1)
-        self.vertical_line = self.axes.axvline(linewidth=4, color='r')
-        self.axes.set_xlim([0, max_duration + 2])  # +2 because we padded the array
-        self.axes.set_ylim([0, max_pressure * 1.2])
+        self.vertical_line.set_xdata(self.frame)
+        self.axes.set_xlim([0, self.max_duration + 2])  # +2 because we padded the array
+        self.axes.set_ylim([0, self.max_pressure * 1.2])
         self.canvas.draw()
 
     def change_frame(self, frame):
         self.frame = frame
         if self.active:
-            self.vertical_line.set_xdata(frame)
-            self.canvas.draw()
+            self.draw()
 
     def clear_cached_values(self):
         # Put the screen to black

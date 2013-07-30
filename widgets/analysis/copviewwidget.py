@@ -56,6 +56,8 @@ class PawView(QtGui.QWidget):
         self.max_y = 15
         self.frame = -1
         self.active = False
+        self.filtered = []
+        self.outlier_toggle = False
         self.ratio = 1
         self.cop_x = np.zeros(15)
         self.cop_y = np.zeros(15)
@@ -90,6 +92,11 @@ class PawView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.update, "analysis_results")
         pub.subscribe(self.check_active, "active_widget")
+        pub.subscribe(self.filter_outliers, "filter_outliers")
+
+    def filter_outliers(self, toggle):
+        self.outlier_toggle = toggle
+        #self.draw_frame()
 
     def check_active(self, widget):
         self.active = False
@@ -106,6 +113,7 @@ class PawView(QtGui.QWidget):
 
         self.average_data = np.mean(average_data[self.paw_label], axis=0)
         self.max_of_max = np.max(self.average_data, axis=2)
+        self.filtered = results[self.paw_label]["filtered"]
 
         x, y, z = np.nonzero(self.average_data)
         # Pray this never goes out of bounds
@@ -187,6 +195,7 @@ class PawView(QtGui.QWidget):
         self.sliced_data = self.sliced_data[:, ::-1]
         # Display the average data for the requested frame
         self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
+        self.resizeEvent()
 
     def change_frame(self, frame):
         self.frame = frame
@@ -211,7 +220,7 @@ class PawView(QtGui.QWidget):
             self.scene.removeItem(cop)
         self.cop_lines = []
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event=None):
         item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
         ratio = min(self.view.viewport().width() / float(item_size.width()),
                     self.view.viewport().height() / float(item_size.height()))

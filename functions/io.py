@@ -90,6 +90,8 @@ def load(file_name):
 
     # Load the zipped contents and pass them to the load functions
     infile = zipfile.ZipFile(file_name, "r")
+
+    input_file = None  # Just in case the zip file is empty
     for file_name in infile.namelist():
         input_file = infile.read(file_name)
 

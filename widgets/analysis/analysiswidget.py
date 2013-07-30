@@ -1,14 +1,14 @@
 from collections import defaultdict
+import os
 
 from PySide import QtGui
 from PySide.QtCore import Qt
 import numpy as np
-import os
 
-from functions import utility, gui, io, calculations
+from functions import gui, io, calculations
 from functions.pubsub import pub
 from settings import configuration
-from widgets import resultswidget
+from widgets.analysis import resultswidget
 
 
 class AnalysisWidget(QtGui.QTabWidget):
@@ -186,7 +186,7 @@ class AnalysisWidget(QtGui.QTabWidget):
                                                        shortcut=QtGui.QKeySequence("CTRL+F"),
                                                        icon=QtGui.QIcon(
                                                            os.path.join(os.path.dirname(__file__),
-                                                                        "images/edit_zoom.png")),
+                                                                        "../images/edit_zoom.png")),
                                                        tip="Filter outliers",
                                                        checkable=True,
                                                        connection=self.filter_outliers

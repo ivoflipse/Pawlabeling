@@ -39,31 +39,6 @@ class TwoDimViewWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.right_paws_layout)
         self.setLayout(self.main_layout)
 
-    # How do I tell which measurement we're at?
-    def update_paws(self, paw_labels, paw_data, average_data):
-        # Clear the paws, so we can draw new ones
-        self.clear_paws()
-
-        # Group all the data per paw
-        data_array = defaultdict(list)
-        for measurement_name, data_list in paw_data.items():
-            for paw_label, data in zip(paw_labels[measurement_name].values(), data_list):
-                if paw_label >= 0:
-                    data_array[paw_label].append(data)
-
-        # Do I need to cache information so I can use it later on? Like in predict_label?
-        for paw_label, average_list in average_data.items():
-            data = data_array[paw_label]
-            # Skip updating if there's no data
-            if len(data) == 0:
-                logger.info("No data found for {}".format(configuration.paw_dict[paw_label]))
-                continue
-            # Filtering outliers makes no sense when there's only one value
-            elif len(data) > 1:
-                data = utility.filter_outliers(data)
-            widget = self.paws_list[paw_label]
-            widget.update(data, average_list)
-
 class PawView(QtGui.QWidget):
     def __init__(self, parent, label, paw_label):
         super(PawView, self).__init__(parent)
@@ -78,6 +53,8 @@ class PawView(QtGui.QWidget):
         self.my = 15
         self.frame = -1
         self.active = False
+        self.filtered = []
+        self.outlier_toggle = False
         self.data = np.zeros((self.mx, self.my))
         self.max_of_max = self.data.copy()
         self.sliced_data = self.data.copy()
@@ -102,6 +79,11 @@ class PawView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.update, "analysis_results")
         pub.subscribe(self.check_active, "active_widget")
+        pub.subscribe(self.filter_outliers, "filter_outliers")
+
+    def filter_outliers(self, toggle):
+        self.outlier_toggle = toggle
+        #self.draw_frame()
 
     def check_active(self, widget):
         self.active = False
@@ -118,6 +100,7 @@ class PawView(QtGui.QWidget):
 
         self.average_data = np.mean(average_data[self.paw_label], axis=0)
         self.max_of_max = np.max(self.average_data, axis=2)
+        self.filtered = results[self.paw_label]["filtered"]
 
         x, y, z = np.nonzero(self.average_data)
         # Pray this never goes out of bounds
@@ -141,6 +124,7 @@ class PawView(QtGui.QWidget):
 
         # Display the average data for the requested frame
         self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
+        self.resizeEvent()
 
     def change_frame(self, frame):
         self.frame = frame
@@ -156,7 +140,7 @@ class PawView(QtGui.QWidget):
         # Put the screen to black
         self.image.setPixmap(utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.n_max, self.color_table))
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event=None):
         item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
         ratio = min(self.view.viewport().width()/float(item_size.width()),
                     self.view.viewport().height()/float(item_size.height()))

@@ -1,14 +1,15 @@
 import os
 from collections import defaultdict
+import logging
 
 import numpy as np
 from PySide import QtGui, QtCore
 
-from widgets import entireplatewidget, pawswidget
 from settings import configuration
-from functions import io, utility, gui, calculations
+from functions import io, gui, calculations
 from functions.pubsub import pub
-import logging
+from widgets.processing import entireplatewidget, pawswidget
+
 
 class ProcessingWidget(QtGui.QWidget):
     def __init__(self, parent=None):
@@ -315,7 +316,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                        shortcut=QtGui.QKeySequence("CTRL+F"),
                                                        icon=QtGui.QIcon(
                                                            os.path.join(os.path.dirname(__file__),
-                                                                        "images/edit_zoom.png")),
+                                                                        "../images/edit_zoom.png")),
                                                        tip="Using the tracker to find contacts",
                                                        checkable=False,
                                                        connection=self.track_contacts
@@ -325,7 +326,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                      shortcut=QtGui.QKeySequence("CTRL+S"),
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
-                                                                      "images/save-icon.png")),
+                                                                      "../images/save-icon.png")),
                                                      tip="Mark the tracking as correct",
                                                      checkable=False,
                                                      connection=self.store_status
@@ -334,7 +335,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.left_front_action = gui.create_action(text="Select Left Front",
                                                    shortcut=configuration.left_front,
                                                    icon=QtGui.QIcon(
-                                                       os.path.join(os.path.dirname(__file__), "images/LF-icon.png")),
+                                                       os.path.join(os.path.dirname(__file__), "../images/LF-icon.png")),
                                                    tip="Select the Left Front paw",
                                                    checkable=False,
                                                    connection=self.select_left_front
@@ -343,7 +344,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.left_hind_action = gui.create_action(text="Select Left Hind",
                                                   shortcut=configuration.left_hind,
                                                   icon=QtGui.QIcon(
-                                                      os.path.join(os.path.dirname(__file__), "images/LH-icon.png")),
+                                                      os.path.join(os.path.dirname(__file__), "../images/LH-icon.png")),
                                                   tip="Select the Left Hind paw",
                                                   checkable=False,
                                                   connection=self.select_left_hind
@@ -352,7 +353,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.right_front_action = gui.create_action(text="Select Right Front",
                                                     shortcut=configuration.right_front,
                                                     icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                  "images/RF-icon.png")),
+                                                                                  "../images/RF-icon.png")),
                                                     tip="Select the Right Front paw",
                                                     checkable=False,
                                                     connection=self.select_right_front
@@ -361,7 +362,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.right_hind_action = gui.create_action(text="Select Right Hind",
                                                    shortcut=configuration.right_hind,
                                                    icon=QtGui.QIcon(
-                                                       os.path.join(os.path.dirname(__file__), "images/RH-icon.png")),
+                                                       os.path.join(os.path.dirname(__file__), "../images/RH-icon.png")),
                                                    tip="Select the Right Hind paw",
                                                    checkable=False,
                                                    connection=self.select_right_hind
@@ -372,7 +373,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                                QtGui.QKeySequence(QtCore.Qt.Key_Down)],
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
-                                                                      "images/backward.png")),
+                                                                      "../images/backward.png")),
                                                      tip="Select the previous paw",
                                                      checkable=False,
                                                      connection=self.previous_paw
@@ -382,7 +383,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                  shortcut=[configuration.next_paw,
                                                            QtGui.QKeySequence(QtCore.Qt.Key_Up)],
                                                  icon=QtGui.QIcon(
-                                                     os.path.join(os.path.dirname(__file__), "images/forward.png")),
+                                                     os.path.join(os.path.dirname(__file__), "../images/forward.png")),
                                                  tip="Select the next paw",
                                                  checkable=False,
                                                  connection=self.next_paw
@@ -392,7 +393,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                      shortcut=configuration.remove_label,
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
-                                                                      "images/cancel-icon.png")),
+                                                                      "../images/cancel-icon.png")),
                                                      tip="Delete the label from the paw",
                                                      checkable=False,
                                                      connection=self.remove_label
@@ -402,7 +403,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                     shortcut=configuration.invalid_paw,
                                                     icon=QtGui.QIcon(
                                                         os.path.join(os.path.dirname(__file__),
-                                                                     "images/trash-icon.png")),
+                                                                     "../images/trash-icon.png")),
                                                     tip="Mark the paw as invalid",
                                                     checkable=False,
                                                     connection=self.invalid_paw
@@ -411,7 +412,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.undo_label_action = gui.create_action(text="Undo Label From Paw",
                                                    shortcut=QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Z),
                                                    icon=QtGui.QIcon(
-                                                       os.path.join(os.path.dirname(__file__), "images/undo-icon.png")),
+                                                       os.path.join(os.path.dirname(__file__),
+                                                                    "../images/undo-icon.png")),
                                                    tip="Delete the label from the paw",
                                                    checkable=False,
                                                    connection=self.undo_label

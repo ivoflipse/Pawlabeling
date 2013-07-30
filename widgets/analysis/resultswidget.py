@@ -1,6 +1,6 @@
 from PySide import QtGui
 
-from widgets.results import twodimviewwidget, pressureviewwidget, forceviewwidget, copviewwidget
+from widgets.analysis import twodimviewwidget, pressureviewwidget, forceviewwidget, copviewwidget
 from functions.pubsub import pub
 
 class ResultsWidget(QtGui.QWidget):
@@ -39,9 +39,7 @@ class ResultsWidget(QtGui.QWidget):
 
     def update_active_widget(self):
         current_tab = self.tab_widget.currentIndex()
-        print current_tab
         widget = self.widgets[current_tab]
-        print widget
         # Tell the user we're calculating some results
         pub.sendMessage("update_statusbar", status="Switching results to {}".format(widget.label.text()))
         pub.sendMessage("active_widget", widget=widget)

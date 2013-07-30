@@ -4,10 +4,12 @@ import logging
 
 from PySide import QtGui, QtCore
 from settings import configuration
-import processingwidget, analysiswidget
 from functions.pubsub import pub
 from functions.qsingleapplication import QtSingleApplication
 from models import model
+from widgets.analysis import analysiswidget
+from widgets.processing import processingwidget
+
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):

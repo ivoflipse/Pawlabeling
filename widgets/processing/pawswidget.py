@@ -204,6 +204,7 @@ class PawWidget(QtGui.QWidget):
         sliced_data = sliced_data[:, ::-1]
         self.pixmap = utility.get_QPixmap(sliced_data, self.degree, self.n_max, self.color_table, interpolation="cubic")
         self.image.setPixmap(self.pixmap)
+        self.resizeEvent()
 
     def clear_cached_values(self):
         self.data = np.zeros((self.mx, self.my))
@@ -221,7 +222,7 @@ class PawWidget(QtGui.QWidget):
         self.mean_surface_label.setText(
             "{} pixels".format(0 if self.mean_surface == float("inf") else self.mean_surface))
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event=None):
         item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
         ratio = min(self.view.viewport().width()/float(item_size.width()),
                     self.view.viewport().height()/float(item_size.height()))

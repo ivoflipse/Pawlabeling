@@ -53,7 +53,7 @@ class EntirePlateWidget(QtGui.QWidget):
                                                       shortcut=QtGui.QKeySequence(QtCore.Qt.Key_Left),
                                                       icon=QtGui.QIcon(
                                                           os.path.join(os.path.dirname(__file__),
-                                                                       "images/arrow-left-icon.png")),
+                                                                       "../images/arrow-left-icon.png")),
                                                       tip="Move the slider to the left",
                                                       checkable=False,
                                                       connection=self.slide_to_left
@@ -62,7 +62,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.slide_to_right_action = gui.create_action(text="Slide Right",
                                                        shortcut=QtGui.QKeySequence(QtCore.Qt.Key_Right),
                                                        icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                               "images/arrow-right-icon.png")),
+                                                                                     "../images/arrow-right-icon.png")),
                                                        tip="Move the slider to the right",
                                                        checkable=False,
                                                        connection=self.slide_to_right
@@ -71,7 +71,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.fast_backward_action = gui.create_action(text="Fast Back",
                                                       shortcut=QtGui.QKeySequence.MoveToNextWord,#QKeySequence(Qt.CTRL + Qt.Key_Left),
                                                       icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                              "images/arrow-left-icon.png")),
+                                                                                    "../images/arrow-left-icon.png")),
                                                       tip="Move the slider to the left faster",
                                                       checkable=False,
                                                       connection=self.fast_backward
@@ -80,7 +80,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.fast_forward_action = gui.create_action(text="Fast Forward",
                                                      shortcut=QtGui.QKeySequence.MoveToPreviousWord, #QKeySequence(Qt.CTRL + Qt.Key_Right),
                                                      icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                             "images/arrow-right-icon.png")),
+                                                                                   "../images/arrow-right-icon.png")),
                                                      tip="Move the slider to the right faster",
                                                      checkable=False,
                                                      connection=self.fast_forward
@@ -160,6 +160,7 @@ class EntirePlateWidget(QtGui.QWidget):
         # Update the pixmap
         self.pixmap = utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table)
         self.image.setPixmap(self.pixmap)
+        self.resizeEvent()
 
     def clear_cached_values(self):
         self.clear_bounding_box()
@@ -196,6 +197,7 @@ class EntirePlateWidget(QtGui.QWidget):
         bounding_box = self.scene.addPolygon(polygon, self.bounding_box_pen)
         bounding_box.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
         self.bounding_boxes.append(bounding_box)
+        self.resizeEvent()
 
     def update_bounding_boxes(self, paw_labels, current_paw_index, paws, paw_data, average_data):
         self.clear_bounding_box()
@@ -204,6 +206,7 @@ class EntirePlateWidget(QtGui.QWidget):
             self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label)
             if current_paw_index == index:
                 self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label=-1)
+        self.resizeEvent()
 
     def draw_gait_line(self):
         self.gait_line_pen = QtGui.QPen(Qt.white)
@@ -221,6 +224,7 @@ class EntirePlateWidget(QtGui.QWidget):
             gait_line = self.scene.addPolygon(polygon, self.gait_line_pen)
             gait_line.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
             self.gait_lines.append(gait_line)
+        self.resizeEvent()
 
 
     def resizeEvent(self, event=None):
