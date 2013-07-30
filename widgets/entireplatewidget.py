@@ -97,7 +97,7 @@ class EntirePlateWidget(QtGui.QWidget):
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.new_measurement, "loaded_file")
         pub.subscribe(self.update_bounding_boxes, "updated_current_paw")
-        pub.subscribe(self.new_results, "loaded_all_results")
+        pub.subscribe(self.new_results, "processing_results")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
     def fast_backward(self):

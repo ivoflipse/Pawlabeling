@@ -54,7 +54,8 @@ class PawView(QtGui.QWidget):
         self.max_x = 15
         self.min_y = 0
         self.max_y = 15
-        self.frame = 0
+        self.frame = -1
+        self.active = False
         self.ratio = 1
         self.cop_x = np.zeros(15)
         self.cop_y = np.zeros(15)
@@ -87,12 +88,19 @@ class PawView(QtGui.QWidget):
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.change_frame, "analysis.change_frame")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        pub.subscribe(self.update, "calculated_results")
+        pub.subscribe(self.update, "analysis_results")
+        pub.subscribe(self.check_active, "active_widget")
+
+    def check_active(self, widget):
+        self.active = False
+        # Check if I'm the active widget
+        if self.parent == widget:
+            self.active = True
 
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, results, max_results, average_data):
+    def update(self, paws, paw_labels, paw_data, average_data, results, max_results):
         if self.paw_label not in average_data:
             return
 
@@ -183,7 +191,7 @@ class PawView(QtGui.QWidget):
     def change_frame(self, frame):
         self.frame = frame
         # If we're not displaying the empty array
-        if self.max_of_max.shape != (self.mx, self.my):
+        if self.max_of_max.shape != (self.mx, self.my) and self.active:
             self.draw_frame()
 
     def clear_cached_values(self):

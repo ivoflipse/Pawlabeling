@@ -28,7 +28,7 @@ class Model():
         pub.subscribe(self.switch_dogs, "switch_dogs")
         pub.subscribe(self.switch_measurements, "switch_measurements")
         pub.subscribe(self.load_file, "load_file")
-        pub.subscribe(self.load_all_results, "load_all_results")
+        pub.subscribe(self.load_results, "load_results")
         pub.subscribe(self.update_current_paw, "update_current_paw")
         pub.subscribe(self.store_status, "store_status")
         pub.subscribe(self.track_contacts, "track_contacts")
@@ -86,6 +86,15 @@ class Model():
         pub.sendMessage("loaded_file", measurement=self.measurement, measurement_name=self.measurement_name,
                         shape=self.measurement.shape)
 
+    def load_results(self, widget):
+        self.load_all_results()
+        if widget == "processing":
+            pub.sendMessage("processing_results", paws=self.paws, paw_labels=self.paw_labels,
+                            paw_data=self.paw_data, average_data=self.average_data)
+        elif widget == "analysis":
+            pub.sendMessage("analysis_results", paws=self.paws, paw_labels=self.paw_labels, paw_data=self.paw_data,
+                            average_data=self.average_data, results=self.results, max_results=self.max_results)
+
     def load_all_results(self):
         """
         Check if there if any measurements for this dog have already been processed
@@ -130,11 +139,6 @@ class Model():
         # Calculate the average, after everything has been loaded
         self.calculate_average()
         self.calculate_results()
-
-        # TODO: Calculate results, like force etc?
-
-        pub.sendMessage("loaded_all_results", paws=self.paws, paw_labels=self.paw_labels, paw_data=self.paw_data,
-                        average_data=self.average_data)
 
 
     def track_contacts(self):
@@ -224,9 +228,6 @@ class Model():
                 max_duration = np.max(z)
                 if max_duration > self.max_results.get("duration", 0):
                     self.max_results["duration"] = max_duration
-
-        pub.sendMessage("calculated_results", results=self.results, max_results=self.max_results,
-                        average_data=self.average_data)
 
     def store_status(self):
         """

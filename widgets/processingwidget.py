@@ -79,7 +79,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.add_measurements, "load_file_paths")
-        pub.subscribe(self.update_contact_tree, "loaded_all_results")
+        pub.subscribe(self.update_contact_tree, "processing_results")
         pub.subscribe(self.stored_status, "stored_status")
 
     def add_measurements(self, file_paths):
@@ -141,7 +141,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.contact_tree.clear()
 
         # Send a message so the model starts loading results
-        pub.sendMessage("load_all_results")
+        pub.sendMessage("load_results", widget="processing")
 
     def update_contact_tree(self, paws, paw_labels, paw_data, average_data):
         self.paw_labels = paw_labels

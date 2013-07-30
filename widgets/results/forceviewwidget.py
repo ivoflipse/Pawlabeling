@@ -54,6 +54,7 @@ class PawView(QtGui.QWidget):
         self.color_table = self.image_color_table.create_color_table()
         self.x = 100
         self.y = 100
+        self.active = False
 
         self.dpi = 100
         self.fig = Figure(figsize=(3.0, 2.0), dpi=self.dpi)
@@ -72,12 +73,19 @@ class PawView(QtGui.QWidget):
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.change_frame, "analysis.change_frame")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        pub.subscribe(self.update, "calculated_results")
+        pub.subscribe(self.update, "analysis_results")
+        pub.subscribe(self.check_active, "active_widget")
+
+    def check_active(self, widget):
+        self.active = False
+        # Check if I'm the active widget
+        if self.parent == widget:
+            self.active = True
 
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, results, max_results, average_data):
+    def update(self, paws, paw_labels, paw_data, average_data, results, max_results):
         forces = results[self.paw_label]["force"]
         max_duration = max_results["duration"]
         max_force = max_results["force"]
@@ -109,8 +117,9 @@ class PawView(QtGui.QWidget):
 
     def change_frame(self, frame):
         self.frame = frame
-        self.vertical_line.set_xdata(frame)
-        self.canvas.draw()
+        if self.active:
+            self.vertical_line.set_xdata(frame)
+            self.canvas.draw()
 
     def clear_cached_values(self):
         # Put the screen to black

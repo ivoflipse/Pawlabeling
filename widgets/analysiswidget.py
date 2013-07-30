@@ -85,7 +85,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.add_measurements, "load_file_paths")
-        pub.subscribe(self.update_contact_tree, "loaded_all_results")
+        pub.subscribe(self.update_contact_tree, "analysis_results")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
     def add_measurements(self, file_paths):
@@ -129,9 +129,9 @@ class AnalysisWidget(QtGui.QTabWidget):
         pub.sendMessage("clear_cached_values")
         self.contact_tree.clear()
         # Send a message so the model starts loading results
-        pub.sendMessage("load_all_results")
+        pub.sendMessage("load_results", widget="analysis")
 
-    def update_contact_tree(self, paws, paw_labels, paw_data, average_data):
+    def update_contact_tree(self, paws, paw_labels, paw_data, average_data, results, max_results):
         self.contact_tree.clear()
         self.max_length = 0
         self.paw_data = paw_data

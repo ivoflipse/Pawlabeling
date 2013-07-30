@@ -106,7 +106,6 @@ class PawsWidget(QtGui.QWidget):
             percentages_surfaces = [np.sqrt((s - surface) ** 2) / surface for s in surfaces]
             percentages_durations = [np.sqrt((d - duration) ** 2) / duration for d in durations]
             percentages_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
-            #percentages_data = [np.sum(np.sqrt((d - data) ** 2)) for d in data_list]
             results = []
             for p, s, d, d2 in zip(percentages_pressures, percentages_surfaces, percentages_durations,
                                    percentages_data):
