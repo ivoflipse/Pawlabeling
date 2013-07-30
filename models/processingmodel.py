@@ -17,7 +17,7 @@ class ProcessingModel():
         self.measurement_name = ""
 
         # Initialize our variables that will cache results
-        self.average_data = defaultdict(list)
+        self.average_data = defaultdict()
         self.paw_data = defaultdict(list)
         self.paw_labels = defaultdict(dict)
         self.paws = defaultdict(list)
@@ -211,7 +211,7 @@ class ProcessingModel():
         # Then get the normalized data
         for paw_label, data in self.data_list.items():
             normalized_data = utility.calculate_average_data(data)
-            self.average_data[paw_label].append(normalized_data)
+            self.average_data[paw_label] = normalized_data
 
     def store_status(self):
         """

@@ -48,26 +48,26 @@ class PawsWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.right_paws_layout)
         self.setLayout(self.main_layout)
 
-    # How do I tell which measurement we're at?
-    def update_paws(self, paw_labels, paw_data, average_data, current_paw_index, current_measurement):
-        # Clear the paws, so we can draw new ones
-        self.clear_paws()
+        pub.subscribe(self.new_measurement, "load_file")
+        pub.subscribe(self.update_paws, "update_current_paw")
 
-        # Do I need to cache information so I can use it later on? Like in predict_label?
-        for paw_label, average_list in self.average_data.items():
+    def new_measurement(self, measurement, measurement_name, shape):
+        self.measurement_name = measurement_name
+
+    def update_paws(self, paws, paw_labels, paw_data, average_data, current_paw_index):
+        # Clear any previous results, which may be out of date
+        self.clear_paws()
+        # Update those for which we have a average data
+        for paw_label, average_list in average_data.items():
             widget = self.paws_list[paw_label]
-            # This can sometimes be empty, if things are reset
-            if average_list:
-                widget.update(average_list)
-            else:
-                widget.clear_cached_values()
+            widget.update(average_list)
 
         # Update the current paw widget
         widget = self.paws_list[-1]
-        current_paw = paw_data[current_measurement][current_paw_index]
-        normalized_current_paw = utility.normalize_paw_data(current_paw)
-        # These are put in lists, because we try to iterate through them
-        widget.update([normalized_current_paw])
+        current_paw = paw_data[self.measurement_name][current_paw_index]
+        # We expect current_paw to be a list
+        normalized_current_paw = utility.calculate_average_data([current_paw])
+        widget.update(normalized_current_paw)
 
         try:
             self.predict_label()
@@ -115,6 +115,9 @@ class PawsWidget(QtGui.QWidget):
             best_result = np.argmin(results)
             current_paw.label_prediction.setText("{}".format(self.paw_dict[best_result]))
 
+    def clear_paws(self):
+        for paw_label, widget in self.paws_list.items():
+            widget.clear_cached_values()
 
 class PawWidget(QtGui.QWidget):
     def __init__(self, parent, label):
@@ -174,36 +177,19 @@ class PawWidget(QtGui.QWidget):
         self.n_max = n_max
 
     def update(self, average_data):
-        print "update paw"
         # Calculate an average paw from the list of arrays
-        self.average_data = average_data
-        mean_data_list = []
-        pressures = []
-        surfaces = []
-        durations = []
+        self.average_data = np.mean(average_data, axis=0)
+        self.max_pressure = np.max(calculations.force_over_time(self.average_data))
+        x, y, z = np.nonzero(self.average_data)
+        self.mean_duration = np.max(z)
+        self.mean_surface = np.max(calculations.pixel_count_over_time(self.average_data) * configuration.sensor_surface)
 
-        for data in self.average_data:
-            mean_data_list.append(data.mean(axis=2))
-            pressures.append(np.max(calculations.force_over_time(data)))
-            x, y, z = data.shape
-            durations.append(z)
-            surfaces.append(np.max(calculations.pixel_count_over_time(data)*configuration.sensor_surface))
-
-        self.max_pressure = int(np.mean(pressures))
-        self.mean_duration = int(np.mean(durations))
-        self.mean_surface = int(np.mean(surfaces))
-
-        self.max_pressure_label.setText("{} N".format(self.max_pressure))
-        self.mean_duration_label.setText("{} frames".format(self.mean_duration))
-        self.mean_surface_label.setText("{} pixels".format(self.mean_surface))
-
-        if len(mean_data_list) > 1:
-            data = np.array(mean_data_list).mean(axis=0)
-        else:
-            data = np.array(mean_data_list[0])
+        self.max_pressure_label.setText("{:3.1f} N".format(self.max_pressure))
+        self.mean_duration_label.setText("{} frames".format(int(self.mean_duration)))
+        self.mean_surface_label.setText("{:3.1f} pixels".format(self.mean_surface))
 
         # Make sure the paws are facing upright
-        self.data = np.rot90(np.rot90(data))
+        self.data = np.rot90(np.rot90(self.average_data.max(axis=2)))
         # Only display the non-zero part, regardless of its size
         x, y = np.nonzero(self.data)
         sliced_data = self.data
@@ -222,7 +208,6 @@ class PawWidget(QtGui.QWidget):
 
     def clear_cached_values(self):
         self.data = np.zeros((self.mx, self.my))
-        self.data_list = []
         self.average_data = []
         # Put the screen to black
         self.image.setPixmap(utility.get_QPixmap(np.zeros((15, 15)), self.degree, self.n_max, self.color_table))
