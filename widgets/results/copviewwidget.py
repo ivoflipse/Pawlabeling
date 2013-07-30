@@ -5,6 +5,7 @@ from PySide import QtGui, QtCore
 
 from settings import configuration
 from functions import utility, calculations
+from functions.pubsub import pub
 
 import logging
 logger = logging.getLogger("logger")
@@ -15,10 +16,10 @@ class CopViewWidget(QtGui.QWidget):
         self.label = QtGui.QLabel("Force View")
         self.parent = parent
 
-        self.left_front = PawView(self, label="Left Front")
-        self.left_hind = PawView(self, label="Left Hind")
-        self.right_front = PawView(self, label="Right Front")
-        self.right_hind = PawView(self, label="Right Hind")
+        self.left_front = PawView(self, label="Left Front", paw_label=0)
+        self.left_hind = PawView(self, label="Left Hind", paw_label=1)
+        self.right_front = PawView(self, label="Right Front", paw_label=2)
+        self.right_hind = PawView(self, label="Right Hind", paw_label=3)
 
         self.paws_list = {
             0: self.left_front,
@@ -26,8 +27,6 @@ class CopViewWidget(QtGui.QWidget):
             2: self.right_front,
             3: self.right_hind,
         }
-
-        self.clear_paws()
 
         self.left_paws_layout = QtGui.QVBoxLayout()
         self.left_paws_layout.addWidget(self.left_front)
@@ -72,24 +71,11 @@ class CopViewWidget(QtGui.QWidget):
             widget.x = max_length
             widget.update(data, average_list)
 
-    def update_n_max(self, n_max):
-        for paw_label, paw in list(self.paws_list.items()):
-            paw.n_max = n_max
-
-    def change_frame(self, frame):
-        self.frame = frame
-        for paw_label, paw in list(self.paws_list.items()):
-            paw.change_frame(frame)
-
-    def clear_paws(self):
-        for paw_label, paw in list(self.paws_list.items()):
-            paw.clear_paws()
-
-
 class PawView(QtGui.QWidget):
-    def __init__(self, parent, label):
+    def __init__(self, parent, label, paw_label):
         super(PawView, self).__init__(parent)
         self.label = QtGui.QLabel(label)
+        self.paw_label = paw_label
         self.parent = parent
         self.n_max = 0
         self.degree = configuration.interpolation_results
@@ -101,8 +87,17 @@ class PawView(QtGui.QWidget):
         self.max_y = 15
         self.frame = 0
         self.ratio = 1
+        self.cop_x = np.zeros(15)
+        self.cop_y = np.zeros(15)
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
+
+        self.line_pen = QtGui.QPen(QtCore.Qt.white)
+        self.line_pen.setWidth(2)
+
+        self.dot_pen = QtGui.QPen(QtCore.Qt.black)
+        self.dot_pen.setWidth(2)
+        self.dot_brush = QtGui.QBrush(QtCore.Qt.white)
 
         self.cop_lines = []
         self.cop_ellipses = []
@@ -120,14 +115,20 @@ class PawView(QtGui.QWidget):
         self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
 
-    def update(self, paw_data, average_data):
-        self.frame = -1
-        self.max_of_max = np.mean(average_data, axis=0)
+        pub.subscribe(self.update_n_max, "update_n_max")
+        #pub.subscribe(self.change_frame, "analysis.change_frame")
+        pub.subscribe(self.clear_paws, "clear_paws")
+        pub.subscribe(self.update, "loaded_all_results")
 
-        # The result of calculate_average_data = (number of paws, rows, colums, frames)
-        # so mean axis=0 is mean over all paws
-        self.average_data = np.mean(utility.calculate_average_data(paw_data), axis=0)
-        self.paw_data = paw_data
+    def update_n_max(self, n_max):
+        self.n_max = n_max
+
+    def update(self, paws, paw_labels, paw_data, average_data):
+        if self.paw_label not in average_data:
+            return
+
+        self.average_data = np.mean(average_data[self.paw_label], axis=0)
+        self.max_of_max = np.max(self.average_data, axis=2)
 
         x, y, z = np.nonzero(self.average_data)
         # Pray this never goes out of bounds
@@ -144,14 +145,6 @@ class PawView(QtGui.QWidget):
         for item in self.cop_ellipses:
             self.scene.removeItem(item)
         self.cop_ellipses = []
-
-        color = QtCore.Qt.white
-        self.line_pen = QtGui.QPen(color)
-        self.line_pen.setWidth(2)
-
-        self.dot_pen = QtGui.QPen(QtCore.Qt.black)
-        self.dot_pen.setWidth(2)
-        self.dot_brush = QtGui.QBrush(QtCore.Qt.white)
 
         # This value determines how many points of the COP are being plotted.
         self.x = 15

@@ -133,6 +133,8 @@ class ProcessingWidget(QtGui.QWidget):
         pub.sendMessage("switch_dogs", dog_name=self.dog_name)
         self.measurement_name = str(current_item.text(0))
         pub.sendMessage("switch_measurements", measurement_name=self.measurement_name)
+        # Tell the model to load the file
+        pub.sendMessage("load_file")
 
         ## Manage some GUI elements
         self.nameLabel.setText("Measurement name: {}".format(self.measurement_name))
@@ -178,7 +180,8 @@ class ProcessingWidget(QtGui.QWidget):
 
                 # Update the colors in the contact tree
                 for idx in range(item.columnCount()):
-                    item.setForeground(idx, self.colors[paw_label])
+                    if paw_label >= 0:
+                        item.setForeground(idx, self.colors[paw_label])
 
             pub.sendMessage("update_current_paw", current_paw_index=self.current_paw_index, paw_labels=self.paw_labels)
 

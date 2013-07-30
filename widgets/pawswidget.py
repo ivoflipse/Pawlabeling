@@ -48,7 +48,7 @@ class PawsWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.right_paws_layout)
         self.setLayout(self.main_layout)
 
-        pub.subscribe(self.new_measurement, "load_file")
+        pub.subscribe(self.new_measurement, "loaded_file")
         pub.subscribe(self.update_paws, "updated_current_paw")
 
     def new_measurement(self, measurement, measurement_name, shape):

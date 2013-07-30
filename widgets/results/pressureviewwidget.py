@@ -5,6 +5,7 @@ from PySide import QtGui
 
 from settings import configuration
 from functions import utility, calculations
+from functions.pubsub import pub
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -16,10 +17,10 @@ class PressureViewWidget(QtGui.QWidget):
         self.label = QtGui.QLabel("Pressure View")
         self.parent = parent
 
-        self.left_front = PawView(self, label="Left Front")
-        self.left_hind = PawView(self, label="Left Hind")
-        self.right_front = PawView(self, label="Right Front")
-        self.right_hind = PawView(self, label="Right Hind")
+        self.left_front = PawView(self, label="Left Front", paw_label=0)
+        self.left_hind = PawView(self, label="Left Hind", paw_label=1)
+        self.right_front = PawView(self, label="Right Front", paw_label=2)
+        self.right_hind = PawView(self, label="Right Hind", paw_label=3)
 
         self.paws_list = {
             0: self.left_front,
@@ -27,8 +28,6 @@ class PressureViewWidget(QtGui.QWidget):
             2: self.right_front,
             3: self.right_hind,
         }
-
-        self.clear_paws()
 
         self.left_paws_layout = QtGui.QVBoxLayout()
         self.left_paws_layout.addWidget(self.left_front)
@@ -74,24 +73,12 @@ class PressureViewWidget(QtGui.QWidget):
             widget.y = max_pressure * 1.2
             widget.update(data, average_list)
 
-    def update_n_max(self, n_max):
-        for paw_label, paw in list(self.paws_list.items()):
-            paw.n_max = n_max
-
-    def change_frame(self, frame):
-        self.frame = frame
-        for paw_label, paw in list(self.paws_list.items()):
-            paw.change_frame(frame)
-
-    def clear_paws(self):
-        for paw_label, paw in list(self.paws_list.items()):
-            paw.clear_paws()
-
 
 class PawView(QtGui.QWidget):
-    def __init__(self, parent, label):
+    def __init__(self, parent, label, paw_label):
         super(PawView, self).__init__(parent)
         self.label = QtGui.QLabel(label)
+        self.paw_label = paw_label
         self.parent = parent
         self.n_max = 0
         self.frame = 0
@@ -113,6 +100,13 @@ class PawView(QtGui.QWidget):
         self.main_layout.setStretchFactor(self.canvas, 3)
         self.setMinimumHeight(configuration.paws_widget_height)
         self.setLayout(self.main_layout)
+
+        pub.subscribe(self.update_n_max, "update_n_max")
+        pub.subscribe(self.change_frame, "analysis.change_frame")
+        pub.subscribe(self.clear_paws, "clear_paws")
+
+    def update_n_max(self, n_max):
+        self.n_max = n_max
 
     def update(self, paw_data, average_data):
         self.axes.cla()

@@ -35,8 +35,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.paw_dict = configuration.paw_dict
 
         self.toolbar = gui.Toolbar(self)
-        # Create all the toolbar actions
-        self.create_toolbar_actions()
 
         # Create a list widget
         self.measurement_tree = QtGui.QTreeWidget(self)
@@ -55,7 +53,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Set the widths of the columns
         for column in range(self.contact_tree.columnCount()):
             self.contact_tree.setColumnWidth(column, 55)
-        self.contact_tree.itemActivated.connect(self.switch_contacts)
 
         self.results_widget = resultswidget.ResultsWidget(self)
 
@@ -120,47 +117,17 @@ class AnalysisWidget(QtGui.QTabWidget):
         Check if there if any measurements for this dog have already been processed
         If so, retrieve the data and convert them to a usable format
         """
-        # Iterate through all measurements for this dog
-        self.currentItem = self.measurement_tree.currentItem()
-        self.dog_name = str(self.currentItem.text(0))
-        file_names = self.file_names[self.dog_name]
+        # Get the text from the currentItem
+        self.dog_name = self.measurement_tree.currentItem().text(0)
 
-        self.clear_cached_values()
+        # Notify the model to update the dog_name + measurement_name if necessary
+        pub.sendMessage("switch_dogs", dog_name=self.dog_name)
+        # Blank out the measurement_name
+        pub.sendMessage("switch_measurements", measurement_name="")
 
-        for index, file_name in enumerate(file_names):
-            pub.sendMessage("update_statusbar",
-                            status="Loading results for measurement {}/{}".format(index + 1, len(file_names)))
-            measurement_name = file_name
-            # Refresh the cache, it might be stale
-            if measurement_name in self.paws:
-                self.paws[measurement_name] = []
-                self.paw_labels[measurement_name] = {}
-                self.paw_data[measurement_name] = []
-
-            stored_results = io.load_results(self.dog_name, measurement_name)
-            # If we have results, stick them in their respective variable
-            if stored_results:
-                self.paw_labels[measurement_name] = stored_results["paw_labels"]
-                for index, paw_data in stored_results["paw_data"].items():
-                    self.paw_data[measurement_name].append(paw_data)
-                    paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
-                    self.paws[measurement_name].append(paw)
-
-                for _, results in stored_results.items():
-                    paw_labels = stored_results["paw_labels"].values()
-                    paw_data = stored_results["paw_data"].values()
-                    for paw_label, data in zip(paw_labels, paw_data):
-                        if paw_label >= 0:
-                            normalized_data = utility.normalize_paw_data(data)
-                            self.average_data[paw_label].append(normalized_data)
-
-                            max_norm = np.max(normalized_data)
-                            if max_norm > self.n_max:
-                                self.n_max = max_norm
-
-        self.results_widget.update_n_max(self.n_max)
-        pub.sendMessage("update_statusbar", status="Finished loading results")
-        self.results_widget.update_widgets(self.paw_labels, self.paw_data, self.average_data)
+        self.contact_tree.clear()
+        # Send a message so the model starts loading results
+        pub.sendMessage("load_all_results")
 
     def update_contact_tree(self, paws, paw_labels, paw_data, average_data):
         self.contact_tree.clear()
@@ -175,7 +142,6 @@ class AnalysisWidget(QtGui.QTabWidget):
                     self.max_length = z
                 paw_label = self.paw_labels[measurement_name][index]
 
-                # Shall I skip invalid paws?
                 if paw_label >= 0:
                     rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
                     rootItem.setText(0, str(index))
@@ -205,78 +171,5 @@ class AnalysisWidget(QtGui.QTabWidget):
     def change_frame(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))
         self.frame = frame
-        # The frame number should be based on the actual data, perhaps check the tree or cache it
-        self.results_widget.change_frame(frame)
 
-    def switch_contacts(self):
-        pass
-
-    def select_left_front(self):
-        pass
-
-    def select_left_hind(self):
-        pass
-
-    def select_right_front(self):
-        pass
-
-    def select_right_hind(self):
-        pass
-
-    def invalid_paw(self):
-        pass
-
-
-    def create_toolbar_actions(self):
-        self.left_front_action = gui.create_action(text="Select Left Front",
-                                                   shortcut=configuration.left_front,
-                                                   icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                 "images/LF-icon.png")),
-                                                   tip="Select the Left Front paw",
-                                                   checkable=False,
-                                                   connection=self.select_left_front
-        )
-
-        self.left_hind_action = gui.create_action(text="Select Left Hind",
-                                                  shortcut=configuration.left_hind,
-                                                  icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                "images/LH-icon.png")),
-                                                  tip="Select the Left Hind paw",
-                                                  checkable=False,
-                                                  connection=self.select_left_hind
-        )
-
-        self.right_front_action = gui.create_action(text="Select Right Front",
-                                                    shortcut=configuration.right_front,
-                                                    icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                  "images/RF-icon.png")),
-                                                    tip="Select the Right Front paw",
-                                                    checkable=False,
-                                                    connection=self.select_right_front
-        )
-
-        self.right_hind_action = gui.create_action(text="Select Right Hind",
-                                                   shortcut=configuration.right_hind,
-                                                   icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                 "images/RH-icon.png")),
-                                                   tip="Select the Right Hind paw",
-                                                   checkable=False,
-                                                   connection=self.select_right_hind
-        )
-
-        self.invalid_paw_action = gui.create_action(text="Mark Paw as Invalid",
-                                                    shortcut=configuration.invalid_paw,
-                                                    icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                  "images/trash-icon.png")),
-                                                    tip="Mark the paw as invalid",
-                                                    checkable=False,
-                                                    connection=self.invalid_paw
-        )
-
-        self.actions = [self.left_front_action, self.left_hind_action,
-                        self.right_front_action, self.right_hind_action,
-                        self.invalid_paw_action]
-
-        for action in self.actions:
-            #action.setShortcutContext(Qt.WindowShortcut)
-            self.toolbar.addAction(action)
+        pub.sendMessage("analysis.change_frame", frame=self.frame)

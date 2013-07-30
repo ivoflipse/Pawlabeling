@@ -95,7 +95,7 @@ class EntirePlateWidget(QtGui.QWidget):
 
         # # Install an event filter
         pub.subscribe(self.update_n_max, "update_n_max")
-        pub.subscribe(self.new_measurement, "load_file")
+        pub.subscribe(self.new_measurement, "loaded_file")
         pub.subscribe(self.update_bounding_boxes, "updated_current_paw")
         pub.subscribe(self.new_results, "loaded_all_results")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")

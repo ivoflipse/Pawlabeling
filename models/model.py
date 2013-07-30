@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 import numpy as np
 from settings import configuration
-from functions import io, tracking, utility, gui
+from functions import io, tracking, utility, calculations
 from functions.pubsub import pub
 import logging
 
@@ -27,6 +27,7 @@ class Model():
 
         pub.subscribe(self.switch_dogs, "switch_dogs")
         pub.subscribe(self.switch_measurements, "switch_measurements")
+        pub.subscribe(self.load_file, "load_file")
         pub.subscribe(self.load_all_results, "load_all_results")
         pub.subscribe(self.update_current_paw, "update_current_paw")
         pub.subscribe(self.store_status, "store_status")
@@ -57,8 +58,6 @@ class Model():
             self.logger.info(
                 "Model.switch_measurements: Switching measurements to {}".format(measurement_name))
             self.measurement_name = measurement_name
-            # Load the new file
-            self.load_file()
 
     def load_file(self):
         # Get the path from the file_paths dictionary
@@ -67,7 +66,6 @@ class Model():
         # Log which measurement we're loading
         self.logger.info("Model.load_file: Loading measurement for dog: {} - {}".format(self.dog_name,
                                                                                                   self.measurement_name))
-
         # Pass the new measurement through to the widget
         data = io.load(self.file_path)
 
@@ -85,7 +83,7 @@ class Model():
         # Notify the widgets that there's a new n_max available
         pub.sendMessage("update_n_max", n_max=self.n_max)
         # Notify the widgets that a new measurement is available
-        pub.sendMessage("load_file", measurement=self.measurement, measurement_name=self.measurement_name,
+        pub.sendMessage("loaded_file", measurement=self.measurement, measurement_name=self.measurement_name,
                         shape=self.measurement.shape)
 
     def load_all_results(self):
@@ -126,7 +124,6 @@ class Model():
         # Note: this updates n_max if there ever was a higher n_max, also applies to the entire plate!
         pub.sendMessage("update_n_max", n_max=self.n_max)
 
-        # If we don't have any paw_data for this contact yet track them down
         if not self.paw_data[self.measurement_name]:
             self.track_contacts()
 
@@ -182,6 +179,7 @@ class Model():
         self.current_paw_index = current_paw_index
         # Refresh the average data
         self.calculate_average()
+        self.calculate_results()
 
         pub.sendMessage("updated_current_paw", paws=self.paws, paw_labels=self.paw_labels, paw_data=self.paw_data,
                         average_data=self.average_data, current_paw_index=self.current_paw_index)
@@ -200,6 +198,18 @@ class Model():
         for paw_label, data in self.data_list.items():
             normalized_data = utility.calculate_average_data(data)
             self.average_data[paw_label] = normalized_data
+
+    def calculate_results(self):
+        self.results = defaultdict(dict)
+        for paw_label, data in self.data_list.items():
+            force = calculations.force_over_time(data)
+            self.results[paw_label]["force"].append(force)
+            pressure = calculations.pressure_over_time(data)
+            self.results[paw_label]["pressure"].append(pressure)
+            cop_x, cop_y = calculations.calculate_cop(data)
+            self.results[paw_label]["cop"].append((cop_x, cop_y))
+
+        pub.sendMessage("calculated_results", results=self.results)
 
     def store_status(self):
         """
