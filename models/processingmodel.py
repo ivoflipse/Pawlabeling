@@ -25,29 +25,8 @@ class ProcessingModel():
 
         self.logger = logging.getLogger("logger")
 
-    def zip_files(self, root, file_name):
-        # Check if the file isn't compressed, else zip it and delete the original after loading
-        base_name, extension = os.path.splitext(file_name)
-        if extension != ".zip":
-            file_path = os.path.join(root, file_name)
-            file_name = io.convert_file_to_zip(file_path)
-
-        return os.path.join(root, file_name)
-
     def load_measurements(self):
-        # Clear any existing file names
-        self.file_paths.clear()
-
-        self.logger.info("load_measurements: Searching for measurements...")
-        # Walk through the folder and gather up all the files
-        for idx, (root, dirs, files) in enumerate(os.walk(self.path)):
-            if not dirs:
-                # Add the name of the dog
-                dog_name = root.split("\\")[-1]
-                for index, file_name in enumerate(files):
-                    # zip_files will convert a file to zip and returns the path to the file
-                    self.file_paths[dog_name][file_name] = self.zip_files(root, file_name)
-
+        self.file_paths = io.load_measurements()
         return self.file_paths
 
     def switch_dogs(self, dog_name):
@@ -56,7 +35,8 @@ class ProcessingModel():
 		Returns True when switching to a new dog
         """
         if dog_name != self.dog_name:
-            self.logger.info("switch_dogs: Switching dogs from {} to {}".format(self.dog_name, dog_name))
+            self.logger.info(
+                "ProcessingModel.switch_dogs: Switching dogs from {} to {}".format(self.dog_name, dog_name))
             self.dog_name = dog_name
 
             # If switching dogs, we also want to clear our caches, because those values are useless
@@ -71,8 +51,8 @@ class ProcessingModel():
         """
         if measurement_name != self.measurement_name:
             self.logger.info(
-                "switch_measurements: Switching measurements from {} to {}".format(self.measurement_name,
-                                                                                   measurement_name))
+                "ProcessingModel.switch_measurements: Switching measurements from {} to {}".format(
+                    self.measurement_name, measurement_name))
             self.measurement_name = measurement_name
             return True
         return False
@@ -82,7 +62,8 @@ class ProcessingModel():
         self.file_path = self.file_paths[self.dog_name][self.measurement_name]
 
         # Log which measurement we're loading
-        self.logger.info("load_file: Loading measurement for dog: {} - {}".format(self.dog_name, self.measurement_name))
+        self.logger.info("ProcessingModel.load_file: Loading measurement for dog: {} - {}".format(self.dog_name,
+                                                                                                  self.measurement_name))
 
         # Pass the new measurement through to the widget
         data = io.load(self.file_path)
@@ -109,6 +90,7 @@ class ProcessingModel():
         Check if there if any measurements for this dog have already been processed
         If so, retrieve the data and convert them to a usable format
         """
+        self.logger.info("ProcessingModel.load_all_results: Loading all results for dog: {}".format(self.dog_name))
         for measurement_name in self.file_paths[self.dog_name]:
             # Refresh the cache, it might be stale
             if measurement_name in self.paws:
@@ -147,6 +129,8 @@ class ProcessingModel():
 
         # Calculate the average, after everything has been loaded
         self.calculate_average()
+
+        # TODO: Calculate results, like force etc?
 
         pub.sendMessage("loaded_all_results", paws=self.paws, paw_labels=self.paw_labels, paw_data=self.paw_data,
                         average_data=self.average_data)
@@ -215,7 +199,8 @@ class ProcessingModel():
 
     def store_status(self):
         """
-        This function creates a file in the store_results_folder folder if it doesn't exist
+        This function creates a file in the store_results_folder and create the folder if it doesn't exist
+        It will notify the status bar, log and return a boolean value depending on the success or failure of execution
         """
         # Try and create a folder to add store the store_results_folder result
         self.new_path = io.create_results_folder(self.dog_name)
@@ -223,14 +208,18 @@ class ProcessingModel():
         try:
             io.results_to_json(self.new_path, self.dog_name, self.measurement_name,
                                self.paw_labels, self.paws, self.paw_data)
-            self.logger.info("Results for {} have been successfully saved".format(self.measurement_name))
+            self.logger.info("ProcessingModel.store_status: Results for {} have been successfully saved".format(
+                self.measurement_name))
             pub.sendMessage("update_statusbar", status="Results saved")
+            return True
         except Exception as e:
-            self.logger.critical("Storing failed! {}".format(e))
+            self.logger.critical("ProcessingModel.store_status: Storing failed! {}".format(e))
             pub.sendMessage("update_statusbar", status="Storing results failed!")
+            return False
 
 
     def clear_cached_values(self):
+        self.logger.info("ProcessingModel.clear_cached_values")
         self.average_data.clear()
         self.paws.clear()
         self.paw_data.clear()

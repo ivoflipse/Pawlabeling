@@ -25,12 +25,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.logger = logging.getLogger("logger")
         self.processing_model = processingmodel.ProcessingModel()
 
-        # Initialize our variables that will cache results
-        self.average_data = defaultdict(list)
-        self.paw_data = defaultdict(list)
-        self.paw_labels = defaultdict(dict)
-        self.paws = defaultdict(list)
-
         # This contains all the file paths for each dog_name
         self.file_paths = defaultdict(dict)
 
@@ -190,8 +184,7 @@ class ProcessingWidget(QtGui.QWidget):
 
                 # Update the colors in the contact tree
                 for idx in range(item.columnCount()):
-                    item.setBackground(idx, self.colors[paw_label])
-
+                    item.setForeground(idx, self.colors[paw_label])
 
             self.processing_model.update_current_paw(self.current_paw_index)
 
@@ -308,7 +301,12 @@ class ProcessingWidget(QtGui.QWidget):
         self.processing_model.track_contacts()
 
     def store_status(self, event=None):
-        self.processing_model.store_status()
+        success = self.processing_model.store_status()
+        # If we were successful, change the color of the tree
+        if success:
+            current_item = self.measurement_tree.currentItem()
+            green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
+            current_item.setForeground(0, green_brush)
 
     def create_toolbar_actions(self):
         self.track_contacts_action = gui.create_action(text="&Track Contacts",

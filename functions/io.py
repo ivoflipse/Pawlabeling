@@ -208,7 +208,29 @@ def convert_file_to_zip(file_path):
     except Exception as e:
         logger.critical("Couldn't remove file original file. Exception: {}".format(e))
 
+def zip_files(root, file_name):
+    # Check if the file isn't compressed, else zip it and delete the original after loading
+    base_name, extension = os.path.splitext(file_name)
+    if extension != ".zip":
+        file_path = os.path.join(root, file_name)
+        file_name = convert_file_to_zip(file_path)
 
+    return os.path.join(root, file_name)
 
+def load_measurements():
+    from collections import defaultdict
+    # Clear any existing file names
+    file_paths = defaultdict(dict)
 
+    logger.info("io.load_measurements: Searching for measurements...")
+    # Walk through the folder and gather up all the files
+    for idx, (root, dirs, files) in enumerate(os.walk(configuration.measurement_folder)):
+        if not dirs:
+            # Add the name of the dog
+            dog_name = root.split("\\")[-1]
+            for index, file_name in enumerate(files):
+                # zip_files will convert a file to zip and returns the path to the file
+                file_paths[dog_name][file_name] = zip_files(root, file_name)
+
+    return file_paths
 
