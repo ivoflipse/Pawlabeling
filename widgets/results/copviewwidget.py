@@ -40,37 +40,6 @@ class CopViewWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.right_paws_layout)
         self.setLayout(self.main_layout)
 
-    # How do I tell which measurement we're at?
-    def update_paws(self, paw_labels, paw_data, average_data):
-        # Clear the paws, so we can draw new ones
-        self.clear_paws()
-        max_length = 0
-
-        # Group all the data per paw
-        data_array = defaultdict(list)
-        for measurement_name, data_list in paw_data.items():
-            for paw_label, data in zip(paw_labels[measurement_name].values(), data_list):
-                if paw_label >= 0:
-                    data_array[paw_label].append(data)
-                    # Get the max values for the plots
-                    x, y, z = data.shape
-                    if z > max_length:
-                        max_length = z
-
-        # Do I need to cache information so I can use it later on? Like in predict_label?
-        for paw_label, average_list in average_data.items():
-            data = data_array[paw_label]
-            # Skip updating if there's no data
-            if len(data) == 0:
-                logger.info("No data found for {}".format(configuration.paw_dict[paw_label]))
-                continue
-            # Filtering outliers makes no sense when there's only one value
-            elif len(data) > 1:
-                data = utility.filter_outliers(data)
-            widget = self.paws_list[paw_label]
-            widget.x = max_length
-            widget.update(data, average_list)
-
 class PawView(QtGui.QWidget):
     def __init__(self, parent, label, paw_label):
         super(PawView, self).__init__(parent)
@@ -116,14 +85,14 @@ class PawView(QtGui.QWidget):
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.update_n_max, "update_n_max")
-        #pub.subscribe(self.change_frame, "analysis.change_frame")
-        pub.subscribe(self.clear_paws, "clear_paws")
-        pub.subscribe(self.update, "loaded_all_results")
+        pub.subscribe(self.change_frame, "analysis.change_frame")
+        pub.subscribe(self.clear_cached_values, "clear_cached_values")
+        pub.subscribe(self.update, "calculated_results")
 
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, paws, paw_labels, paw_data, average_data):
+    def update(self, results, max_results, average_data):
         if self.paw_label not in average_data:
             return
 
@@ -217,7 +186,7 @@ class PawView(QtGui.QWidget):
         if self.max_of_max.shape != (self.mx, self.my):
             self.draw_frame()
 
-    def clear_paws(self):
+    def clear_cached_values(self):
         self.sliced_data = np.zeros((self.mx, self.my))
         self.average_data = np.zeros((self.mx, self.my, 15))
         self.max_of_max = self.sliced_data

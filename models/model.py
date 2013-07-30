@@ -65,7 +65,7 @@ class Model():
 
         # Log which measurement we're loading
         self.logger.info("Model.load_file: Loading measurement for dog: {} - {}".format(self.dog_name,
-                                                                                                  self.measurement_name))
+                                                                                        self.measurement_name))
         # Pass the new measurement through to the widget
         data = io.load(self.file_path)
 
@@ -129,6 +129,7 @@ class Model():
 
         # Calculate the average, after everything has been loaded
         self.calculate_average()
+        self.calculate_results()
 
         # TODO: Calculate results, like force etc?
 
@@ -179,7 +180,6 @@ class Model():
         self.current_paw_index = current_paw_index
         # Refresh the average data
         self.calculate_average()
-        self.calculate_results()
 
         pub.sendMessage("updated_current_paw", paws=self.paws, paw_labels=self.paw_labels, paw_data=self.paw_data,
                         average_data=self.average_data, current_paw_index=self.current_paw_index)
@@ -200,16 +200,33 @@ class Model():
             self.average_data[paw_label] = normalized_data
 
     def calculate_results(self):
-        self.results = defaultdict(dict)
-        for paw_label, data in self.data_list.items():
-            force = calculations.force_over_time(data)
-            self.results[paw_label]["force"].append(force)
-            pressure = calculations.pressure_over_time(data)
-            self.results[paw_label]["pressure"].append(pressure)
-            cop_x, cop_y = calculations.calculate_cop(data)
-            self.results[paw_label]["cop"].append((cop_x, cop_y))
+        self.results = defaultdict(lambda: defaultdict(list))
+        self.max_results = defaultdict()
 
-        pub.sendMessage("calculated_results", results=self.results)
+        for paw_label, data_list in self.data_list.items():
+            for data in data_list:
+                force = calculations.force_over_time(data)
+                self.results[paw_label]["force"].append(force)
+                max_force = np.max(force)
+                if max_force > self.max_results.get("force", 0):
+                    self.max_results["force"] = max_force
+
+                pressure = calculations.pressure_over_time(data)
+                self.results[paw_label]["pressure"].append(pressure)
+                max_pressure = np.max(pressure)
+                if max_pressure > self.max_results.get("pressure", 0):
+                    self.max_results["pressure"] = max_pressure
+
+                cop_x, cop_y = calculations.calculate_cop(data, version="numpy")
+                self.results[paw_label]["cop"].append((cop_x, cop_y))
+
+                x, y, z = np.nonzero(data)
+                max_duration = np.max(z)
+                if max_duration > self.max_results.get("duration", 0):
+                    self.max_results["duration"] = max_duration
+
+        pub.sendMessage("calculated_results", results=self.results, max_results=self.max_results,
+                        average_data=self.average_data)
 
     def store_status(self):
         """

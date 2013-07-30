@@ -98,13 +98,13 @@ class PawView(QtGui.QWidget):
 
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.change_frame, "analysis.change_frame")
-        pub.subscribe(self.clear_paws, "clear_paws")
-        pub.subscribe(self.update, "loaded_all_results")
+        pub.subscribe(self.clear_cached_values, "clear_cached_values")
+        pub.subscribe(self.update, "calculated_results")
 
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, paws, paw_labels, paw_data, average_data):
+    def update(self, results, max_results, average_data):
         if self.paw_label not in average_data:
             return
 
@@ -140,7 +140,7 @@ class PawView(QtGui.QWidget):
         if self.max_of_max.shape != (self.mx, self.my) or self.max_z < self.frame:
             self.draw_frame()
 
-    def clear_paws(self):
+    def clear_cached_values(self):
         self.sliced_data = np.zeros((self.mx, self.my))
         self.average_data = np.zeros((self.mx, self.my, 15))
         self.max_of_max = self.sliced_data

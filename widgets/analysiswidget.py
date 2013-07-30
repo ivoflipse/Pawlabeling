@@ -86,6 +86,7 @@ class AnalysisWidget(QtGui.QTabWidget):
 
         pub.subscribe(self.add_measurements, "load_file_paths")
         pub.subscribe(self.update_contact_tree, "loaded_all_results")
+        pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
     def add_measurements(self, file_paths):
         # Clear any existing measurements
@@ -125,6 +126,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Blank out the measurement_name
         pub.sendMessage("switch_measurements", measurement_name="")
 
+        pub.sendMessage("clear_cached_values")
         self.contact_tree.clear()
         # Send a message so the model starts loading results
         pub.sendMessage("load_all_results")
@@ -166,7 +168,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.paws.clear()
         self.paw_data.clear()
         self.paw_labels.clear()
-        self.results_widget.clear_widgets()
 
     def change_frame(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))

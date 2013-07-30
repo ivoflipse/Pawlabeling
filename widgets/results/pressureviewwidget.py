@@ -41,38 +41,6 @@ class PressureViewWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.right_paws_layout)
         self.setLayout(self.main_layout)
 
-    # How do I tell which measurement we're at?
-    def update_paws(self, paw_labels, paw_data, average_data):
-        # Clear the paws, so we can draw new ones
-        self.clear_paws()
-
-        # Group all the data per paw
-        data_array = defaultdict(list)
-        max_pressure = 0
-        max_length = 0
-        for measurement_name, data_list in paw_data.items():
-            for paw_label, data in zip(paw_labels[measurement_name].values(), data_list):
-                if paw_label >= 0:
-                    data_array[paw_label].append(data)
-                    # Get the max values for the plots
-                    x, y, z = data.shape
-                    if z > max_length:
-                        max_length = z
-                    pressure_over_time = calculations.pressure_over_time(data)
-                    pressure = np.max(pressure_over_time)
-                    if pressure > max_pressure:
-                        max_pressure = pressure
-
-        # Do I need to cache information so I can use it later on? Like in predict_label?
-        for paw_label, average_list in average_data.items():
-            data = data_array[paw_label]
-            data = utility.filter_outliers(data)
-
-            widget = self.paws_list[paw_label]
-            widget.x = max_length + 1
-            widget.y = max_pressure * 1.2
-            widget.update(data, average_list)
-
 
 class PawView(QtGui.QWidget):
     def __init__(self, parent, label, paw_label):
@@ -103,25 +71,26 @@ class PawView(QtGui.QWidget):
 
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.change_frame, "analysis.change_frame")
-        pub.subscribe(self.clear_paws, "clear_paws")
+        pub.subscribe(self.update, "calculated_results")
+        pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, paw_data, average_data):
-        self.axes.cla()
+    def update(self, results, max_results, average_data):
+        pressures = results[self.paw_label]["pressure"]
+        max_duration = max_results["duration"]
+        max_pressure = max_results["pressure"]
         interpolate_length = 100
-        pressure_over_time = np.zeros((len(paw_data), interpolate_length))
+        pressure_over_time = np.zeros((len(pressures), interpolate_length))
         lengths = []
-        for index, data in enumerate(paw_data):
-            x, y, z = data.shape
-            lengths.append(z)
 
-            pressure = calculations.pressure_over_time(data)
+        for index, pressure in enumerate(pressures):
+            lengths.append(len(pressure))
+            pressure = np.insert(pressure, 0, 0)
             pressure = np.append(pressure, 0)
-            pressure = calculations.interpolate_time_series(pressure, interpolate_length)
-            pressure_over_time[index, :] = pressure
-            self.axes.plot(calculations.interpolate_time_series(range(z), interpolate_length),
+            pressure_over_time[index, :] = calculations.interpolate_time_series(pressure, interpolate_length)
+            self.axes.plot(calculations.interpolate_time_series(range(np.max(len(pressure))), interpolate_length),
                            pressure_over_time[index, :], alpha=0.5)
 
         mean_length = np.mean(lengths)
@@ -131,11 +100,11 @@ class PawView(QtGui.QWidget):
         self.axes.plot(interpolated_timeline, mean_pressure, color="r", linewidth=3)
         self.axes.plot(interpolated_timeline, mean_pressure + std_pressure, color="r", linewidth=1)
         self.axes.fill_between(interpolated_timeline, mean_pressure - std_pressure, mean_pressure + std_pressure,
-                               facecolor="r",alpha=0.5)
+                               facecolor="r", alpha=0.5)
         self.axes.plot(interpolated_timeline, mean_pressure - std_pressure, color="r", linewidth=1)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
-        self.axes.set_xlim([0, self.x])
-        self.axes.set_ylim([0, self.y])
+        self.axes.set_xlim([0, max_duration + 2])  # +2 because we padded the array
+        self.axes.set_ylim([0, max_pressure * 1.2])
         self.canvas.draw()
 
     def change_frame(self, frame):
@@ -143,7 +112,7 @@ class PawView(QtGui.QWidget):
         self.vertical_line.set_xdata(frame)
         self.canvas.draw()
 
-    def clear_paws(self):
+    def clear_cached_values(self):
         # Put the screen to black
         self.axes.cla()
         self.canvas.draw()
