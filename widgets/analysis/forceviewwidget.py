@@ -103,13 +103,15 @@ class PawView(QtGui.QWidget):
     def draw(self):
         self.axes.cla()
         interpolate_length = 100
-        force_over_time = np.zeros((len(self.forces), interpolate_length))
         lengths = []
 
         if self.outlier_toggle:
             filtered = self.filtered
         else:
             filtered = []
+
+        # The zero padding of leaving elements out is 'painful'
+        force_over_time = np.zeros((len(self.forces)-len(filtered), interpolate_length))
 
         for index, force in enumerate(self.forces):
             if index not in filtered:

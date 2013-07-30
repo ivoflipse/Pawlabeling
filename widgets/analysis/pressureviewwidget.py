@@ -102,13 +102,15 @@ class PawView(QtGui.QWidget):
     def draw(self):
         self.axes.cla()
         interpolate_length = 100
-        pressure_over_time = np.zeros((len(self.pressures), interpolate_length))
+
         lengths = []
 
         if self.outlier_toggle:
             filtered = self.filtered
         else:
             filtered = []
+
+        pressure_over_time = np.zeros((len(self.pressures)-len(filtered), interpolate_length))
 
         for index, pressure in enumerate(self.pressures):
             if index not in filtered:
