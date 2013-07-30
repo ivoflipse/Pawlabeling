@@ -525,7 +525,8 @@ def filter_outliers(data, num_std=2):
         logger.info("Removed {} contact(s)".format(len(filtered)))
     else:
         logger.info("No contacts removed")
-    return new_data
+    # Changed this function so now it returns the indices of filtered contacts
+    return filtered
 
 
 def agglomerative_clustering(data, num_clusters):

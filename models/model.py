@@ -208,6 +208,7 @@ class Model():
         self.max_results = defaultdict()
 
         for paw_label, data_list in self.data_list.items():
+            self.results[paw_label]["filtered"] = utility.filter_outliers(data_list)
             for data in data_list:
                 force = calculations.force_over_time(data)
                 self.results[paw_label]["force"].append(force)

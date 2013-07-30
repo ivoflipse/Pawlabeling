@@ -19,6 +19,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.frame = 0
         self.n_max = 0
         self.dog_name = ""
+        self.outlier_toggle = False
 
         # Initialize our variables that will cache results
         self.average_data = defaultdict(list)
@@ -83,6 +84,8 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.main_layout.addWidget(self.toolbar)
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
+
+        self.create_toolbar_actions()
 
         pub.subscribe(self.add_measurements, "load_file_paths")
         pub.subscribe(self.update_contact_tree, "analysis_results")
@@ -172,5 +175,24 @@ class AnalysisWidget(QtGui.QTabWidget):
     def change_frame(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))
         self.frame = frame
-
         pub.sendMessage("analysis.change_frame", frame=self.frame)
+
+    def filter_outliers(self, event=None):
+        self.outlier_toggle = not self.outlier_toggle
+        pub.sendMessage("filter_outliers", toggle=self.outlier_toggle)
+
+    def create_toolbar_actions(self):
+        self.filter_outliers_action = gui.create_action(text="&Track Contacts",
+                                                       shortcut=QtGui.QKeySequence("CTRL+F"),
+                                                       icon=QtGui.QIcon(
+                                                           os.path.join(os.path.dirname(__file__),
+                                                                        "images/edit_zoom.png")),
+                                                       tip="Filter outliers",
+                                                       checkable=True,
+                                                       connection=self.filter_outliers
+        )
+
+        self.actions = [self.filter_outliers_action]
+
+        for action in self.actions:
+            self.toolbar.addAction(action)
