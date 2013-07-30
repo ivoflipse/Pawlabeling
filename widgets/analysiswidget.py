@@ -87,27 +87,22 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
-        ## IO Functions
+        pub.subscribe(self.add_measurements, "load_file_paths")
+        pub.subscribe(self.update_contact_tree, "loaded_all_results")
 
-    def add_measurements(self):
-        # Clear any existing file names
-        self.file_names.clear()
+    def add_measurements(self, file_paths):
         # Clear any existing measurements
         self.measurement_tree.clear()
+        # Create a green brush for coloring stored results
+        green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
 
-        # Walk through the folder and gather up all the files
-        for idx, (root, dirs, files) in enumerate(os.walk(self.path)):
-            if not dirs:
-                # Add the name of the dog
-                dog_name = root.split("\\")[-1]
-                # Create a tree item
-                root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
-                # Create a dictionary to store all the measurements for each dog
-                self.file_names[dog_name] = {}
-                for index, file_name in enumerate(files):
-                    name = os.path.join(root, file_name)
-                    # Store the path with the file name
-                    self.file_names[dog_name][file_name] = name
+        for dog_name, file_paths in file_paths.items():
+            root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
+            for file_path in file_paths:
+                # Check if there are any results stored
+                if io.find_stored_file(dog_name, file_path) is not None:
+                    root_item.setForeground(0, green_brush)
+                    break
 
     def load_first_file(self):
         # Check if the tree isn't empty, because else we can't load anything
@@ -163,15 +158,15 @@ class AnalysisWidget(QtGui.QTabWidget):
                             if max_norm > self.n_max:
                                 self.n_max = max_norm
 
-        # Fill up the contacts tree
-        self.add_contacts()
         self.results_widget.update_n_max(self.n_max)
         pub.sendMessage("update_statusbar", status="Finished loading results")
         self.results_widget.update_widgets(self.paw_labels, self.paw_data, self.average_data)
 
-    def add_contacts(self):
+    def update_contact_tree(self, paws, paw_labels, paw_data, average_data):
         self.contact_tree.clear()
         self.max_length = 0
+        self.paw_data = paw_data
+        self.paw_labels = paw_labels
 
         for measurement_name in self.paw_data:
             for index, paw in enumerate(self.paw_data[measurement_name]):
