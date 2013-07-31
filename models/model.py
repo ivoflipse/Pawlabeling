@@ -67,12 +67,7 @@ class Model():
         self.logger.info("Model.load_file: Loading measurement for dog: {} - {}".format(self.dog_name,
                                                                                         self.measurement_name))
         # Pass the new measurement through to the widget
-        data = io.load(self.file_path)
-
-        x, y, z = data.shape
-        self.measurement = np.zeros((x + 2, y + 2, z), np.float32)
-        self.measurement[1:-1, 1:-1, :] = data
-
+        self.measurement = io.load(self.file_path)
         # Check the orientation of the plate and make sure its left to right
         self.measurement = io.fix_orientation(self.measurement)
         # Get the number of frames for the slider
@@ -143,10 +138,13 @@ class Model():
 
     def track_contacts(self):
         pub.sendMessage("update_statusbar", status="Starting tracking")
-        paws = tracking.track_contours_graph(self.measurement)
+        # Add padding to the measurement
+        x, y, z = self.measurement.shape
+        data = np.zeros((x + 2, y + 2, z), np.float32)
+        data[1:-1, 1:-1, :] = self.measurement
+        paws = tracking.track_contours_graph(data)
 
         # Make sure we don't have any paws stored if we're tracking again
-        # TODO How do I know average_data isn't contaminated now?
         # I'd suggest moving the calculation of average_data out, so I can update it every time I label a paw
         self.paws[self.measurement_name] = []
         self.paw_labels[self.measurement_name] = {}
@@ -154,12 +152,10 @@ class Model():
 
         # Convert them to class objects
         for index, paw in enumerate(paws):
-            paw = utility.Contact(paw)
+            paw = utility.Contact(paw, padding=1)
             # Skip paws that have only been around for one frame
             if len(paw.frames) > 1:
                 self.paws[self.measurement_name].append(paw)
-
-        # TODO Somewhere in here, fix the padding, so its gone
 
         # Sort the contacts based on their position along the first dimension
         self.paws[self.measurement_name] = sorted(self.paws[self.measurement_name], key=lambda paw: paw.frames[0])
@@ -170,7 +166,7 @@ class Model():
             # I've made -2 the label for unlabeled paws, -1 == unlabeled + selected
             paw_label = -2
             # Test if the paw touches the edge of the plate
-            if utility.touches_edges(self.measurement, paw, padding=True):
+            if utility.touches_edges(self.measurement, paw):
                 paw_label = -3  # Mark it as invalid
             elif utility.incomplete_step(data_slice):
                 paw_label = -3
@@ -208,7 +204,7 @@ class Model():
         self.max_results = defaultdict()
 
         for paw_label, data_list in self.data_list.items():
-            self.results[paw_label]["filtered"] = utility.filter_outliers(data_list)
+            self.results[paw_label]["filtered"] = utility.filter_outliers(data_list, paw_label)
             for data in data_list:
                 force = calculations.force_over_time(data)
                 self.results[paw_label]["force"].append(force)

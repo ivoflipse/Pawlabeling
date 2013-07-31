@@ -43,3 +43,4 @@ class ResultsWidget(QtGui.QWidget):
         # Tell the user we're calculating some results
         pub.sendMessage("update_statusbar", status="Switching results to {}".format(widget.label.text()))
         pub.sendMessage("active_widget", widget=widget)
+        #pub.sendMessage("resize_event", event=None)

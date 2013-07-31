@@ -76,7 +76,6 @@ class PawView(QtGui.QWidget):
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
-        #self.view.setGeometry(0, 0, 100, 100)
         self.view.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform)
         self.image = QtGui.QGraphicsPixmapItem()
         self.scene.addItem(self.image)
@@ -93,6 +92,7 @@ class PawView(QtGui.QWidget):
         pub.subscribe(self.update, "analysis_results")
         pub.subscribe(self.check_active, "active_widget")
         pub.subscribe(self.filter_outliers, "filter_outliers")
+        #pub.subscribe(self.resizeEvent, "resize_event")
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
@@ -194,7 +194,8 @@ class PawView(QtGui.QWidget):
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
         self.sliced_data = self.sliced_data[:, ::-1]
         # Display the average data for the requested frame
-        self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
+        self.pixmap = utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table)
+        self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 
     def change_frame(self, frame):

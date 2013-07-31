@@ -322,23 +322,19 @@ def search_graph(G, contour_dict):
 def track_contours_graph(data):
     """
     This tracking algorithm uses a graph based approach.
-    It finds all the contours in each frame, connects them based on whether
-    they have overlap in adjacent frames. Then finds connected components
-    using a simple graph search. These resulting connected components might
-    be unconnected, yet part of the same contact. So we calculate two threshold
-    based on the average duration and width/height of the connected components.
-    These are then used to merge connected components with sufficient overlap.
+    It finds all the contours in each frame, connects them based on whether they have overlap in adjacent frames.
+    Then finds connected components using a simple graph search. These resulting connected components might
+    be unconnected, yet part of the same contact. So we calculate two threshold based on the average duration and
+    width/height of the connected components. These are then used to merge connected components with sufficient overlap.
     """
     # Find all the contours, put them in a dictionary where the keys are the frames
     # and the values are the contours
     contour_dict = find_contours(data)
-    # Create a graph by connecting contours that have overlap with contours in the
-    # previous frame
+    # Create a graph by connecting contours that have overlap with contours in the previous frame
     G = create_graph(contour_dict, euclidean_distance=15)
     # Search through the graph for all connected components
     contacts = search_graph(G, contour_dict)
-    # Merge connected components using a minimal spanning tree, where
-    # the contacts larger than the threshold are only allowed to merge if they
-    # have overlap that's >= than the frame threshold
+    # Merge connected components using a minimal spanning tree, where the contacts larger than the threshold are
+    # only allowed to merge if they have overlap that's >= than the frame threshold
     contacts = merging_contacts(contacts)
     return contacts

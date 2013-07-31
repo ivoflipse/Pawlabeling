@@ -2,6 +2,7 @@ from PySide import QtGui, QtCore
 import numpy as np
 import logging
 from functions.pubsub import pub
+from settings import configuration
 
 logger = logging.getLogger("logger")
 
@@ -13,14 +14,30 @@ class Contact():
     and the dimensions + center of the bounding box of the entire contact
     """
 
-    def __init__(self, contact, restoring=False):
+    def __init__(self, contact, padding=0, restoring=False):
         if not restoring:
             self.frames = sorted(contact.keys())
             self.contour_list = {}
             for frame in self.frames:
-                self.contour_list[frame] = contact[frame]
+                # Adjust the contour for the padding
+                contours = contact[frame]
+                self.contour_list[frame] = []
+                for contour in contours:
+                    if padding:
+                        new_contour = []
+                        for p in contour:
+                            new_contour.append([[p[0][0]-padding, p[0][1]-padding]])
+                        contour = np.array(new_contour)
+                    self.contour_list[frame].append(contour)
 
             center, min_x, max_x, min_y, max_y = update_bounding_box(contact)
+            # Subtract the amount of padding everywhere
+            if padding:
+                min_x -= padding
+                max_x -= padding
+                min_y -= padding
+                max_y -= padding
+                center = (center[0]-padding, center[1]-padding)
             self.width = int(abs(max_x - min_x))
             self.height = int(abs(max_y - min_y))
             self.length = len(self.frames)
@@ -460,22 +477,16 @@ class ImageColorTable():
         return color_table
 
 
-def touches_edges(data, paw, padding=False):
+def touches_edges(data, paw):
     ny, nx, nt = data.shape
-    if not padding:
-        x_touch = (paw.total_min_x == 0) or (paw.total_max_x == ny)
-        y_touch = (paw.total_min_y == 0) or (paw.total_max_y == nx)
-        z_touch = (paw.frames[-1] == nt)
-    else:
-        x_touch = (paw.total_min_x <= 1) or (paw.total_max_x >= ny - 1)
-        y_touch = (paw.total_min_y <= 1) or (paw.total_max_y >= nx - 1)
-        z_touch = (paw.frames[-1] >= nt)
+    x_touch = (paw.total_min_x == 0) or (paw.total_max_x == ny)
+    y_touch = (paw.total_min_y == 0) or (paw.total_max_y == nx)
+    z_touch = (paw.frames[-1] == nt)
+
     return x_touch or y_touch or z_touch
 
 
 def incomplete_step(data_slice):
-    from settings import configuration
-
     pressure_over_time = np.sum(np.sum(data_slice, axis=0), axis=0)
     max_pressure = np.max(pressure_over_time)
     incomplete = False
@@ -486,7 +497,7 @@ def incomplete_step(data_slice):
     return incomplete
 
 
-def filter_outliers(data, num_std=2):
+def filter_outliers(data, paw_label, num_std=2):
     import calculations
 
     lengths = np.array([d.shape[2] for d in data])
@@ -521,8 +532,8 @@ def filter_outliers(data, num_std=2):
 
     if filtered:
         # Notify the system which contacts you deleted
-        pub.sendMessage("updata_statusbar", status="Removed {} contact(s)".format(len(filtered)))
-        logger.info("Removed {} contact(s)".format(len(filtered)))
+        pub.sendMessage("updata_statusbar", status="Removed {} contact(s) from {}".format(len(filtered), configuration.paw_dict[paw_label]))
+        logger.info("Removed {} contact(s) from {}".format(len(filtered), configuration.paw_dict[paw_label]))
     else:
         logger.info("No contacts removed")
     # Changed this function so now it returns the indices of filtered contacts
