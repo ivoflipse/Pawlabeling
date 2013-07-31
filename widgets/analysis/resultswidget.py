@@ -26,6 +26,8 @@ class ResultsWidget(QtGui.QWidget):
         self.tab_widget.addTab(self.cop_view_widget, "COP")
 
         self.tab_widget.currentChanged.connect(self.update_active_widget)
+        # Notify the first tab that its active
+        pub.sendMessage("active_widget", widget=self.widgets[0])
 
         self.main_layout = QtGui.QHBoxLayout()
         self.main_layout.addWidget(self.tab_widget)

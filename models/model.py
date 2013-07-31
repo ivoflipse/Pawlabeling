@@ -190,7 +190,8 @@ class Model():
         self.data_list.clear()
         # Group all the data per paw
         for measurement_name, data_list in self.paw_data.items():
-            for paw_label, data in zip(self.paw_labels[measurement_name].values(), data_list):
+            for index, data in enumerate(data_list):
+                paw_label = self.paw_labels[measurement_name][index]
                 if paw_label >= 0:
                     self.data_list[paw_label].append(data)
 

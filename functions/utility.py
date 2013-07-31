@@ -482,7 +482,6 @@ def touches_edges(data, paw):
     x_touch = (paw.total_min_x == 0) or (paw.total_max_x == ny)
     y_touch = (paw.total_min_y == 0) or (paw.total_max_y == nx)
     z_touch = (paw.frames[-1] == nt)
-
     return x_touch or y_touch or z_touch
 
 
@@ -526,6 +525,9 @@ def filter_outliers(data, paw_label, num_std=2):
         if (min_std_lengths < l < max_std_lengths and
                         min_std_forces < f < max_std_forces and
                         min_std_pixel_counts < p < max_std_pixel_counts):
+            new_data.append(d)
+        # If the std is zero, it means we only have one item, don't filter it!
+        elif std_length == 0 or std_forces == 0 or std_pixel_counts == 0:
             new_data.append(d)
         else:
             filtered.append(index)

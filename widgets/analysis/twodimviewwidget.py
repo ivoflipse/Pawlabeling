@@ -51,6 +51,10 @@ class PawView(QtGui.QWidget):
         self.color_table = self.image_color_table.create_color_table()
         self.mx = 15
         self.my = 15
+        self.min_x = 0
+        self.max_x = self.mx
+        self.min_y = 0
+        self.max_y = self.my
         self.frame = -1
         self.active = False
         self.filtered = []
@@ -90,6 +94,7 @@ class PawView(QtGui.QWidget):
         # Check if I'm the active widget
         if self.parent == widget:
             self.active = True
+            self.draw_frame()
 
     def update_n_max(self, n_max):
         self.n_max = n_max

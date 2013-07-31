@@ -103,6 +103,7 @@ class PawView(QtGui.QWidget):
         # Check if I'm the active widget
         if self.parent == widget:
             self.active = True
+            self.draw_frame()
 
     def update_n_max(self, n_max):
         self.n_max = n_max

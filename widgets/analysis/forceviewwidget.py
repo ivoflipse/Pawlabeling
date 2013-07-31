@@ -64,6 +64,7 @@ class PawView(QtGui.QWidget):
         self.canvas.setParent(self)
         self.axes = self.fig.add_subplot(111)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
+        self.vertical_line.set_xdata(0)
 
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
@@ -88,6 +89,7 @@ class PawView(QtGui.QWidget):
         # Check if I'm the active widget
         if self.parent == widget:
             self.active = True
+            self.draw()
 
     def update_n_max(self, n_max):
         self.n_max = n_max

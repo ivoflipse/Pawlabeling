@@ -64,6 +64,7 @@ class PawView(QtGui.QWidget):
         self.canvas.setParent(self)
         self.axes = self.fig.add_subplot(111)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
+        self.vertical_line.set_xdata(0)
 
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
@@ -81,6 +82,8 @@ class PawView(QtGui.QWidget):
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
+        # Clear the axes, so we remove filtered information
+        self.clear_cached_values()
         self.draw()
 
     def check_active(self, widget):
@@ -88,6 +91,7 @@ class PawView(QtGui.QWidget):
         # Check if I'm the active widget
         if self.parent == widget:
             self.active = True
+            self.draw()
 
     def update_n_max(self, n_max):
         self.n_max = n_max
@@ -100,7 +104,6 @@ class PawView(QtGui.QWidget):
         self.draw()
 
     def draw(self):
-        self.axes.cla()
         interpolate_length = 100
 
         lengths = []
@@ -114,13 +117,14 @@ class PawView(QtGui.QWidget):
 
         for index, pressure in enumerate(self.pressures):
             if index not in filtered:
-                lengths.append(len(pressure))
+                lengths.append(len(pressure)+2)
                 pressure = np.insert(pressure, 0, 0)
                 pressure = np.append(pressure, 0)
                 pressure_over_time[index, :] = calculations.interpolate_time_series(pressure, interpolate_length)
                 self.axes.plot(calculations.interpolate_time_series(range(np.max(len(pressure))), interpolate_length),
                                pressure_over_time[index, :], alpha=0.5)
 
+        print np.mean(lengths), lengths
         mean_length = np.mean(lengths)
         interpolated_timeline = calculations.interpolate_time_series(range(int(mean_length)), interpolate_length)
         mean_pressure = np.mean(pressure_over_time, axis=0)
@@ -143,4 +147,5 @@ class PawView(QtGui.QWidget):
     def clear_cached_values(self):
         # Put the screen to black
         self.axes.cla()
+        self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.canvas.draw()
