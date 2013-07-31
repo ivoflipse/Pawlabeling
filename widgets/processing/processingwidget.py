@@ -194,12 +194,13 @@ class ProcessingWidget(QtGui.QWidget):
             return
 
         # Check if any other paw has the label -1, if so change it to -2
-        for index, paw_label in self.paw_labels[self.measurement_name].items():
-            if paw_label == -1:
-                self.paw_labels[self.measurement_name][index] = -2
+        for index, paw in self.paws[self.measurement_name]:
+            if paw.paw_label == -1:
+                paw.paw_label = -2
 
         # Remove the label
-        self.paw_labels[self.measurement_name][self.current_paw_index] = -1
+        current_paw = self.get_current_paw()
+        current_paw.paw_label = -1
         # Update the screen
         self.update_current_paw()
 
@@ -207,42 +208,51 @@ class ProcessingWidget(QtGui.QWidget):
         # Check if we have any contacts available, else don't bother
         if not self.contacts_available():
             return
-            # I've picked -3 as the label for invalid paws
-        self.paw_labels[self.measurement_name][self.current_paw_index] = -3
+
+        # I've picked -3 as the label for invalid paws
+        current_paw = self.get_current_paw()
+        current_paw.paw_label = -3
         # Update the screen
         self.update_current_paw()
 
+    def get_current_paw(self):
+        current_paw = self.paws[self.measurement_name][self.current_paw_index]
+        return current_paw
+
     def select_left_front(self):
-        if self.paw_labels[self.measurement_name][self.current_paw_index] != -3:
-            self.paw_labels[self.measurement_name][self.current_paw_index] = 0
+        current_paw = self.get_current_paw()
+        if current_paw.paw_label != -3:
+            current_paw.paw_label = 0
         self.next_paw()
 
     def select_left_hind(self):
-        if self.paw_labels[self.measurement_name][self.current_paw_index] != -3:
-            self.paw_labels[self.measurement_name][self.current_paw_index] = 1
+        current_paw = self.get_current_paw()
+        if current_paw.paw_label != -3:
+            current_paw.paw_label = 1
         self.next_paw()
 
     def select_right_front(self):
-        if self.paw_labels[self.measurement_name][self.current_paw_index] != -3:
-            self.paw_labels[self.measurement_name][self.current_paw_index] = 2
+        current_paw = self.get_current_paw()
+        if current_paw.paw_label != -3:
+            current_paw.paw_label = 2
         self.next_paw()
 
     def select_right_hind(self):
-        if self.paw_labels[self.measurement_name][self.current_paw_index] != -3:
-            self.paw_labels[self.measurement_name][self.current_paw_index] = 3
+        current_paw = self.get_current_paw()
+        if current_paw.paw_label != -3:
+            current_paw.paw_label = 3
         self.next_paw()
 
     def contacts_available(self):
         """
         This function checks if there is a contact with index 0, if not, the tree must be empty
         """
-        #return False if self.contact_tree.findItems("0", Qt.MatchExactly, 0) == [] else True
-        return True if self.paw_labels[self.measurement_name] else False
+        return True if self.paws[self.measurement_name] else False
 
     def check_label_status(self):
         results = []
-        for paw_label in list(self.paw_labels[self.measurement_name].values()):
-            if paw_label == -2:
+        for paw in self.paws[self.measurement_name]:
+            if paw.paw_label == -2:
                 results.append(True)
             else:
                 results.append(False)
@@ -253,15 +263,17 @@ class ProcessingWidget(QtGui.QWidget):
             return
 
         # If we haven't labeled the current paw yet, mark it as unselected
-        if self.paw_labels[self.current_paw_index] == -1:
-            self.paw_labels[self.current_paw_index] = -2
+        current_paw = self.get_current_paw()
+        if current_paw.paw_label == -1:
+            current_paw.paw_label = -2
 
         self.current_paw_index -= 1
         if self.current_paw_index < 0:
             self.current_paw_index = 0
 
+        current_paw = self.get_current_paw()
         # If we encounter an invalid paw and its not the first paw, skip this one
-        if self.paw_labels[self.current_paw_index] == -3 and self.check_label_status():
+        if current_paw.paw_label == -3 and self.check_label_status():
             self.previous_paw()
 
         item = self.contact_tree.topLevelItem(self.current_paw_index)
@@ -273,16 +285,18 @@ class ProcessingWidget(QtGui.QWidget):
             return
 
         # If we haven't labeled the current paw yet, mark it as unselected
-        if self.paw_labels[self.current_paw_index] == -1:
-            self.paw_labels[self.current_paw_index] = -2
+        current_paw = self.get_current_paw()
+        if current_paw.paw_label == -1:
+            current_paw.paw_label = -2
 
         self.current_paw_index += 1
         if self.current_paw_index >= len(self.paws[self.measurement_name]):
             self.current_paw_index = len(self.paws[self.measurement_name]) - 1
 
+        current_paw = self.get_current_paw()
         # If we encounter an invalid paw and its not the last paw, skip this one
-        if self.paw_labels[self.current_paw_index] == -3 and self.check_label_status():
-            self.next_paw()  # Woops, recursive loop right here!
+        if current_paw.paw_label == -3 and self.check_label_status():
+            self.next_paw()
 
         item = self.contact_tree.topLevelItem(self.current_paw_index)
         self.contact_tree.setCurrentItem(item)

@@ -66,8 +66,8 @@ class PawsWidget(QtGui.QWidget):
         widget = self.paws_list[-1]
         current_paw = paws[self.measurement_name][current_paw_index]
         # We expect current_paw to be a list
-        #normalized_current_paw = utility.calculate_average_data([current_paw])
-        #widget.update(normalized_current_paw)
+        normalized_current_paw = utility.calculate_average_data([current_paw.data])
+        widget.update(normalized_current_paw)
 
         try:
             self.predict_label()
