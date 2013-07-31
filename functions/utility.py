@@ -6,6 +6,7 @@ from settings import configuration
 
 logger = logging.getLogger("logger")
 
+
 def update_bounding_box(contact):
     """
     This function will iterate through all the frames and calculate the bounding box
@@ -13,26 +14,28 @@ def update_bounding_box(contact):
     contacts bounding box
     """
     from cv2 import boundingRect
-    min_x, max_x = float("inf"), float("-inf")
-    min_y, max_y = float("inf"), float("-inf")
+
+    total_min_x, total_max_x = float("inf"), float("-inf")
+    total_min_y, total_max_y = float("inf"), float("-inf")
 
     # For each contour, get the sizes
     for frame, contours in contact.items():
         for contour in contours:
             x, y, width, height = boundingRect(contour)
-            if x < min_x:
-                min_x = x
+            if x < total_min_x:
+                total_min_x = x
             max_x = x + width
-            if max_x > max_x:
-                max_x = max_x
-            if y < min_y:
-                min_y = y
+            if max_x > total_max_x:
+                total_max_x = max_x
+            if y < total_min_y:
+                total_min_y = y
             max_y = y + height
-            if max_y > max_y:
-                max_y = max_y
+            if max_y > total_max_y:
+                total_max_y = max_y
 
-    total_centroid = ((max_x + min_x) / 2, (max_y + min_y) / 2)
-    return total_centroid, min_x, max_x, min_y, max_y
+    total_centroid = ((total_max_x + total_min_x) / 2, (total_max_y + total_min_y) / 2)
+    return total_centroid, total_min_x, total_max_x, total_min_y, total_max_y
+
 
 def calculate_average_data(paw_data):
     mx = 100
@@ -62,6 +65,7 @@ def calculate_average_data(paw_data):
         padded_data[index, :, :, :] = padded_slice
 
     return padded_data
+
 
 def standardize_paw(paw, std_num_x=20, std_num_y=20):
     """Standardizes a paw print onto a std_num_y x std_num_x grid. Returns a 1D,
@@ -96,6 +100,7 @@ def normalize_paw_data(paw_data):
     average_slice = np.zeros((mx, my))
     average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = paw_data.max(axis=2)
     return average_slice
+
 
 def find_max_shape(data, data_slices):
     mx, my = 0, 0
@@ -132,9 +137,6 @@ def average_contacts(contacts):
     max_x, max_y = np.max(np.nonzero(average_array)[0]), np.max(np.nonzero(average_array)[1])
     average_array = average_array[0:max_x + 1, 0:max_y + 1]
     return average_array
-
-
-
 
 
 def contour_to_polygon(contour, degree, offset_x=0, offset_y=0):
@@ -370,6 +372,7 @@ class ImageColorTable():
                             "There's an error in your color table. This is likely caused by incorrect normalization")
         return color_table
 
+
 def filter_outliers(data, paw_label, num_std=2):
     import calculations
 
@@ -408,11 +411,12 @@ def filter_outliers(data, paw_label, num_std=2):
 
     if filtered:
         # Notify the system which contacts you deleted
-        pub.sendMessage("updata_statusbar", status="Removed {} contact(s) from {}".format(len(filtered), configuration.paw_dict[paw_label]))
+        pub.sendMessage("updata_statusbar",
+                        status="Removed {} contact(s) from {}".format(len(filtered), configuration.paw_dict[paw_label]))
         logger.info("Removed {} contact(s) from {}".format(len(filtered), configuration.paw_dict[paw_label]))
     else:
         logger.info("No contacts removed")
-    # Changed this function so now it returns the indices of filtered contacts
+        # Changed this function so now it returns the indices of filtered contacts
     return filtered
 
 

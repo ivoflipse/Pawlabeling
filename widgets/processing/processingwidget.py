@@ -79,7 +79,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
-        pub.subscribe(self.add_measurements, "load_file_paths")
+        pub.subscribe(self.add_measurements, "get_file_paths")
         pub.subscribe(self.update_contact_tree, "processing_results")
         pub.subscribe(self.stored_status, "stored_status")
 

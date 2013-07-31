@@ -87,7 +87,7 @@ class AnalysisWidget(QtGui.QTabWidget):
 
         self.create_toolbar_actions()
 
-        pub.subscribe(self.add_measurements, "load_file_paths")
+        pub.subscribe(self.add_measurements, "get_file_paths")
         pub.subscribe(self.update_contact_tree, "analysis_results")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 

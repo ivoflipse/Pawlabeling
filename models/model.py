@@ -35,9 +35,9 @@ class Model():
         pub.subscribe(self.track_contacts, "track_contacts")
 
     def load_file_paths(self):
-        self.logger.info("Model.load_file_paths: Loading file paths")
-        self.file_paths = io.load_file_paths()
-        pub.sendMessage("load_file_paths", file_paths=self.file_paths)
+        self.logger.info("Model.get_file_paths: Loading file paths")
+        self.file_paths = io.get_file_paths()
+        pub.sendMessage("get_file_paths", file_paths=self.file_paths)
 
     def switch_dogs(self, dog_name):
         """
@@ -116,7 +116,8 @@ class Model():
                         self.n_max = max_data
 
                     # TODO fix how contacts are stored and restored
-                    paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
+                    paw = Contact()
+                    paw.restore(stored_results["paw_results"][index])
                     self.paws[measurement_name].append(paw)
 
                 # Until I've moved everything to be dictionary based, here's code to sort the paws + paw_data
@@ -133,8 +134,8 @@ class Model():
             self.track_contacts()
 
         # Calculate the average, after everything has been loaded
-        #self.calculate_average()
-        #self.calculate_results()
+        self.calculate_average()
+        self.calculate_results()
 
 
     def track_contacts(self):
@@ -193,32 +194,32 @@ class Model():
             normalized_data = utility.calculate_average_data(data)
             self.average_data[paw_label] = normalized_data
 
-    # def calculate_results(self):
-    #     self.results = defaultdict(lambda: defaultdict(list))
-    #     self.max_results = defaultdict()
-    #
-    #     for paw_label, data_list in self.data_list.items():
-    #         self.results[paw_label]["filtered"] = utility.filter_outliers(data_list, paw_label)
-    #         for data in data_list:
-    #             force = calculations.force_over_time(data)
-    #             self.results[paw_label]["force"].append(force)
-    #             max_force = np.max(force)
-    #             if max_force > self.max_results.get("force", 0):
-    #                 self.max_results["force"] = max_force
-    #
-    #             pressure = calculations.pressure_over_time(data)
-    #             self.results[paw_label]["pressure"].append(pressure)
-    #             max_pressure = np.max(pressure)
-    #             if max_pressure > self.max_results.get("pressure", 0):
-    #                 self.max_results["pressure"] = max_pressure
-    #
-    #             cop_x, cop_y = calculations.calculate_cop(data, version="numpy")
-    #             self.results[paw_label]["cop"].append((cop_x, cop_y))
-    #
-    #             x, y, z = np.nonzero(data)
-    #             max_duration = np.max(z)
-    #             if max_duration > self.max_results.get("duration", 0):
-    #                 self.max_results["duration"] = max_duration
+    def calculate_results(self):
+        self.results = defaultdict(lambda: defaultdict(list))
+        self.max_results = defaultdict()
+
+        for paw_label, data_list in self.data_list.items():
+            self.results[paw_label]["filtered"] = utility.filter_outliers(data_list, paw_label)
+            for data in data_list:
+                force = calculations.force_over_time(data)
+                self.results[paw_label]["force"].append(force)
+                max_force = np.max(force)
+                if max_force > self.max_results.get("force", 0):
+                    self.max_results["force"] = max_force
+
+                pressure = calculations.pressure_over_time(data)
+                self.results[paw_label]["pressure"].append(pressure)
+                max_pressure = np.max(pressure)
+                if max_pressure > self.max_results.get("pressure", 0):
+                    self.max_results["pressure"] = max_pressure
+
+                cop_x, cop_y = calculations.calculate_cop(data, version="numpy")
+                self.results[paw_label]["cop"].append((cop_x, cop_y))
+
+                x, y, z = np.nonzero(data)
+                max_duration = np.max(z)
+                if max_duration > self.max_results.get("duration", 0):
+                    self.max_results["duration"] = max_duration
 
     def store_status(self):
         """

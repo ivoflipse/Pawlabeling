@@ -219,12 +219,12 @@ def zip_files(root, file_name):
 
     return os.path.join(root, file_name)
 
-def load_file_paths():
+def get_file_paths():
     from collections import defaultdict
     # Clear any existing file names
     file_paths = defaultdict(dict)
 
-    logger.info("io.load_file_paths: Searching for measurements...")
+    logger.info("io.get_file_paths: Searching for measurements...")
     # Walk through the folder and gather up all the files
     for idx, (root, dirs, files) in enumerate(os.walk(configuration.measurement_folder)):
         if not dirs:

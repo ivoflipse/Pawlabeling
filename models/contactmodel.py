@@ -87,19 +87,18 @@ class Contact():
         new_data = np.zeros_like(measurement_data)
 
         for frame, contours in list(self.contour_list.items()):
-            skip_list = []
-            for contour in contours:
-                # Pass a single contour as if it were a contact
-                center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: [contour]})
-                # Get the non_zero pixels coordinates for that frame
-                pixels = np.transpose(np.nonzero(measurement_data[min_x:max_x, min_y:max_y, frame]))
-                for pixel in pixels:
-                    # Skip pixels we already did in this frame
-                    if pixel not in skip_list:
-                        coordinate = (pixel[0], pixel[1])
-                        if cv2.pointPolygonTest(contour, coordinate, 0) > -1.0:
-                            new_data[pixel[0], pixel[1], frame] = measurement_data[pixel[0], pixel[1], frame]
-                            skip_list.append(pixel)
+        # Pass a single contour as if it were a contact
+            center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: contours})
+            # Get the non_zero pixels coordinates for that frame
+            pixels = np.transpose(np.nonzero(measurement_data[min_x:max_x, min_y:max_y, frame]))
+            # Check if they are in any of the contours
+            for pixel in pixels:
+                for contour in contours:
+                    # Remember the coordinates are only for the slice, so we need to add padding
+                    coordinate = (min_x + pixel[0], min_y + pixel[1])
+                    if cv2.pointPolygonTest(contour, coordinate, 0) > -1.0:
+                        new_data[coordinate[0], coordinate[1], frame] = measurement_data[
+                            coordinate[0], coordinate[1], frame]
 
         # Create an attribute data with the updated slice
         self.data = new_data[self.min_x:self.max_x, self.min_y:self.max_y, self.min_z:self.max_z]
