@@ -104,6 +104,7 @@ end_force_percentage = config["thresholds"]["end_force_percentage"]
 tracking_temporal = config["thresholds"]["tracking_temporal"]
 tracking_spatial = config["thresholds"]["tracking_spatial"]
 tracking_surface = config["thresholds"]["tracking_surface"]
+padding_factor = config["thresholds"]["padding_factor"]
 
 main_window_left = config["widgets"]["main_window_left"]
 main_window_top = config["widgets"]["main_window_top"]

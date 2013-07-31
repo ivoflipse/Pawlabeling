@@ -1,11 +1,10 @@
-import os
 from collections import defaultdict
 import numpy as np
 from settings import configuration
+from contactmodel import Contact
 from functions import io, tracking, utility, calculations
 from functions.pubsub import pub
 import logging
-
 
 class Model():
     def __init__(self):
@@ -140,8 +139,9 @@ class Model():
         pub.sendMessage("update_statusbar", status="Starting tracking")
         # Add padding to the measurement
         x, y, z = self.measurement.shape
-        data = np.zeros((x + 2, y + 2, z), np.float32)
-        data[1:-1, 1:-1, :] = self.measurement
+        padding = configuration.padding_factor
+        data = np.zeros((x + 2 * padding, y + 2 * padding, z), np.float32)
+        data[padding:-padding, padding:-padding, :] = self.measurement
         paws = tracking.track_contours_graph(data)
 
         # Make sure we don't have any paws stored if we're tracking again
@@ -152,7 +152,8 @@ class Model():
 
         # Convert them to class objects
         for index, paw in enumerate(paws):
-            paw = utility.Contact(paw, padding=1)
+            paw = Contact(paw, padding=1)
+            paw.convert_contour_to_slice(self.measurement)
             # Skip paws that have only been around for one frame
             if len(paw.frames) > 1:
                 self.paws[self.measurement_name].append(paw)

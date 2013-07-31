@@ -105,7 +105,6 @@ class PawView(QtGui.QWidget):
 
     def draw(self):
         interpolate_length = 100
-
         lengths = []
 
         if self.outlier_toggle:
@@ -117,14 +116,14 @@ class PawView(QtGui.QWidget):
 
         for index, pressure in enumerate(self.pressures):
             if index not in filtered:
-                lengths.append(len(pressure)+2)
                 pressure = np.insert(pressure, 0, 0)
                 pressure = np.append(pressure, 0)
+                # Calculate the length AFTER padding the pressure
+                lengths.append(len(pressure))
                 pressure_over_time[index, :] = calculations.interpolate_time_series(pressure, interpolate_length)
                 self.axes.plot(calculations.interpolate_time_series(range(np.max(len(pressure))), interpolate_length),
                                pressure_over_time[index, :], alpha=0.5)
 
-        print np.mean(lengths), lengths
         mean_length = np.mean(lengths)
         interpolated_timeline = calculations.interpolate_time_series(range(int(mean_length)), interpolate_length)
         mean_pressure = np.mean(pressure_over_time, axis=0)

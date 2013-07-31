@@ -189,10 +189,10 @@ class EntirePlateWidget(QtGui.QWidget):
             current_paw = 0
 
         polygon = QtGui.QPolygonF(
-            [QtCore.QPointF((paw.total_min_x - current_paw) * self.degree, (paw.total_min_y - current_paw) * self.degree),
-             QtCore.QPointF((paw.total_max_x + current_paw) * self.degree, (paw.total_min_y - current_paw) * self.degree),
-             QtCore.QPointF((paw.total_max_x + current_paw) * self.degree, (paw.total_max_y + current_paw) * self.degree),
-             QtCore.QPointF((paw.total_min_x - current_paw) * self.degree, (paw.total_max_y + current_paw) * self.degree)])
+            [QtCore.QPointF((paw.min_x - current_paw) * self.degree, (paw.min_y - current_paw) * self.degree),
+             QtCore.QPointF((paw.max_x + current_paw) * self.degree, (paw.min_y - current_paw) * self.degree),
+             QtCore.QPointF((paw.max_x + current_paw) * self.degree, (paw.max_y + current_paw) * self.degree),
+             QtCore.QPointF((paw.min_x - current_paw) * self.degree, (paw.max_y + current_paw) * self.degree)])
 
         bounding_box = self.scene.addPolygon(polygon, self.bounding_box_pen)
         bounding_box.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
@@ -219,8 +219,8 @@ class EntirePlateWidget(QtGui.QWidget):
             prevPaw = self.paws[self.measurement_name][index - 1]
             curPaw = self.paws[self.measurement_name][index]
             polygon = QtGui.QPolygonF(
-                [QtCore.QPointF(prevPaw.total_centroid[0] * self.degree, prevPaw.total_centroid[1] * self.degree),
-                 QtCore.QPointF(curPaw.total_centroid[0] * self.degree, curPaw.total_centroid[1] * self.degree)])
+                [QtCore.QPointF(prevPaw.center[0] * self.degree, prevPaw.center[1] * self.degree),
+                 QtCore.QPointF(curPaw.center[0] * self.degree, curPaw.center[1] * self.degree)])
             gait_line = self.scene.addPolygon(polygon, self.gait_line_pen)
             gait_line.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
             self.gait_lines.append(gait_line)

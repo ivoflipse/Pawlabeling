@@ -7,112 +7,6 @@ from settings import configuration
 logger = logging.getLogger("logger")
 
 
-class Contact():
-    """
-    This class has only one real function and that's to take a contact and create some
-    attributes that my viewer depends upon. These are a contour_list that contains all the contours
-    and the dimensions + center of the bounding box of the entire contact
-    """
-
-    def __init__(self, contact, padding=0, restoring=False):
-        if not restoring:
-            self.frames = sorted(contact.keys())
-            self.contour_list = {}
-            for frame in self.frames:
-                # Adjust the contour for the padding
-                contours = contact[frame]
-                self.contour_list[frame] = []
-                for contour in contours:
-                    if padding:
-                        new_contour = []
-                        for p in contour:
-                            new_contour.append([[p[0][0]-padding, p[0][1]-padding]])
-                        contour = np.array(new_contour)
-                    self.contour_list[frame].append(contour)
-
-            center, min_x, max_x, min_y, max_y = update_bounding_box(contact)
-            # Subtract the amount of padding everywhere
-            if padding:
-                min_x -= padding
-                max_x -= padding
-                min_y -= padding
-                max_y -= padding
-                center = (center[0]-padding, center[1]-padding)
-            self.width = int(abs(max_x - min_x))
-            self.height = int(abs(max_y - min_y))
-            self.length = len(self.frames)
-            self.total_min_x, self.total_max_x = int(min_x), int(max_x)
-            self.total_min_y, self.total_max_y = int(min_y), int(max_y)
-            self.total_centroid = (int(center[0]), int(center[1]))
-        else:
-            self.restore(contact)
-
-    def restore(self, contact):
-        self.contour_list = {} # This will sadly not be reconstructed
-        self.frames = [x for x in range(contact["min_z"], contact["max_z"] + 1)]
-        self.width = contact["width"]
-        self.height = contact["height"]
-        self.length = contact["length"]
-        self.total_min_x = contact["min_x"]
-        self.total_max_x = contact["max_x"]
-        self.total_min_y = contact["min_y"]
-        self.total_max_y = contact["max_y"]
-        self.total_centroid = (contact["center_x"], contact["center_y"])
-
-    def contact_to_dict(self):
-        return {
-            "width": self.width,
-            "height": self.height,
-            "length": self.length,
-            "min_x": self.total_min_x,
-            "max_x": self.total_max_x,
-            "min_y": self.total_min_y,
-            "max_y": self.total_max_y,
-            "min_z": self.frames[0],
-            "max_z": self.frames[-1],
-            "center_x": self.total_centroid[0],
-            "center_y": self.total_centroid[1]
-        }
-
-    def __str__(self):
-        for frame in self.frames:
-            print("Frame %s", frame)
-            for index, contour in enumerate(self.contour_list[frame]):
-                print("Contour %s: %s" % (index, "".join([str(c) for c in contour])))
-
-
-def update_bounding_box(contact):
-    """
-    Given a contact, it will iterate through all the frames and calculate the bounding box
-    It then compares the dimensions of the bounding box to determine the total shape of that
-    contacts bounding box
-    """
-    import cv2
-    # Don't accept empty contacts
-    assert len(contact) > 0
-
-    total_min_x, total_max_x = float("inf"), float("-inf")
-    total_min_y, total_max_y = float("inf"), float("-inf")
-
-    # For each contour, get the sizes
-    for frame in list(contact.keys()):
-        for contour in contact[frame]:
-            x, y, width, height = cv2.boundingRect(contour)
-            if x < total_min_x:
-                total_min_x = x
-            max_x = x + width
-            if max_x > total_max_x:
-                total_max_x = max_x
-            if y < total_min_y:
-                total_min_y = y
-            max_y = y + height
-            if max_y > total_max_y:
-                total_max_y = max_y
-
-    total_centroid = ((total_max_x + total_min_x) / 2, (total_max_y + total_min_y) / 2)
-    return total_centroid, total_min_x, total_max_x, total_min_y, total_max_y
-
-
 def standardize_paw(paw, std_num_x=20, std_num_y=20):
     """Standardizes a paw print onto a std_num_y x std_num_x grid. Returns a 1D,
     flattened version of the paw data resample onto this grid."""
@@ -215,32 +109,7 @@ def average_contacts(contacts):
     return average_array
 
 
-def convert_contour_to_slice(data, contact):
-    # Get the bounding box for the entire contact
-    center, min_x1, max_x1, min_y1, max_y1 = update_bounding_box(contact)
-    frames = sorted(contact.keys())
-    min_z, max_z = frames[0], frames[-1]
-    # Create an empty array that should fit the entire contact
-    newData = np.zeros_like(data)
-    for frame, contours in list(contact.items()):
-        # Pass a single frame dictionary as if it were a contact to get its bounding box
-        center, min_x, max_x, min_y, max_y = update_bounding_box({frame: contours})
-        # We need to slice around the contacts a little wider, I wonder what problems this might cause
-        min_x, max_x, min_y, max_y = int(min_x), int(max_x) + 2, int(min_y), int(max_y) + 2
-        newData[min_x:max_x, min_y:max_y, frame] = data[min_x:max_x, min_y:max_y, frame]
 
-    x, y, z = data.shape
-    # Check bounds
-    if min_x1 < 0:
-        min_x1 = 0
-    if max_x1 > x:
-        max_x1 = x
-    if min_y1 < 0:
-        min_y1 = 0
-    if max_y1 > y:
-        max_y1 = y
-
-    return newData[min_x1:max_x1, min_y1:max_y1, min_z:max_z]
 
 
 def contour_to_polygon(contour, degree, offset_x=0, offset_y=0):
@@ -475,26 +344,6 @@ class ImageColorTable():
                         logger.warning(
                             "There's an error in your color table. This is likely caused by incorrect normalization")
         return color_table
-
-
-def touches_edges(data, paw):
-    ny, nx, nt = data.shape
-    x_touch = (paw.total_min_x == 0) or (paw.total_max_x == ny)
-    y_touch = (paw.total_min_y == 0) or (paw.total_max_y == nx)
-    z_touch = (paw.frames[-1] == nt)
-    return x_touch or y_touch or z_touch
-
-
-def incomplete_step(data_slice):
-    pressure_over_time = np.sum(np.sum(data_slice, axis=0), axis=0)
-    max_pressure = np.max(pressure_over_time)
-    incomplete = False
-    #print max_pressure, configuration.start_force_percentage*max_pressure, pressure_over_time[0], pressure_over_time[-1]
-    if (pressure_over_time[0] > (configuration.start_force_percentage * max_pressure) or
-                pressure_over_time[-1] > (configuration.end_force_percentage * max_pressure)):
-        incomplete = True
-    return incomplete
-
 
 def filter_outliers(data, paw_label, num_std=2):
     import calculations
