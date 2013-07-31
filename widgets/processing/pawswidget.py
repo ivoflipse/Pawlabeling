@@ -12,11 +12,11 @@ class PawsWidget(QtGui.QWidget):
         super(PawsWidget, self).__init__(parent)
         self.parent = parent
 
-        self.left_front = PawWidget(self, label="Left Front")
-        self.left_hind = PawWidget(self, label="Left Hind")
-        self.right_front = PawWidget(self,label="Right Front")
-        self.right_hind = PawWidget(self,label="Right Hind")
-        self.current_paw = PawWidget(self, label="")
+        self.left_front = PawWidget(self, label="Left Front", paw_label=0)
+        self.left_hind = PawWidget(self, label="Left Hind", paw_label=1)
+        self.right_front = PawWidget(self,label="Right Front", paw_label=2)
+        self.right_hind = PawWidget(self,label="Right Hind", paw_label=3)
+        self.current_paw = PawWidget(self, label="", paw_label=-1)
 
         self.paws_list = {
             0: self.left_front,
@@ -54,7 +54,7 @@ class PawsWidget(QtGui.QWidget):
     def new_measurement(self, measurement, measurement_name, shape):
         self.measurement_name = measurement_name
 
-    def update_paws(self, paws, paw_labels, paw_data, average_data, current_paw_index):
+    def update_paws(self, paws, average_data, current_paw_index):
         # Clear any previous results, which may be out of date
         self.clear_paws()
         # Update those for which we have a average data
@@ -64,10 +64,10 @@ class PawsWidget(QtGui.QWidget):
 
         # Update the current paw widget
         widget = self.paws_list[-1]
-        current_paw = paw_data[self.measurement_name][current_paw_index]
+        current_paw = paws[self.measurement_name][current_paw_index]
         # We expect current_paw to be a list
-        normalized_current_paw = utility.calculate_average_data([current_paw])
-        widget.update(normalized_current_paw)
+        #normalized_current_paw = utility.calculate_average_data([current_paw])
+        #widget.update(normalized_current_paw)
 
         try:
             self.predict_label()
@@ -119,12 +119,13 @@ class PawsWidget(QtGui.QWidget):
             widget.clear_cached_values()
 
 class PawWidget(QtGui.QWidget):
-    def __init__(self, parent, label):
+    def __init__(self, parent, label, paw_label):
         super(PawWidget, self).__init__(parent)
         self.parent = parent
         self.degree = configuration.interpolation_paws_widget
         self.n_max = 0
         self.label = label
+        self.paw_label = paw_label
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
         self.mx = 100

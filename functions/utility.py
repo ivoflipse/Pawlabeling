@@ -6,6 +6,62 @@ from settings import configuration
 
 logger = logging.getLogger("logger")
 
+def update_bounding_box(contact):
+    """
+    This function will iterate through all the frames and calculate the bounding box
+    It then compares the dimensions of the bounding box to determine the total shape of that
+    contacts bounding box
+    """
+    from cv2 import boundingRect
+    min_x, max_x = float("inf"), float("-inf")
+    min_y, max_y = float("inf"), float("-inf")
+
+    # For each contour, get the sizes
+    for frame, contours in contact.items():
+        for contour in contours:
+            x, y, width, height = boundingRect(contour)
+            if x < min_x:
+                min_x = x
+            max_x = x + width
+            if max_x > max_x:
+                max_x = max_x
+            if y < min_y:
+                min_y = y
+            max_y = y + height
+            if max_y > max_y:
+                max_y = max_y
+
+    total_centroid = ((max_x + min_x) / 2, (max_y + min_y) / 2)
+    return total_centroid, min_x, max_x, min_y, max_y
+
+def calculate_average_data(paw_data):
+    mx = 100
+    my = 100
+    mz = 200
+    # Get the max shape
+    for data in paw_data:
+        x, y, z = data.shape
+        if x > mx:
+            mx = x
+        if y > my:
+            my = y
+        if z > mz:
+            mz = z
+
+    # Pad everything with zeros
+    empty_slice = np.zeros((mx, my, mz))
+    num_paws = len(paw_data)
+    padded_data = np.zeros((num_paws, mx, my, mz))
+    for index, data in enumerate(paw_data):
+        x, y, z = data.shape
+        offset_x = int((mx - x) / 2)
+        offset_y = int((my - y) / 2)
+        # Create a deep copy of the empty array to fill up
+        padded_slice = empty_slice.copy()
+        padded_slice[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = data
+        padded_data[index, :, :, :] = padded_slice
+
+    return padded_data
 
 def standardize_paw(paw, std_num_x=20, std_num_y=20):
     """Standardizes a paw print onto a std_num_y x std_num_x grid. Returns a 1D,
@@ -40,37 +96,6 @@ def normalize_paw_data(paw_data):
     average_slice = np.zeros((mx, my))
     average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = paw_data.max(axis=2)
     return average_slice
-
-
-def calculate_average_data(paw_data):
-    mx = 100
-    my = 100
-    mz = 200
-    # Get the max shape
-    for data in paw_data:
-        x, y, z = data.shape
-        if x > mx:
-            mx = x
-        if y > my:
-            my = y
-        if z > mz:
-            mz = z
-
-    # Pad everything with zeros
-    empty_slice = np.zeros((mx, my, mz))
-    num_paws = len(paw_data)
-    padded_data = np.zeros((num_paws, mx, my, mz))
-    for index, data in enumerate(paw_data):
-        x, y, z = data.shape
-        offset_x = int((mx - x) / 2)
-        offset_y = int((my - y) / 2)
-        # Create a deep copy of the empty array to fill up
-        padded_slice = empty_slice.copy()
-        padded_slice[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = data
-        padded_data[index,:,:,:] = padded_slice
-
-    return padded_data
-
 
 def find_max_shape(data, data_slices):
     mx, my = 0, 0

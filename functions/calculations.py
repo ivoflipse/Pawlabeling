@@ -52,6 +52,10 @@ def pixel_count_over_time(data):
     x, y, z = data.shape
     return np.array([np.count_nonzero(data[:, :, frame]) for frame in range(z)])
 
+def surface_over_time(data):
+    pixel_counts = pixel_count_over_time(data)
+    return[p_c * configuration.sensor_surface for p_c in pixel_counts]
+
 def pressure_over_time(data):
     force = force_over_time(data)
     pixel_counts = pixel_count_over_time(data)

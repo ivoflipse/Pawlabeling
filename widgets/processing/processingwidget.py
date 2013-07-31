@@ -144,23 +144,20 @@ class ProcessingWidget(QtGui.QWidget):
         # Send a message so the model starts loading results
         pub.sendMessage("load_results", widget="processing")
 
-    def update_contact_tree(self, paws, paw_labels, paw_data, average_data):
-        self.paw_labels = paw_labels
-        self.paw_data = paw_data
+    def update_contact_tree(self, paws, average_data):
         self.paws = paws
 
         # Clear any existing contacts
         self.contact_tree.clear()
         # Add the paws to the contact_tree
-        for index, paw in enumerate(self.paw_data[self.measurement_name]):
+        for index, paw in enumerate(self.paws[self.measurement_name]):
             rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
             rootItem.setText(0, str(index))
-            rootItem.setText(1, self.paw_dict[self.paw_labels[self.measurement_name][index]])
-            x, y, z = paw.shape
-            rootItem.setText(2, str(z))  # Sets the frame count
-            surface = np.max(calculations.pixel_count_over_time(paw) * configuration.sensor_surface)
+            rootItem.setText(1, self.paw_dict[paw.paw_label])
+            rootItem.setText(2, str(paw.max_z))  # Sets the frame count
+            surface = np.max(paw.surface_over_time)
             rootItem.setText(3, str(int(surface)))
-            force = np.max(calculations.force_over_time(paw))
+            force = np.max(paw.force_over_time)
             rootItem.setText(4, str(int(force)))
 
         # Initialize the current paw index, which we'll need for keep track of the labeling
@@ -174,7 +171,8 @@ class ProcessingWidget(QtGui.QWidget):
     def update_current_paw(self):
         if (self.current_paw_index <= len(self.paws[self.measurement_name]) and
                     len(self.paws[self.measurement_name]) > 0):
-            for index, paw_label in self.paw_labels[self.measurement_name].items():
+            for index, paw in enumerate(self.paws[self.measurement_name]):
+                paw_label = paw.paw_label
                 # Get the current row from the tree
                 item = self.contact_tree.topLevelItem(index)
                 item.setText(1, self.paw_dict[paw_label])
@@ -184,7 +182,7 @@ class ProcessingWidget(QtGui.QWidget):
                     if paw_label >= 0:
                         item.setForeground(idx, self.colors[paw_label])
 
-            pub.sendMessage("update_current_paw", current_paw_index=self.current_paw_index, paw_labels=self.paw_labels)
+            pub.sendMessage("update_current_paw", current_paw_index=self.current_paw_index, paws=self.paws)
 
     def undo_label(self):
         self.previous_paw()

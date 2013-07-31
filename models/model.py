@@ -6,6 +6,7 @@ from functions import io, tracking, utility, calculations
 from functions.pubsub import pub
 import logging
 
+
 class Model():
     def __init__(self):
         self.file_paths = defaultdict(dict)
@@ -21,6 +22,7 @@ class Model():
         self.paw_labels = defaultdict(dict)
         self.paws = defaultdict(list)
         self.data_list = defaultdict(list)
+        self.max_results = defaultdict()
 
         self.logger = logging.getLogger("logger")
 
@@ -83,11 +85,10 @@ class Model():
     def load_results(self, widget):
         self.load_all_results()
         if widget == "processing":
-            pub.sendMessage("processing_results", paws=self.paws, paw_labels=self.paw_labels,
-                            paw_data=self.paw_data, average_data=self.average_data)
+            pub.sendMessage("processing_results", paws=self.paws, average_data=self.average_data)
         elif widget == "analysis":
-            pub.sendMessage("analysis_results", paws=self.paws, paw_labels=self.paw_labels, paw_data=self.paw_data,
-                            average_data=self.average_data, results=self.results, max_results=self.max_results)
+            pub.sendMessage("analysis_results", paws=self.paws, average_data=self.average_data,
+                            max_results=self.max_results)
 
     def load_all_results(self):
         """
@@ -114,6 +115,7 @@ class Model():
                     if max_data > self.n_max:
                         self.n_max = max_data
 
+                    # TODO fix how contacts are stored and restored
                     paw = utility.Contact(stored_results["paw_results"][index], restoring=True)
                     self.paws[measurement_name].append(paw)
 
@@ -131,8 +133,8 @@ class Model():
             self.track_contacts()
 
         # Calculate the average, after everything has been loaded
-        self.calculate_average()
-        self.calculate_results()
+        #self.calculate_average()
+        #self.calculate_results()
 
 
     def track_contacts(self):
@@ -147,86 +149,76 @@ class Model():
         # Make sure we don't have any paws stored if we're tracking again
         # I'd suggest moving the calculation of average_data out, so I can update it every time I label a paw
         self.paws[self.measurement_name] = []
-        self.paw_labels[self.measurement_name] = {}
-        self.paw_data[self.measurement_name] = []
 
         # Convert them to class objects
-        for index, paw in enumerate(paws):
-            paw = Contact(paw, padding=1)
-            paw.convert_contour_to_slice(self.measurement)
+        for index, raw_paw in enumerate(paws):
+            paw = Contact()
+            paw.create_contact(contact=raw_paw, measurement_data=self.measurement, padding=1)
             # Skip paws that have only been around for one frame
             if len(paw.frames) > 1:
                 self.paws[self.measurement_name].append(paw)
 
         # Sort the contacts based on their position along the first dimension
-        self.paws[self.measurement_name] = sorted(self.paws[self.measurement_name], key=lambda paw: paw.frames[0])
-
+        self.paws[self.measurement_name] = sorted(self.paws[self.measurement_name], key=lambda paw: paw.min_z)
+        # Update their index
         for index, paw in enumerate(self.paws[self.measurement_name]):
-            data_slice = utility.convert_contour_to_slice(self.measurement, paw.contour_list)
-            self.paw_data[self.measurement_name].append(data_slice)
-            # I've made -2 the label for unlabeled paws, -1 == unlabeled + selected
-            paw_label = -2
-            # Test if the paw touches the edge of the plate
-            if utility.touches_edges(self.measurement, paw):
-                paw_label = -3  # Mark it as invalid
-            elif utility.incomplete_step(data_slice):
-                paw_label = -3
-            self.paw_labels[self.measurement_name][index] = paw_label
+            paw.set_index(index)
 
         status = "Number of paws found: {}".format(len(self.paws[self.measurement_name]))
         pub.sendMessage("update_statusbar", status=status)
 
-    def update_current_paw(self, current_paw_index, paw_labels):
-        self.paw_labels = paw_labels
+    def update_current_paw(self, current_paw_index, paws):
+        # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
+        self.paws = paws
         self.current_paw_index = current_paw_index
         # Refresh the average data
         self.calculate_average()
 
-        pub.sendMessage("updated_current_paw", paws=self.paws, paw_labels=self.paw_labels, paw_data=self.paw_data,
-                        average_data=self.average_data, current_paw_index=self.current_paw_index)
+        pub.sendMessage("updated_current_paw", paws=self.paws, average_data=self.average_data,
+                        current_paw_index=self.current_paw_index)
 
     def calculate_average(self):
         # Empty average data
         self.average_data.clear()
         self.data_list.clear()
         # Group all the data per paw
-        for measurement_name, data_list in self.paw_data.items():
-            for index, data in enumerate(data_list):
-                paw_label = self.paw_labels[measurement_name][index]
+        for measurement_name, paws in self.paws.items():
+            for paw in paws:
+                paw_label = paw.paw_label
                 if paw_label >= 0:
-                    self.data_list[paw_label].append(data)
+                    self.data_list[paw_label].append(paw.data)
 
         # Then get the normalized data
         for paw_label, data in self.data_list.items():
             normalized_data = utility.calculate_average_data(data)
             self.average_data[paw_label] = normalized_data
 
-    def calculate_results(self):
-        self.results = defaultdict(lambda: defaultdict(list))
-        self.max_results = defaultdict()
-
-        for paw_label, data_list in self.data_list.items():
-            self.results[paw_label]["filtered"] = utility.filter_outliers(data_list, paw_label)
-            for data in data_list:
-                force = calculations.force_over_time(data)
-                self.results[paw_label]["force"].append(force)
-                max_force = np.max(force)
-                if max_force > self.max_results.get("force", 0):
-                    self.max_results["force"] = max_force
-
-                pressure = calculations.pressure_over_time(data)
-                self.results[paw_label]["pressure"].append(pressure)
-                max_pressure = np.max(pressure)
-                if max_pressure > self.max_results.get("pressure", 0):
-                    self.max_results["pressure"] = max_pressure
-
-                cop_x, cop_y = calculations.calculate_cop(data, version="numpy")
-                self.results[paw_label]["cop"].append((cop_x, cop_y))
-
-                x, y, z = np.nonzero(data)
-                max_duration = np.max(z)
-                if max_duration > self.max_results.get("duration", 0):
-                    self.max_results["duration"] = max_duration
+    # def calculate_results(self):
+    #     self.results = defaultdict(lambda: defaultdict(list))
+    #     self.max_results = defaultdict()
+    #
+    #     for paw_label, data_list in self.data_list.items():
+    #         self.results[paw_label]["filtered"] = utility.filter_outliers(data_list, paw_label)
+    #         for data in data_list:
+    #             force = calculations.force_over_time(data)
+    #             self.results[paw_label]["force"].append(force)
+    #             max_force = np.max(force)
+    #             if max_force > self.max_results.get("force", 0):
+    #                 self.max_results["force"] = max_force
+    #
+    #             pressure = calculations.pressure_over_time(data)
+    #             self.results[paw_label]["pressure"].append(pressure)
+    #             max_pressure = np.max(pressure)
+    #             if max_pressure > self.max_results.get("pressure", 0):
+    #                 self.max_results["pressure"] = max_pressure
+    #
+    #             cop_x, cop_y = calculations.calculate_cop(data, version="numpy")
+    #             self.results[paw_label]["cop"].append((cop_x, cop_y))
+    #
+    #             x, y, z = np.nonzero(data)
+    #             max_duration = np.max(z)
+    #             if max_duration > self.max_results.get("duration", 0):
+    #                 self.max_results["duration"] = max_duration
 
     def store_status(self):
         """

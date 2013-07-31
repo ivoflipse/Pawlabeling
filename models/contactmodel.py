@@ -8,6 +8,7 @@ import cv2
 
 logger = logging.getLogger("logger")
 
+
 class Contact():
     """
     This class has only one real function and that's to take a contact and create some
@@ -30,10 +31,13 @@ class Contact():
         self.contour_list = defaultdict(list)
         self.frames = []
         self.data = np.zeros((self.max_x, self.max_y, self.max_z))
+        self.max_of_max = np.zeros((self.max_x, self.max_y))
         self.invalid = False
+        self.filtered = False  # This can be used to check if the paw should be filtered or not
         self.paw_label = -2  # Paws are labeled as -2 by default
+        self.index = 0
 
-    def create_contact(self, contact, padding=0):
+    def create_contact(self, contact, measurement_data, padding=0):
         """
         This function expects a contact object, which is a dictionary of frames:list of contours and a padding value
         It will remove the padding from the contours and calculate the dimensions of a bounding box
@@ -52,7 +56,7 @@ class Contact():
                     contour = np.array(new_contour)
                 self.contour_list[frame].append(contour)
 
-        center, min_x, max_x, min_y, max_y = self.update_bounding_box(contact)
+        center, min_x, max_x, min_y, max_y = utility.update_bounding_box(contact)
         # Subtract the amount of padding everywhere
         if padding:
             min_x -= padding
@@ -68,63 +72,82 @@ class Contact():
         self.min_z, self.max_z = self.frames[0], self.frames[-1]
         self.center = (int(center[0]), int(center[1]))
 
-    def convert_contour_to_slice(self, data):
+        # Create self.data from the data
+        self.convert_contour_to_slice(measurement_data)
+        # Check if the paw is valid
+        self.validate_contact(measurement_data)
+        # Calculate the results
+        self.calculate_results()
+
+    def convert_contour_to_slice(self, measurement_data):
         """
         Creates self.data which contains the pixels that are enclosed by the contour
         """
         # Create an empty array that should fit the entire contact
-        new_data = np.zeros_like(data)
+        new_data = np.zeros_like(measurement_data)
 
         for frame, contours in list(self.contour_list.items()):
             skip_list = []
             for contour in contours:
                 # Pass a single contour as if it were a contact
-                center, min_x, max_x, min_y, max_y = self.update_bounding_box({frame: contour})
+                center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: [contour]})
                 # Get the non_zero pixels coordinates for that frame
-                pixels = np.transpose(np.nonzero(data[min_x:max_x, min_y:max_y, frame]))
+                pixels = np.transpose(np.nonzero(measurement_data[min_x:max_x, min_y:max_y, frame]))
                 for pixel in pixels:
                     # Skip pixels we already did in this frame
                     if pixel not in skip_list:
-                        if cv2.pointPolygonTest(contour, pixel, 0) > -1.0:
-                            new_data[pixel[0], pixel[1], frame] = data[pixel[0], pixel[1], frame]
+                        coordinate = (pixel[0], pixel[1])
+                        if cv2.pointPolygonTest(contour, coordinate, 0) > -1.0:
+                            new_data[pixel[0], pixel[1], frame] = measurement_data[pixel[0], pixel[1], frame]
                             skip_list.append(pixel)
 
         # Create an attribute data with the updated slice
-        self.data = new_data[self.min_x:self.max_x, self.min_y:self.max_y,self.min_z:self.max_z]
+        self.data = new_data[self.min_x:self.max_x, self.min_y:self.max_y, self.min_z:self.max_z]
 
-    def update_bounding_box(self, contact):
+    def calculate_results(self):
         """
-        This function will iterate through all the frames and calculate the bounding box
-        It then compares the dimensions of the bounding box to determine the total shape of that
-        contacts bounding box
+        This function will calculate all the required results and store them in the contact object
         """
-        min_x, max_x = float("inf"), float("-inf")
-        min_y, max_y = float("inf"), float("-inf")
+        self.force_over_time = calculations.force_over_time(self.data)
+        self.pressure_over_time = calculations.pressure_over_time(self.data)
+        self.surface_over_time = calculations.surface_over_time(self.data)
+        self.cop_x, self.cop_y = calculations.calculate_cop(self.data, version="numpy")
+        self.max_of_max = np.max(self.data, axis=2)
 
-        # For each contour, get the sizes
-        for frame, contours in contact.items():
-            for contour in contours:
-                x, y, width, height = cv2.boundingRect(contour)
-                if x < min_x:
-                    min_x = x
-                max_x = x + width
-                if max_x > max_x:
-                    max_x = max_x
-                if y < min_y:
-                    min_y = y
-                max_y = y + height
-                if max_y > max_y:
-                    max_y = max_y
+    def set_filtered(self, filtered):
+        """
+        If a contact deviates too many standard deviations from the rest of the contacts, you can set it to filtered
+        which can be accessed by the results widgets to see if they should ignore it
+        """
+        self.filtered = filtered
 
-        total_centroid = ((max_x + min_x) / 2, (max_y + min_y) / 2)
-        return total_centroid, min_x, max_x, min_y, max_y
+    def set_paw_label(self, paw_label):
+        """
+        Lets you set the paw_label. Only used, so I can log when/where this happens for bug tracking purposes.
+        """
+        self.paw_label = paw_label
 
-    def validate_contact(self, data):
-        if self.touches_edge(data) or self.incomplete_step():
+    def set_index(self, index):
+        """
+        Lets you set the index. Only used, so I can log when/where this happens for bug tracking purposes.
+        """
+        self.index = index
+
+    def validate_contact(self, measurement_data):
+        """
+        Input: measurement_data = 3D entire plate data array
+        Checks if the contact touches the edge of the plate and if the forces at the beginning or end of a contact
+        aren't too high. If so, it will mark the contact as invalid and set the paw_label to -3
+        """
+        if self.touches_edge(measurement_data) or self.incomplete_step():
             self.invalid = True
             self.paw_label = -3
 
     def touches_edge(self, data):
+        """
+        Checks if the x, y and z dimensions don't hit the outer dimensions of the plate.
+        Could be refined to require multiple sensors to touch the edge in order to invalidate a contact.
+        """
         ny, nx, nt = data.shape
         x_touch = (self.min_x == 0) or (self.max_x == ny)
         y_touch = (self.min_y == 0) or (self.max_y == nx)
@@ -133,6 +156,10 @@ class Contact():
         return x_touch or y_touch or z_touch
 
     def incomplete_step(self):
+        """
+        Checks if the force at the start or end of a contact aren't higher than a configurable threshold, in which case
+        its likely the measurement didn't start fast enough or the measurement ended prematurely.
+        """
         force_over_time = calculations.force_over_time(self.data)
         max_force = np.max(force_over_time)
         if (force_over_time[0] > (configuration.start_force_percentage * max_force) or
@@ -141,6 +168,10 @@ class Contact():
         return False
 
     def restore(self, contact):
+        """
+        This function takes a dictionary of the stored_results (the result of contact_to_dict) and recreates all the
+        attributes.
+        """
         self.contour_list = {} # I can't really be bothered to reconstruct this
         self.frames = [x for x in range(contact["min_z"], contact["max_z"] + 1)]
         self.width = contact["width"]

@@ -141,7 +141,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.slider.setValue(-1)
         self.update_entire_plate()
 
-    def new_results(self, paws, paw_labels, paw_data, average_data):
+    def new_results(self, paws, average_data):
         self.paws = paws
         self.draw_gait_line()
 
@@ -183,7 +183,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.bounding_box_pen = QtGui.QPen(color)
         self.bounding_box_pen.setWidth(3)
 
-        if paw_label == -1:
+        if paw.paw_label == -1:
             current_paw = 0.5
         else:
             current_paw = 0
@@ -199,11 +199,10 @@ class EntirePlateWidget(QtGui.QWidget):
         self.bounding_boxes.append(bounding_box)
         self.resizeEvent()
 
-    def update_bounding_boxes(self, paw_labels, current_paw_index, paws, paw_data, average_data):
+    def update_bounding_boxes(self, paws, current_paw_index,average_data):
         self.clear_bounding_box()
-
-        for index, paw_label in paw_labels[self.measurement_name].items():
-            self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label)
+        for index, paw in enumerate(paws[self.measurement_name]):
+            self.draw_bounding_box(paws[self.measurement_name][index], paw.paw_label)
             if current_paw_index == index:
                 self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label=-1)
         self.resizeEvent()
