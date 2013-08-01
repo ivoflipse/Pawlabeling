@@ -96,7 +96,7 @@ class PawView(QtGui.QWidget):
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, paws, paw_labels, paw_data, average_data, results, max_results):
+    def update(self, paws, average_data, results, max_results):
         self.pressures = results[self.paw_label]["pressure"]
         self.max_duration = max_results["duration"]
         self.max_pressure = max_results["pressure"]
@@ -104,6 +104,10 @@ class PawView(QtGui.QWidget):
         self.draw()
 
     def draw(self):
+        # If there's no data, return
+        if not self.pressures:
+            return
+
         interpolate_length = 100
         lengths = []
 
@@ -116,8 +120,7 @@ class PawView(QtGui.QWidget):
 
         for index, pressure in enumerate(self.pressures):
             if index not in filtered:
-                pressure = np.insert(pressure, 0, 0)
-                pressure = np.append(pressure, 0)
+                pressure = np.pad(pressure, 1, mode="constant", constant_values=0)
                 # Calculate the length AFTER padding the pressure
                 lengths.append(len(pressure))
                 pressure_over_time[index, :] = calculations.interpolate_time_series(pressure, interpolate_length)

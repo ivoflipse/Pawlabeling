@@ -94,7 +94,7 @@ class PawView(QtGui.QWidget):
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, paws, paw_labels, paw_data, average_data, results, max_results):
+    def update(self, paws, average_data, results, max_results):
         self.forces = results[self.paw_label]["force"]
         self.max_duration = max_results["duration"]
         self.max_force = max_results["force"]
@@ -103,6 +103,9 @@ class PawView(QtGui.QWidget):
         self.draw()
 
     def draw(self):
+        if not self.forces:
+            return
+
         self.axes.cla()
         interpolate_length = 100
         lengths = []
@@ -117,9 +120,8 @@ class PawView(QtGui.QWidget):
 
         for index, force in enumerate(self.forces):
             if index not in filtered:
+                force = np.pad(force, 1, mode="constant", constant_values=0)
                 lengths.append(len(force))
-                force = np.insert(force, 0, 0)
-                force = np.append(force, 0)
                 force_over_time[index, :] = calculations.interpolate_time_series(force, interpolate_length)
                 self.axes.plot(calculations.interpolate_time_series(range(np.max(len(force))), interpolate_length),
                                force_over_time[index, :], alpha=0.5)

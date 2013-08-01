@@ -54,6 +54,7 @@ class PawView(QtGui.QWidget):
         self.max_x = 15
         self.min_y = 0
         self.max_y = 15
+        self.max_z = 0
         self.frame = -1
         self.active = False
         self.filtered = []
@@ -108,7 +109,7 @@ class PawView(QtGui.QWidget):
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, paws, paw_labels, paw_data, average_data, results, max_results):
+    def update(self, paws, average_data, results, max_results):
         if self.paw_label not in average_data:
             return
 
@@ -127,6 +128,10 @@ class PawView(QtGui.QWidget):
         self.draw_frame()
 
     def draw_cop(self):
+        # If we still have the default shape, don't bother
+        if self.average_data.shape == (15, 15, 15):
+            return
+
         # Remove all the previous ellipses if coming back from update_cop
         for item in self.cop_ellipses:
             self.scene.removeItem(item)

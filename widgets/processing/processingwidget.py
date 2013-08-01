@@ -4,6 +4,7 @@ import logging
 
 import numpy as np
 from PySide import QtGui, QtCore
+from PySide.QtCore import Qt
 
 from settings import configuration
 from functions import io, gui, calculations
@@ -102,6 +103,7 @@ class ProcessingWidget(QtGui.QWidget):
                 if io.find_stored_file(dog_name, file_path) is not None:
                     # Change the foreground to green
                     childItem.setForeground(0, green_brush)
+        self.measurement_tree.sortItems(0, Qt.AscendingOrder)
 
     def load_first_file(self):
         """
@@ -154,7 +156,7 @@ class ProcessingWidget(QtGui.QWidget):
             rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
             rootItem.setText(0, str(index))
             rootItem.setText(1, self.paw_dict[paw.paw_label])
-            rootItem.setText(2, str(paw.max_z))  # Sets the frame count
+            rootItem.setText(2, str(paw.length))  # Sets the frame count
             surface = np.max(paw.surface_over_time)
             rootItem.setText(3, str(int(surface)))
             force = np.max(paw.force_over_time)

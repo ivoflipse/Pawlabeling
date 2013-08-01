@@ -58,10 +58,10 @@ class MainWindow(QtGui.QMainWindow):
         self.move(qr.topLeft())
 
     def change_tabs(self, event=None):
-        # If the tab is the first tab, reload the measurements
+        pub.sendMessage("update_statusbar", status="Changing tabs to tab {}".format(self.tab_widget.currentIndex()))
         if self.tab_widget.currentIndex() == 0:
             self.processing_widget.load_first_file()
-        if self.tab_widget.currentIndex() == 1:
+        elif self.tab_widget.currentIndex() == 1:
             self.analysis_widget.load_first_file()
 
     def change_status(self, status):

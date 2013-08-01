@@ -18,10 +18,9 @@ class Model():
 
         # Initialize our variables that will cache results
         self.average_data = defaultdict()
-        self.paw_data = defaultdict(list)
-        self.paw_labels = defaultdict(dict)
         self.paws = defaultdict(list)
         self.data_list = defaultdict(list)
+        self.results = defaultdict(lambda: defaultdict(list))
         self.max_results = defaultdict()
 
         self.logger = logging.getLogger("logger")
@@ -87,8 +86,10 @@ class Model():
         if widget == "processing":
             pub.sendMessage("processing_results", paws=self.paws, average_data=self.average_data)
         elif widget == "analysis":
-            pub.sendMessage("analysis_results", paws=self.paws, average_data=self.average_data,
-                            max_results=self.max_results)
+            # If there's no data_list, there are no labeled paws to display
+            if self.data_list.keys():
+                pub.sendMessage("analysis_results", paws=self.paws, average_data=self.average_data,
+                                results=self.results, max_results=self.max_results)
 
     def load_all_results(self):
         """
@@ -96,41 +97,23 @@ class Model():
         If so, retrieve the data and convert them to a usable format
         """
         self.logger.info("Model.load_all_results: Loading all results for dog: {}".format(self.dog_name))
+        # Make sure self.paws is empty
+        self.paws.clear()
+
         for measurement_name in self.file_paths[self.dog_name]:
-            # Refresh the cache, it might be stale
-            if measurement_name in self.paws:
-                self.paws[measurement_name] = []
-                self.paw_labels[measurement_name] = {}
-                self.paw_data[measurement_name] = []
+            paws = io.load_results(self.dog_name, measurement_name)
+            # Did we get any results?
+            if paws:
+                self.paws[measurement_name] = paws
+                # Check if any of the paws has a higher n_max
+                for paw in paws:
+                    n_max = np.max(paw.data)
+                    if n_max > self.n_max:
+                        self.n_max = n_max
 
-            stored_results = io.load_results(self.dog_name, measurement_name)
-            # If we have results, stick them in their respective variable
-            if stored_results:
-                self.paw_labels[measurement_name] = stored_results["paw_labels"]
-                for index, paw_data in stored_results["paw_data"].items():
-                    self.paw_data[measurement_name].append(paw_data)
-
-                    # Check if n_max happens to be larger here
-                    max_data = np.max(paw_data)
-                    if max_data > self.n_max:
-                        self.n_max = max_data
-
-                    # TODO fix how contacts are stored and restored
-                    paw = Contact()
-                    paw.restore(stored_results["paw_results"][index])
-                    self.paws[measurement_name].append(paw)
-
-                # Until I've moved everything to be dictionary based, here's code to sort the paws + paw_data
-                # Fancy pants code found here:
-                # http://stackoverflow.com/questions/9764298/is-it-possible-to-sort-two-listswhich-reference-each-other-in-the-exact-same-w
-                self.paws[measurement_name], self.paw_data[measurement_name] = zip(*sorted(
-                    zip(self.paws[measurement_name], self.paw_data[measurement_name]),
-                    key=lambda pair: pair[0].frames[0]))
-
-        # Note: this updates n_max if there ever was a higher n_max, also applies to the entire plate!
         pub.sendMessage("update_n_max", n_max=self.n_max)
 
-        if not self.paw_data[self.measurement_name]:
+        if not self.paws.get(self.measurement_name):
             self.track_contacts()
 
         # Calculate the average, after everything has been loaded
@@ -195,8 +178,8 @@ class Model():
             self.average_data[paw_label] = normalized_data
 
     def calculate_results(self):
-        self.results = defaultdict(lambda: defaultdict(list))
-        self.max_results = defaultdict()
+        self.results.clear()
+        self.max_results.clear()
 
         for paw_label, data_list in self.data_list.items():
             self.results[paw_label]["filtered"] = utility.filter_outliers(data_list, paw_label)
@@ -230,8 +213,7 @@ class Model():
         self.new_path = io.create_results_folder(self.dog_name)
         # Try storing the results
         try:
-            io.results_to_json(self.new_path, self.dog_name, self.measurement_name,
-                               self.paw_labels, self.paws, self.paw_data)
+            io.results_to_pickle(self.new_path, self.measurement_name, self.paws[self.measurement_name])
             self.logger.info("Model.store_status: Results for {} have been successfully saved".format(
                 self.measurement_name))
             pub.sendMessage("update_statusbar", status="Results saved")
@@ -246,6 +228,7 @@ class Model():
         self.logger.info("Model.clear_cached_values")
         self.average_data.clear()
         self.paws.clear()
-        self.paw_data.clear()
-        self.paw_labels.clear()
+        self.data_list.clear()
+        self.results.clear()
+        self.max_results.clear()
         pub.sendMessage("clear_cached_values")

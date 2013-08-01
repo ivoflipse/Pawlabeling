@@ -99,7 +99,7 @@ class PawView(QtGui.QWidget):
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, paws, paw_labels, paw_data, average_data, results, max_results):
+    def update(self, paws, average_data, results, max_results):
         if self.paw_label not in average_data:
             return
 
@@ -133,6 +133,7 @@ class PawView(QtGui.QWidget):
 
     def change_frame(self, frame):
         self.frame = frame
+        print self.frame
         # If we're not displaying the empty array
         if (self.max_of_max.shape != (self.mx, self.my) or self.max_z < self.frame) and self.active:
             self.draw_frame()

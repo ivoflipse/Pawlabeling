@@ -105,6 +105,8 @@ class AnalysisWidget(QtGui.QTabWidget):
                     root_item.setForeground(0, green_brush)
                     break
 
+        self.measurement_tree.sortItems(0, Qt.AscendingOrder)
+
     def load_first_file(self):
         # Check if the tree isn't empty, because else we can't load anything
         if self.measurement_tree.topLevelItemCount() > 0:
@@ -127,34 +129,31 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Notify the model to update the dog_name + measurement_name if necessary
         pub.sendMessage("switch_dogs", dog_name=self.dog_name)
         # Blank out the measurement_name
-        pub.sendMessage("switch_measurements", measurement_name="")
+        #pub.sendMessage("switch_measurements", measurement_name="")
 
         pub.sendMessage("clear_cached_values")
         self.contact_tree.clear()
         # Send a message so the model starts loading results
         pub.sendMessage("load_results", widget="analysis")
 
-    def update_contact_tree(self, paws, paw_labels, paw_data, average_data, results, max_results):
+    def update_contact_tree(self, paws, average_data, results, max_results):
         self.contact_tree.clear()
         self.max_length = 0
-        self.paw_data = paw_data
-        self.paw_labels = paw_labels
 
-        for measurement_name in self.paw_data:
-            for index, paw in enumerate(self.paw_data[measurement_name]):
-                x, y, z = paw.shape
-                if z > self.max_length:
-                    self.max_length = z
-                paw_label = self.paw_labels[measurement_name][index]
+        for measurement_name, paws in paws.items():
+            for index, paw in enumerate(paws):
+                if paw.length > self.max_length:
+                    self.max_length = paw.length
+                paw_label = paw.paw_label
 
                 if paw_label >= 0:
                     rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
                     rootItem.setText(0, str(index))
                     rootItem.setText(1, self.paw_dict[paw_label])
-                    rootItem.setText(2, str(z))  # Sets the frame count
-                    surface = np.max(calculations.pixel_count_over_time(paw))
+                    rootItem.setText(2, str(paw.length))
+                    surface = np.max(paw.surface_over_time)
                     rootItem.setText(3, str(int(surface)))
-                    force = np.max(calculations.force_over_time(paw))
+                    force = np.max(paw.force_over_time)
                     rootItem.setText(4, str(int(force)))
 
                     for idx in range(rootItem.columnCount()):
@@ -169,8 +168,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.n_max = 0
         self.average_data.clear()
         self.paws.clear()
-        self.paw_data.clear()
-        self.paw_labels.clear()
 
     def change_frame(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))
