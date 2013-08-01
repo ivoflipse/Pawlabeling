@@ -69,6 +69,7 @@ class PawView(QtGui.QWidget):
         self.view = QtGui.QGraphicsView(self.scene)
         #self.view.setGeometry(0, 0, 100, 100)
         self.view.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform)
+        self.view.setViewportUpdateMode(self.view.FullViewportUpdate)
         self.image = QtGui.QGraphicsPixmapItem()
         self.scene.addItem(self.image)
 
@@ -133,7 +134,6 @@ class PawView(QtGui.QWidget):
 
     def change_frame(self, frame):
         self.frame = frame
-        print self.frame
         # If we're not displaying the empty array
         if (self.max_of_max.shape != (self.mx, self.my) or self.max_z < self.frame) and self.active:
             self.draw_frame()

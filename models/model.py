@@ -180,9 +180,12 @@ class Model():
     def calculate_results(self):
         self.results.clear()
         self.max_results.clear()
+        self.filtered = defaultdict()
+
 
         for paw_label, data_list in self.data_list.items():
             self.results[paw_label]["filtered"] = utility.filter_outliers(data_list, paw_label)
+            self.filtered[paw_label] = utility.filter_outliers(data_list, paw_label)
             for data in data_list:
                 force = calculations.force_over_time(data)
                 self.results[paw_label]["force"].append(force)
@@ -203,6 +206,10 @@ class Model():
                 max_duration = np.max(z)
                 if max_duration > self.max_results.get("duration", 0):
                     self.max_results["duration"] = max_duration
+
+        # for measurement_name, paws in self.paws.items():
+        #     for paw in self.paws:
+
 
     def store_status(self):
         """

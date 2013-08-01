@@ -90,7 +90,7 @@ class Contact():
         # Pass a single contour as if it were a contact
             center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: contours})
             # Get the non_zero pixels coordinates for that frame
-            pixels = np.transpose(np.nonzero(measurement_data[min_x:max_x, min_y:max_y, frame]))
+            pixels = np.transpose(np.nonzero(measurement_data[min_x:max_x+1, min_y:max_y+1, frame]))
             # Check if they are in any of the contours
             for pixel in pixels:
                 for contour in contours:
@@ -101,7 +101,8 @@ class Contact():
                             coordinate[0], coordinate[1], frame]
 
         # Create an attribute data with the updated slice
-        self.data = new_data[self.min_x:self.max_x, self.min_y:self.max_y, self.min_z:self.max_z]
+        # I believe padding is required here, because Python slices up to, not including the upper limit
+        self.data = new_data[self.min_x:self.max_x+1, self.min_y:self.max_y+1, self.min_z:self.max_z+1]
 
     def calculate_results(self):
         """

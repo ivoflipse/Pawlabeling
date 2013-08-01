@@ -137,6 +137,7 @@ class PawWidget(QtGui.QWidget):
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
         self.view.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform)
+        self.view.setViewportUpdateMode(self.view.FullViewportUpdate)
         self.image = QtGui.QGraphicsPixmapItem()
         self.scene.addItem(self.image)
 

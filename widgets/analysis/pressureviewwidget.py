@@ -108,6 +108,7 @@ class PawView(QtGui.QWidget):
         if not self.pressures:
             return
 
+        self.axes.cla()
         interpolate_length = 100
         lengths = []
 

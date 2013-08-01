@@ -78,6 +78,7 @@ class PawView(QtGui.QWidget):
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
         self.view.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform)
+        self.view.setViewportUpdateMode(self.view.FullViewportUpdate)
         self.image = QtGui.QGraphicsPixmapItem()
         self.scene.addItem(self.image)
 
@@ -123,7 +124,7 @@ class PawView(QtGui.QWidget):
         self.max_x = np.max(x) + 2
         self.min_y = np.min(y) - 2
         self.max_y = np.max(y) + 2
-        self.max_z = np.max(z)
+        self.max_z = np.max(z) + 1 # Added some padding here
 
         self.draw_frame()
 
@@ -149,8 +150,6 @@ class PawView(QtGui.QWidget):
         # Create a strided index
         index = [x for x in range(0, self.max_z, int(self.max_z / self.x))]
 
-        x2, y2 = 0, 0
-
         for frame in range(len(self.cop_x)-1):
             x1 = self.cop_x[frame]
             x2 = self.cop_x[frame + 1]
@@ -170,7 +169,9 @@ class PawView(QtGui.QWidget):
                 ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
                 self.cop_ellipses.append(ellipse)
 
-        ellipse = self.scene.addEllipse(x2 * self.degree, y2 * self.degree, 5, 5, self.dot_pen, self.dot_brush)
+        # Get the very last value
+        x1, y1 = self.cop_x[-1], self.cop_y[-1]
+        ellipse = self.scene.addEllipse(x1 * self.degree, y1 * self.degree, 5, 5, self.dot_pen, self.dot_brush)
         ellipse.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
         self.cop_ellipses.append(ellipse)
 
@@ -179,7 +180,6 @@ class PawView(QtGui.QWidget):
         for item in self.cop_ellipses:
             self.scene.removeItem(item)
         self.cop_ellipses = []
-
         # Only draw if the frame is actually available
         if self.frame < self.cop_x.shape[0]:
             cop_x = self.cop_x[self.frame]
@@ -241,3 +241,4 @@ class PawView(QtGui.QWidget):
                 item.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
             self.view.setSceneRect(self.view.rect())
             self.view.centerOn(self.image)
+

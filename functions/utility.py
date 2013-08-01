@@ -209,6 +209,13 @@ def normalize(array, n_max):
 
     # Make sure all negative values get set to zero
     array[array < 0] = 0
+
+    # If max_value is higher, the normalization won't work as intended
+    # This might make the color scaling be an underestimation compared to images using n_max
+    max_value = np.max(array)
+    if n_max < max_value:
+        n_max = max_value
+
     # Get the scaling factor, so everything fits into a uint8
     scale = 255. / n_max
     array *= scale
