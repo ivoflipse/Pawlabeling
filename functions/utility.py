@@ -421,9 +421,9 @@ def filter_outliers(data, paw_label, num_std=2):
         pub.sendMessage("updata_statusbar",
                         status="Removed {} contact(s) from {}".format(len(filtered), configuration.paw_dict[paw_label]))
         logger.info("Removed {} contact(s) from {}".format(len(filtered), configuration.paw_dict[paw_label]))
-    else:
-        logger.info("No contacts removed")
-        # Changed this function so now it returns the indices of filtered contacts
+    # else:
+    #     logger.info("No contacts removed")
+    # Changed this function so now it returns the indices of filtered contacts
     return filtered
 
 
