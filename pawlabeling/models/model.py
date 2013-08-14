@@ -1,10 +1,10 @@
 from collections import defaultdict
 import logging
 import numpy as np
+from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
 from pawlabeling.settings import configuration
 from pawlabeling.models.contactmodel import Contact
-from pawlabeling.functions.pubsub import pub
 
 class Model():
     def __init__(self):

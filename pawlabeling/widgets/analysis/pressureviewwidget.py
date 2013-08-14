@@ -2,9 +2,9 @@ import numpy as np
 from PySide import QtGui
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from pubsub import pub
 from pawlabeling.functions import utility, calculations
 from pawlabeling.settings import configuration
-from pawlabeling.functions.pubsub import pub
 
 
 class PressureViewWidget(QtGui.QWidget):

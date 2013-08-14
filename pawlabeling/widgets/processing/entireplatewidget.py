@@ -1,9 +1,9 @@
 import os
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
+from pubsub import pub
 from pawlabeling.functions import utility, gui
 from pawlabeling.settings import configuration
-from pawlabeling.functions.pubsub import pub
 
 class EntirePlateWidget(QtGui.QWidget):
     def __init__(self, parent=None):

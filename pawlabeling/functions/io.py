@@ -1,7 +1,7 @@
 import os
 import logging
 import numpy as np
-from pawlabeling.functions.pubsub import pub
+from pubsub import pub
 from pawlabeling.settings import configuration
 try:
     import cPickle as pickle

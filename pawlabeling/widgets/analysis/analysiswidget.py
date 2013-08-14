@@ -4,8 +4,8 @@ import logging
 from PySide import QtGui
 from PySide.QtCore import Qt
 import numpy as np
+from pubsub import pub
 from pawlabeling.functions import gui, io
-from pawlabeling.functions.pubsub import pub
 from pawlabeling.settings import configuration
 from pawlabeling.widgets.analysis import resultswidget
 

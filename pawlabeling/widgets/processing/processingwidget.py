@@ -4,9 +4,9 @@ import logging
 import numpy as np
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
+from pubsub import pub
 from pawlabeling.functions import io, gui
 from pawlabeling.settings import configuration
-from pawlabeling.functions.pubsub import pub
 from pawlabeling.widgets.processing import pawswidget
 from pawlabeling.widgets.processing import entireplatewidget
 

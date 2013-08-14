@@ -2,8 +2,8 @@ import sys
 import os
 import logging
 from PySide import QtGui, QtCore
+from pubsub import pub
 from pawlabeling.settings import configuration
-from pawlabeling.functions.pubsub import pub
 from pawlabeling.functions.qsingleapplication import QtSingleApplication
 from pawlabeling.models import model
 from pawlabeling.widgets.analysis import analysiswidget
