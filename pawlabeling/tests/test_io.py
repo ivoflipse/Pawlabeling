@@ -195,7 +195,7 @@ class TestZipFile(TestCase):
             io.zip_file(root=self.root, file_name="")
 
     def tearDown(self):
-        # Remove the folder if it still exists
+        # Remove the file if it still exists
         if os.path.exists(self.new_file_name + ".zip"):
             shutil.rmtree(self.new_file_name + ".zip", ignore_errors=True)
 
@@ -205,7 +205,7 @@ class TestGetFilePaths(TestCase):
         # Let's try and change the measurement folder
         from pawlabeling.settings import configuration
         root = os.path.dirname(os.path.abspath(__file__))
-        file_name = os.path.join(root, "files")
+        file_name = os.path.join(root, "files\\zip_folder")
         old_folder = configuration.measurement_folder
         configuration.measurement_folder = file_name
 
