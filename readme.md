@@ -1,7 +1,7 @@
 Paw Labeling
 ============
 
-![Paw labeling tool](docs/images/Pawlabeling.png)
+![Paw labeling tool](doc/images/Pawlabeling.png)
 
 Overview
 --------
@@ -48,13 +48,13 @@ Features
 Screenshots
 -----------
 
-![Processing](docs/images/Processing.png)
+![Processing](doc/images/Processing.png)
 
-![Processing](docs/images/2D_view.png)
+![Processing](doc/images/2D_view.png)
 
-![Processing](docs/images/Force.png)
+![Processing](doc/images/Force.png)
 
-![Processing](docs/images/COP.png)
+![Processing](doc/images/COP.png)
 
 Installation
 -----

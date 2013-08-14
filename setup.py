@@ -35,6 +35,25 @@ if len(set(('develop', 'release', 'bdist_egg', 'bdist_rpm',
 else:
     extra_setuptools_args = dict()
 
+###############################################################################
+def configuration(parent_package='', top_path=None):
+    if os.path.exists('MANIFEST'):
+        os.remove('MANIFEST')
+
+    from numpy.distutils.misc_util import Configuration
+    config = Configuration(None, parent_package, top_path)
+
+    # Avoid non-useful msg:
+    # "Ignoring attempt to set 'name' (from ... "
+    config.set_options(ignore_setup_xxx_py=True,
+                       assume_default_configuration=True,
+                       delegate_options_to_subpackages=True,
+                       quiet=True)
+
+    config.add_subpackage('sklearn')
+
+    return config
+
 def setup_package():
     metadata = dict(name=DISTNAME,
                     maintainer=MAINTAINER,
@@ -48,7 +67,6 @@ def setup_package():
                     classifiers=['Intended Audience :: Science/Research',
                                  'Intended Audience :: Developers',
                                  'License :: OSI Approved',
-                                 'Programming Language :: C',
                                  'Programming Language :: Python',
                                  'Topic :: Software Development',
                                  'Topic :: Scientific/Engineering',
@@ -57,12 +75,8 @@ def setup_package():
                                  'Operating System :: Unix',
                                  'Operating System :: MacOS',
                                  'Programming Language :: Python :: 2',
-                                 'Programming Language :: Python :: 2.6',
                                  'Programming Language :: Python :: 2.7',
-                                 'Programming Language :: Python :: 3',
-                                 'Programming Language :: Python :: 3.3',
                                  ],
-                    cmdclass={'clean': CleanCommand},
                     **extra_setuptools_args)
 
     if (len(sys.argv) >= 2
