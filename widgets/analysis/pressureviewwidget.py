@@ -108,7 +108,7 @@ class PawView(QtGui.QWidget):
         if not self.pressures:
             return
 
-        self.axes.cla()
+        self.clear_cached_values()
         interpolate_length = 100
         lengths = []
 
@@ -118,15 +118,15 @@ class PawView(QtGui.QWidget):
             filtered = []
 
         pressure_over_time = np.zeros((len(self.pressures)-len(filtered), interpolate_length))
+        pressures = [p for index, p in enumerate(self.pressures) if index not in filtered]
 
-        for index, pressure in enumerate(self.pressures):
-            if index not in filtered:
-                pressure = np.pad(pressure, 1, mode="constant", constant_values=0)
-                # Calculate the length AFTER padding the pressure
-                lengths.append(len(pressure))
-                pressure_over_time[index, :] = calculations.interpolate_time_series(pressure, interpolate_length)
-                self.axes.plot(calculations.interpolate_time_series(range(np.max(len(pressure))), interpolate_length),
-                               pressure_over_time[index, :], alpha=0.5)
+        for index, pressure in enumerate(pressures):
+            pressure = np.pad(pressure, 1, mode="constant", constant_values=0)
+            # Calculate the length AFTER padding the pressure
+            lengths.append(len(pressure))
+            pressure_over_time[index, :] = calculations.interpolate_time_series(pressure, interpolate_length)
+            self.axes.plot(calculations.interpolate_time_series(range(np.max(len(pressure))), interpolate_length),
+                           pressure_over_time[index, :], alpha=0.5)
 
         mean_length = np.mean(lengths)
         interpolated_timeline = calculations.interpolate_time_series(range(int(mean_length)), interpolate_length)
@@ -137,6 +137,7 @@ class PawView(QtGui.QWidget):
         self.axes.fill_between(interpolated_timeline, mean_pressure - std_pressure, mean_pressure + std_pressure,
                                facecolor="r", alpha=0.5)
         self.axes.plot(interpolated_timeline, mean_pressure - std_pressure, color="r", linewidth=1)
+        self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.vertical_line.set_xdata(self.frame)
         self.axes.set_xlim([0, self.max_duration + 2])  # +2 because we padded the array
         self.axes.set_ylim([0, self.max_pressure * 1.2])
@@ -145,10 +146,10 @@ class PawView(QtGui.QWidget):
     def change_frame(self, frame):
         self.frame = frame
         if self.active:
-            self.draw()
+            self.vertical_line.set_xdata(self.frame)
+            self.canvas.draw()
 
     def clear_cached_values(self):
         # Put the screen to black
         self.axes.cla()
-        self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.canvas.draw()

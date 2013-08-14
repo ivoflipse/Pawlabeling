@@ -9,4 +9,10 @@
 from widgets.mainwindow import main
 
 if __name__ == "__main__":
-    main()
+    profile = False
+    if profile:
+        import cProfile
+        cProfile.run("main()", sort="cumulative")
+    else:
+        main()
+

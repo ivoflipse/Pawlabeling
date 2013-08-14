@@ -1,4 +1,3 @@
-import json
 import os
 import logging
 import numpy as np
@@ -6,10 +5,11 @@ from functions.pubsub import pub
 from settings import configuration
 try:
     import cPickle as pickle
-except:
+except ImportError:
     import pickle
 
 logger = logging.getLogger("logger")
+
 
 def calculate_distance(a, b):
     return np.linalg.norm(np.array(a) - np.array(b))
@@ -33,6 +33,7 @@ def fix_orientation(data):
         # So we flip the data around
         data = np.rot90(np.rot90(data))
     return data
+
 
 def load_zebris(infile):
     """
@@ -68,6 +69,7 @@ def load_zebris(infile):
     width, height, length = results.shape
     return results if width > height else results.swapaxes(0, 1)
 
+
 # This functions is modified from:
 # http://stackoverflow.com/questions/4087919/how-can-i-improve-my-paw-detection
 def load_rsscan(infile):
@@ -82,12 +84,13 @@ def load_rsscan(infile):
             if len(data) != 0:
                 array_data = np.array(data, dtype=np.float32)
                 data_slices.append(array_data)
-        elif line_length == 4: # header
+        elif line_length == 4:  # header
             data = []
         else:
             data.append(split_line)
     result = np.dstack(data_slices)
     return result
+
 
 def load(file_name):
     import zipfile
@@ -130,6 +133,7 @@ def find_stored_file(dog_name, file_name):
                     input_path = os.path.join(path, input_file)
                     return input_path
 
+
 def load_results(dog_name, measurement_name):
     input_path = find_stored_file(dog_name, measurement_name)
     results = {}
@@ -137,6 +141,7 @@ def load_results(dog_name, measurement_name):
         with open(input_path, "rb") as pickle_file:
             results = pickle.load(pickle_file)
     return results
+
 
 def create_results_folder(dog_name):
     """
@@ -151,9 +156,11 @@ def create_results_folder(dog_name):
         os.mkdir(new_path)
     return new_path
 
+
 def results_to_pickle(new_path, measurement_name, paws):
-    with open(os.path.join(new_path, measurement_name)+".pkl", "wb") as pickle_file:
+    with open(os.path.join(new_path, measurement_name) + ".pkl", "wb") as pickle_file:
         pickle.dump(paws, pickle_file)
+
 
 def convert_file_to_zip(file_path):
     import zipfile
@@ -171,6 +178,7 @@ def convert_file_to_zip(file_path):
     except Exception as e:
         logger.critical("Couldn't remove file original file. Exception: {}".format(e))
 
+
 def zip_files(root, file_name):
     # Check if the file isn't compressed, else zip it and delete the original after loading
     base_name, extension = os.path.splitext(file_name)
@@ -179,6 +187,7 @@ def zip_files(root, file_name):
         file_name = convert_file_to_zip(file_path)
 
     return os.path.join(root, file_name)
+
 
 def get_file_paths():
     from collections import defaultdict
@@ -196,4 +205,3 @@ def get_file_paths():
                 file_paths[dog_name][file_name] = zip_files(root, file_name)
 
     return file_paths
-

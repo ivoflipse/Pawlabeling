@@ -82,6 +82,7 @@ class PawView(QtGui.QWidget):
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
+        self.clear_cached_values()
         self.draw()
 
     def check_active(self, widget):
@@ -106,7 +107,7 @@ class PawView(QtGui.QWidget):
         if not self.forces:
             return
 
-        self.axes.cla()
+        self.clear_cached_values()
         interpolate_length = 100
         lengths = []
 
@@ -117,14 +118,14 @@ class PawView(QtGui.QWidget):
 
         # The zero padding of leaving elements out is 'painful'
         force_over_time = np.zeros((len(self.forces)-len(filtered), interpolate_length))
+        forces = [f for index, f in enumerate(self.forces) if index not in filtered]
 
-        for index, force in enumerate(self.forces):
-            if index not in filtered:
-                force = np.pad(force, 1, mode="constant", constant_values=0)
-                lengths.append(len(force))
-                force_over_time[index, :] = calculations.interpolate_time_series(force, interpolate_length)
-                self.axes.plot(calculations.interpolate_time_series(range(np.max(len(force))), interpolate_length),
-                               force_over_time[index, :], alpha=0.5)
+        for index, force in enumerate(forces):
+            force = np.pad(force, 1, mode="constant", constant_values=0)
+            lengths.append(len(force))
+            force_over_time[index, :] = calculations.interpolate_time_series(force, interpolate_length)
+            self.axes.plot(calculations.interpolate_time_series(range(np.max(len(force))), interpolate_length),
+                           force_over_time[index, :], alpha=0.5)
 
         mean_length = np.mean(lengths)
         interpolated_timeline = calculations.interpolate_time_series(range(int(mean_length)), interpolate_length)
@@ -135,6 +136,7 @@ class PawView(QtGui.QWidget):
         self.axes.fill_between(interpolated_timeline, mean_force - std_force, mean_force + std_force, facecolor="r",
                                alpha=0.5)
         self.axes.plot(interpolated_timeline, mean_force - std_force, color="r", linewidth=1)
+        self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.vertical_line.set_xdata(self.frame)
         self.axes.set_xlim([0, self.max_duration + 2])  # +2 because we padded the array
         self.axes.set_ylim([0, self.max_force * 1.2])
@@ -143,7 +145,8 @@ class PawView(QtGui.QWidget):
     def change_frame(self, frame):
         self.frame = frame
         if self.active:
-            self.draw()
+            self.vertical_line.set_xdata(self.frame)
+            self.canvas.draw()
 
     def clear_cached_values(self):
         # Put the screen to black

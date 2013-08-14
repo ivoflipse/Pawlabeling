@@ -5,23 +5,27 @@ import logging
 
 app_name = "Paw Labeling tool"
 
+root_folder = os.path.dirname(__file__)
+config_file = os.path.join(root_folder, "config.yaml")
+config_example_file = os.path.join(root_folder, "config_example.yaml")
+
 # Check if there's a config.yaml, else copy the example version and write it to config.yaml
-if not os.path.exists(".\\settings\\config.yaml"):
-    with open(".\\settings\\config_example.yaml","r") as input_file:
+if not os.path.exists(config_file):
+    with open(config_example_file,"r") as input_file:
         output_string = ""
         for line in input_file:
             output_string += line
 
-    with open(".\\settings\\config.yaml", "w") as output_file:
+    with open(config_file, "w") as output_file:
         for line in output_string:
             output_file.write(line)
 
 # To use settings other than my default ones, change config.yaml
-with open(".\\settings\\config.yaml","r") as input_file:
+with open(config_file,"r") as input_file:
     config = yaml.load(input_file)
 
 # Check if the existing yaml file is complete
-with open(".\\settings\\config_example.yaml","r") as input_file:
+with open(config_example_file,"r") as input_file:
     config_example = yaml.load(input_file)
 
 # Go through all the keys, even the nested ones (only one level!)
@@ -34,7 +38,7 @@ for key, value in config_example.items():
                 config[key][nested_key] = nested_value
 
 # Write any changes back to the config.yaml file
-with open(".\\settings\\config.yaml", "w") as output_file:
+with open(config_file, "w") as output_file:
     output_file.write(yaml.dump(config,  default_flow_style=False))
 
 # Lookup table for converting indices to labels
@@ -82,9 +86,13 @@ else:
 measurement_folder = config["folders"]["measurement_folder"]
 store_results_folder = config["folders"]["store_results_folder"]
 
-# Add the folder for the store_results_folder data if it doesn't exist
-if not os.path.exists(store_results_folder):
-    os.mkdir(store_results_folder)
+try:
+    # Add the folder for the store_results_folder data if it doesn't exist
+    if not os.path.exists(store_results_folder):
+        os.mkdir(store_results_folder)
+except Exception, e:
+    print("Couldn't create store results folder")
+    print("Exception: {}".format(e))
 
 brand = "rsscan"
 frequency = 124
