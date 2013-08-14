@@ -191,6 +191,9 @@ def create_results_folder(dog_name):
     This function takes a path and creates a folder called
     Returns the path of the folder just created
     """
+    if not dog_name:
+        raise Exception("You can't supply an empty name")
+
     store_path = configuration.store_results_folder
     # The name of the dog is the second last element in file_name
     new_path = os.path.join(store_path, dog_name)
@@ -200,36 +203,54 @@ def create_results_folder(dog_name):
     return new_path
 
 
-def results_to_pickle(new_path, measurement_name, paws):
-    with open(os.path.join(new_path, measurement_name) + ".pkl", "wb") as pickle_file:
+def results_to_pickle(pickle_path, paws):
+    """
+    pickle_path is a path like "dog_name\\measurement_name"
+    paws is a list of Contacts
+
+    It appends .pkl as an extensions to the pickle_path and
+    uses pickle to dump the paws to the file location
+    """
+    # Check if the parent folder exists
+    parent_folder = os.path.dirname(pickle_path)
+    if not os.path.exists(parent_folder):
+        raise Exception("Parent folder does not exists, can't save the file")
+
+    if not paws:
+        raise Exception("There are no contacts in this measurement, can't save the file")
+
+    # Open a file with pkl (pickle) added to the path_name
+    with open(pickle_path + ".pkl", "wb") as pickle_file:
         pickle.dump(paws, pickle_file)
 
 
-def convert_file_to_zip(file_path):
+def zip_file(root, file_name):
+    if not root:
+        raise Exception("Incorrect root folder")
+
+    if not file_name:
+        raise Exception("Incorrect file name")
+
     import zipfile
+
+    file_path = os.path.join(root, file_name)
     # Create a new zip file and add .zip to the file_name
     new_file_path = file_path + ".zip"
     outfile = zipfile.ZipFile(new_file_path, "w")
+
     try:
+        # Write the content from file_path to the zip-file called outfile
         outfile.write(file_path, os.path.basename(file_path), compress_type=zipfile.ZIP_DEFLATED)
     except Exception as e:
         logger.critical("Couldn't write to ZIP file. Exception: {}".format(e))
+
     try:
         # Remove the uncompressed file
-        os.remove(file_path)  # Its possible that this file is open somewhere else, then everything might fail...
-        return new_file_path
+        os.remove(file_path)
     except Exception as e:
         logger.critical("Couldn't remove file original file. Exception: {}".format(e))
 
-
-def zip_files(root, file_name):
-    # Check if the file isn't compressed, else zip it and delete the original after loading
-    base_name, extension = os.path.splitext(file_name)
-    if extension != ".zip":
-        file_path = os.path.join(root, file_name)
-        file_name = convert_file_to_zip(file_path)
-
-    return os.path.join(root, file_name)
+    return os.path.join(root, new_file_path)
 
 
 def get_file_paths():
@@ -244,7 +265,10 @@ def get_file_paths():
             # Add the name of the dog
             dog_name = root.split("\\")[-1]
             for index, file_name in enumerate(files):
-                # zip_files will convert a file to zip and returns the path to the file
-                file_paths[dog_name][file_name] = zip_files(root, file_name)
+                # zip_file will convert a file to zip and returns the path to the file
+                if file_name[-3:] != "zip":
+                    file_paths[dog_name][file_name] = zip_file(root, file_name)
+                else:
+                    file_paths[dog_name][file_name] = os.path.join(root, file_name)
 
     return file_paths

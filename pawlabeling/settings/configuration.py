@@ -1,4 +1,5 @@
 import os
+import sys
 import yaml
 from PySide import QtGui, QtCore
 import logging
@@ -162,7 +163,7 @@ def setup_logging():
     file_handler.setLevel(logging_level)
 
     # create console handler with a higher log level
-    console_handler = logging.StreamHandler()
+    console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.WARNING)
 
     # create formatter and add it to the handlers

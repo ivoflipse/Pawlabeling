@@ -1,5 +1,6 @@
 from collections import defaultdict
 import logging
+import os
 import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
@@ -220,7 +221,8 @@ class Model():
         self.new_path = io.create_results_folder(self.dog_name)
         # Try storing the results
         try:
-            io.results_to_pickle(self.new_path, self.measurement_name, self.paws[self.measurement_name])
+            pickle_path = os.path.join(self.new_path, self.measurement_name)
+            io.results_to_pickle(pickle_path, self.paws[self.measurement_name])
             self.logger.info("Model.store_status: Results for {} have been successfully saved".format(
                 self.measurement_name))
             pub.sendMessage("update_statusbar", status="Results saved")

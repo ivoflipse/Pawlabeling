@@ -2,6 +2,7 @@ from unittest import TestCase
 import os
 import numpy as np
 import shutil
+import cPickle as pickle
 from pawlabeling.functions import io
 
 class TestLoad(TestCase):
@@ -119,8 +120,74 @@ class TestCreateResultsFolder(TestCase):
         exists = os.path.exists(return_path)
         self.assertTrue(exists)
 
+    def test_create_results_folder_with_empty_name(self):
+        with self.assertRaises(Exception):
+            io.create_results_folder(dog_name="")
+
     def tearDown(self):
         # Remove the folder we just created
         if os.path.exists(self.new_path):
             #os.remove(self.new_path)
             shutil.rmtree(self.new_path, ignore_errors=True)
+
+class TestResultsToPickle(TestCase):
+    def setUp(self):
+        parent_folder = os.path.dirname(os.path.abspath(__file__))
+        new_location = "files\\temp.zip"
+        self.pickle_path_before = os.path.join(parent_folder, new_location)
+        self.pickle_path_after = self.pickle_path_before + ".pkl"
+        file_location = "files\\rsscan_export.zip.pkl"
+        self.input_path = os.path.join(parent_folder, file_location)
+
+        # Load paws from an existing pickle file
+        with open(self.input_path, "rb") as pickle_file:
+            self.paws = pickle.load(pickle_file)
+
+        # Remove the folder if it exists
+        if os.path.exists(self.pickle_path_after):
+            shutil.rmtree(self.pickle_path_after, ignore_errors=True)
+
+    def test_results_to_pickle(self):
+        io.results_to_pickle(self.pickle_path_before, self.paws)
+
+        exists = os.path.exists(self.pickle_path_after)
+        self.assertTrue(exists)
+
+    def test_results_to_pickle_wrong_path(self):
+        with self.assertRaises(Exception):
+            io.results_to_pickle(pickle_path="", paws=self.paws)
+
+    def test_results_to_pickle_no_paws(self):
+        with self.assertRaises(Exception):
+            io.results_to_pickle(pickle_path=self.pickle_path_before, paws=[])
+
+    def tearDown(self):
+        # Remove the folder if it still exists
+        if os.path.exists(self.pickle_path_after):
+            shutil.rmtree(self.pickle_path_after, ignore_errors=True)
+
+
+class TestZipFile(TestCase):
+    def setUp(self):
+        # Create a copy of an unzipped file
+        self.root = os.path.dirname(os.path.abspath(__file__))
+        file_location = "files\\fake_export"
+        file_name = os.path.join(self.root, file_location)
+        new_file_location = "files\\new_fake_export"
+        self.new_file_name = os.path.join(self.root, new_file_location)
+        # Create a copy of fake export
+        shutil.copyfile(file_name, self.new_file_name )
+
+    def test_zip_file(self):
+        # Try zipping the file
+        io.zip_file(self.root, self.new_file_name)
+
+        # Check to see that the file exists
+        exists = os.path.exists(self.new_file_name + ".zip")
+        self.assertTrue(exists)
+
+    def tearDown(self):
+        # Remove the folder if it still exists
+        if os.path.exists(self.new_file_name + ".zip"):
+            shutil.rmtree(self.new_file_name + ".zip", ignore_errors=True)
+
