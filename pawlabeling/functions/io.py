@@ -243,12 +243,16 @@ def zip_file(root, file_name):
         outfile.write(file_path, os.path.basename(file_path), compress_type=zipfile.ZIP_DEFLATED)
     except Exception as e:
         logger.critical("Couldn't write to ZIP file. Exception: {}".format(e))
+        # Raise another exception to let the caller deal with it
+        raise Exception
 
     try:
         # Remove the uncompressed file
         os.remove(file_path)
     except Exception as e:
         logger.critical("Couldn't remove file original file. Exception: {}".format(e))
+        # Raise another exception to let the caller deal with it
+        raise Exception
 
     return os.path.join(root, new_file_path)
 

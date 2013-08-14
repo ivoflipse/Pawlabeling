@@ -186,8 +186,31 @@ class TestZipFile(TestCase):
         exists = os.path.exists(self.new_file_name + ".zip")
         self.assertTrue(exists)
 
+    def test_zip_file_wrong_root(self):
+        with self.assertRaises(Exception):
+            io.zip_file(root="", file_name=self.new_file_name)
+
+    def test_zip_file_wrong_file_name(self):
+        with self.assertRaises(Exception):
+            io.zip_file(root=self.root, file_name="")
+
     def tearDown(self):
         # Remove the folder if it still exists
         if os.path.exists(self.new_file_name + ".zip"):
             shutil.rmtree(self.new_file_name + ".zip", ignore_errors=True)
+
+
+class TestGetFilePaths(TestCase):
+    def test_get_file_paths(self):
+        # Let's try and change the measurement folder
+        from pawlabeling.settings import configuration
+        root = os.path.dirname(os.path.abspath(__file__))
+        file_name = os.path.join(root, "files")
+        old_folder = configuration.measurement_folder
+        configuration.measurement_folder = file_name
+
+        file_paths = io.get_file_paths()
+
+        # Restore it to the old folder
+        configuration.measurement_folder = old_folder
 
