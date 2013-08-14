@@ -265,6 +265,7 @@ def get_file_paths():
     logger.info("io.get_file_paths: Searching for measurements...")
     # Walk through the folder and gather up all the files
     for idx, (root, dirs, files) in enumerate(os.walk(configuration.measurement_folder)):
+        # If there are no more nested dirs left
         if not dirs:
             # Add the name of the dog
             dog_name = root.split("\\")[-1]
@@ -275,4 +276,6 @@ def get_file_paths():
                 else:
                     file_paths[dog_name][file_name] = os.path.join(root, file_name)
 
+    if not file_paths:
+        raise Exception("No files found, please check the measurement folder in your configuration file")
     return file_paths

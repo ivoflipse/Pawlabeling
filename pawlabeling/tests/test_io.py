@@ -4,6 +4,7 @@ import numpy as np
 import shutil
 import cPickle as pickle
 from pawlabeling.functions import io
+from pawlabeling.settings import configuration
 
 class TestLoad(TestCase):
     def test_load_sample_dog1(self):
@@ -31,15 +32,16 @@ class TestLoad(TestCase):
         data = io.load(file_name=file_name)
         self.assertEqual(data, None)
 
-    def test_load_sample_zebris(self):
-        """
-        This test is a bit too long, perhaps I should get a smaller measurement.
-        """
-        parent_folder = os.path.dirname(os.path.abspath(__file__))
-        file_location = "files\\zebris_export.zip"
-        file_name = os.path.join(parent_folder, file_location)
-        data = io.load(file_name=file_name)
-        self.assertEqual(data.shape, (128L, 56L, 1472L))
+    # Disabled this one, because its rather slow
+    # def test_load_sample_zebris(self):
+    #     """
+    #     This test is a bit too long, perhaps I should get a smaller measurement.
+    #     """
+    #     parent_folder = os.path.dirname(os.path.abspath(__file__))
+    #     file_location = "files\\zebris_export.zip"
+    #     file_name = os.path.join(parent_folder, file_location)
+    #     data = io.load(file_name=file_name)
+    #     self.assertEqual(data.shape, (128L, 56L, 1472L))
 
 class TestFixOrientation(TestCase):
     def test_not_fixing(self):
@@ -100,7 +102,6 @@ class TestCreateResultsFolder(TestCase):
     def setUp(self):
         # Use some name hopefully nobody will ever use
         self.dog_name = "Professor Xavier Test"
-        from pawlabeling.settings import configuration
         store_path = configuration.store_results_folder
         self.new_path = os.path.join(store_path, self.dog_name)
 
@@ -201,16 +202,46 @@ class TestZipFile(TestCase):
 
 
 class TestGetFilePaths(TestCase):
-    def test_get_file_paths(self):
+    def setUp(self):
         # Let's try and change the measurement folder
-        from pawlabeling.settings import configuration
         root = os.path.dirname(os.path.abspath(__file__))
         file_name = os.path.join(root, "files\\zip_folder")
-        old_folder = configuration.measurement_folder
+        # Cache the old location so we can reset it
+        self.old_folder = configuration.measurement_folder
+        # Change the configuration's folder
         configuration.measurement_folder = file_name
 
+    def test_get_file_paths(self):
+        # Get the file_paths
         file_paths = io.get_file_paths()
 
-        # Restore it to the old folder
-        configuration.measurement_folder = old_folder
+        # Check if file_paths is correct
+        self.assertEqual(sorted(file_paths.keys()), ["Dog1", "Dog2"])
+        self.assertEqual(sorted(file_paths["Dog1"].keys()), ["fake_export_1.zip", "fake_export_2.zip", "fake_export_3.zip"])
 
+    def tearDown(self):
+        # Restore it to the old folder
+        configuration.measurement_folder = self.old_folder
+
+
+class TestGetFilePaths2(TestCase):
+    """
+    Second test case, but this time on an empty folder.
+    This way I could reuse the setUp and tearDown.
+    """
+    def setUp(self):
+        # Let's try and change the measurement folder
+        root = os.path.dirname(os.path.abspath(__file__))
+        file_name = os.path.join(root, "files\\empty_folder")
+        # Cache the old location so we can reset it
+        self.old_folder = configuration.measurement_folder
+        # Change the configuration's folder
+        configuration.measurement_folder = file_name
+
+    def test_get_file_paths(self):
+        with self.assertRaises(Exception):
+            file_paths = io.get_file_paths()
+
+    def tearDown(self):
+        # Restore it to the old folder
+        configuration.measurement_folder = self.old_folder
