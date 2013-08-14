@@ -43,6 +43,24 @@ class TestLoad(TestCase):
     #     data = io.load(file_name=file_name)
     #     self.assertEqual(data.shape, (128L, 56L, 1472L))
 
+class TestFindStoredFile(TestCase):
+    def setUp(self):
+        # Let's try and change the measurement folder
+        root = os.path.dirname(os.path.abspath(__file__))
+        file_name = os.path.join(root, "files\\empty_folder")
+        # Cache the old location so we can reset it
+        self.old_folder = configuration.store_results_folder
+        # Change the configuration's folder
+        configuration.store_results_folder = file_name
+
+    def test_find_stored_file(self):
+        io.find_stored_file(dog_name="Dog1", file_name="fake_export_1")
+
+    def tearDown(self):
+        # Restore it to the old folder
+        configuration.store_results_folder = self.old_folder
+
+
 class TestFixOrientation(TestCase):
     def test_not_fixing(self):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
@@ -76,8 +94,11 @@ class TestLoadResults(TestCase):
         self.assertEqual(len(results), 11)
 
     def test_load_failed(self):
-        with self.assertRaises(Exception):
-            io.load_results(input_path="")
+        """
+        If we supply an empty path or if the path is None, we get None back
+        """
+        results = io.load_results(input_path=None)
+        self.assertEqual(results, None)
 
     def test_empty_results(self):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
@@ -177,7 +198,7 @@ class TestZipFile(TestCase):
         new_file_location = "files\\new_fake_export"
         self.new_file_name = os.path.join(self.root, new_file_location)
         # Create a copy of fake export
-        shutil.copyfile(file_name, self.new_file_name )
+        shutil.copyfile(file_name, self.new_file_name)
 
     def test_zip_file(self):
         # Try zipping the file
@@ -205,11 +226,16 @@ class TestGetFilePaths(TestCase):
     def setUp(self):
         # Let's try and change the measurement folder
         root = os.path.dirname(os.path.abspath(__file__))
-        file_name = os.path.join(root, "files\\zip_folder")
+        self.file_name = os.path.join(root, "files\\zip_folder")
         # Cache the old location so we can reset it
         self.old_folder = configuration.measurement_folder
         # Change the configuration's folder
-        configuration.measurement_folder = file_name
+        configuration.measurement_folder = self.file_name
+
+        # If for some reason the folder doesn't exist, copy it over
+        if not os.path.exists(self.file_name):
+            # Copy files from zip_folder_copy
+            shutil.copytree(self.file_name + "_copy", self.file_name)
 
     def test_get_file_paths(self):
         # Get the file_paths
@@ -222,6 +248,10 @@ class TestGetFilePaths(TestCase):
     def tearDown(self):
         # Restore it to the old folder
         configuration.measurement_folder = self.old_folder
+        # Delete the .zip  files
+        shutil.rmtree(self.file_name)
+        # Copy files from zip_folder_copy
+        shutil.copytree(self.file_name + "_copy", self.file_name)
 
 
 class TestGetFilePaths2(TestCase):

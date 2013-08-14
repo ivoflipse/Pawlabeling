@@ -160,14 +160,13 @@ def find_stored_file(dog_name, file_name):
 
 
 def load_results(input_path):
-    # Throw an exception if the input_path is empty
+    # Return if we don't have an input_path, this means there are no results
     if not input_path:
-        raise Exception("Empty input path")
+        return
 
     results = []
-    if input_path:
-        with open(input_path, "rb") as pickle_file:
-            results = pickle.load(pickle_file)
+    with open(input_path, "rb") as pickle_file:
+        results = pickle.load(pickle_file)
 
     # Empty results or non-list ones are not allowed
     if not results:
@@ -272,7 +271,7 @@ def get_file_paths():
             for index, file_name in enumerate(files):
                 # zip_file will convert a file to zip and returns the path to the file
                 if file_name[-3:] != "zip":
-                    file_paths[dog_name][file_name] = zip_file(root, file_name)
+                    file_paths[dog_name][file_name + ".zip"] = zip_file(root, file_name)
                 else:
                     file_paths[dog_name][file_name] = os.path.join(root, file_name)
 
