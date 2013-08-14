@@ -25,6 +25,8 @@ class MainWindow(QtGui.QMainWindow):
         self.processing_widget = processingwidget.ProcessingWidget(self)
         self.analysis_widget = analysiswidget.AnalysisWidget(self)
 
+        self.tab_dict = {0:"Processing", 1:"Analysis"}
+
         # Create the base model for the entire application
         self.model = model.Model()
 
@@ -57,7 +59,8 @@ class MainWindow(QtGui.QMainWindow):
         self.move(qr.topLeft())
 
     def change_tabs(self, event=None):
-        pub.sendMessage("update_statusbar", status="Changing tabs to tab {}".format(self.tab_widget.currentIndex()))
+        current_index = self.tab_widget.currentIndex()
+        pub.sendMessage("update_statusbar", status="Changing tabs to the {} tab".format(self.tab_dict[current_index]))
         if self.tab_widget.currentIndex() == 0:
             self.processing_widget.load_first_file()
         elif self.tab_widget.currentIndex() == 1:

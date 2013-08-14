@@ -88,6 +88,11 @@ def load_rsscan(infile):
             data = []
         else:
             data.append(split_line)
+
+    # Because there won't be an empty line, I need to add the last frame outside the loop
+    array_data = np.array(data, dtype=np.float32)
+    data_slices.append(array_data)
+
     result = np.dstack(data_slices)
     return result
 
