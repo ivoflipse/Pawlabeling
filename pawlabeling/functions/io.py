@@ -31,7 +31,8 @@ def fix_orientation(data):
     #print .The distance between the start and end is: {}".format(x_distance)
     if x_distance < 0:
         # So we flip the data around
-        data = np.rot90(np.rot90(data))
+        #data = np.rot90(np.rot90(data))
+        data = data[::-1,:,:]
     return data
 
 
@@ -66,8 +67,16 @@ def load_zebris(infile):
                 frame_number = line[1]
                 data = []
     results = np.dstack(data_slices)
+
+    # Check if we didn't pass an empty array
+    if results.shape[2] == 1:
+        raise Exception
+
     width, height, length = results.shape
-    return results if width > height else results.swapaxes(0, 1)
+    if width > height:
+        return results
+    else:
+        return results.swapaxes(0, 1)
 
 
 # This functions is modified from:
@@ -94,10 +103,21 @@ def load_rsscan(infile):
     data_slices.append(array_data)
 
     result = np.dstack(data_slices)
+    # Check if we didn't pass an empty array
+    if result.shape[2] == 1:
+        raise Exception
     return result
 
 
 def load(file_name):
+    # Check if we even get a file_name
+    if file_name == "":
+        return None
+
+    # Check if it ends with zip, else its probably a wrong file
+    if file_name[-3:] != "zip":
+        return None
+
     import zipfile
 
     # Load the zipped contents and pass them to the load functions
