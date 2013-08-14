@@ -7,7 +7,7 @@ is sent to those callables, the topic object for that message should be
 added to the data sent via the call arguments. See the docs in
 CallArgsInfo regarding its autoTopicArgName data member.
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''
@@ -81,7 +81,7 @@ class ListenerInadequate(TypeError):
     a topic, but listener does not satisfy the topic's listener protocol
     specification (LPS). This specification is inferred from the first
     listener subscribed to a topic, or from an imported topic tree
-    specification (see pub.importTopicTree()).
+    specification (see pub.addTopicDefnProvider()).
     '''
     
     def __init__(self, msg, listener, *args):

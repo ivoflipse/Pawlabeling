@@ -9,7 +9,7 @@ happen that a listener causes another message of same topic to be
 sent (presumably, the listener has a way of preventing infinite
 loop).
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''

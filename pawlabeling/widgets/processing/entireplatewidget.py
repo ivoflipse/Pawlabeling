@@ -3,7 +3,6 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pawlabeling.functions import utility, gui
 from pawlabeling.settings import configuration
-
 from pawlabeling.functions.pubsub import pub
 
 class EntirePlateWidget(QtGui.QWidget):
@@ -206,7 +205,7 @@ class EntirePlateWidget(QtGui.QWidget):
         for index, paw in enumerate(paws[self.measurement_name]):
             self.draw_bounding_box(paws[self.measurement_name][index], paw.paw_label)
             if current_paw_index == index:
-                self.draw_bounding_box(self.paws[self.measurement_name][index], paw_label=-1)
+                self.draw_bounding_box(paws[self.measurement_name][index], paw_label=-1)
         self.resizeEvent()
 
     def draw_gait_line(self):

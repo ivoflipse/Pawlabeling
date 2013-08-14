@@ -1,11 +1,11 @@
 '''
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''
 
-from pawlabeling.functions.pubsub.core.topicutils import stringize
+from topicutils import stringize
 
 
 class ListenerNotValidatable(RuntimeError):

@@ -1,9 +1,7 @@
 import logging
-
 import numpy as np
 from PySide import QtGui
 from pawlabeling.functions import utility
-
 from pawlabeling.settings import configuration
 from pawlabeling.functions.pubsub import pub
 

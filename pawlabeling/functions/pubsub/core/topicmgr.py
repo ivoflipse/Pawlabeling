@@ -6,7 +6,7 @@ can be in the 'dotted' format 'topic.sub[.subsub[.subsubsub[...]]]'
 or in tuple format ('topic','sub','subsub','subsubsub',...). E.g.
 'nasa.rocket.apollo13' or ('nasa', 'rocket', 'apollo13').
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''
@@ -18,25 +18,25 @@ __all__ = [
     'UndefinedSubtopic']
 
 
-from pawlabeling.functions.pubsub.core.callables import getID
-from pawlabeling.functions.pubsub.core.topicutils import ALL_TOPICS, \
+from callables import getID
+from topicutils import ALL_TOPICS, \
     tupleize, stringize
 
-from pawlabeling.functions.pubsub.core.topicexc import \
+from topicexc import \
     UndefinedTopic, \
     ListenerSpecIncomplete
 
-from pawlabeling.functions.pubsub.core.topicargspec import \
+from topicargspec import \
     ArgSpecGiven, \
     ArgsInfo, \
     topicArgsFromCallable
 
-from pawlabeling.functions.pubsub.core.topicobj import \
+from topicobj import \
     Topic, \
     UndefinedSubtopic
 
-from pawlabeling.functions.pubsub.core.treeconfig import TreeConfig
-from pawlabeling.functions.pubsub.core.topicdefnprovider import MasterTopicDefnProvider
+from treeconfig import TreeConfig
+from itopicdefnprovider import ITopicDefnProvider
 from topicmgrimpl import getRootTopicSpec
 
 
@@ -83,25 +83,31 @@ class TopicManager:
         it receives messages for all topics.'''
         return self.__allTopics
     
-    def addDefnProvider(self, provider):
-        '''Register provider as topic specification provider. Whenever a 
-        topic must be created, the first provider that has a specification
-        for the created topic is used to initialize the topic. The given 
-        provider must be an object that has a getDescription(topicNameTuple)
-        and getArgs(topicNameTuple) that return a description string 
-        and a pair (argsDocs, requiredArgs), respectively.
-
-        Note that Nothing is done if provider already added. Returns how
-        many providers have been registered, ie if new provider, will be
-        1 + last call's return, otherwise (provider had already been added)
-        will be same as last call's return value.'''
-        return self.__defnProvider.addProvider(provider)
+    def addDefnProvider(self, providerOrSource, format=None):
+        '''If providerOrSource is an instance of ITopicDefnProvider, register 
+        it as a provider of topic definitions. Otherwise, register a new 
+        instance of TopicDefnProvider(providerOrSource, format). In that case, 
+        if format is not given, it defaults to TOPIC_TREE_FROM_MODULE. Either
+        way, returns the instance of ITopicDefnProvider registered.
+        
+        After this method is called, whenever a topic must be created, 
+        the first definition provider that has a definition
+        for the required topic is used to instantiate the topic. '''
+        if isinstance(providerOrSource, ITopicDefnProvider):
+            provider = providerOrSource
+        else:
+            from topicdefnprovider import TopicDefnProvider, TOPIC_TREE_FROM_MODULE
+            source = providerOrSource
+            provider = TopicDefnProvider(source, format or TOPIC_TREE_FROM_MODULE)
+        self.__defnProvider.addProvider(provider)
+        return provider
     
     def clearDefnProviders(self):
         '''Remove all registered topic specification providers'''
         self.__defnProvider.clear()
 
     def getNumDefnProviders(self):
+        '''Get how many topic definitions providers are registered.'''
         return self.__defnProvider.getNumProviders()
 
     def getTopic(self, name, okIfNone=False):
@@ -382,5 +388,63 @@ def validateNameHierarchy(topicTuple):
 
         if errMsg:
             raise TopicNameInvalid(topicName, errMsg % indx)
+
+
+class MasterTopicDefnProvider:
+    '''
+    Stores a list of topic definition providers. When queried for a topic
+    definition, queries each provider (registered via addProvider()) and
+    returns the first complete definition provided, or (None,None).
+
+    The providers must follow the ITopicDefnProvider protocol.
+    '''
+
+    def __init__(self, treeConfig):
+        self.__providers = []
+        self.__treeConfig = treeConfig
+
+    def addProvider(self, provider):
+        '''Add given provider IF not already added. Returns true if added, 
+        false if had already been added. '''
+        assert(isinstance(provider, ITopicDefnProvider))
+        if provider not in self.__providers:
+            self.__providers.append(provider)
+
+    def clear(self):
+        self.__providers = []
+
+    def getNumProviders(self):
+        return len(self.__providers)
+
+    def getDefn(self, topicNameTuple):
+        '''Returns a pair (string, ArgSpecGiven), or (None,None) if a
+        complete definition was not available from any of the registered topic
+        definition providers. The first item is a description string for the
+        topic, the second is an instance of ArgSpecGiven specifying the
+        listener protocol required for listeners of this topic. The
+        definition (the returned pair) is complete if the description is
+        not None and the second item has isComplete() == True. Hence,
+        if the description is None, so is the second item. Alternately,
+        if second item, obtained from the provider, has isComplete() == False,
+        then return is (None, None).'''
+        desc, defn = None, None
+        for provider in self.__providers:
+            tmpDesc, tmpDefn = provider.getDefn(topicNameTuple)
+            if (tmpDesc is not None) and (tmpDefn is not None):
+                assert tmpDefn.isComplete()
+                desc, defn = tmpDesc, tmpDefn
+                break
+
+        return desc, defn
+
+    def isDefined(self, topicNameTuple):
+        '''Returns True only if a complete definition exists, ie topic
+        has a description and a complete listener protocol specification.'''
+        desc, defn = self.getDefn(topicNameTuple)
+        if desc is None or defn is None:
+            return False
+        if defn.isComplete():
+            return True
+        return False
 
 

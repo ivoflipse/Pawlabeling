@@ -1,14 +1,11 @@
 import os
 from collections import defaultdict
 import logging
-
 import numpy as np
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
-from pawlabeling.functions import io
-
+from pawlabeling.functions import io, gui
 from pawlabeling.settings import configuration
-from functions import gui
 from pawlabeling.functions.pubsub import pub
 from pawlabeling.widgets.processing import pawswidget
 from pawlabeling.widgets.processing import entireplatewidget

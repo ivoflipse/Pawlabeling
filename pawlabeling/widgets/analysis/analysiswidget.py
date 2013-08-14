@@ -1,10 +1,9 @@
 from collections import defaultdict
 import os
-
+import logging
 from PySide import QtGui
 from PySide.QtCore import Qt
 import numpy as np
-
 from pawlabeling.functions import gui, io
 from pawlabeling.functions.pubsub import pub
 from pawlabeling.settings import configuration
@@ -20,6 +19,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.n_max = 0
         self.dog_name = ""
         self.outlier_toggle = False
+        self.logger = logging.getLogger("logger")
 
         # Initialize our variables that will cache results
         self.average_data = defaultdict(list)

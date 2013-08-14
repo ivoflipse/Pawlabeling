@@ -5,9 +5,11 @@ import logging
 
 app_name = "Paw Labeling tool"
 
-root_folder = os.path.dirname(__file__)
-config_file = os.path.join(root_folder, "config.yaml")
-config_example_file = os.path.join(root_folder, "config_example.yaml")
+settings_folder = os.path.dirname(__file__)
+root_folder = os.path.dirname(settings_folder)
+
+config_file = os.path.join(settings_folder, "config.yaml")
+config_example_file = os.path.join(settings_folder, "config_example.yaml")
 
 # Check if there's a config.yaml, else copy the example version and write it to config.yaml
 if not os.path.exists(config_file):
@@ -86,13 +88,19 @@ else:
 measurement_folder = config["folders"]["measurement_folder"]
 store_results_folder = config["folders"]["store_results_folder"]
 
-try:
-    # Add the folder for the store_results_folder data if it doesn't exist
-    if not os.path.exists(store_results_folder):
-        os.mkdir(store_results_folder)
-except Exception, e:
-    print("Couldn't create store results folder")
-    print("Exception: {}".format(e))
+# If the path isn't the one created by me
+if store_results_folder[0] == ".":
+    # Convert them to absolute paths
+    measurement_folder = os.path.join(root_folder, "samples/Measurements")
+    store_results_folder = os.path.join(root_folder, "samples/Labels")
+else:
+    try:
+        # Add the folder for the store_results_folder data if it doesn't exist
+        if not os.path.exists(store_results_folder):
+            os.mkdir(store_results_folder)
+    except Exception, e:
+        print("Couldn't create store results folder")
+        print("Exception: {}".format(e))
 
 brand = "rsscan"
 frequency = 124
@@ -148,7 +156,9 @@ def setup_logging():
     # Add the lower check just in case
     logger.setLevel(logging_level)
     # create file handler which logs even debug messages
-    file_handler = logging.FileHandler("pawlabeling_log.log")
+    log_folder = os.path.join(root_folder, "log")
+    log_file_path = os.path.join(log_folder, "pawlabeling_log.log")
+    file_handler = logging.FileHandler(log_file_path)
     file_handler.setLevel(logging_level)
 
     # create console handler with a higher log level

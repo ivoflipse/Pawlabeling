@@ -8,7 +8,7 @@ often a good reason to do that, as "pub" is usually more convenient....
 but there are where this could be useful or make the code easier to
 read or maintain. 
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''
@@ -16,9 +16,9 @@ read or maintain.
 
 from weakref import ref as weakref
 
-from pawlabeling.functions.pubsub.core.listener import Listener, ListenerValidator
-from pawlabeling.functions.pubsub.core.topicutils import ALL_TOPICS, stringize, tupleize, validateName, smartDedent
-from pawlabeling.functions.pubsub.core.topicexc import ListenerNotValidatable, UndefinedSubtopic, ExcHandlerError
+from listener import Listener, ListenerValidator
+from topicutils import ALL_TOPICS, stringize, tupleize, validateName, smartDedent
+from topicexc import ListenerNotValidatable, UndefinedSubtopic, ExcHandlerError
 from publishermixin import PublisherMixin
 from topicargspec import \
     ArgsInfo, ArgSpecGiven, topicArgsFromCallable, \
@@ -66,8 +66,21 @@ class Topic(PublisherMixin):
         self._treeConfig = treeConfig
         PublisherMixin.__init__(self)
 
-        self.__validator    = None
-        self.__listeners    = []
+        self.__validator = None
+        # Registered listeners were originally kept in a Python list; however 
+        # a few methods require lookup of the Listener for the given callable, 
+        # which is an O(n) operation. A set() could have been more suitable but
+        # there is no way of retrieving an element from a set without iterating 
+        # over the set, again an O(n) operation. A dict() is ok too. Because 
+        # Listener.__eq__(callable) returns true if the Listener instance wraps
+        # the given callable, and because Listener.__hash__ produces the hash 
+        # value of the wrapped callable, calling dict[callable] on a 
+        # dict(Listener -> Listener) mapping will be O(1) in most cases: 
+        # the dict will take the callables hash, find the list of Listeners that 
+        # have that hash, and then iterate over that inner list to find the 
+        # Listener instance which satisfies Listener == callable, and will return
+        # the Listener. 
+        self.__listeners = dict()
 
         # specification:
         self.__description  = None
@@ -226,12 +239,12 @@ class Topic(PublisherMixin):
     def hasListeners(self):
         '''Return true if there are any listeners subscribed to
         this topic, false otherwise.'''
-        return self.__listeners != []
+        return bool(self.__listeners)
 
     def getListeners(self):
         '''Get a **copy** of Listener objects for listeners
         subscribed to this topic.'''
-        return self.__listeners[:]
+        return self.__listeners.keys()
 
     def validate(self, listener):
         '''Checks whether listener could be subscribed to this topic:
@@ -256,8 +269,7 @@ class Topic(PublisherMixin):
         was not already subscribed and is now subscribed. '''
         if listener in self.__listeners:
             assert self.isSendable()
-            idx = self.__listeners.index(listener)
-            subdLisnr, newSub = self.__listeners[idx], False
+            subdLisnr, newSub = self.__listeners[listener], False
 
         else:
             if self.__validator is None:
@@ -266,7 +278,7 @@ class Topic(PublisherMixin):
             argsInfo = self.__validator.validate(listener)
             weakListener = Listener(
                 listener, argsInfo, onDead=self.__onDeadListener)
-            self.__listeners.append(weakListener)
+            self.__listeners[weakListener] = weakListener
             subdLisnr, newSub = weakListener, True
 
         # notify of subscription
@@ -281,12 +293,10 @@ class Topic(PublisherMixin):
         subscribed to this topic.  Note that this method calls
         notifyUnsubscribe(listener, self) on all registered notification
         handlers (see pub.addNotificationHandler)'''
-        try:
-            idx = self.__listeners.index(listener)
-        except ValueError:
+        unsubdLisnr = self.__listeners.pop(listener, None)
+        if unsubdLisnr is None: 
             return None
 
-        unsubdLisnr = self.__listeners.pop(idx)
         unsubdLisnr._unlinkFromTopic_()
         assert listener == unsubdLisnr.getCallable()
 
@@ -300,16 +310,17 @@ class Topic(PublisherMixin):
         be a function that takes a listener and returns true if the listener
         should be unsubscribed. Returns the list of listeners that were
         unsubscribed.'''
-        index = 0
         unsubd = []
-        for listener in self.__listeners[:] :
-            if filter is None or filter(listener):
+        if filter is None:
+            for listener in self.__listeners:
                 listener._unlinkFromTopic_()
-                assert listener is self.__listeners[index]
-                del self.__listeners[index]
-                unsubd.append(listener)
-            else:
-                index += 1
+            unsubd = self.__listeners.keys()
+            self.__listeners = {}
+        else:
+            unsubd = [listener for listener in self.__listeners if filter(listener)]
+            for listener in unsubd:
+                listener._unlinkFromTopic_()
+                del self.__listeners[listener]
 
         # send notification regarding all listeners actually unsubscribed
         notificationMgr = self._treeConfig.notificationMgr
@@ -422,12 +433,7 @@ class Topic(PublisherMixin):
 
     def __onDeadListener(self, weakListener):
         '''One of our subscribed listeners has died, so remove it and notify others'''
-        # remove:
-        ll = self.__listeners.index(weakListener)
-        pubListener = self.__listeners[ll]
-        #llID = str(listener)
-        del self.__listeners[ll]
-
+        pubListener = self.__listeners.pop(weakListener)
         # notify:
         self._treeConfig.notificationMgr.notifyDeadListener(pubListener, self)
 

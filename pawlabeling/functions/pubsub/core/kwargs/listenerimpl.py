@@ -1,12 +1,12 @@
 '''
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''
 
 from listenerbase import ListenerBase, ValidatorBase
-from pawlabeling.functions.pubsub.core.callables import ListenerInadequate
+from callables import ListenerInadequate
 
 
 class Listener(ListenerBase):

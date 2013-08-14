@@ -1,12 +1,11 @@
 import sys
 import os
 import logging
-
 from PySide import QtGui, QtCore
 from pawlabeling.settings import configuration
 from pawlabeling.functions.pubsub import pub
 from pawlabeling.functions.qsingleapplication import QtSingleApplication
-from models import model
+from pawlabeling.models import model
 from pawlabeling.widgets.analysis import analysiswidget
 from pawlabeling.widgets.processing import processingwidget
 
@@ -87,8 +86,6 @@ class MainWindow(QtGui.QMainWindow):
         else:
             return False
 
-def shutdown_check():
-    pass
 
 def main():
     appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A2'

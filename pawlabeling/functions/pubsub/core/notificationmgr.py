@@ -14,7 +14,7 @@ collecting everything, which could lead to various pubsub notifications
 listeners, and even other notifications if a notification handler
 where to call upon pubsub. 
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''

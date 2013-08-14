@@ -1,5 +1,4 @@
 from PySide import QtGui
-
 from pawlabeling.functions.pubsub import pub
 from pawlabeling.widgets.analysis import forceviewwidget, twodimviewwidget, pressureviewwidget, copviewwidget
 

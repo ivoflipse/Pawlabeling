@@ -1,19 +1,19 @@
 '''
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''
 
 from listenerbase import ListenerBase, ValidatorBase, ListenerInadequate
-from pawlabeling.functions.pubsub.core.callables import ListenerInadequate
+from callables import ListenerInadequate
 import policies
 
 
 class Message:
     """
     A simple container object for the two components of a topic messages
-    in the pubsub API v1: the
+    in the pubsub legacy API: the
     topic and the user data. An instance of Message is given to your
     listener when called by sendMessage(topic). The data is accessed
     via the 'data' attribute, and can be type of object.
@@ -28,7 +28,7 @@ class Message:
 
 class Listener(ListenerBase):
     def __call__(self, actualTopic, data):
-        '''Call the listener with data. Note that it raises RuntimeError 
+        '''Call the listener with data. Note that it raises RuntimeError
         if listener is dead. Should always return True (False would require
         the callable_ be dead but self hasn't yet been notified of it...).'''
         kwargs = {}
@@ -44,11 +44,11 @@ class Listener(ListenerBase):
 
 class ListenerValidator(ValidatorBase):
     '''
-    Accept one arg or *args; accept any **kwarg, 
-    and require that the Listener have at least all the kwargs (can 
+    Accept one arg or *args; accept any **kwarg,
+    and require that the Listener have at least all the kwargs (can
     have extra) of Topic.
     '''
-    
+
     def _validateArgs(self, listener, paramsInfo):
         # accept **kwargs
         # accept *args
@@ -63,7 +63,7 @@ class ListenerValidator(ValidatorBase):
 
         assert paramsInfo.getAllArgs()
         #assert not paramsInfo.acceptsAllUnnamedArgs
-        
+
         # verify at most one required arg
         numReqdArgs = paramsInfo.numRequired
         if numReqdArgs > 1:
@@ -83,5 +83,5 @@ class ListenerValidator(ValidatorBase):
             msg = 'listener arg name must be "%s" (is "%s")' % (needArgName, firstArgName)
             effTopicArgs = [needArgName]
             raise ListenerInadequate(msg, listener, effTopicArgs)
-        
+
 

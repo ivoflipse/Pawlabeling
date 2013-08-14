@@ -1,10 +1,8 @@
 from collections import defaultdict
 import logging
-
 import numpy as np
 import cv2
 from pawlabeling.functions import utility, calculations
-
 from pawlabeling.settings import configuration
 
 

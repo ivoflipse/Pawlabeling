@@ -1,7 +1,7 @@
 '''
 Various little utilities used by topic-related modules. 
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''
@@ -48,7 +48,7 @@ class TopicNameInvalid(RuntimeError):
 
 
 import re
-_validNameRE = re.compile(r'[a-zA-Z]\w*')
+_validNameRE = re.compile(r'[-0-9a-zA-Z]\w*')
 
 
 def validateName(topicName):
@@ -85,7 +85,7 @@ def stringize(topicName):
     topic. Otherwise, assume topicName is a tuple and convert it to to a 
     dotted name i.e. ('a','b','c') => 'a.b.c'. Empty name is not allowed 
     (ValueError). The reverse operation is tupleize(topicName).'''
-    if isinstance(topicName, str):
+    if isinstance(topicName, (str, unicode)):
         return topicName
     
     if hasattr(topicName, "msgDataSpec"): 
@@ -108,7 +108,7 @@ def tupleize(topicName):
     # then better use isinstance(name, tuple)
     if hasattr(topicName, "msgDataSpec"): 
         topicName = topicName._topicNameStr
-    if isinstance(topicName, str): 
+    if isinstance(topicName, (str, unicode)): 
         topicTuple = tuple(topicName.split('.'))
     else:
         topicTuple = tuple(topicName) # assume already tuple of strings

@@ -3,14 +3,14 @@ Mixin for publishing messages to a topic's listeners. This will be
 mixed into topicobj.Topic so that a user can use a Topic object to
 send a message to the topic's listeners via a publish() method.
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''
 
 
 from publisherbase import PublisherBase
-from pawlabeling.functions.pubsub.core import policies
+import policies
 
 
 class PublisherKwargs(PublisherBase):
@@ -20,8 +20,8 @@ class PublisherKwargs(PublisherBase):
     '''
 
     def sendMessage(self, topicName, **kwargs):
-        '''Send a message. 
-        
+        '''Send a message.
+
         :param topicName: name of message topic (dotted or tuple format)
         :param kwargs: message data (must satisfy the topic's MDS)
         '''
@@ -63,7 +63,7 @@ class PublisherArg1Stage2(PublisherKwargs):
             raise self.SenderTooManyKwargs(kwarg, commonArgName)
         elif len(kwarg) == 1 and not kwarg.has_key(commonArgName):
             raise self.SenderWrongKwargName(kwarg.keys()[0], commonArgName)
-        
+
         data = kwarg.get(commonArgName, None)
         kwargs = { commonArgName: self.Msg( _topicName, data) }
         PublisherKwargs.sendMessage( self, _topicName, **kwargs )
@@ -77,5 +77,5 @@ if policies.msgProtocolTransStage is None:
 else:
     Publisher = PublisherArg1Stage2
     #print 'Using protocol', Publisher
-    
+
 

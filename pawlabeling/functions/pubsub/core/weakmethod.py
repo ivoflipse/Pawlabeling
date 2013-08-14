@@ -4,7 +4,7 @@ because the weakref module does not support weak methods (in the sense that,
 counter-intuitively, a user who creates a weakref.ref(obj.method), a reasonable
 action, get a weak ref that is None. 
 
-:copyright: Copyright 2006-2009 by Oliver Schoenborn, all rights reserved.
+:copyright: Copyright since 2006 by Oliver Schoenborn, all rights reserved.
 :license: BSD, see LICENSE.txt for details.
 
 '''
