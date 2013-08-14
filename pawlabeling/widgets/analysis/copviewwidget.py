@@ -142,7 +142,7 @@ class PawView(QtGui.QWidget):
         average_data = np.rot90(np.rot90(self.average_data[self.min_x:self.max_x, self.min_y:self.max_y, :self.max_z]))
         # For some reason I can't do the slicing in the above call
         average_data = average_data[:,::-1,:]
-        self.cop_x, self.cop_y = calculations.calculate_cop(average_data, version="numpy")
+        self.cop_x, self.cop_y = calculations.calculate_cop(average_data)
 
         # Create a strided index
         index = [x for x in range(0, self.max_z, int(self.max_z / self.x))]

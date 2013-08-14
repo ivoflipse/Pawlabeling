@@ -200,7 +200,7 @@ class Model():
                 if max_pressure > self.max_results.get("pressure", 0):
                     self.max_results["pressure"] = max_pressure
 
-                cop_x, cop_y = calculations.calculate_cop(data, version="numpy")
+                cop_x, cop_y = calculations.calculate_cop(data)
                 self.results[paw_label]["cop"].append((cop_x, cop_y))
 
                 x, y, z = np.nonzero(data)

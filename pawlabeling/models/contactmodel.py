@@ -111,7 +111,7 @@ class Contact():
         self.force_over_time = calculations.force_over_time(self.data)
         self.pressure_over_time = calculations.pressure_over_time(self.data)
         self.surface_over_time = calculations.surface_over_time(self.data)
-        self.cop_x, self.cop_y = calculations.calculate_cop(self.data, version="numpy")
+        self.cop_x, self.cop_y = calculations.calculate_cop(self.data)
         self.max_of_max = np.max(self.data, axis=2)
 
     def set_filtered(self, filtered):

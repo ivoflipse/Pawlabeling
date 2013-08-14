@@ -13,14 +13,14 @@ def calculate_cop(data, version="scipy"):
     if version == "scipy":
         return calculate_cop_scipy(data)
     elif version == "numpy":
-        return calculate_cop_manually(data)
+        return calculate_cop_numpy(data)
 
-def calculate_cop_manually(data):
+def calculate_cop_numpy(data):
     y, x, z = np.shape(data)
     cop_x = np.zeros(z, dtype=np.float32)
     cop_y = np.zeros(z, dtype=np.float32)
 
-    x_coordinate, y_coordinate = np.arange(1, x + 1), np.arange(1, y + 1)
+    x_coordinate, y_coordinate = np.arange(x), np.arange(y)
     temp_x, temp_y = np.zeros(y), np.zeros(x)
     for frame in range(z):
         #print frame, np.sum(data[:, :, frame])
@@ -37,12 +37,16 @@ def calculate_cop_manually(data):
 
 def calculate_cop_scipy(data):
     from scipy.ndimage.measurements import center_of_mass
-    cop_x, cop_y = [], []
-    height, width, length = data.shape
-    for frame in range(length):
-        y, x = center_of_mass(data[:, :, frame])
-        cop_x.append(x + 1)
-        cop_y.append(y + 1)
+    y, x, z = np.shape(data)
+    cop_x = np.zeros(z, dtype=np.float32)
+    cop_y = np.zeros(z, dtype=np.float32)
+    for frame in range(z):
+        if np.sum(data[:,:,frame]) > 0:
+            # While it may seem odd, x and y are mixed up, must be my own fault
+            y, x = center_of_mass(data[:, :, frame])
+            # This used to say + 1, but I can't image that's necessary
+            cop_x[frame] = x
+            cop_y[frame] = y
     return cop_x, cop_y
 
 def force_over_time(data):
