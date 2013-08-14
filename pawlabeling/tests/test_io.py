@@ -1,7 +1,8 @@
 from unittest import TestCase
 import os
-from pawlabeling.functions import io
 import numpy as np
+import shutil
+from pawlabeling.functions import io
 
 class TestLoad(TestCase):
     def test_load_sample_dog1(self):
@@ -55,8 +56,71 @@ class TestFixOrientation(TestCase):
         file_name = os.path.join(parent_folder, file_location)
         data = io.load(file_name=file_name)
         # Reverse the plate around the longitudinal axis
-        reversed_data = data[::-1,:,:]
+        reversed_data = np.rot90(np.rot90(data))
         new_data = io.fix_orientation(data=reversed_data)
         # Check to see if its equal to the normal data again
         equal = np.array_equal(data, new_data)
         self.assertEqual(equal, True)
+
+class TestLoadResults(TestCase):
+    def test_load_successful(self):
+        parent_folder = os.path.dirname(os.path.abspath(__file__))
+        file_location = "files\\rsscan_export.zip.pkl"
+        input_path = os.path.join(parent_folder, file_location)
+        # This contains all the paws, check if they're all there
+        results = io.load_results(input_path=input_path)
+        # Perhaps I want to check more things here?
+        self.assertEqual(len(results), 11)
+
+    def test_load_failed(self):
+        with self.assertRaises(Exception):
+            io.load_results(input_path="")
+
+    def test_empty_results(self):
+        parent_folder = os.path.dirname(os.path.abspath(__file__))
+        # This file contains an empty dictionary
+        file_location = "files\\fake_results.zip.pkl"
+        input_path = os.path.join(parent_folder, file_location)
+        # Loading this empty file should raise an exception
+        with self.assertRaises(Exception):
+            io.load_results(input_path=input_path)
+
+    def test_empty_results_2(self):
+        parent_folder = os.path.dirname(os.path.abspath(__file__))
+        # This file contains json full of tweets
+        file_location = "files\\fake_results_2.zip.pkl"
+        input_path = os.path.join(parent_folder, file_location)
+        # Loading this empty file should raise an exception
+        with self.assertRaises(Exception):
+            io.load_results(input_path=input_path)
+
+
+class TestCreateResultsFolder(TestCase):
+    def setUp(self):
+        # Use some name hopefully nobody will ever use
+        self.dog_name = "Professor Xavier Test"
+        from pawlabeling.settings import configuration
+        store_path = configuration.store_results_folder
+        self.new_path = os.path.join(store_path, self.dog_name)
+
+        if os.path.exists(self.new_path):
+            #os.remove(self.new_path)
+            # Using shutil instead of os, because of:
+            # http://stackoverflow.com/questions/10861403/cant-delete-test-folder-in-windows-7
+            shutil.rmtree(self.new_path, ignore_errors=True)
+
+    def test_create_results_folder(self):
+        exists = os.path.exists(self.new_path)
+        self.assertFalse(exists)
+
+        return_path = io.create_results_folder(self.dog_name)
+        self.assertEqual(return_path, self.new_path)
+
+        exists = os.path.exists(return_path)
+        self.assertTrue(exists)
+
+    def tearDown(self):
+        # Remove the folder we just created
+        if os.path.exists(self.new_path):
+            #os.remove(self.new_path)
+            shutil.rmtree(self.new_path, ignore_errors=True)

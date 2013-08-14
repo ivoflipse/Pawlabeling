@@ -100,7 +100,8 @@ class Model():
         self.paws.clear()
 
         for measurement_name in self.file_paths[self.dog_name]:
-            paws = io.load_results(self.dog_name, measurement_name)
+            input_path = io.find_stored_file(self.dog_name, measurement_name)
+            paws = io.load_results(input_path)
             # Did we get any results?
             if paws:
                 self.paws[measurement_name] = paws

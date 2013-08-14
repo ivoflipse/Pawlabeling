@@ -31,8 +31,8 @@ def fix_orientation(data):
     #print .The distance between the start and end is: {}".format(x_distance)
     if x_distance < 0:
         # So we flip the data around
-        #data = np.rot90(np.rot90(data))
-        data = data[::-1,:,:]
+        data = np.rot90(np.rot90(data))
+        #data = data[::-1,::-1,:]  #Alternative
     return data
 
 
@@ -159,13 +159,31 @@ def find_stored_file(dog_name, file_name):
                     return input_path
 
 
-def load_results(dog_name, measurement_name):
-    input_path = find_stored_file(dog_name, measurement_name)
-    results = {}
+def load_results(input_path):
+    # Throw an exception if the input_path is empty
+    if not input_path:
+        raise Exception("Empty input path")
+
+    results = []
     if input_path:
         with open(input_path, "rb") as pickle_file:
             results = pickle.load(pickle_file)
-    return results
+
+    # Empty results or non-list ones are not allowed
+    if not results:
+        raise Exception("Results are empty. Incorrect file or it could not be read")
+    if type(results) is not list:
+        raise Exception("Results are of the wrong type. You've used an incorrect file")
+
+    # Check the type of the first item in the list
+    from pawlabeling.models.contactmodel import Contact
+    contacts = []
+    for contact in results:
+        contacts.append(isinstance(contact, Contact))
+    if all(contacts):
+        return results
+    else:
+        raise Exception("Results do not contain Contact's. You've used an incorrect file")
 
 
 def create_results_folder(dog_name):

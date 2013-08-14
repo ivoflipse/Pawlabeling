@@ -91,8 +91,8 @@ store_results_folder = config["folders"]["store_results_folder"]
 # If the path isn't the one created by me
 if store_results_folder[0] == ".":
     # Convert them to absolute paths
-    measurement_folder = os.path.join(root_folder, "samples/Measurements")
-    store_results_folder = os.path.join(root_folder, "samples/Labels")
+    measurement_folder = os.path.join(root_folder, "samples\\Measurements")
+    store_results_folder = os.path.join(root_folder, "samples\\Labels")
 else:
     try:
         # Add the folder for the store_results_folder data if it doesn't exist
