@@ -2,6 +2,11 @@ import numpy as np
 from pawlabeling.settings import configuration
 
 def interpolate_time_series(data, length=100):
+    """
+    Interpolate time series expects a 1D array
+    It will interpolate it to the defined length or use 100 as a default
+    """
+    assert len(data.shape) == 1
     from scipy import interpolate
     x = np.arange(0, len(data))
     f = interpolate.interp1d(x, data, bounds_error=False)
@@ -10,6 +15,7 @@ def interpolate_time_series(data, length=100):
     return data_new
 
 def calculate_cop(data, version="scipy"):
+    assert len(data.shape) == 3
     if version == "scipy":
         return calculate_cop_scipy(data)
     elif version == "numpy":
@@ -50,17 +56,27 @@ def calculate_cop_scipy(data):
     return cop_x, cop_y
 
 def force_over_time(data):
+    """
+    Force over time calculates the total force for each frame.
+    It expects the last dimension to always be frames,
+    while the other two dimensions are the rows and columns
+    """
+    assert len(data.shape) == 3
     return np.sum(np.sum(data, axis=0), axis=0)
 
+
 def pixel_count_over_time(data):
+    assert len(data.shape) == 3
     x, y, z = data.shape
     return np.array([np.count_nonzero(data[:, :, frame]) for frame in range(z)])
 
 def surface_over_time(data):
+    assert len(data.shape) == 3
     pixel_counts = pixel_count_over_time(data)
     return[p_c * configuration.sensor_surface for p_c in pixel_counts]
 
 def pressure_over_time(data):
+    assert len(data.shape) == 3
     force = force_over_time(data)
     pixel_counts = pixel_count_over_time(data)
     surface = [p_c * configuration.sensor_surface for p_c in pixel_counts]
