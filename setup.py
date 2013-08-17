@@ -10,9 +10,8 @@ DESCRIPTION = 'A tool to process veterinary pressure measurements.'
 LONG_DESCRIPTION = open('README.md').read()
 MAINTAINER = 'Ivo Flipse'
 MAINTAINER_EMAIL = 'ivoflipse@gmail.com'
-URL = 'www.flipserd.com'
+URL = 'https://github.com/ivoflipse/Pawlabeling'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = 'https://github.com/ivoflipse/Pawlabeling'
 
 import pawlabeling
 VERSION = pawlabeling.__version__
@@ -23,11 +22,8 @@ VERSION = pawlabeling.__version__
 # as it monkey-patches the 'setup' function
 
 # For some commands, use setuptools
-if len(set(('develop', 'release', 'bdist_egg', 'bdist_rpm',
-            'bdist_wininst', 'install_egg_info', 'build_sphinx',
-            'egg_info', 'easy_install', 'upload',
-            '--single-version-externally-managed',
-            )).intersection(sys.argv)) > 0:
+if len({'develop', 'release', 'bdist_egg', 'bdist_rpm', 'bdist_wininst', 'install_egg_info', 'build_sphinx', 'egg_info',
+        'easy_install', 'upload', '--single-version-externally-managed'}.intersection(sys.argv)) > 0:
     extra_setuptools_args = dict(
         zip_safe=False,  # the package can run out of an .egg file
         include_package_data=True,
@@ -61,8 +57,14 @@ def setup_package():
                     description=DESCRIPTION,
                     license=LICENSE,
                     url=URL,
+                    install_require=["numpy",
+                                     "dcipy",
+                                     "PySide",
+                                     "matplotlib",
+                                     "opencv",
+                                     "pypubsub"
+                    ],
                     version=VERSION,
-                    download_url=DOWNLOAD_URL,
                     long_description=LONG_DESCRIPTION,
                     classifiers=['Intended Audience :: Science/Research',
                                  'Intended Audience :: Developers',
