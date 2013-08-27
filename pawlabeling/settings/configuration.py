@@ -109,6 +109,9 @@ frequency = 124
 if brand == "rsscan":
     sensor_width = 0.508
     sensor_height = 0.762
+elif brand == "zebris":
+    sensor_width = 0.846
+    sensor_height = 0.846
 else:
     sensor_width = config["sensors"]["width"]
     sensor_height = config["sensors"]["height"]
