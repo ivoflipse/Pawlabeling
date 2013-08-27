@@ -138,11 +138,10 @@ class Table(object):
         # Make this configurable
         self.table = tables.openFile("data.h5", mode="a", title="Data")
 
-    @actual_kwargs()
     def create_row(self, table, **kwargs):
         row = table.row
 
-        for attr, value in self.actual_kwargs.iteritems():
+        for attr, value in kwargs.iteritems():
             row[attr] = value
 
         # Append the row to the table
@@ -152,6 +151,10 @@ class Table(object):
 
     def create_group(self, parent, item_id):
         group = self.table.createGroup(where=parent, name=item_id)
+        return group
+
+    def get_group(self, parent, item_id):
+        group = parent.__getattr__(item_id)
         return group
 
     def close_table(self):
@@ -170,11 +173,6 @@ class SubjectsTable(Table):
             self.subjects_table = self.table.createTable(where="/", name="subjects", description=Subjects,
                                                          title="Subjects")
 
-    # So how does a user get the id?
-    def get_subject(self, subject_id):
-        self.subject = self.table.root.__getattr__(subject_id)
-        return self.subject
-
     def create_subject(self, **kwargs):
         # I need at least a last_name, probably some other value too...
         if "last_name" not in kwargs:
@@ -190,27 +188,8 @@ class SubjectsTable(Table):
 
         # Add the subject_id to the key word arguments
         kwargs["subject_id"] = subject_id
-        self.create_subject_row(**kwargs)  # Do I need the ** here?
-        self.create_subject_group(subject_id=subject_id)
-
-    @actual_kwargs()
-    def create_subject_row(self, subject_id="", first_name="", last_name="", mass=0.0, address="", birthday="", city="",
-                           email="", phone=""):
-        # Create a row object
-        subject_row = self.subjects_table.row
-
-        #attributes = ["first_name", "last_name", "mass", "address", "birthday", "city", "email", "phone"]
-        # actual_kwargs is filled with all the keyword arguments
-        for attr, value in self.actual_kwargs.iteritems():
-            subject_row[attr] = value
-
-        # Append the row to the table
-        subject_row.append()
-        # Flush the changes
-        self.table.flush()
-
-    def create_subject_group(self, subject_id):
-        self.subject_group = self.table.createGroup(where=self.table.root, name=subject_id)
+        self.create_row(self.subjects_table, **kwargs)
+        self.create_group(parent=self.table.root, item_id=subject_id)
 
 
 class SessionsTable(Table):
@@ -234,10 +213,6 @@ class SessionsTable(Table):
             self.table.createTable(where=self.subject_group, name="session_labels", description=Sessions,
                                    title="Session Labels")
 
-    def get_sessions(self, session_id):
-        self.session = self.table.root.__getattr__(self.subject_id).__getattr__(session_id)
-        return self.session
-
     def create_session(self, **kwargs):
         if "session_name" not in kwargs:
             print "I need at least a session name"
@@ -249,24 +224,8 @@ class SessionsTable(Table):
         session_id = "session_" + str(session_count)
 
         kwargs["session_id"] = session_id
-        self.create_session_row(**kwargs)
-        self.create_session_group(session_id)
-
-    # Can't I move these functions to Table and make them more abstract?
-    # There's nothing really special about them is there?
-    @actual_kwargs()
-    def create_session_row(self, session_id="", session_name="", date="", time=""):
-        session_row = self.sessions_table.row
-        for attr, value in self.actual_kwargs.iteritems():
-            session_row[attr] = value
-
-        # Append the row to the table
-        session_row.append()
-        # Flush the changes
-        self.table.flush()
-
-    def create_session_group(self, session_id):
-        self.session_group = self.table.createGroup(where=self.subject_group, name=session_id)
+        self.create_row(self.sessions_table, **kwargs)
+        self.create_group(parent=self.subject_group, item_id=session_id)
 
 
 class MeasurementsTable(Table):
@@ -305,30 +264,10 @@ class MeasurementsTable(Table):
 
         measurement_count = len(self.measurements_table)
         measurement_id = "measurement_" + str(measurement_count)
-
         kwargs["measurement_id"] = measurement_id
 
-        self.create_measurement_row(**kwargs)
-        self.create_measurements_group(measurement_id=measurement_id)
-
-    @actual_kwargs()
-    def create_measurement_row(self, **kwargs):
-        measurement_row = self.measurements_table.row
-
-        for attr, value in self.actual_kwargs.iteritems():
-            measurement_row[attr] = value
-
-        # Append the row to the table
-        measurement_row.append()
-        # Flush the changes
-        self.table.flush()
-
-    def create_measurements_group(self, measurement_id):
-        self.measurement_group = self.table.createGroup(where=self.session_group, name=measurement_id)
-
-    def get_measurement(self, measurement_id):
-        self.measurement_group = self.session_group.__getattr__(measurement_id)
-        return self.measurement_group
+        self.create_row(self.measurements_table, **kwargs)
+        self.create_group(parent=self.session_group, item_id=measurement_id)
 
 
 class DataTable(Table):
@@ -345,11 +284,6 @@ class DataTable(Table):
         data_array = self.table.createCArray(where=measurement_group, name=measurement_id,
                                              atom=atom, shape=data.shape, filters=filters)
         data_array[:] = data
-
-    def get_data(self, measurement_id):
-        measurement_group = self.session_group.__getattr__(measurement_id)
-        data = measurement_group.__getattr__(measurement_id)
-        return data
 
 
 class ContactsTable(Table):
@@ -372,6 +306,7 @@ class ContactsTable(Table):
             invalid = tables.BoolCol()
             filtered = tables.BoolCol()
     """
+
     def __init__(self, subject_id, session_id, measurement_id):
         super(ContactsTable, self).__init__()
         self.subject_id = subject_id
@@ -382,8 +317,8 @@ class ContactsTable(Table):
 
         if 'contacts' not in self.measurement_group:
             self.contacts_table = self.table.createTable(where=self.measurement_group, name="contacts",
-                                                             description=Contacts,
-                                                             title="Contacts")
+                                                         description=Contacts,
+                                                         title="Contacts")
 
     def create_contact(self, **kwargs):
         self.contacts_table = self.measurement_group.contacts
@@ -409,4 +344,4 @@ class ContactsTable(Table):
         self.table.flush()
 
     def create_contact_group(self, contact_id):
-        pass
+        self.contact_group = self.table.createGroup(where=self.measurement_group, name=contact_id)
