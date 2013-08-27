@@ -132,7 +132,7 @@ def main():
 
         h5file.close()
 
-
+# I should add some helper function to check if something can be found, if not raise an exception or log something
 class Table(object):
     def __init__(self):
         # Make this configurable
@@ -166,6 +166,20 @@ class Table(object):
 
 
 class SubjectsTable(Table):
+    """
+        The Subjects Table consist out of:
+            subject_id = tables.StringCol(64)
+            first_name = tables.StringCol(32)
+            last_name = tables.StringCol(32)
+            address = tables.StringCol(32)
+            city = tables.StringCol(32)
+            postal_code = tables.StringCol(32)
+            phone = tables.StringCol(32)
+            email = tables.StringCol(32)
+            birthday = tables.StringCol(32)
+            mass = tables.Float32Col()
+    """
+
     def __init__(self):
         super(SubjectsTable, self).__init__()
         # Check if table has subjects table
@@ -185,7 +199,6 @@ class SubjectsTable(Table):
         # How many subjects do we already have?
         subject_count = len(self.subjects_table)
         subject_id = "subject_" + str(subject_count)
-
         # Add the subject_id to the key word arguments
         kwargs["subject_id"] = subject_id
         self.create_row(self.subjects_table, **kwargs)
@@ -222,7 +235,6 @@ class SessionsTable(Table):
         # How many sessions do we already have?
         session_count = len(self.sessions_table)
         session_id = "session_" + str(session_count)
-
         kwargs["session_id"] = session_id
         self.create_row(self.sessions_table, **kwargs)
         self.create_group(parent=self.subject_group, item_id=session_id)
@@ -260,6 +272,8 @@ class MeasurementsTable(Table):
                                                              title="Measurements")
 
     def create_measurement(self, **kwargs):
+        if "measurement_name" not in kwargs:
+            print "I need at least a measurement name"
         self.measurements_table = self.session_group.measurements
 
         measurement_count = len(self.measurements_table)
@@ -323,25 +337,52 @@ class ContactsTable(Table):
     def create_contact(self, **kwargs):
         self.contacts_table = self.measurement_group.contacts
 
+        # I would actually want to use the
         contact_count = len(self.contacts_table)
-        contact_id = "measurement_" + str(contact_count)
+        contact_id = "contact_" + str(contact_count)
 
         kwargs["contact_id"] = contact_id
 
-        self.create_contact_row(**kwargs)
-        self.create_contact_group(contact_id=contact_id)
+        self.create_row(self.contacts_table, **kwargs)
+        self.create_group(parent=self.measurement_group, item_id=contact_id)
 
-    @actual_kwargs()
-    def create_contact_row(self, **kwargs):
-        contact_row = self.contacts_table.row
+def store_contact_data(table, contact_group, contact_id, data):
+    atom = tables.Atom.from_dtype(data.dtype)
+    filters = tables.Filters(complib="blosc", complevel=9)
+    data_array = table.createCArray(where=contact_group, name=contact_id,
+                                         atom=atom, shape=data.shape, filters=filters)
+    data_array[:] = data
 
-        for attr, value in self.actual_kwargs.iteritems():
-            contact_row[attr] = value
+class ContactDataTable(Table):
+    def __init__(self, subject_id, session_id, measurement_id, contact_id):
+        super(ContactDataTable, self).__init__()
+        self.subject_id = subject_id
+        self.session_id = session_id
+        self.measurement_id = measurement_id
+        self.contact_id = contact_id
+        self.session_group = self.table.root.__getattr__(self.subject_id).__getattr__(self.session_id)
+        self.contact_group = self.session_group.__getattr__(self.measurement_id).__getattr__(self.contact_id)
 
-        # Append the row to the table
-        contact_row.append()
-        # Flush the changes
-        self.table.flush()
+    def create_data(self, data):
+        atom = tables.Atom.from_dtype(data.dtype)
+        filters = tables.Filters(complib="blosc", complevel=9)
+        data_array = self.table.createCArray(where=self.contact_group, name=self.contact_id,
+                                             atom=atom, shape=data.shape, filters=filters)
+        data_array[:] = data
 
-    def create_contact_group(self, contact_id):
-        self.contact_group = self.table.createGroup(where=self.measurement_group, name=contact_id)
+class NormalizedContactDataTable(Table):
+    def __init__(self, subject_id, session_id, measurement_id, contact_id):
+        super(NormalizedContactDataTable, self).__init__()
+        self.subject_id = subject_id
+        self.session_id = session_id
+        self.measurement_id = measurement_id
+        self.contact_id = contact_id
+        self.session_group = self.table.root.__getattr__(self.subject_id).__getattr__(self.session_id)
+        self.contact_group = self.session_group.__getattr__(self.measurement_id).__getattr__(self.contact_id)
+
+    def create_data(self, data):
+        atom = tables.Atom.from_dtype(data.dtype)
+        filters = tables.Filters(complib="blosc", complevel=9)
+        data_array = self.table.createCArray(where=self.contact_group, name=self.contact_id,
+                                             atom=atom, shape=data.shape, filters=filters)
+        data_array[:] = data
