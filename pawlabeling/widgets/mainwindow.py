@@ -8,6 +8,7 @@ from pawlabeling.functions.qsingleapplication import QtSingleApplication
 from pawlabeling.models import model
 from pawlabeling.widgets.analysis import analysiswidget
 from pawlabeling.widgets.processing import processingwidget
+from pawlabeling.widgets.database import databasewidget
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -22,10 +23,11 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle("Paw Labeling tool")
         self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/pawlabeling.png")))
 
+        self.database_widget = databasewidget.DatabaseWidget(self)
         self.processing_widget = processingwidget.ProcessingWidget(self)
         self.analysis_widget = analysiswidget.AnalysisWidget(self)
 
-        self.tab_dict = {0:"Processing", 1:"Analysis"}
+        self.tab_dict = {0:"Database", 1:"Processing", 2:"Analysis"}
 
         # Create the base model for the entire application
         self.model = model.Model()
@@ -34,6 +36,7 @@ class MainWindow(QtGui.QMainWindow):
         self.status.showMessage("Ready")
 
         self.tab_widget = QtGui.QTabWidget(self)
+        self.tab_widget.addTab(self.database_widget, "Database")
         self.tab_widget.addTab(self.processing_widget, "Processing")
         self.tab_widget.addTab(self.analysis_widget, "Analysis")
 
@@ -62,8 +65,10 @@ class MainWindow(QtGui.QMainWindow):
         current_index = self.tab_widget.currentIndex()
         pub.sendMessage("update_statusbar", status="Changing tabs to the {} tab".format(self.tab_dict[current_index]))
         if self.tab_widget.currentIndex() == 0:
-            self.processing_widget.load_first_file()
+            self.database_widget.load_first_file()
         elif self.tab_widget.currentIndex() == 1:
+            self.processing_widget.load_first_file()
+        elif self.tab_widget.currentIndex() == 2:
             self.analysis_widget.load_first_file()
 
     def change_status(self, status):

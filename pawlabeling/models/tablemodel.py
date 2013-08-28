@@ -1,75 +1,7 @@
-import numpy as np
 import tables
-import datetime
-import uuid
-import os
-from pawlabeling.functions import io
 
-DATADIR = "C:\Exports2"
-
-
-def actual_kwargs():
-    """
-    Decorator that provides the wrapped function with an attribute 'actual_kwargs'
-    containing just those keyword arguments actually passed in to the function.
-    Source Stack Overflow:
-    http://stackoverflow.com/questions/1408818/getting-the-the-keyword-arguments-actually-passed-to-a-python-method
-    """
-
-    def decorator(function):
-        def inner(*args, **kwargs):
-            inner.actual_kwargs = kwargs
-            return function(*args, **kwargs)
-
-        return inner
-
-    return decorator
-
-
-def main():
-    # Open in append mode
-    with tables.openFile("data.h5", mode="a", title="Data") as h5file:
-        for directory_name in os.listdir(DATADIR)[:3]:
-            file_path = os.path.join(DATADIR, directory_name)
-            if os.path.isdir(file_path):
-                subject_name = directory_name
-                print subject_name
-
-                # Using the subject name is a REALLY bad idea, chances of dupes is too high
-                subject_group = h5file.createGroup(where="/", name=subject_name)
-
-                # Here we need to squeeze in a session
-                walking_group = h5file.createGroup(where=subject_group, name="walk")
-                running_group = h5file.createGroup(where=subject_group, name="run")
-
-                for file_name in os.listdir(file_path):
-                    # I don't always know if the file will have a date string...
-                    #measurement_name, date_string, _ = filename.split(' - ')
-                    measurement_name = file_name
-
-                    print file_name
-
-                    with open(os.path.join(file_path, file_name), "r") as infile:
-                        datafile = io.load(infile.read())
-
-                    atom = tables.Atom.from_dtype(datafile.dtype)
-                    filters = tables.Filters(complib="blosc", complevel=9)
-
-                    # Have some default setting to fall back on if none is supplied
-                    location = walking_group
-                    if file_name[0] == 'd':
-                        location = running_group
-                    elif file_name[0] == "s":
-                        location = walking_group
-
-                    measurement_array = h5file.createCArray(where=location, name=measurement_name,
-                                                            atom=atom, shape=datafile.shape, filters=filters)
-                    measurement_array[:] = datafile
-                    measurement_array.attrs['name'] = measurement_name
-                    #measurement_array.attrs['date'] = date_string
-                    #measurement_group.create_dataset('pressure', data=data, compression='gzip')
-
-        h5file.close()
+class MissingIdentifier(Exception):
+    pass
 
 # I should add some helper function to check if something can be found, if not raise an exception or log something
 class Table(object):
@@ -100,6 +32,10 @@ class Table(object):
         assert len(rows) == 0
         return rows[0]
 
+    def get_id(self, table, item_id, **kwargs):
+        row = self.get_row(table, **kwargs)
+        return row[item_id]
+
     def get_group(self, parent, item_id):
         group = parent.__getattr__(item_id)
         return group
@@ -119,7 +55,6 @@ class SubjectsTable(Table):
         last_name = tables.StringCol(32)
         address = tables.StringCol(32)
         city = tables.StringCol(32)
-        postal_code = tables.StringCol(32)
         phone = tables.StringCol(32)
         email = tables.StringCol(32)
         birthday = tables.StringCol(32)
@@ -136,6 +71,7 @@ class SubjectsTable(Table):
         # I need at least a last_name, probably some other value too...
         if "first_name" not in kwargs and "last_name" not in kwargs and "birthday" not in kwargs:
             print "I need at least a first name, last name and birthday to function"
+            raise
 
         # Add some other validation to see if the input values are correct
 
@@ -156,8 +92,8 @@ class SubjectsTable(Table):
         self.create_row(self.subjects_table, **kwargs)
         self.create_group(parent=self.table.root, item_id=subject_id)
 
-    def get_subject_row(self, first_name="", last_name="", birthday=""):
-        return self.get_row(self.subjects_table, first_name=first_name, last_name=last_name, birthday=birthday)
+    def get_subject_row(self, table, first_name="", last_name="", birthday=""):
+        return self.get_row(table, first_name=first_name, last_name=last_name, birthday=birthday)
 
 
 class SessionsTable(Table):
@@ -186,13 +122,13 @@ class SessionsTable(Table):
 
     def create_session(self, **kwargs):
         if "session_name" not in kwargs:
-            print "I need at least a session name"
+            MissingIdentifier("I need at least a session name")
 
         # Get the sessions table
         self.sessions_table = self.subject_group.__getattr__("sessions")
 
         # Check if the session isn't already in the table
-        if self.get_row(self.sessions_table, session_name=kwargs["session_name"]):
+        if self.get_session_row(self.sessions_table, session_name=kwargs["session_name"]):
             print "Session already exists"
             return
 
@@ -202,6 +138,9 @@ class SessionsTable(Table):
         kwargs["session_id"] = session_id
         self.create_row(self.sessions_table, **kwargs)
         self.create_group(parent=self.subject_group, item_id=session_id)
+
+    def get_session_row(self, table, session_name=""):
+        return self.get_row(table, session_name=session_name)
 
 
 class MeasurementsTable(Table):
@@ -233,10 +172,11 @@ class MeasurementsTable(Table):
 
     def create_measurement(self, **kwargs):
         if "measurement_name" not in kwargs:
-            print "I need at least a measurement name"
+            MissingIdentifier("I need at least a measurement name")
+
         self.measurements_table = self.session_group.measurements
 
-        if self.get_row(self.measurements_table, measurement_name=kwargs["measurement_name"]):
+        if self.get_measurement_row(self.measurements_table, measurement_name=kwargs["measurement_name"]):
             print "Measurement already exists"
             return
 
@@ -247,6 +187,8 @@ class MeasurementsTable(Table):
         self.create_row(self.measurements_table, **kwargs)
         self.create_group(parent=self.session_group, item_id=measurement_id)
 
+    def get_measurement_row(self, table, measurement_name=""):
+        return self.get_row(table, measurement_name=measurement_name)
 
 class ContactsTable(Table):
     class Contacts(tables.IsDescription):
@@ -281,14 +223,20 @@ class ContactsTable(Table):
                                                          title="Contacts")
 
     def create_contact(self, **kwargs):
+        if "contact_id" not in kwargs:
+            MissingIdentifier("I need at least a contact id")
+
         self.contacts_table = self.measurement_group.contacts
 
-        if self.get_row(self.contacts_table, contact_id=kwargs["contact_id"]):
+        if self.get_contact_row(self.contacts_table, contact_id=kwargs["contact_id"]):
             print "Contact already exists"
             return
 
         self.create_row(self.contacts_table, **kwargs)
         self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])
+
+    def get_contact_row(self, table, contact_id=""):
+        return self.get_row(table, contact_id=contact_id)
 
 
 # This function can be used for data, contact_data and normalized_contact_data
