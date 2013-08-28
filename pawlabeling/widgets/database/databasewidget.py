@@ -172,6 +172,10 @@ class DatabaseWidget(QtGui.QWidget):
         self.subject_tree.sortItems(0)
 
 
+    # TODO If a subject is selected in the subject_tree, fill in its information in the subject fields
+    # TODO Allow for a way to edit the information for a subject and/or session
+
+
     def create_toolbar_actions(self):
         self.something_action = gui.create_action(text="&Something",
                                                   shortcut=QtGui.QKeySequence("CTRL+F"),
@@ -188,7 +192,7 @@ class DatabaseWidget(QtGui.QWidget):
                                                        icon=QtGui.QIcon(
                                                            os.path.join(os.path.dirname(__file__),
                                                                         "../images/save_icon.png")),
-                                                       tip="create a new subject",
+                                                       tip="Create a new subject",
                                                        checkable=False,
                                                        connection=self.create_subject
         )
@@ -198,9 +202,9 @@ class DatabaseWidget(QtGui.QWidget):
                                                        icon=QtGui.QIcon(
                                                            os.path.join(os.path.dirname(__file__),
                                                                         "../images/add_session.png")),
-                                                       tip="create a new subject",
+                                                       tip="Create a new session",
                                                        checkable=False,
-                                                       connection=self.create_subject
+                                                       connection=self.create_session
         )
 
         self.clear_subject_fields_action = gui.create_action(text="&Clear",

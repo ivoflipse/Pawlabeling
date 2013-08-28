@@ -115,6 +115,8 @@ class SessionsTable(Table):
 
     def __init__(self, subject_id):
         super(SessionsTable, self).__init__()
+
+    def set_parent_id(self, subject_id):
         self.subject_id = subject_id
         self.subject_group = self.table.root.__getattr__(self.subject_id)
 
@@ -164,8 +166,10 @@ class MeasurementsTable(Table):
         date = tables.StringCol(32)
         time = tables.StringCol(32)
 
-    def __init__(self, subject_id, session_id):
+    def __init__(self):
         super(MeasurementsTable, self).__init__()
+
+    def set_parent_id(self, subject_id, session_id):
         self.subject_id = subject_id
         self.session_id = session_id
 
@@ -216,8 +220,10 @@ class ContactsTable(Table):
         invalid = tables.BoolCol()
         filtered = tables.BoolCol()
 
-    def __init__(self, subject_id, session_id, measurement_id):
+    def __init__(self):
         super(ContactsTable, self).__init__()
+
+    def set_parent_id(self, subject_id, session_id, measurement_id):
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id

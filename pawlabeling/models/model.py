@@ -5,8 +5,7 @@ import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
 from pawlabeling.settings import configuration
-from pawlabeling.models.contactmodel import Contact
-from pawlabeling.models.subjectmodel import SubjectModel
+from pawlabeling.models import contactmodel, subjectmodel, sessionmodel, measurementmodel
 
 class Model():
     def __init__(self):
@@ -14,7 +13,9 @@ class Model():
         self.path = configuration.measurement_folder
         self.store_path = configuration.store_results_folder
 
-        self.subject_model = SubjectModel()
+        self.subject_model = subjectmodel.SubjectModel()
+        self.session_model = sessionmodel.SessionModel()
+        self.measurement_model = measurementmodel.MeasurementModel()
 
         self.dog_name = ""
         self.measurement_name = ""
@@ -140,7 +141,7 @@ class Model():
 
         # Convert them to class objects
         for index, raw_paw in enumerate(paws):
-            paw = Contact()
+            paw = contactmodel.Contact()
             paw.create_contact(contact=raw_paw, measurement_data=self.measurement, padding=1)
             # Skip paws that have only been around for one frame
             if len(paw.frames) > 1:
