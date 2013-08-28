@@ -5,7 +5,8 @@ import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
 from pawlabeling.settings import configuration
-from pawlabeling.models import contactmodel, subjectmodel, sessionmodel, measurementmodel
+from pawlabeling.models import contactmodel, tabelmodel
+
 
 class Model():
     def __init__(self):
@@ -13,9 +14,9 @@ class Model():
         self.path = configuration.measurement_folder
         self.store_path = configuration.store_results_folder
 
-        self.subject_model = subjectmodel.SubjectModel()
-        self.session_model = sessionmodel.SessionModel()
-        self.measurement_model = measurementmodel.MeasurementModel()
+        self.subjects_table = tabelmodel.SubjectsTable()
+        self.sessions_table = tabelmodel.SessionsTable()
+        self.measurements_table = tabelmodel.MeasurementsTable()
 
         self.dog_name = ""
         self.measurement_name = ""
@@ -37,8 +38,33 @@ class Model():
         pub.subscribe(self.store_status, "store_status")
         pub.subscribe(self.track_contacts, "track_contacts")
 
+        pub.subscribe(self.create_subject, "create_subject")
+        pub.subscribe(self.create_session, "create_session")
+        pub.subscribe(self.create_measurement, "create_measurement")
+
+    def create_subject(self, subject):
+        """
+        This function takes a subject dictionary object and stores it in PyTables
+        """
+        try:
+            self.subjects_table.create_subject(**subject)
+        except MissingIdentifier:
+            self.logger.warning("Model.create_subject: Some of the required fields are missing")
+
+    def create_session(self, session=None):
+        try:
+            self.sessions_table.create_session(**session)
+        except MissingIdentifier:
+            self.logger.warning("Model.create_session: Some of the required fields are missing")
+
+    def create_measurement(self, measurement=None):
+        try:
+            self.measurements_table.create_measurement(**measurement)
+        except MissingIdentifier:
+            self.logger.warning("Model.create_measurement: Some of the required fields are missing")
+
     def load_file_paths(self):
-        self.logger.info("Model.get_file_paths: Loading file paths")
+        self.logger.info("Model.load_file_paths: Loading file paths")
         self.file_paths = io.get_file_paths()
         pub.sendMessage("get_file_paths", file_paths=self.file_paths)
 
@@ -245,3 +271,7 @@ class Model():
         self.results.clear()
         self.max_results.clear()
         pub.sendMessage("clear_cached_values")
+
+
+class MissingIdentifier(Exception):
+    pass
