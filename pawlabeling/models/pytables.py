@@ -92,6 +92,14 @@ class Table(object):
         group = self.table.createGroup(where=parent, name=item_id)
         return group
 
+    def get_row(self, table, **kwargs):
+        # Create a query out of the kwargs
+        query = " & ".join(["({} == '{}')".format(key, value) for key, value in kwargs.items()])
+        rows = list(table.where(query))
+        # We should only be able to get 1 element, else we have duplicates
+        assert len(rows) == 0
+        return rows[0]
+
     def get_group(self, parent, item_id):
         group = parent.__getattr__(item_id)
         return group
@@ -126,13 +134,20 @@ class SubjectsTable(Table):
 
     def create_subject(self, **kwargs):
         # I need at least a last_name, probably some other value too...
-        if "last_name" not in kwargs:
-            print "I need at least a last_name to function"
+        if "first_name" not in kwargs and "last_name" not in kwargs and "birthday" not in kwargs:
+            print "I need at least a first name, last name and birthday to function"
 
         # Add some other validation to see if the input values are correct
 
         # Get the subject table
         self.subjects_table = self.table.root.subjects
+
+        # Check if the subject is already in the table
+        if self.get_subject_row(self.subjects_table, first_name=kwargs["first_name"],
+                                last_name=kwargs["last_name"], birthday=kwargs["birthday"]):
+            print "Subject already exists"
+            return
+
         # How many subjects do we already have?
         subject_count = len(self.subjects_table)
         subject_id = "subject_" + str(subject_count)
@@ -140,6 +155,9 @@ class SubjectsTable(Table):
         kwargs["subject_id"] = subject_id
         self.create_row(self.subjects_table, **kwargs)
         self.create_group(parent=self.table.root, item_id=subject_id)
+
+    def get_subject_row(self, first_name="", last_name="", birthday=""):
+        return self.get_row(self.subjects_table, first_name=first_name, last_name=last_name, birthday=birthday)
 
 
 class SessionsTable(Table):
@@ -172,6 +190,12 @@ class SessionsTable(Table):
 
         # Get the sessions table
         self.sessions_table = self.subject_group.__getattr__("sessions")
+
+        # Check if the session isn't already in the table
+        if self.get_row(self.sessions_table, session_name=kwargs["session_name"]):
+            print "Session already exists"
+            return
+
         # How many sessions do we already have?
         session_count = len(self.sessions_table)
         session_id = "session_" + str(session_count)
@@ -180,7 +204,6 @@ class SessionsTable(Table):
         self.create_group(parent=self.subject_group, item_id=session_id)
 
 
-# TODO: Figure out how to prevent duplicate entries
 class MeasurementsTable(Table):
     class Measurements(tables.IsDescription):
         measurement_id = tables.StringCol(64)
@@ -212,6 +235,10 @@ class MeasurementsTable(Table):
         if "measurement_name" not in kwargs:
             print "I need at least a measurement name"
         self.measurements_table = self.session_group.measurements
+
+        if self.get_row(self.measurements_table, measurement_name=kwargs["measurement_name"]):
+            print "Measurement already exists"
+            return
 
         measurement_count = len(self.measurements_table)
         measurement_id = "measurement_" + str(measurement_count)
@@ -256,14 +283,12 @@ class ContactsTable(Table):
     def create_contact(self, **kwargs):
         self.contacts_table = self.measurement_group.contacts
 
-        # I would actually want to use the
-        contact_count = len(self.contacts_table)
-        contact_id = "contact_" + str(contact_count)
-
-        kwargs["contact_id"] = contact_id
+        if self.get_row(self.contacts_table, contact_id=kwargs["contact_id"]):
+            print "Contact already exists"
+            return
 
         self.create_row(self.contacts_table, **kwargs)
-        self.create_group(parent=self.measurement_group, item_id=contact_id)
+        self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])
 
 
 # This function can be used for data, contact_data and normalized_contact_data
