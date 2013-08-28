@@ -19,10 +19,12 @@ class Table(object):
         row.append()
         # Flush the changes
         table.flush()
+        return row
 
     def create_group(self, parent, item_id):
-        self.table.createGroup(where=parent, name=item_id)
+        group = self.table.createGroup(where=parent, name=item_id)
         self.table.flush()
+        return group
 
     def get_row(self, table, **kwargs):
         # Create a query out of the kwargs
@@ -73,8 +75,7 @@ class SubjectsTable(Table):
         if "first_name" not in kwargs and "last_name" not in kwargs and "birthday" not in kwargs:
             raise MissingIdentifier("I need at least a first name, last name and birthday")
 
-        # Add some other validation to see if the input values are correct
-
+        # TODO Add some other validation to see if the input values are correct
         # Get the subject table
         self.subjects_table = self.table.root.subjects
 
@@ -93,9 +94,10 @@ class SubjectsTable(Table):
         else:
             subject_id = kwargs["subject_id"]
 
-        self.create_row(self.subjects_table, **kwargs)
-        self.create_group(parent=self.table.root, item_id=subject_id)
+        row = self.create_row(self.subjects_table, **kwargs)
+        group = self.create_group(parent=self.table.root, item_id=subject_id)
         print "Subject created"
+        return row, group
 
     def get_subject_row(self, table, first_name="", last_name="", birthday=""):
         return self.get_row(table, first_name=first_name, last_name=last_name, birthday=birthday)
@@ -115,8 +117,6 @@ class SessionsTable(Table):
 
     def __init__(self, subject_id):
         super(SessionsTable, self).__init__()
-
-    def set_parent_id(self, subject_id):
         self.subject_id = subject_id
         self.subject_group = self.table.root.__getattr__(self.subject_id)
 
@@ -143,9 +143,10 @@ class SessionsTable(Table):
         session_count = len(self.sessions_table)
         session_id = "session_" + str(session_count)
         kwargs["session_id"] = session_id
-        self.create_row(self.sessions_table, **kwargs)
-        self.create_group(parent=self.subject_group, item_id=session_id)
+        row = self.create_row(self.sessions_table, **kwargs)
+        group = self.create_group(parent=self.subject_group, item_id=session_id)
         print "Session created"
+        return row, group
 
     def get_session_row(self, table, session_name=""):
         return self.get_row(table, session_name=session_name)
@@ -166,10 +167,8 @@ class MeasurementsTable(Table):
         date = tables.StringCol(32)
         time = tables.StringCol(32)
 
-    def __init__(self):
+    def __init__(self, subject_id, session_id):
         super(MeasurementsTable, self).__init__()
-
-    def set_parent_id(self, subject_id, session_id):
         self.subject_id = subject_id
         self.session_id = session_id
 
@@ -194,9 +193,10 @@ class MeasurementsTable(Table):
         measurement_id = "measurement_" + str(measurement_count)
         kwargs["measurement_id"] = measurement_id
 
-        self.create_row(self.measurements_table, **kwargs)
-        self.create_group(parent=self.session_group, item_id=measurement_id)
+        row = self.create_row(self.measurements_table, **kwargs)
+        group = self.create_group(parent=self.session_group, item_id=measurement_id)
         print "Measurement created"
+        return row, group
 
     def get_measurement_row(self, table, measurement_name=""):
         return self.get_row(table, measurement_name=measurement_name)
@@ -220,10 +220,8 @@ class ContactsTable(Table):
         invalid = tables.BoolCol()
         filtered = tables.BoolCol()
 
-    def __init__(self):
+    def __init__(self, subject_id, session_id, measurement_id):
         super(ContactsTable, self).__init__()
-
-    def set_parent_id(self, subject_id, session_id, measurement_id):
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
@@ -245,9 +243,10 @@ class ContactsTable(Table):
             print "Contact already exists"
             return -1
 
-        self.create_row(self.contacts_table, **kwargs)
-        self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])
+        row = self.create_row(self.contacts_table, **kwargs)
+        group = self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])
         print "Contact created"
+        return row, group
 
     def get_contact_row(self, table, contact_id=""):
         return self.get_row(table, contact_id=contact_id)

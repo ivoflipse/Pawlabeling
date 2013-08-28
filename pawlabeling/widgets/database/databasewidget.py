@@ -217,7 +217,8 @@ class DatabaseWidget(QtGui.QWidget):
                                                      connection=self.clear_subject_fields
         )
 
-        self.actions = [self.something_action, self.clear_fields_action, self.create_subject_action]
+        self.actions = [self.something_action, self.clear_subject_fields_action,
+                        self.create_subject_action, self.create_session]
 
         for action in self.actions:
             #action.setShortcutContext(Qt.WindowShortcut)

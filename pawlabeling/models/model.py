@@ -15,8 +15,6 @@ class Model():
         self.store_path = configuration.store_results_folder
 
         self.subjects_table = tabelmodel.SubjectsTable()
-        self.sessions_table = tabelmodel.SessionsTable()
-        self.measurements_table = tabelmodel.MeasurementsTable()
 
         self.dog_name = ""
         self.measurement_name = ""
@@ -41,27 +39,48 @@ class Model():
         pub.subscribe(self.create_subject, "create_subject")
         pub.subscribe(self.create_session, "create_session")
         pub.subscribe(self.create_measurement, "create_measurement")
+        pub.subscribe(self.create_contact, "create_contact")
 
     def create_subject(self, subject):
         """
         This function takes a subject dictionary object and stores it in PyTables
         """
         try:
-            self.subjects_table.create_subject(**subject)
+            self.subject_row, self.subject_group = self.subjects_table.create_subject(**subject)
         except MissingIdentifier:
             self.logger.warning("Model.create_subject: Some of the required fields are missing")
 
-    def create_session(self, session=None):
+    def create_session(self, session):
+        print self.subject_row
+        subject_id = self.subject_row["subject_id"]
+        self.sessions_table = tabelmodel.SessionsTable(subject_id=subject_id)
         try:
-            self.sessions_table.create_session(**session)
+            self.session_row, self.session_group = self.sessions_table.create_session(**session)
         except MissingIdentifier:
             self.logger.warning("Model.create_session: Some of the required fields are missing")
 
-    def create_measurement(self, measurement=None):
+    def create_measurement(self, measurement):
+        subject_id = self.session_row["subject_id"]
+        session_id = self.session_row["session_id"]
+        self.measurements_table = tabelmodel.MeasurementsTable(subject_id=subject_id, session_id=session_id)
         try:
-            self.measurements_table.create_measurement(**measurement)
+            self.measurement_row, self.measurement_group = self.measurements_table.create_measurement(**measurement)
         except MissingIdentifier:
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
+
+    def create_contact(self, contacts):
+        subject_id = self.measurement_row["subject_id"]
+        session_id = self.measurement_row["session_id"]
+        measurement_id = self.measurement_row["measurement_id"]
+        self.contacts_table = tabelmodel.ContactsTable(subject_id=subject_id, session_id=session_id,
+                                                       measurement_id=measurement_id)
+
+        # TODO You might want to check if the contact_id key is present and that each contact is a dictionary
+        for contact in contacts:
+            try:
+                self.contact_row, self.contact_group = self.contacts_table.create_contact(**contact)
+            except MissingIdentifier:
+                self.logger.warning("Model.create_contact: Some of the required fields are missing")
 
     def load_file_paths(self):
         self.logger.info("Model.load_file_paths: Loading file paths")
@@ -213,7 +232,6 @@ class Model():
         self.max_results.clear()
         self.filtered = defaultdict()
 
-
         for paw_label, data_list in self.data_list.items():
             self.results[paw_label]["filtered"] = utility.filter_outliers(data_list, paw_label)
             self.filtered[paw_label] = utility.filter_outliers(data_list, paw_label)
@@ -238,8 +256,8 @@ class Model():
                 if max_duration > self.max_results.get("duration", 0):
                     self.max_results["duration"] = max_duration
 
-        # for measurement_name, paws in self.paws.items():
-        #     for paw in self.paws:
+                    # for measurement_name, paws in self.paws.items():
+                    #     for paw in self.paws:
 
 
     def store_status(self):
