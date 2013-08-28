@@ -6,12 +6,15 @@ from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
 from pawlabeling.settings import configuration
 from pawlabeling.models.contactmodel import Contact
+from pawlabeling.models.subjectmodel import SubjectModel
 
 class Model():
     def __init__(self):
         self.file_paths = defaultdict(dict)
         self.path = configuration.measurement_folder
         self.store_path = configuration.store_results_folder
+
+        self.subject_model = SubjectModel()
 
         self.dog_name = ""
         self.measurement_name = ""

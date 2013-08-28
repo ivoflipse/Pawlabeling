@@ -21,16 +21,17 @@ class Table(object):
         table.flush()
 
     def create_group(self, parent, item_id):
-        group = self.table.createGroup(where=parent, name=item_id)
-        return group
+        self.table.createGroup(where=parent, name=item_id)
+        self.table.flush()
 
     def get_row(self, table, **kwargs):
         # Create a query out of the kwargs
         query = " & ".join(["({} == '{}')".format(key, value) for key, value in kwargs.items()])
         rows = list(table.where(query))
-        # We should only be able to get 1 element, else we have duplicates
-        assert len(rows) == 0
-        return rows[0]
+        if rows:
+            # We should only be able to get 1 element, else we have duplicates
+            assert len(rows) == 1
+            return rows[0]
 
     def get_id(self, table, item_id, **kwargs):
         row = self.get_row(table, **kwargs)
@@ -70,8 +71,7 @@ class SubjectsTable(Table):
     def create_subject(self, **kwargs):
         # I need at least a last_name, probably some other value too...
         if "first_name" not in kwargs and "last_name" not in kwargs and "birthday" not in kwargs:
-            print "I need at least a first name, last name and birthday to function"
-            raise
+            raise MissingIdentifier("I need at least a first name, last name and birthday")
 
         # Add some other validation to see if the input values are correct
 
@@ -82,15 +82,20 @@ class SubjectsTable(Table):
         if self.get_subject_row(self.subjects_table, first_name=kwargs["first_name"],
                                 last_name=kwargs["last_name"], birthday=kwargs["birthday"]):
             print "Subject already exists"
-            return
+            return -1
 
-        # How many subjects do we already have?
-        subject_count = len(self.subjects_table)
-        subject_id = "subject_" + str(subject_count)
-        # Add the subject_id to the key word arguments
-        kwargs["subject_id"] = subject_id
+        if not kwargs["subject_id"]:
+            # How many subjects do we already have?
+            subject_count = len(self.subjects_table)
+            subject_id = "subject_" + str(subject_count)
+            # Add the subject_id to the key word arguments
+            kwargs["subject_id"] = subject_id
+        else:
+            subject_id = kwargs["subject_id"]
+
         self.create_row(self.subjects_table, **kwargs)
         self.create_group(parent=self.table.root, item_id=subject_id)
+        print "Subject created"
 
     def get_subject_row(self, table, first_name="", last_name="", birthday=""):
         return self.get_row(table, first_name=first_name, last_name=last_name, birthday=birthday)
@@ -101,8 +106,8 @@ class SessionsTable(Table):
         session_id = tables.StringCol(64)
         subject_id = tables.StringCol(64)
         session_name = tables.StringCol(32)
-        date = tables.StringCol(32)
-        time = tables.StringCol(32)
+        session_date = tables.StringCol(32)
+        session_time = tables.StringCol(32)
 
     class SessionLabels(tables.IsDescription):
         session_id = tables.StringCol(64)
@@ -122,7 +127,7 @@ class SessionsTable(Table):
 
     def create_session(self, **kwargs):
         if "session_name" not in kwargs:
-            MissingIdentifier("I need at least a session name")
+            raise MissingIdentifier("I need at least a session name")
 
         # Get the sessions table
         self.sessions_table = self.subject_group.__getattr__("sessions")
@@ -130,7 +135,7 @@ class SessionsTable(Table):
         # Check if the session isn't already in the table
         if self.get_session_row(self.sessions_table, session_name=kwargs["session_name"]):
             print "Session already exists"
-            return
+            return -1
 
         # How many sessions do we already have?
         session_count = len(self.sessions_table)
@@ -138,6 +143,7 @@ class SessionsTable(Table):
         kwargs["session_id"] = session_id
         self.create_row(self.sessions_table, **kwargs)
         self.create_group(parent=self.subject_group, item_id=session_id)
+        print "Session created"
 
     def get_session_row(self, table, session_name=""):
         return self.get_row(table, session_name=session_name)
@@ -172,13 +178,13 @@ class MeasurementsTable(Table):
 
     def create_measurement(self, **kwargs):
         if "measurement_name" not in kwargs:
-            MissingIdentifier("I need at least a measurement name")
+            raise MissingIdentifier("I need at least a measurement name")
 
         self.measurements_table = self.session_group.measurements
 
         if self.get_measurement_row(self.measurements_table, measurement_name=kwargs["measurement_name"]):
             print "Measurement already exists"
-            return
+            return -1
 
         measurement_count = len(self.measurements_table)
         measurement_id = "measurement_" + str(measurement_count)
@@ -186,6 +192,7 @@ class MeasurementsTable(Table):
 
         self.create_row(self.measurements_table, **kwargs)
         self.create_group(parent=self.session_group, item_id=measurement_id)
+        print "Measurement created"
 
     def get_measurement_row(self, table, measurement_name=""):
         return self.get_row(table, measurement_name=measurement_name)
@@ -224,16 +231,17 @@ class ContactsTable(Table):
 
     def create_contact(self, **kwargs):
         if "contact_id" not in kwargs:
-            MissingIdentifier("I need at least a contact id")
+            raise MissingIdentifier("I need at least a contact id")
 
         self.contacts_table = self.measurement_group.contacts
 
         if self.get_contact_row(self.contacts_table, contact_id=kwargs["contact_id"]):
             print "Contact already exists"
-            return
+            return -1
 
         self.create_row(self.contacts_table, **kwargs)
         self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])
+        print "Contact created"
 
     def get_contact_row(self, table, contact_id=""):
         return self.get_row(table, contact_id=contact_id)
@@ -241,6 +249,7 @@ class ContactsTable(Table):
 
 # This function can be used for data, contact_data and normalized_contact_data
 # Actually also for all the different results (at least the time series)
+# TODO: check if I'm not creating duplicate data, so check if the item_id already exists in the group
 def store_data(table, group, item_id, data):
     atom = tables.Atom.from_dtype(data.dtype)
     filters = tables.Filters(complib="blosc", complevel=9)
