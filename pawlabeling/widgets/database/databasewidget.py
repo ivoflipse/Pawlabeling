@@ -86,13 +86,13 @@ class DatabaseWidget(QtGui.QWidget):
         self.session_time_label = QtGui.QLabel("Session Time")
 
         self.session_name = QtGui.QLineEdit()
-        self.session_date = QtGui.QDateEdit()
+        self.session_date = QtGui.QDateEdit(QtCore.QDate.currentDate())
         self.session_date.setMinimumDate(QtCore.QDate.currentDate().addYears(-100))
         self.session_date.setMaximumDate(QtCore.QDate.currentDate())
         self.session_date.setDisplayFormat(self.date_format)
-        self.session_time = QtGui.QTimeEdit()
-        self.time_format = QtCore.QLocale.system().timeFormat(QtCore.QLocale.ShortFormat)
-        self.session_time.setDisplayFormat(self.time_format)
+        self.session_time = QtGui.QTimeEdit(QtCore.QTime.currentTime())
+        #self.time_format = QtCore.QLocale.system().timeFormat(QtCore.QLocale.ShortFormat)
+        self.session_time.setDisplayFormat(u"HH:mm")
 
         self.session_tree = QtGui.QTreeWidget(self)
         self.session_tree.setMinimumWidth(300)
@@ -132,6 +132,11 @@ class DatabaseWidget(QtGui.QWidget):
             if field == "birthday":
                 date = getattr(self, field).date()
                 subject[field] = date.toString(Qt.ISODate)
+            elif field == "mass":
+                mass = getattr(self, field).text()
+                if not mass:
+                    mass = 0
+                subject[field] = float(mass)
             else:
                 subject[field] = getattr(self, field).text()
 
@@ -218,7 +223,7 @@ class DatabaseWidget(QtGui.QWidget):
         )
 
         self.actions = [self.something_action, self.clear_subject_fields_action,
-                        self.create_subject_action, self.create_session]
+                        self.create_subject_action, self.create_session_action]
 
         for action in self.actions:
             #action.setShortcutContext(Qt.WindowShortcut)

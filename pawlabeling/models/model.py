@@ -51,8 +51,9 @@ class Model():
             self.logger.warning("Model.create_subject: Some of the required fields are missing")
 
     def create_session(self, session):
-        print self.subject_row
+        print self.subject_row[:]
         subject_id = self.subject_row["subject_id"]
+        print "subject_id: '{}'".format(subject_id)
         self.sessions_table = tabelmodel.SessionsTable(subject_id=subject_id)
         try:
             self.session_row, self.session_group = self.sessions_table.create_session(**session)
