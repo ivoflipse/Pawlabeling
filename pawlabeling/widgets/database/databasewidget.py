@@ -24,15 +24,18 @@ class DatabaseWidget(QtGui.QWidget):
         # Create all the toolbar actions
         self.create_toolbar_actions()
 
+        self.subject_tree_label = QtGui.QLabel("Subjects")
         self.subject_tree = QtGui.QTreeWidget(self)
-        self.subject_tree.setMinimumWidth(300)
-        self.subject_tree.setMaximumWidth(400)
+        #self.subject_tree.setMinimumWidth(300)
+        #self.subject_tree.setMaximumWidth(400)
         self.subject_tree.setColumnCount(3)
         self.subject_tree.setHeaderLabels(["First Name", "Last Name", "Birthday"])
 
         self.subject_tree_layout = QtGui.QVBoxLayout()
+        self.subject_tree_layout.addWidget(self.subject_tree_label)
         self.subject_tree_layout.addWidget(self.subject_tree)
 
+        self.subject_label = QtGui.QLabel("Subject")
         self.birthday_label = QtGui.QLabel("Birthday")
         self.mass_label = QtGui.QLabel("Mass")
         self.first_name_label = QtGui.QLabel("First Name")
@@ -77,6 +80,7 @@ class DatabaseWidget(QtGui.QWidget):
         self.subject_layout.addWidget(self.email_label, 4, 2)
         self.subject_layout.addWidget(self.email, 4, 3)
 
+        self.session_label = QtGui.QLabel("Session")
         self.session_name_label = QtGui.QLabel("Session Name")
         self.session_date_label = QtGui.QLabel("Session Date")
         self.session_time_label = QtGui.QLabel("Session Time")
@@ -90,9 +94,10 @@ class DatabaseWidget(QtGui.QWidget):
         #self.time_format = QtCore.QLocale.system().timeFormat(QtCore.QLocale.ShortFormat)
         self.session_time.setDisplayFormat(u"HH:mm")
 
+        self.session_tree_label = QtGui.QLabel("Sessions")
         self.session_tree = QtGui.QTreeWidget(self)
-        self.session_tree.setMinimumWidth(300)
-        self.session_tree.setMaximumWidth(400)
+        #self.session_tree.setMinimumWidth(300)
+        #self.session_tree.setMaximumWidth(400)
         self.session_tree.setColumnCount(3)
         self.session_tree.setHeaderLabels(["Name", "Date", "Time"])
 
@@ -105,14 +110,28 @@ class DatabaseWidget(QtGui.QWidget):
         self.session_layout.addWidget(self.session_time_label, 3, 0)
         self.session_layout.addWidget(self.session_time, 3, 1)
 
-        self.vertical_layout = QtGui.QVBoxLayout()
-        self.vertical_layout.addLayout(self.subject_layout)
-        self.vertical_layout.addLayout(self.session_layout)
-        self.vertical_layout.addWidget(self.session_tree)
+        self.subject_session_layout = QtGui.QVBoxLayout()
+        self.subject_session_layout.addWidget(self.subject_label)
+        self.subject_session_layout.addLayout(self.subject_layout)
+        self.subject_session_layout.addWidget(self.session_label)
+        self.subject_session_layout.addLayout(self.session_layout)
+        self.subject_session_layout.addWidget(self.session_tree_label)
+        self.subject_session_layout.addWidget(self.session_tree)
+
+        self.measurement_tree_label = QtGui.QLabel("Measurements")
+        self.measurement_tree = QtGui.QTreeWidget(self)
+        #self.measurement_tree.setMinimumWidth(300)
+        self.measurement_tree.setColumnCount(1)
+        self.measurement_tree.setHeaderLabels(["Name"])
+
+        self.measurement_layout = QtGui.QVBoxLayout()
+        self.measurement_layout.addWidget(self.measurement_tree_label)
+        self.measurement_layout.addWidget(self.measurement_tree)
 
         self.horizontal_layout = QtGui.QHBoxLayout()
         self.horizontal_layout.addLayout(self.subject_tree_layout)
-        self.horizontal_layout.addLayout(self.vertical_layout)
+        self.horizontal_layout.addLayout(self.subject_session_layout)
+        self.horizontal_layout.addLayout(self.measurement_layout)
 
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.toolbar)
