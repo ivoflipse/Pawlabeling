@@ -44,7 +44,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
         # Load all the measurements into the measurement tree
-        self.model.load_file_paths()
+        #self.model.load_file_paths()
         # Then load the first measurement
         self.processing_widget.load_first_file()
 

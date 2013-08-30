@@ -17,6 +17,12 @@ class MeasurementWidget(QtGui.QWidget):
 
         self.logger = logging.getLogger("logger")
 
+        self.files_tree_label = QtGui.QLabel("Files")
+        self.files_tree_label.setFont(parent.font)
+        self.files_tree = QtGui.QTreeWidget(self)
+        self.files_tree.setColumnCount(3)
+        self.files_tree.setHeaderLabels(["Name", "Size", "Date"])
+
         self.measurement_tree_label = QtGui.QLabel("Measurements")
         self.measurement_tree_label.setFont(parent.font)
         self.measurement_tree = QtGui.QTreeWidget(self)
@@ -25,6 +31,11 @@ class MeasurementWidget(QtGui.QWidget):
         self.measurement_tree.setHeaderLabels(["Name"])
 
         self.measurement_layout = QtGui.QVBoxLayout()
+        self.measurement_layout.addWidget(self.files_tree_label)
+        bar_6 = QtGui.QFrame(self)
+        bar_6.setFrameShape(QtGui.QFrame.Shape.HLine)
+        self.measurement_layout.addWidget(bar_6)
+        self.measurement_layout.addWidget(self.files_tree)
         self.measurement_layout.addWidget(self.measurement_tree_label)
         bar_5 = QtGui.QFrame(self)
         bar_5.setFrameShape(QtGui.QFrame.Shape.HLine)
@@ -35,6 +46,10 @@ class MeasurementWidget(QtGui.QWidget):
 
         pub.subscribe(self.update_measurement_tree, "update_measurement_tree")
         pub.subscribe(self.get_measurements, "put_sessions")
+
+    def update_files_tree(self):
+        self.file_paths = io.get_file_paths()
+
 
     def update_measurement_tree(self, measurements):
         self.measurement_tree.clear()

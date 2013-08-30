@@ -256,10 +256,33 @@ def zip_file(root, file_name):
     return os.path.join(root, new_file_path)
 
 
+# def get_file_paths():
+#     from collections import defaultdict
+#     # Clear any existing file names
+#     file_paths = defaultdict(dict)
+#
+#     logger.info("io.get_file_paths: Searching for measurements...")
+#     # Walk through the folder and gather up all the files
+#     for idx, (root, dirs, files) in enumerate(os.walk(configuration.measurement_folder)):
+#         # If there are no more nested dirs left
+#         if not dirs:
+#             # Add the name of the dog
+#             dog_name = root.split("\\")[-1]
+#             for index, file_name in enumerate(files):
+#                 # zip_file will convert a file to zip and returns the path to the file
+#                 if file_name[-3:] != "zip":
+#                     file_paths[dog_name][file_name + ".zip"] = zip_file(root, file_name)
+#                 else:
+#                     file_paths[dog_name][file_name] = os.path.join(root, file_name)
+#
+#     if not file_paths:
+#         raise Exception("No files found, please check the measurement folder in your configuration file")
+#     return file_paths
+
 def get_file_paths():
     from collections import defaultdict
     # Clear any existing file names
-    file_paths = defaultdict(dict)
+    file_paths = defaultdict(list)
 
     logger.info("io.get_file_paths: Searching for measurements...")
     # Walk through the folder and gather up all the files
@@ -267,13 +290,12 @@ def get_file_paths():
         # If there are no more nested dirs left
         if not dirs:
             # Add the name of the dog
-            dog_name = root.split("\\")[-1]
             for index, file_name in enumerate(files):
                 # zip_file will convert a file to zip and returns the path to the file
                 if file_name[-3:] != "zip":
-                    file_paths[dog_name][file_name + ".zip"] = zip_file(root, file_name)
+                    file_paths[file_name + ".zip"] = zip_file(root, file_name)
                 else:
-                    file_paths[dog_name][file_name] = os.path.join(root, file_name)
+                    file_paths[file_name] = os.path.join(root, file_name)
 
     if not file_paths:
         raise Exception("No files found, please check the measurement folder in your configuration file")
