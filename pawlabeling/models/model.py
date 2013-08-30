@@ -100,7 +100,7 @@ class Model():
     def put_session(self, session):
         self.session = session
         self.session_id = session["session_id"]
-        self.logger.info("Session ID set to {}").format(self.session_id)
+        self.logger.info("Session ID set to {}".format(self.session_id))
         self.measurements_table = self.measurements_table = tabelmodel.MeasurementsTable(subject_id=self.subject_id,
                                                                                          session_id=self.session_id)
 
@@ -108,7 +108,7 @@ class Model():
     def put_measurement(self, measurement):
         self.measurement = measurement
         self.measurement_id = measurement["measurement_id"]
-        self.logger.info("Measurement ID set to {}").format(self.measurement_id)
+        self.logger.info("Measurement ID set to {}".format(self.measurement_id))
         self.contacts_table = tabelmodel.ContactsTable(subject_id=self.subject_id,
                                                        session_id=self.session_id,
                                                        measurement_id=self.measurement_id)

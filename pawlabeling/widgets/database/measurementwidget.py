@@ -32,3 +32,20 @@ class MeasurementWidget(QtGui.QWidget):
         self.measurement_layout.addWidget(self.measurement_tree)
 
         self.setLayout(self.measurement_layout)
+
+        pub.subscribe(self.update_measurement_tree, "update_measurement_tree")
+        pub.subscribe(self.get_measurements, "put_sessions")
+
+    def update_measurement_tree(self, measurements):
+        self.measurement_tree.clear()
+        self.measurements = {}
+        for index, measurement in enumerate(measurements):
+            self.measurements[index] = measurement
+            rootItem = QtGui.QTreeWidgetItem(self.measurement_tree)
+            rootItem.setText(0, measurement["measurement_name"])
+
+        item = self.measurement_tree.topLevelItem(0)
+        self.measurement_tree.setCurrentItem(item)
+
+    def get_measurements(self, session=None):
+        pub.sendMessage("get_measurements", measurement={})
