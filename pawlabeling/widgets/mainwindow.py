@@ -104,6 +104,7 @@ def main():
         sys.exit(0)
 
     app.setApplicationName(configuration.app_name)
+    app.setFont(QtGui.QFont("Helvetica", pointSize=10))
     window = MainWindow()
     window.show()
     window.raise_()

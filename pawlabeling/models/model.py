@@ -41,6 +41,8 @@ class Model():
         pub.subscribe(self.create_measurement, "create_measurement")
         pub.subscribe(self.create_contact, "create_contact")
 
+        pub.subscribe(self.search_subjects, "search_subjects")
+
     def create_subject(self, subject):
         """
         This function takes a subject dictionary object and stores it in PyTables
@@ -83,6 +85,10 @@ class Model():
                 self.contact_ids[contact_group._v_name] = contact_group
             except MissingIdentifier:
                 self.logger.warning("Model.create_contact: Some of the required fields are missing")
+
+    def search_subjects(self, first_name="", last_name="", birthday=""):
+        subjects = self.subjects_table.get_subjects(first_name=first_name, last_name=last_name, birthday=birthday)
+        pub.sendMessage("update_subjects_tree", subjects=subjects)
 
     def load_file_paths(self):
         self.logger.info("Model.load_file_paths: Loading file paths")

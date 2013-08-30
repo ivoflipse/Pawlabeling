@@ -1,5 +1,6 @@
 import tables
 
+
 class MissingIdentifier(Exception):
     pass
 
@@ -29,17 +30,16 @@ class Table(object):
         self.table.flush()
         return group
 
-    def get_row(self, table, **kwargs):
+    # TODO I removed the assertion to check whether we have multiple hits
+    # Though in practice this should NOT be possible
+    def search_table(self, table, **kwargs):
         # Create a query out of the kwargs
         query = " & ".join(["({} == '{}')".format(key, value) for key, value in kwargs.items()])
         rows = list(table.where(query))
-        if rows:
-            # We should only be able to get 1 element, else we have duplicates
-            assert len(rows) == 1
-            return rows[0]
+        return rows
 
     def get_id(self, table, item_id, **kwargs):
-        row = self.get_row(table, **kwargs)
+        row = self.search_table(table, **kwargs)
         return row[item_id]
 
     def get_group(self, parent, item_id):
@@ -87,7 +87,7 @@ class SubjectsTable(Table):
         self.subjects_table = self.table.root.subjects
 
         # Check if the subject is already in the table
-        if self.get_subject_row(self.subjects_table, first_name=kwargs["first_name"],
+        if self.get_subject_row(first_name=kwargs["first_name"],
                                 last_name=kwargs["last_name"], birthday=kwargs["birthday"]):
             print "Subject already exists"
             return -1
@@ -100,8 +100,37 @@ class SubjectsTable(Table):
         print "Subject created"
         return group
 
-    def get_subject_row(self, table, first_name="", last_name="", birthday=""):
-        return self.get_row(table, first_name=first_name, last_name=last_name, birthday=birthday)
+    def get_subject_row(self, first_name="", last_name="", birthday=""):
+        return self.search_table(self.subjects_table, first_name=first_name,
+                                 last_name=last_name, birthday=birthday)
+
+    def get_subjects(self, first_name, last_name, birthday):
+        query = ""
+        if first_name:
+            query += "first_name == {}".format(first_name)
+        if last_name:
+            query += "last_name == {}".format(last_name)
+        if birthday:
+            query += "birthday == {}".format(birthday)
+
+        print query
+        if query:
+            subject_list = self.search_table(self.subjects_table, first_name=first_name,
+                                             last_name=last_name, birthday=birthday)
+            print subject_list
+        else:
+            subject_list = self.subjects_table
+
+
+
+        subjects = []
+        keys = self.subjects_table.colnames
+        for s in subject_list:
+            subject = {}
+            for key, value in zip(keys, s.fetch_all_fields()):
+                subject[key] = value
+            subjects.append(subject)
+        return subjects
 
 
 class SessionsTable(Table):
@@ -151,7 +180,7 @@ class SessionsTable(Table):
         return group
 
     def get_session_row(self, table, session_name=""):
-        return self.get_row(table, session_name=session_name)
+        return self.search_table(table, session_name=session_name)
 
 
 class MeasurementsTable(Table):
@@ -201,7 +230,8 @@ class MeasurementsTable(Table):
         return group
 
     def get_measurement_row(self, table, measurement_name=""):
-        return self.get_row(table, measurement_name=measurement_name)
+        return self.search_table(table, measurement_name=measurement_name)
+
 
 class ContactsTable(Table):
     class Contacts(tables.IsDescription):
@@ -252,7 +282,7 @@ class ContactsTable(Table):
         return group
 
     def get_contact_row(self, table, contact_id=""):
-        return self.get_row(table, contact_id=contact_id)
+        return self.search_table(table, contact_id=contact_id)
 
 
 # This function can be used for data, contact_data and normalized_contact_data
