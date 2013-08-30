@@ -88,6 +88,7 @@ class SubjectWidget(QtGui.QWidget):
     def create_subject(self):
         subject = self.get_subject_fields()
         pub.sendMessage("create_subject", subject=subject)
+        pub.sendMessage("get_subjects", subject={})
 
     def get_subject_fields(self):
         # TODO Check here if the required fields have been entered

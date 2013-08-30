@@ -70,7 +70,7 @@ class SessionWidget(QtGui.QWidget):
 
         pub.sendMessage("create_session", session=session)
         # After creating a new session, get the updated table
-        self.get_sessions()
+        pub.sendMessage("get_sessions", session={})
 
 
     def get_session_fields(self):

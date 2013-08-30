@@ -98,7 +98,7 @@ class SubjectsTable(Table):
                                  last_name=last_name, birthday=birthday)
 
     def get_subjects(self, **kwargs):
-        if kwargs["first_name"] or kwargs["last_name"]:
+        if kwargs.get("first_name", None) or kwargs.get("last_name", None):
             subject_list = self.search_table(self.subjects_table, **kwargs)
         else:
             subject_list = self.subjects_table.read()
@@ -161,7 +161,7 @@ class SessionsTable(Table):
         return self.search_table(table, session_name=session_name)
 
     def get_sessions(self, **kwargs):
-        if kwargs["session_name"]:
+        if kwargs.get("session_name", None):
             session_list = self.search_table(self.sessions_table, **kwargs)
         else:
             session_list = self.sessions_table.read()
@@ -226,7 +226,7 @@ class MeasurementsTable(Table):
         return self.search_table(table, measurement_name=measurement_name)
 
     def get_measurements(self, **kwargs):
-        if kwargs["measurement_name"]:
+        if kwargs.get("measurement_name", None):
             measurement_list = self.search_table(self.measurements_table, **kwargs)
         else:
             measurement_list = self.measurements_table.read()
