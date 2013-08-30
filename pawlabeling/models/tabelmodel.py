@@ -34,17 +34,10 @@ class Table(object):
     # Though in practice this should NOT be possible
     def search_table(self, table, **kwargs):
         # Create a query out of the kwargs
-        query = " & ".join(["({} == '{}')".format(key, value) for key, value in kwargs.items()])
-        rows = list(table.where(query))
+        query = " & ".join(
+            ["({} == '{}')".format(key, value) for key, value in kwargs.items() if value != ""])
+        rows = table.readWhere(query)
         return rows
-
-    def get_id(self, table, item_id, **kwargs):
-        row = self.search_table(table, **kwargs)
-        return row[item_id]
-
-    def get_group(self, parent, item_id):
-        group = parent.__getattr__(item_id)
-        return group
 
     def close_table(self):
         """
@@ -87,7 +80,7 @@ class SubjectsTable(Table):
         self.subjects_table = self.table.root.subjects
 
         # Check if the subject is already in the table
-        if self.get_subject_row(first_name=kwargs["first_name"],
+        if self.get_subject(first_name=kwargs["first_name"],
                                 last_name=kwargs["last_name"], birthday=kwargs["birthday"]):
             print "Subject already exists"
             return -1
@@ -100,34 +93,21 @@ class SubjectsTable(Table):
         print "Subject created"
         return group
 
-    def get_subject_row(self, first_name="", last_name="", birthday=""):
+    def get_subject(self, first_name="", last_name="", birthday=""):
         return self.search_table(self.subjects_table, first_name=first_name,
                                  last_name=last_name, birthday=birthday)
 
-    def get_subjects(self, first_name, last_name, birthday):
-        query = ""
-        if first_name:
-            query += "first_name == {}".format(first_name)
-        if last_name:
-            query += "last_name == {}".format(last_name)
-        if birthday:
-            query += "birthday == {}".format(birthday)
-
-        print query
-        if query:
-            subject_list = self.search_table(self.subjects_table, first_name=first_name,
-                                             last_name=last_name, birthday=birthday)
-            print subject_list
+    def get_subjects(self, **kwargs):
+        if kwargs["first_name"] or kwargs["last_name"]:
+            subject_list = self.search_table(self.subjects_table, **kwargs)
         else:
-            subject_list = self.subjects_table
-
-
+            subject_list = self.subjects_table.read()
 
         subjects = []
         keys = self.subjects_table.colnames
         for s in subject_list:
             subject = {}
-            for key, value in zip(keys, s.fetch_all_fields()):
+            for key, value in zip(keys, s):
                 subject[key] = value
             subjects.append(subject)
         return subjects
@@ -158,6 +138,8 @@ class SessionsTable(Table):
                                    description=SessionsTable.SessionLabels,
                                    title="Session Labels")
 
+        self.sessions_table = self.subject_group.__getattr__("sessions")
+
     def create_session(self, **kwargs):
         if "session_name" not in kwargs:
             raise MissingIdentifier("I need at least a session name")
@@ -181,6 +163,22 @@ class SessionsTable(Table):
 
     def get_session_row(self, table, session_name=""):
         return self.search_table(table, session_name=session_name)
+
+    def get_sessions(self, **kwargs):
+        self.sessions_table = self.subject_group.__getattr__("sessions")
+        if kwargs["session_name"]:
+            session_list = self.search_table(self.sessions_table, **kwargs)
+        else:
+            session_list = self.sessions_table.read()
+
+        sessions = []
+        keys = self.sessions_table.colnames
+        for s in session_list:
+            session = {}
+            for key, value in zip(keys, s):
+                session[key] = value
+            sessions.append(session)
+        return sessions
 
 
 class MeasurementsTable(Table):

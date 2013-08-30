@@ -41,7 +41,9 @@ class Model():
         pub.subscribe(self.create_measurement, "create_measurement")
         pub.subscribe(self.create_contact, "create_contact")
 
-        pub.subscribe(self.search_subjects, "search_subjects")
+        pub.subscribe(self.get_subjects, "get_subjects")
+        pub.subscribe(self.put_subject, "put_subject")
+        pub.subscribe(self.get_sessions, "get_sessions")
 
     def create_subject(self, subject):
         """
@@ -53,9 +55,6 @@ class Model():
             self.logger.warning("Model.create_subject: Some of the required fields are missing")
 
     def create_session(self, session):
-        # So how do I get the subject_id?!?
-        self.subject_id = self.subject_group._v_name
-        self.sessions_table = tabelmodel.SessionsTable(subject_id=self.subject_id)
         try:
             self.session_group = self.sessions_table.create_session(**session)
         except MissingIdentifier:
@@ -86,9 +85,31 @@ class Model():
             except MissingIdentifier:
                 self.logger.warning("Model.create_contact: Some of the required fields are missing")
 
-    def search_subjects(self, first_name="", last_name="", birthday=""):
-        subjects = self.subjects_table.get_subjects(first_name=first_name, last_name=last_name, birthday=birthday)
+    def get_subjects(self, subject):
+        subjects = self.subjects_table.get_subjects(**subject)
         pub.sendMessage("update_subjects_tree", subjects=subjects)
+
+    def get_sessions(self, session):
+        sessions = self.sessions_table.get_sessions(**session)
+        pub.sendMessage("update_sessions_tree", sessions=sessions)
+
+    def put_subject(self, subject):
+        self.subject = subject
+        self.subject_id = subject["subject_id"]
+        self.logger.info("Subject ID set to {}".format(self.subject_id))
+        # As soon as a subject is selected, we instantiate our sessions table
+        self.sessions_table = tabelmodel.SessionsTable(subject_id=self.subject_id)
+
+    def put_session(self, session):
+        self.session = session
+        self.session_id = session["session_id"]
+        self.logger.info("Session ID set to {}").format(self.session_id)
+
+    def search_sessions(self, subject_id):
+        sessions = self.sessions_table.get_sessions(subject_id=subject_id)
+        pub.sendMessage("update_sessions_tree", sessions=sessions)
+
+    ##################################################################################################################
 
     def load_file_paths(self):
         self.logger.info("Model.load_file_paths: Loading file paths")
