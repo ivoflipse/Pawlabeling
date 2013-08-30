@@ -3,6 +3,7 @@ from collections import defaultdict
 import logging
 import datetime
 import numpy as np
+import tables
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
@@ -123,6 +124,12 @@ class DatabaseWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
+        pub.subscribe(self.update_subject_id, "update_subject_id")
+
+        # TODO check when to call this
+        # Ask for a new id
+        pub.sendMessage("get_new_subject_id")
+
     def create_subject(self):
         # TODO Check here if the required fields have been entered
         # Also add some validation, to check if they're acceptable
@@ -156,6 +163,13 @@ class DatabaseWidget(QtGui.QWidget):
                 getattr(self, field).setDate(QtCore.QDate.currentDate())
             else:
                 getattr(self, field).setText("")
+
+    def get_new_subject_id(self):
+        pub.sendMessage("get_new_subject_id")
+
+    def update_subject_id(self, subject_id):
+        assert type(subject_id) == str
+        self.subject_id.setText(subject_id)
 
     def fill_subject_table(self):
         # Set the id using only the number, so string off the "subject_"

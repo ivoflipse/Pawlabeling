@@ -23,14 +23,15 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle("Paw Labeling tool")
         self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/pawlabeling.png")))
 
+        # Create the base model for the entire application
+        # Make sure to do this first, in case anything relies on it
+        self.model = model.Model()
+
         self.database_widget = databasewidget.DatabaseWidget(self)
         self.processing_widget = processingwidget.ProcessingWidget(self)
         self.analysis_widget = analysiswidget.AnalysisWidget(self)
 
         self.tab_dict = {0:"Database", 1:"Processing", 2:"Analysis"}
-
-        # Create the base model for the entire application
-        self.model = model.Model()
 
         self.status = self.statusBar()
         self.status.showMessage("Ready")

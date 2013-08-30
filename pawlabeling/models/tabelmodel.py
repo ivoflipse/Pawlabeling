@@ -67,8 +67,15 @@ class SubjectsTable(Table):
         if 'subjects' not in self.table.root:
             self.subjects_table = self.table.createTable(where="/", name="subjects", description=SubjectsTable.Subjects,
                                                          title="Subjects")
+        else:
+            self.subjects_table = self.table.root.subjects
 
     def create_subject(self, **kwargs):
+        # TODO Here I check whether they are in the dict, but what if they're empty?
+        if "subject_id" not in kwargs:
+            raise MissingIdentifier("Subject ID must be non-empty")
+        # TODO Check if the subject_id isn't already taken
+
         # I need at least a last_name, probably some other value too...
         if "first_name" not in kwargs and "last_name" not in kwargs and "birthday" not in kwargs:
             raise MissingIdentifier("I need at least a first name, last name and birthday")
@@ -83,14 +90,8 @@ class SubjectsTable(Table):
             print "Subject already exists"
             return -1
 
-        if not kwargs["subject_id"]:
-            # How many subjects do we already have?
-            subject_count = len(self.subjects_table)
-            subject_id = "subject_" + str(subject_count)
-            # Add the subject_id to the key word arguments
-            kwargs["subject_id"] = subject_id
-        else:
-            subject_id = kwargs["subject_id"]
+
+        subject_id = kwargs["subject_id"]
 
         self.create_row(self.subjects_table, **kwargs)
         self.create_group(parent=self.table.root, item_id=subject_id)

@@ -41,6 +41,8 @@ class Model():
         pub.subscribe(self.create_measurement, "create_measurement")
         pub.subscribe(self.create_contact, "create_contact")
 
+        pub.subscribe(self.get_new_subject_id, "get_new_subject_id")
+
     def create_subject(self, subject):
         """
         This function takes a subject dictionary object and stores it in PyTables
@@ -81,6 +83,10 @@ class Model():
                 self.contacts_table.create_contact(**contact)
             except MissingIdentifier:
                 self.logger.warning("Model.create_contact: Some of the required fields are missing")
+
+    def get_new_subject_id(self):
+        subject_count = len(self.subjects_table.subjects_table)
+        pub.sendMessage("update_subject_id", subject_id="subject_{}".format(subject_count))
 
     def load_file_paths(self):
         self.logger.info("Model.load_file_paths: Loading file paths")
