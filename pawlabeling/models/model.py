@@ -44,6 +44,7 @@ class Model():
         pub.subscribe(self.get_subjects, "get_subjects")
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.get_sessions, "get_sessions")
+        pub.subscribe(self.put_session, "put_session")
 
     def create_subject(self, subject):
         """
@@ -61,20 +62,12 @@ class Model():
             self.logger.warning("Model.create_session: Some of the required fields are missing")
 
     def create_measurement(self, measurement):
-        self.session_id = self.session_group._v_name
-        self.measurements_table = tabelmodel.MeasurementsTable(subject_id=self.subject_id,
-                                                               session_id=self.session_id)
         try:
             self.measurement_group = self.measurements_table.create_measurement(**measurement)
         except MissingIdentifier:
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
 
     def create_contact(self, contacts):
-        self.measurement_id = self.measurement_group._v_name
-        self.contacts_table = tabelmodel.ContactsTable(subject_id=self.subject_id,
-                                                       session_id=self.session_id,
-                                                       measurement_id=self.measurement_id)
-
         # TODO You might want to check if the contact_id key is present and that each contact is a dictionary
         # We'll track the contact groups using this contact_ids dictionary
         self.contact_ids = {}
@@ -93,6 +86,10 @@ class Model():
         sessions = self.sessions_table.get_sessions(**session)
         pub.sendMessage("update_sessions_tree", sessions=sessions)
 
+    def get_measurements(self, measurement):
+        measurements = self.measurements_table.get_measurements(**measurement)
+        pub.sendMessage("update_measurements_tree", measurements=measurements)
+
     def put_subject(self, subject):
         self.subject = subject
         self.subject_id = subject["subject_id"]
@@ -104,6 +101,17 @@ class Model():
         self.session = session
         self.session_id = session["session_id"]
         self.logger.info("Session ID set to {}").format(self.session_id)
+        self.measurements_table = self.measurements_table = tabelmodel.MeasurementsTable(subject_id=self.subject_id,
+                                                                                         session_id=self.session_id)
+
+    # TODO How do you plan to keep these in sync between tabs? Will you update the selection on all tabs?
+    def put_measurement(self, measurement):
+        self.measurement = measurement
+        self.measurement_id = measurement["measurement_id"]
+        self.logger.info("Measurement ID set to {}").format(self.measurement_id)
+        self.contacts_table = tabelmodel.ContactsTable(subject_id=self.subject_id,
+                                                       session_id=self.session_id,
+                                                       measurement_id=self.measurement_id)
 
     def search_sessions(self, subject_id):
         sessions = self.sessions_table.get_sessions(subject_id=subject_id)

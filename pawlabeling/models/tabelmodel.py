@@ -70,18 +70,18 @@ class SubjectsTable(Table):
         else:
             self.subjects_table = self.table.root.subjects
 
+        self.column_names = self.subjects_table.colnames
+
     def create_subject(self, **kwargs):
         # I need at least a last_name, probably some other value too...
         if "first_name" not in kwargs and "last_name" not in kwargs and "birthday" not in kwargs:
             raise MissingIdentifier("I need at least a first name, last name and birthday")
 
         # TODO Add some other validation to see if the input values are correct
-        # Get the subject table
-        self.subjects_table = self.table.root.subjects
 
         # Check if the subject is already in the table
         if self.get_subject(first_name=kwargs["first_name"],
-                                last_name=kwargs["last_name"], birthday=kwargs["birthday"]):
+                            last_name=kwargs["last_name"], birthday=kwargs["birthday"]):
             print "Subject already exists"
             return -1
 
@@ -104,10 +104,9 @@ class SubjectsTable(Table):
             subject_list = self.subjects_table.read()
 
         subjects = []
-        keys = self.subjects_table.colnames
         for s in subject_list:
             subject = {}
-            for key, value in zip(keys, s):
+            for key, value in zip(self.column_names, s):
                 subject[key] = value
             subjects.append(subject)
         return subjects
@@ -135,17 +134,14 @@ class SessionsTable(Table):
             self.table.createTable(where=self.subject_group, name="sessions", description=SessionsTable.Sessions,
                                    title="Sessions")
             self.table.createTable(where=self.subject_group, name="session_labels",
-                                   description=SessionsTable.SessionLabels,
-                                   title="Session Labels")
+                                   description=SessionsTable.SessionLabels, title="Session Labels")
 
-        self.sessions_table = self.subject_group.__getattr__("sessions")
+        self.sessions_table = self.subject_group.sessions
+        self.column_names = self.sessions_table.colnames
 
     def create_session(self, **kwargs):
         if "session_name" not in kwargs:
             raise MissingIdentifier("I need at least a session name")
-
-        # Get the sessions table
-        self.sessions_table = self.subject_group.__getattr__("sessions")
 
         # Check if the session isn't already in the table
         if self.get_session_row(self.sessions_table, session_name=kwargs["session_name"]):
@@ -165,17 +161,15 @@ class SessionsTable(Table):
         return self.search_table(table, session_name=session_name)
 
     def get_sessions(self, **kwargs):
-        self.sessions_table = self.subject_group.__getattr__("sessions")
         if kwargs["session_name"]:
             session_list = self.search_table(self.sessions_table, **kwargs)
         else:
             session_list = self.sessions_table.read()
 
         sessions = []
-        keys = self.sessions_table.colnames
         for s in session_list:
             session = {}
-            for key, value in zip(keys, s):
+            for key, value in zip(self.column_names, s):
                 session[key] = value
             sessions.append(session)
         return sessions
@@ -209,11 +203,12 @@ class MeasurementsTable(Table):
                                                              description=MeasurementsTable.Measurements,
                                                              title="Measurements")
 
+        self.measurements_table = self.session_group.measurements
+        self.column_names = self.measurements_table.colnames
+
     def create_measurement(self, **kwargs):
         if "measurement_name" not in kwargs:
             raise MissingIdentifier("I need at least a measurement name")
-
-        self.measurements_table = self.session_group.measurements
 
         if self.get_measurement_row(self.measurements_table, measurement_name=kwargs["measurement_name"]):
             print "Measurement already exists"
@@ -229,6 +224,20 @@ class MeasurementsTable(Table):
 
     def get_measurement_row(self, table, measurement_name=""):
         return self.search_table(table, measurement_name=measurement_name)
+
+    def get_measurements(self, **kwargs):
+        if kwargs["measurement_name"]:
+            measurement_list = self.search_table(self.measurements_table, **kwargs)
+        else:
+            measurement_list = self.measurements_table.read()
+
+        measurements = []
+        for m in measurement_list:
+            measurement = {}
+            for column, value in zip(self.column_names, m):
+                measurement[column] = value
+            measurements.append(measurement)
+        return measurements
 
 
 class ContactsTable(Table):
@@ -264,11 +273,12 @@ class ContactsTable(Table):
                                                          description=ContactsTable.Contacts,
                                                          title="Contacts")
 
+        self.contacts_table = self.measurement_group.contacts
+        self.column_names = self.contacts_table.colnames
+
     def create_contact(self, **kwargs):
         if "contact_id" not in kwargs:
             raise MissingIdentifier("I need at least a contact id")
-
-        self.contacts_table = self.measurement_group.contacts
 
         if self.get_contact_row(self.contacts_table, contact_id=kwargs["contact_id"]):
             print "Contact already exists"
@@ -281,6 +291,16 @@ class ContactsTable(Table):
 
     def get_contact_row(self, table, contact_id=""):
         return self.search_table(table, contact_id=contact_id)
+
+    def get_contacts(self, **kwargs):
+        contact_list = self.contacts_table.read()
+        contacts = []
+        for c in contact_list:
+            contact = {}
+            for column, value in zip(self.column_names, c):
+                contact[column] = value
+            contacts.append(contact)
+        return contacts
 
 
 # This function can be used for data, contact_data and normalized_contact_data
