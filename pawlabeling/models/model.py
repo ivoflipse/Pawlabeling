@@ -46,40 +46,39 @@ class Model():
         This function takes a subject dictionary object and stores it in PyTables
         """
         try:
-            self.subject_row, self.subject_group = self.subjects_table.create_subject(**subject)
+            self.subjects_table.create_subject(**subject)
         except MissingIdentifier:
             self.logger.warning("Model.create_subject: Some of the required fields are missing")
 
     def create_session(self, session):
-        print self.subject_row[:]
-        subject_id = self.subject_row["subject_id"]
-        print "subject_id: '{}'".format(subject_id)
+        # So how do I get the subject_id?!?
+        subject_id = "subject_0"
         self.sessions_table = tabelmodel.SessionsTable(subject_id=subject_id)
         try:
-            self.session_row, self.session_group = self.sessions_table.create_session(**session)
+            self.sessions_table.create_session(**session)
         except MissingIdentifier:
             self.logger.warning("Model.create_session: Some of the required fields are missing")
 
     def create_measurement(self, measurement):
-        subject_id = self.session_row["subject_id"]
-        session_id = self.session_row["session_id"]
+        subject_id = "subject_0"
+        session_id = "session_0"
         self.measurements_table = tabelmodel.MeasurementsTable(subject_id=subject_id, session_id=session_id)
         try:
-            self.measurement_row, self.measurement_group = self.measurements_table.create_measurement(**measurement)
+            self.measurements_table.create_measurement(**measurement)
         except MissingIdentifier:
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
 
     def create_contact(self, contacts):
-        subject_id = self.measurement_row["subject_id"]
-        session_id = self.measurement_row["session_id"]
-        measurement_id = self.measurement_row["measurement_id"]
+        subject_id = "subject_0"
+        session_id = "session_0"
+        measurement_id = "measurement_0"
         self.contacts_table = tabelmodel.ContactsTable(subject_id=subject_id, session_id=session_id,
                                                        measurement_id=measurement_id)
 
         # TODO You might want to check if the contact_id key is present and that each contact is a dictionary
         for contact in contacts:
             try:
-                self.contact_row, self.contact_group = self.contacts_table.create_contact(**contact)
+                self.contacts_table.create_contact(**contact)
             except MissingIdentifier:
                 self.logger.warning("Model.create_contact: Some of the required fields are missing")
 

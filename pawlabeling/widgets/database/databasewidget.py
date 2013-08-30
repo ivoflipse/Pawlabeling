@@ -144,7 +144,7 @@ class DatabaseWidget(QtGui.QWidget):
 
     def create_session(self):
         session = {}
-        session["session_name "] = self.session_name.text()
+        session["session_name"] = self.session_name.text()
         session["session_date"] = self.session_date.date().toString(Qt.ISODate)
         session["session_time"] = self.session_time.time().toString(Qt.ISODate)
 
