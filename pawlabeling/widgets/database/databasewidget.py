@@ -81,8 +81,19 @@ class DatabaseWidget(QtGui.QWidget):
                                                      connection=self.subject_widget.clear_subject_fields
         )
 
+        self.change_file_location_action = gui.create_action(text="&Change File location",
+                                                             shortcut=QtGui.QKeySequence("CTRL+O"),
+                                                             icon=QtGui.QIcon(
+                                                                 os.path.join(os.path.dirname(__file__),
+                                                                              "../images/folder_icon.png")),
+                                                             tip="Change the file location",
+                                                             checkable=False,
+                                                             connection=self.measurement_widget.change_file_location
+        )
+
         self.actions = [self.something_action, self.clear_subject_fields_action,
-                        self.create_subject_action, self.create_session_action]
+                        self.create_subject_action, self.create_session_action,
+                        self.change_file_location_action]
 
         for action in self.actions:
             #action.setShortcutContext(Qt.WindowShortcut)

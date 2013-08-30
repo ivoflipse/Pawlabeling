@@ -1,15 +1,8 @@
-import os
-from collections import defaultdict
 import logging
-import datetime
-import numpy as np
-import tables
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
-from pawlabeling.settings import configuration
-from pawlabeling.widgets.database import subjectwidget
 
 
 class SessionWidget(QtGui.QWidget):

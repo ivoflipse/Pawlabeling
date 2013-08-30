@@ -1,13 +1,8 @@
-import os
-from collections import defaultdict
 import logging
-import datetime
-
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
-from pawlabeling.settings import configuration
 
 
 class SubjectWidget(QtGui.QWidget):
