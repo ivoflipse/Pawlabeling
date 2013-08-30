@@ -27,13 +27,12 @@ class DatabaseWidget(QtGui.QWidget):
         self.subject_tree = QtGui.QTreeWidget(self)
         self.subject_tree.setMinimumWidth(300)
         self.subject_tree.setMaximumWidth(400)
-        self.subject_tree.setColumnCount(4)
-        self.subject_tree.setHeaderLabels(["ID", "First Name", "Last Name", "Birthday"])
+        self.subject_tree.setColumnCount(3)
+        self.subject_tree.setHeaderLabels(["First Name", "Last Name", "Birthday"])
 
         self.subject_tree_layout = QtGui.QVBoxLayout()
         self.subject_tree_layout.addWidget(self.subject_tree)
 
-        self.subject_id_label = QtGui.QLabel("Subject ID")
         self.birthday_label = QtGui.QLabel("Birthday")
         self.mass_label = QtGui.QLabel("Mass")
         self.first_name_label = QtGui.QLabel("First Name")
@@ -43,7 +42,6 @@ class DatabaseWidget(QtGui.QWidget):
         self.phone_label = QtGui.QLabel("Phone")
         self.email_label = QtGui.QLabel("Email")
 
-        self.subject_id = QtGui.QLineEdit()
         self.birthday = QtGui.QDateTimeEdit(QtCore.QDate.currentDate())
         self.birthday.setMinimumDate(QtCore.QDate.currentDate().addYears(-100))
         self.birthday.setMaximumDate(QtCore.QDate.currentDate())
@@ -57,30 +55,27 @@ class DatabaseWidget(QtGui.QWidget):
         self.phone = QtGui.QLineEdit()
         self.email = QtGui.QLineEdit()
 
-
-        self.subject_fields = ["subject_id", "birthday", "mass", "first_name", "last_name",
+        self.subject_fields = ["birthday", "mass", "first_name", "last_name",
                                "address", "city", "phone", "email"]
 
         self.subject_layout = QtGui.QGridLayout()
         self.subject_layout.setSpacing(10)
-        self.subject_layout.addWidget(self.subject_id_label, 1, 0)
-        self.subject_layout.addWidget(self.subject_id, 1, 1)
-        self.subject_layout.addWidget(self.mass_label, 2, 0)
-        self.subject_layout.addWidget(self.mass, 2, 1)
-        self.subject_layout.addWidget(self.birthday_label, 2, 2)
-        self.subject_layout.addWidget(self.birthday, 2, 3)
-        self.subject_layout.addWidget(self.first_name_label, 3, 0)
-        self.subject_layout.addWidget(self.first_name, 3, 1)
-        self.subject_layout.addWidget(self.last_name_label, 3, 2)
-        self.subject_layout.addWidget(self.last_name, 3, 3)
-        self.subject_layout.addWidget(self.address_label, 4, 0)
-        self.subject_layout.addWidget(self.address, 4, 1)
-        self.subject_layout.addWidget(self.city_label, 4, 2)
-        self.subject_layout.addWidget(self.city, 4, 3)
-        self.subject_layout.addWidget(self.phone_label, 5, 0)
-        self.subject_layout.addWidget(self.phone, 5, 1)
-        self.subject_layout.addWidget(self.email_label, 5, 2)
-        self.subject_layout.addWidget(self.email, 5, 3)
+        self.subject_layout.addWidget(self.mass_label, 1, 0)
+        self.subject_layout.addWidget(self.mass, 1, 1)
+        self.subject_layout.addWidget(self.birthday_label, 1, 2)
+        self.subject_layout.addWidget(self.birthday, 1, 3)
+        self.subject_layout.addWidget(self.first_name_label, 2, 0)
+        self.subject_layout.addWidget(self.first_name, 2, 1)
+        self.subject_layout.addWidget(self.last_name_label, 2, 2)
+        self.subject_layout.addWidget(self.last_name, 2, 3)
+        self.subject_layout.addWidget(self.address_label, 3, 0)
+        self.subject_layout.addWidget(self.address, 3, 1)
+        self.subject_layout.addWidget(self.city_label, 3, 2)
+        self.subject_layout.addWidget(self.city, 3, 3)
+        self.subject_layout.addWidget(self.phone_label, 4, 0)
+        self.subject_layout.addWidget(self.phone, 4, 1)
+        self.subject_layout.addWidget(self.email_label, 4, 2)
+        self.subject_layout.addWidget(self.email, 4, 3)
 
         self.session_name_label = QtGui.QLabel("Session Name")
         self.session_date_label = QtGui.QLabel("Session Date")
@@ -124,12 +119,6 @@ class DatabaseWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
-        pub.subscribe(self.update_subject_id, "update_subject_id")
-
-        # TODO check when to call this
-        # Ask for a new id
-        pub.sendMessage("get_new_subject_id")
-
     def create_subject(self):
         # TODO Check here if the required fields have been entered
         # Also add some validation, to check if they're acceptable
@@ -164,12 +153,6 @@ class DatabaseWidget(QtGui.QWidget):
             else:
                 getattr(self, field).setText("")
 
-    def get_new_subject_id(self):
-        pub.sendMessage("get_new_subject_id")
-
-    def update_subject_id(self, subject_id):
-        assert type(subject_id) == str
-        self.subject_id.setText(subject_id)
 
     def fill_subject_table(self):
         # Set the id using only the number, so string off the "subject_"
@@ -178,10 +161,9 @@ class DatabaseWidget(QtGui.QWidget):
         # Add the subjects to the subject_tree
         for index, paw in enumerate(range(20)):
             rootItem = QtGui.QTreeWidgetItem(self.subject_tree)
-            rootItem.setText(0, str(index))
-            rootItem.setText(1, "Blabla")
-            rootItem.setText(2, "Bar")
-            rootItem.setText(3, str(datetime.date.today()))
+            rootItem.setText(0, "Blabla")
+            rootItem.setText(1, "Bar")
+            rootItem.setText(2, str(datetime.date.today()))
 
         # Select the first item in the contacts tree
         item = self.subject_tree.topLevelItem(0)

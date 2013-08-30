@@ -8,6 +8,7 @@ class Table(object):
     def __init__(self):
         # Make this configurable
         self.table = tables.openFile("data.h5", mode="a", title="Data")
+        self.table_name = "table"
 
     def create_row(self, table, **kwargs):
         row = table.row
@@ -20,9 +21,13 @@ class Table(object):
         # Flush the changes
         table.flush()
 
+    def get_new_id(self, table):
+        return "{}_{}".format(self.table_name, len(table))
+
     def create_group(self, parent, item_id):
         group = self.table.createGroup(where=parent, name=item_id)
         self.table.flush()
+        return group
 
     def get_row(self, table, **kwargs):
         # Create a query out of the kwargs
@@ -63,6 +68,8 @@ class SubjectsTable(Table):
 
     def __init__(self):
         super(SubjectsTable, self).__init__()
+        self.table_name = "subject"
+
         # Check if table has subjects table
         if 'subjects' not in self.table.root:
             self.subjects_table = self.table.createTable(where="/", name="subjects", description=SubjectsTable.Subjects,
@@ -71,11 +78,6 @@ class SubjectsTable(Table):
             self.subjects_table = self.table.root.subjects
 
     def create_subject(self, **kwargs):
-        # TODO Here I check whether they are in the dict, but what if they're empty?
-        if "subject_id" not in kwargs:
-            raise MissingIdentifier("Subject ID must be non-empty")
-        # TODO Check if the subject_id isn't already taken
-
         # I need at least a last_name, probably some other value too...
         if "first_name" not in kwargs and "last_name" not in kwargs and "birthday" not in kwargs:
             raise MissingIdentifier("I need at least a first name, last name and birthday")
@@ -90,12 +92,13 @@ class SubjectsTable(Table):
             print "Subject already exists"
             return -1
 
-
-        subject_id = kwargs["subject_id"]
+        subject_id = self.get_new_id(self.subjects_table)
+        kwargs["subject_id"] = subject_id
 
         self.create_row(self.subjects_table, **kwargs)
-        self.create_group(parent=self.table.root, item_id=subject_id)
+        group = self.create_group(parent=self.table.root, item_id=subject_id)
         print "Subject created"
+        return group
 
     def get_subject_row(self, table, first_name="", last_name="", birthday=""):
         return self.get_row(table, first_name=first_name, last_name=last_name, birthday=birthday)
@@ -115,6 +118,7 @@ class SessionsTable(Table):
 
     def __init__(self, subject_id):
         super(SessionsTable, self).__init__()
+        self.table_name = "session"
         self.subject_id = subject_id
         self.subject_group = self.table.root.__getattr__(self.subject_id)
 
@@ -138,12 +142,13 @@ class SessionsTable(Table):
             return -1
 
         # How many sessions do we already have?
-        session_count = len(self.sessions_table)
-        session_id = "session_" + str(session_count)
+        session_id = self.get_new_id(self.sessions_table)
         kwargs["session_id"] = session_id
+
         self.create_row(self.sessions_table, **kwargs)
-        self.create_group(parent=self.subject_group, item_id=session_id)
+        group = self.create_group(parent=self.subject_group, item_id=session_id)
         print "Session created"
+        return group
 
     def get_session_row(self, table, session_name=""):
         return self.get_row(table, session_name=session_name)
@@ -166,6 +171,7 @@ class MeasurementsTable(Table):
 
     def __init__(self, subject_id, session_id):
         super(MeasurementsTable, self).__init__()
+        self.table_name = "measurement"
         self.subject_id = subject_id
         self.session_id = session_id
 
@@ -186,13 +192,13 @@ class MeasurementsTable(Table):
             print "Measurement already exists"
             return -1
 
-        measurement_count = len(self.measurements_table)
-        measurement_id = "measurement_" + str(measurement_count)
+        measurement_id = self.get_new_id(self.measurements_table)
         kwargs["measurement_id"] = measurement_id
 
         self.create_row(self.measurements_table, **kwargs)
-        self.create_group(parent=self.session_group, item_id=measurement_id)
+        group = self.create_group(parent=self.session_group, item_id=measurement_id)
         print "Measurement created"
+        return group
 
     def get_measurement_row(self, table, measurement_name=""):
         return self.get_row(table, measurement_name=measurement_name)
@@ -218,6 +224,7 @@ class ContactsTable(Table):
 
     def __init__(self, subject_id, session_id, measurement_id):
         super(ContactsTable, self).__init__()
+        self.table_name = "contact"
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
@@ -240,8 +247,9 @@ class ContactsTable(Table):
             return -1
 
         self.create_row(self.contacts_table, **kwargs)
-        self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])
+        group = self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])
         print "Contact created"
+        return group
 
     def get_contact_row(self, table, contact_id=""):
         return self.get_row(table, contact_id=contact_id)
