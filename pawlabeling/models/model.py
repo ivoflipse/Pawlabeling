@@ -62,23 +62,44 @@ class Model():
             self.logger.warning("Model.create_session: Some of the required fields are missing")
 
     def create_measurement(self, measurement):
+        measurement_name = measurement["measurement_name"]
+        file_path = measurement["file_path"]
+
         measurement["subject_id"] = self.subject_id
         measurement["session_id"] = self.session_id
-        # Unzip the file
-        input_file = io.open_zip_file(measurement["file_path"])
+
+        # Check if the file is zipped or not and extract the raw data
+        if measurement_name[-3:] == "zip":
+            # Unzip the file
+            input_file = io.open_zip_file(file_path)
+            measurement["measurement_name"] = measurement_name[:-4]  # Store without the zip part please
+        else:
+            with open(file_path, "r") as infile:
+                input_file = infile.read()
+
+            # If the user wants us to zip it, zip it so they don't keep taking up so much space!
+            if configuration.zip_files:
+                io.zip_file(configuration.measurement_folder, measurement_name)
+
         # Extract the data
         data = io.load(input_file, brand=measurement["brand"])
         number_of_rows, number_of_cols, number_of_frames = data.shape
         measurement["number_of_rows"] = number_of_rows
         measurement["number_of_cols"] = number_of_cols
         measurement["number_of_frames"] = number_of_frames
-        measurement["orientation"] = io.check_orientation(data)
-        measurement["maximum_value"] = data.max()
+        measurement["orientation"] = io.check_orientation(data)  # TODO This function seems to be incorrect somehow!
+        measurement["maximum_value"] = data.max() # Perhaps round this and store it as an int?
+        # Store the file_name without the .zip
+
         # We're not going to store this, so we delete the key
         del measurement["file_path"]
 
         try:
             self.measurement_group = self.measurements_table.create_measurement(**measurement)
+            # Don't forget to store the data for the measurement as well!
+            self.measurements_table.store_data(group=self.measurement_group,
+                                               item_id=measurement["measurement_name"],
+                                               data=data)
         except MissingIdentifier:
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
 

@@ -49,12 +49,23 @@ class MeasurementWidget(QtGui.QWidget):
 
         self.model.activated.connect(self.change_model)
 
-        self.brand_model_layout = QtGui.QGridLayout()
-        self.brand_model_layout.setSpacing(10)
-        self.brand_model_layout.addWidget(self.brand_label, 1, 0)
-        self.brand_model_layout.addWidget(self.brand, 1, 1)
-        self.brand_model_layout.addWidget(self.model_label, 1, 2)
-        self.brand_model_layout.addWidget(self.model, 1, 3)
+        self.frequency_label = QtGui.QLabel("Frequency")
+        self.frequency = QtGui.QComboBox(self)
+        for frequency in ["100", "125", "150", "200", "250", "500"]:
+            self.frequency.addItem(frequency)
+
+        self.frequency.activated.connect(self.change_frequency)
+
+        # TODO Perhaps add a set to default or something? Though this can/should be done in the settings
+
+        self.brand_model_layout = QtGui.QHBoxLayout()
+        self.brand_model_layout.addWidget(self.brand_label)
+        self.brand_model_layout.addWidget(self.brand)
+        self.brand_model_layout.addWidget(self.model_label)
+        self.brand_model_layout.addWidget(self.model)
+        self.brand_model_layout.addWidget(self.frequency_label)
+        self.brand_model_layout.addWidget(self.frequency)
+        self.brand_model_layout.addStretch(1)
 
         self.files_tree = QtGui.QTreeWidget(self)
         self.files_tree.setColumnCount(3)
@@ -134,34 +145,21 @@ class MeasurementWidget(QtGui.QWidget):
             root_item.setText(2, creation_date)
 
     def add_measurements(self, evt=None):
-        """
-            measurement_id = tables.StringCol(64)
-            session_id = tables.StringCol(64)
-            subject_id = tables.StringCol(64)
-            measurement_name = tables.StringCol(64)
-            number_of_frames = tables.UInt32Col()
-            number_of_rows = tables.UInt32Col()
-            number_of_cols = tables.UInt32Col()
-            measurement_frequency = tables.UInt32Col()
-            orientation = tables.BoolCol()
-            maximum_value = tables.Float32Col()
-            brand = tables.StringCol(32)
-            model = tables.StringCol(32)
-            date = tables.StringCol(32)
-            time = tables.StringCol(32)
-        """
+        # All measurements from the same session must have the same brand/model/frequency
+        brand = configuration.brand
+        model = configuration.model
+        frequency = configuration.frequency
         for file_name, file_path in self.file_paths.items():
             date_time = time.strftime("%Y-%m-%d %H:%M",time.gmtime(os.path.getctime(file_path))).split(" ")
-            brand = configuration.brand
-            model = configuration.model
-            frequency = configuration.frequency
             # Check if the brand and model have been changed or not
             measurement = {"measurement_name":file_name,
                            "file_path":file_path,
                            "date":date_time[0],
                            "time":date_time[1],
                            "brand":brand,
-                           "model":model}
+                           "model":model,
+                           "frequency":frequency
+            }
             pub.sendMessage("create_measurement", measurement=measurement)
             # Update the tree after a measurement has been created
             pub.sendMessage("get_measurements", measurement={})
@@ -180,15 +178,22 @@ class MeasurementWidget(QtGui.QWidget):
     def get_measurements(self, session=None):
         pub.sendMessage("get_measurements", measurement={})
 
-    def change_brand(self, evt=None):
-        brand = self.brand.text()
+    def change_brand(self, index):
+        brand = self.brand.itemText(index)
         configuration.brand = brand
         # Adjust the size in case the text is too big to fit
         self.brand.adjustSize()
         self.logger.info("measurementwidget.change_brand: Brand changed to {}".format(brand))
 
-    def change_model(self, evt=None):
-        model = self.model.text()
+    def change_model(self, index):
+        model = self.model.itemText(index)
         configuration.model = model
         self.model.adjustSize()
         self.logger.info("measurementwidget.change_model: Model changed to {}".format(model))
+
+    def change_frequency(self, index):
+        frequency = self.frequency.itemText(index)
+        # The combobox stores text, so be sure to convert to int!
+        configuration.frequency = int(frequency)
+        self.frequency.adjustSize()
+        self.logger.info("measurmentwidget.change_frequency: Frequency changed to {}".format(frequency))

@@ -143,6 +143,8 @@ interpolation_entire_plate = config["interpolation_degree"]["entire_plate"]
 interpolation_paws_widget = config["interpolation_degree"]["paws_widget"]
 interpolation_results = config["interpolation_degree"]["results"]
 
+zip_files = config["application"]["zip_files"]
+
 logging_levels = {
     "debug": logging.DEBUG,
     "info": logging.INFO,

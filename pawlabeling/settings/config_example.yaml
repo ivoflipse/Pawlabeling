@@ -32,3 +32,6 @@ thresholds:
   tracking_spatial: 1.25
   tracking_surface: 0.25
   padding_factor: 1
+
+application:
+  zip_files: True

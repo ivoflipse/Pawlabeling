@@ -39,6 +39,17 @@ class Table(object):
         rows = table.readWhere(query)
         return rows
 
+    # This function can be used for data, contact_data and normalized_contact_data
+    # Actually also for all the different results (at least the time series)
+    # TODO: check if I'm not creating duplicate data, so check if the item_id already exists in the group
+    def store_data(self, group, item_id, data):
+        atom = tables.Atom.from_dtype(data.dtype)
+        filters = tables.Filters(complib="blosc", complevel=9)
+        data_array = self.table.createCArray(where=group, name=item_id,
+                                        atom=atom, shape=data.shape, filters=filters)
+        data_array[:] = data
+        self.table.flush()
+
     def close_table(self):
         """
         Make sure we clean up after ourselves
@@ -174,7 +185,7 @@ class SessionsTable(Table):
             sessions.append(session)
         return sessions
 
-
+# TODO: See if you can reduce the precision, so we don't needlessly waste tons and tons of space
 class MeasurementsTable(Table):
     class Measurements(tables.IsDescription):
         measurement_id = tables.StringCol(64)
@@ -184,7 +195,7 @@ class MeasurementsTable(Table):
         number_of_frames = tables.UInt32Col()
         number_of_rows = tables.UInt32Col()
         number_of_cols = tables.UInt32Col()
-        measurement_frequency = tables.UInt32Col()
+        frequency = tables.UInt32Col()
         orientation = tables.BoolCol()
         maximum_value = tables.Float32Col()
         brand = tables.StringCol(32)
@@ -303,15 +314,3 @@ class ContactsTable(Table):
                 contact[column] = value
             contacts.append(contact)
         return contacts
-
-
-# This function can be used for data, contact_data and normalized_contact_data
-# Actually also for all the different results (at least the time series)
-# TODO: check if I'm not creating duplicate data, so check if the item_id already exists in the group
-def store_data(table, group, item_id, data):
-    atom = tables.Atom.from_dtype(data.dtype)
-    filters = tables.Filters(complib="blosc", complevel=9)
-    data_array = table.createCArray(where=group, name=item_id,
-                                    atom=atom, shape=data.shape, filters=filters)
-    data_array[:] = data
-    table.flush()
