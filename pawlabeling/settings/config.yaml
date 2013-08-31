@@ -5,6 +5,10 @@ interpolation_degree:
   entire_plate: 4
   paws_widget: 8
   results: 16
+plate:
+  brand: rsscan
+  frequency: 125
+  model: 2m 2nd gen
 sensors:
   height: 1
   width: 1

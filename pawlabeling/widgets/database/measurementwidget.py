@@ -33,6 +33,29 @@ class MeasurementWidget(QtGui.QWidget):
         self.measurement_folder_layout.addWidget(self.measurement_folder)
         self.measurement_folder_layout.addWidget(self.measurement_folder_button)
 
+        self.brand_label = QtGui.QLabel("Brand")
+        self.brand = QtGui.QComboBox(self)
+        for brand in ["rsscan","zebris","novel","teksan"]:
+            self.brand.addItem(brand)
+
+        self.brand.activated.connect(self.change_brand)
+
+        self.model_label = QtGui.QLabel("Model")
+        self.model = QtGui.QComboBox(self)
+        # TODO load the different models from the config file
+        # Then the user can set which systems he/she owns
+        for model in ["2m 2nd gen", "1m USB", "0.5m USB"]:
+            self.model.addItem(model)
+
+        self.model.activated.connect(self.change_model)
+
+        self.brand_model_layout = QtGui.QGridLayout()
+        self.brand_model_layout.setSpacing(10)
+        self.brand_model_layout.addWidget(self.brand_label, 1, 0)
+        self.brand_model_layout.addWidget(self.brand, 1, 1)
+        self.brand_model_layout.addWidget(self.model_label, 1, 2)
+        self.brand_model_layout.addWidget(self.model, 1, 3)
+
         self.files_tree = QtGui.QTreeWidget(self)
         self.files_tree.setColumnCount(3)
         self.files_tree.setHeaderLabels(["Name", "Size", "Date"])
@@ -51,6 +74,7 @@ class MeasurementWidget(QtGui.QWidget):
         bar_6.setFrameShape(QtGui.QFrame.Shape.HLine)
         self.measurement_layout.addWidget(bar_6)
         self.measurement_layout.addLayout(self.measurement_folder_layout)
+        self.measurement_layout.addLayout(self.brand_model_layout)
         self.measurement_layout.addWidget(self.files_tree)
         self.measurement_layout.addWidget(self.measurement_tree_label)
         bar_5 = QtGui.QFrame(self)
@@ -130,6 +154,7 @@ class MeasurementWidget(QtGui.QWidget):
             date_time = time.strftime("%Y-%m-%d %H:%M",time.gmtime(os.path.getctime(file_path))).split(" ")
             brand = configuration.brand
             model = configuration.model
+            frequency = configuration.frequency
             # Check if the brand and model have been changed or not
             measurement = {"measurement_name":file_name,
                            "file_path":file_path,
@@ -154,3 +179,16 @@ class MeasurementWidget(QtGui.QWidget):
 
     def get_measurements(self, session=None):
         pub.sendMessage("get_measurements", measurement={})
+
+    def change_brand(self, evt=None):
+        brand = self.brand.text()
+        configuration.brand = brand
+        # Adjust the size in case the text is too big to fit
+        self.brand.adjustSize()
+        self.logger.info("measurementwidget.change_brand: Brand changed to {}".format(brand))
+
+    def change_model(self, evt=None):
+        model = self.model.text()
+        configuration.model = model
+        self.model.adjustSize()
+        self.logger.info("measurementwidget.change_model: Model changed to {}".format(model))
