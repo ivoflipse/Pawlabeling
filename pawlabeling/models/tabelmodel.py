@@ -185,6 +185,8 @@ class MeasurementsTable(Table):
         number_of_rows = tables.UInt32Col()
         number_of_cols = tables.UInt32Col()
         measurement_frequency = tables.UInt32Col()
+        orientation = tables.BoolCol()
+        maximum_value = tables.Float32Col()
         brand = tables.StringCol(32)
         model = tables.StringCol(32)
         date = tables.StringCol(32)

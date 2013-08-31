@@ -16,8 +16,23 @@ class MeasurementWidget(QtGui.QWidget):
         self.logger = logging.getLogger("logger")
         self.date_format = parent.date_format
 
-        self.files_tree_label = QtGui.QLabel("Files")
+        self.files_tree_label = QtGui.QLabel("Session folder")
         self.files_tree_label.setFont(parent.font)
+
+        self.measurement_folder_label = QtGui.QLabel("File path:")
+        self.measurement_folder = QtGui.QLineEdit()
+        self.measurement_folder.setText(configuration.measurement_folder)
+        self.measurement_folder.textChanged.connect(self.check_measurement_folder)
+
+        self.measurement_folder_button = QtGui.QToolButton()
+        self.measurement_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                                        "../images/folder_icon.png")))
+        self.measurement_folder_button.clicked.connect(self.change_file_location)
+
+        self.measurement_folder_layout = QtGui.QHBoxLayout()
+        self.measurement_folder_layout.addWidget(self.measurement_folder)
+        self.measurement_folder_layout.addWidget(self.measurement_folder_button)
+
         self.files_tree = QtGui.QTreeWidget(self)
         self.files_tree.setColumnCount(3)
         self.files_tree.setHeaderLabels(["Name", "Size", "Date"])
@@ -35,6 +50,7 @@ class MeasurementWidget(QtGui.QWidget):
         bar_6 = QtGui.QFrame(self)
         bar_6.setFrameShape(QtGui.QFrame.Shape.HLine)
         self.measurement_layout.addWidget(bar_6)
+        self.measurement_layout.addLayout(self.measurement_folder_layout)
         self.measurement_layout.addWidget(self.files_tree)
         self.measurement_layout.addWidget(self.measurement_tree_label)
         bar_5 = QtGui.QFrame(self)
@@ -67,17 +83,22 @@ class MeasurementWidget(QtGui.QWidget):
         # TODO instead of overwriting measurement_folder, add a temp variable that's used by the IO module too
         # Then change that, so we always keep our 'default' measurements_folder
         configuration.measurement_folder = file_name
+        self.measurement_folder.setText(file_name)
         # Update the files tree
         self.update_files_tree()
 
+    def check_measurement_folder(self, evt=None):
+        measurement_folder = self.measurement_folder.text()
+        if os.path.exists(measurement_folder) and os.path.isdir(measurement_folder):
+            configuration.measurement_folder = measurement_folder
+            self.update_files_tree()
 
     def update_files_tree(self):
         self.files_tree.clear()
 
         self.file_paths = io.get_file_paths()
-        for file_path in self.file_paths.values():
+        for file_name, file_path in self.file_paths.items():
             root_item = QtGui.QTreeWidgetItem(self.files_tree)
-            file_name = os.path.basename(file_path)
             root_item.setText(0, file_name)
             file_size = os.path.getsize(file_path)
             file_size = utility.humanize_bytes(bytes=file_size, precision=1)
@@ -88,6 +109,29 @@ class MeasurementWidget(QtGui.QWidget):
             # DAMNIT Why can't I use a locale on this?
             root_item.setText(2, creation_date)
 
+    def add_measurements(self, evt=None):
+        """
+            measurement_id = tables.StringCol(64)
+            session_id = tables.StringCol(64)
+            subject_id = tables.StringCol(64)
+            measurement_name = tables.StringCol(64)
+            number_of_frames = tables.UInt32Col()
+            number_of_rows = tables.UInt32Col()
+            number_of_cols = tables.UInt32Col()
+            measurement_frequency = tables.UInt32Col()
+            orientation = tables.BoolCol()
+            maximum_value = tables.Float32Col()
+            brand = tables.StringCol(32)
+            model = tables.StringCol(32)
+            date = tables.StringCol(32)
+            time = tables.StringCol(32)
+        """
+        for file_name, file_path in self.file_paths.items():
+            measurement = {"measurement_name":file_name,
+                           "file_path":file_path}
+            pub.sendMessage("create_measurement", measurement=measurement)
+            # Update the tree after a measurement has been created
+            pub.sendMessage("get_measurements", measurement={})
 
     def update_measurement_tree(self, measurements):
         self.measurement_tree.clear()

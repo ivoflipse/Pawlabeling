@@ -11,6 +11,7 @@ from pawlabeling.functions import io, gui
 from pawlabeling.settings import configuration
 from pawlabeling.widgets.database import subjectwidget, sessionwidget, measurementwidget
 
+
 class DatabaseWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(DatabaseWidget, self).__init__(parent)
@@ -72,28 +73,28 @@ class DatabaseWidget(QtGui.QWidget):
         )
 
         self.clear_subject_fields_action = gui.create_action(text="&Clear",
-                                                     shortcut=QtGui.QKeySequence("CTRL+Q"),
-                                                     icon=QtGui.QIcon(
-                                                         os.path.join(os.path.dirname(__file__),
-                                                                      "../images/cancel_icon.png")),
-                                                     tip="Clear all the subject text fields",
-                                                     checkable=False,
-                                                     connection=self.subject_widget.clear_subject_fields
-        )
-
-        self.change_file_location_action = gui.create_action(text="&Change File location",
-                                                             shortcut=QtGui.QKeySequence("CTRL+O"),
+                                                             shortcut=QtGui.QKeySequence("CTRL+Q"),
                                                              icon=QtGui.QIcon(
                                                                  os.path.join(os.path.dirname(__file__),
-                                                                              "../images/folder_icon.png")),
-                                                             tip="Change the file location",
+                                                                              "../images/cancel_icon.png")),
+                                                             tip="Clear all the subject text fields",
                                                              checkable=False,
-                                                             connection=self.measurement_widget.change_file_location
+                                                             connection=self.subject_widget.clear_subject_fields
+        )
+
+        self.add_measurements_action = gui.create_action(text="&Add Measurements",
+                                                         shortcut=QtGui.QKeySequence("CTRL+V"),
+                                                         icon=QtGui.QIcon(
+                                                             os.path.join(os.path.dirname(__file__),
+                                                                          "../images/add_to_database_icon.png")),
+                                                         tip="Add measurements to the session",
+                                                         checkable=False,
+                                                         connection=self.measurement_widget.add_measurements
         )
 
         self.actions = [self.something_action, self.clear_subject_fields_action,
                         self.create_subject_action, self.create_session_action,
-                        self.change_file_location_action]
+                        self.add_measurements_action]
 
         for action in self.actions:
             #action.setShortcutContext(Qt.WindowShortcut)

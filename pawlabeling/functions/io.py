@@ -3,6 +3,7 @@ import logging
 import numpy as np
 from pubsub import pub
 from pawlabeling.settings import configuration
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -34,6 +35,22 @@ def fix_orientation(data):
         data = np.rot90(np.rot90(data))
         #data = data[::-1,::-1,:]  #Alternative
     return data
+
+
+def check_orientation(data):
+    from scipy.ndimage.measurements import center_of_mass
+    # Find the first and last frame with nonzero data (from z)
+    x, y, z = np.nonzero(data)
+    # For some reason I was loading the file in such a way that it wasn't sorted
+    z = sorted(z)
+    start, end = z[0], z[-1]
+    # Get the COP for those two frames
+    start_x, start_y = center_of_mass(data[:, :, start])
+    end_x, end_y = center_of_mass(data[:, :, end])
+    # We've calculated the start and end point of the measurement (if at all)
+    x_distance = end_x - start_x
+    # If this distance is negative, the dog walked right to left
+    return True if x_distance < 0 else False
 
 
 def load_zebris(infile):
@@ -176,6 +193,7 @@ def load_results(input_path):
 
     # Check the type of the first item in the list
     from pawlabeling.models.contactmodel import Contact
+
     contacts = []
     for contact in results:
         contacts.append(isinstance(contact, Contact))
@@ -265,13 +283,10 @@ def get_file_paths():
 
     root = configuration.measurement_folder
     file_names = [name for name in os.listdir(root)
-             if os.path.isfile(os.path.join(root, name))]
+                  if os.path.isfile(os.path.join(root, name))]
 
     for file_name in file_names:
-        if file_name[-3:] != "zip":
-            file_paths[file_name + ".zip"] = zip_file(root, file_name)
-        else:
-            file_paths[file_name] = os.path.join(root, file_name)
+        file_paths[file_name] = os.path.join(root, file_name)
 
     if not file_paths:
         logger.info("No files found, please check the measurement folder in your configuration file")

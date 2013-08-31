@@ -63,6 +63,18 @@ class Model():
 
     def create_measurement(self, measurement):
         try:
+            measurement["subject_id"] = self.subject_id
+            measurement["session_id"] = self.session_id
+            data = io.load(measurement["file_path"])
+            number_of_rows, number_of_cols, number_of_frames = data.shape
+            measurement["number_of_rows"] = number_of_rows
+            measurement["number_of_cols"] = number_of_cols
+            measurement["number_of_frames"] = number_of_frames
+            measurement["orientation"] = io.check_orientation(data)
+            measurement["maximum_value"] = data.max()
+            # We're not going to store this, so we delete the key
+            del measurement["file_path"]
+
             self.measurement_group = self.measurements_table.create_measurement(**measurement)
         except MissingIdentifier:
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
