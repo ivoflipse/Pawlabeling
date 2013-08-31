@@ -103,8 +103,9 @@ else:
         print("Couldn't create store results folder")
         print("Exception: {}".format(e))
 
-brand = "rsscan"
-frequency = 124
+brand = config["plate"]["brand"]
+model = config["plate"]["model"]
+frequency = config["plate"]["frequency"]
 
 if brand == "rsscan":
     sensor_width = 0.508

@@ -126,7 +126,23 @@ def load_rsscan(infile):
     return result
 
 
-def load(file_name):
+def load(input_file, brand=configuration.brand):
+    if brand == "rsscan":
+        try:
+            return load_rsscan(input_file)
+        except Exception as e:
+            logger.debug("Loading with RSscan format failed. Exception: {}".format(e))
+    elif brand == "zebris":
+        try:
+            return load_zebris(input_file)
+        except Exception as e:
+            logger.debug("Loading with Zebris format failed. Exception: {}".format(e))
+    else:
+        pub.sendMessage("update_statusbar", status="Couldn't load file")
+        logger.warning("Couldn't load file. Please contact me for support.")
+
+
+def open_zip_file(file_name):
     # Check if we even get a file_name
     if file_name == "":
         return None
@@ -144,18 +160,7 @@ def load(file_name):
     for file_name in infile.namelist():
         input_file = infile.read(file_name)
 
-    try:
-        return load_rsscan(input_file)
-    except Exception as e:
-        logger.debug("Loading with RSscan format failed. Exception: {}".format(e))
-
-    try:
-        return load_zebris(input_file)
-    except Exception as e:
-        logger.debug("Loading with Zebris format failed. Exception: {}".format(e))
-
-    pub.sendMessage("update_statusbar", status="Couldn't load file")
-    logger.warning("Couldn't load file. Please contact me for support.")
+    return input_file
 
 
 def find_stored_file(dog_name, file_name):

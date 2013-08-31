@@ -127,8 +127,16 @@ class MeasurementWidget(QtGui.QWidget):
             time = tables.StringCol(32)
         """
         for file_name, file_path in self.file_paths.items():
+            date_time = time.strftime("%Y-%m-%d %H:%M",time.gmtime(os.path.getctime(file_path))).split(" ")
+            brand = configuration.brand
+            model = configuration.model
+            # Check if the brand and model have been changed or not
             measurement = {"measurement_name":file_name,
-                           "file_path":file_path}
+                           "file_path":file_path,
+                           "date":date_time[0],
+                           "time":date_time[1],
+                           "brand":brand,
+                           "model":model}
             pub.sendMessage("create_measurement", measurement=measurement)
             # Update the tree after a measurement has been created
             pub.sendMessage("get_measurements", measurement={})
