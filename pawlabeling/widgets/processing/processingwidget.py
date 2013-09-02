@@ -47,6 +47,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.measurement_tree.setColumnCount(1)
         self.measurement_tree.setHeaderLabel("Measurements")
         self.measurement_tree.itemActivated.connect(self.load_file)
+        # Create some dummy variables which will be overwritten later
+        self.initialize_tree()
 
         self.contacts_tree = QtGui.QTreeWidget(self)
         self.contacts_tree.setMaximumWidth(300)
@@ -86,11 +88,28 @@ class ProcessingWidget(QtGui.QWidget):
         #pub.subscribe(self.update_contacts_tree, "update_contacts_tree")  # processing_results OLD MESSAGE
         pub.subscribe(self.stored_status, "stored_status")
 
+    def initialize_tree(self):
+        self.subject_item = QtGui.QTreeWidgetItem(self.measurement_tree, [])
+        self.subject_item.setText(0, "Subject Name")
+
+        self.session_item = QtGui.QTreeWidgetItem(self.subject_item, [])
+        self.session_item.setText(0, "Session Name")
+
+        #measurement_item = QtGui.QTreeWidgetItem(self.session_item, [])
+        #measurement_item.setText(0, "Measurement Name")
+
     def put_subject(self, subject):
         self.subject = subject
+        #self.subject_item = QtGui.QTreeWidgetItem(self.measurement_tree, [self.subject])
+        subject_name = "{} {}".format(self.subject["first_name"], self.subject["last_name"])
+        self.subject_item.setText(0, subject_name)
+        self.subject_item.setExpanded(True)
 
     def put_session(self, session):
         self.session = session
+        #self.session_item = QtGui.QTreeWidgetItem(self.subject_item, [self.session])
+        self.session_item.setText(0, self.session["session_name"])
+        self.session_item.setExpanded(True)
 
     def update_measurements_tree(self, measurements):
         """
@@ -101,21 +120,15 @@ class ProcessingWidget(QtGui.QWidget):
         """
         # # Create a green brush for coloring stored results
         # green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
-        self.measurement_tree.clear()
+        #self.measurement_tree.clear()
         self.measurements = {}
 
-        # Update the root item of the tree
-        self.subject_item = QtGui.QTreeWidgetItem(self.measurement_tree, [self.subject])
-        subject_name = "{} {}".format(self.subject["first_name"], self.subject["last_name"])
-        self.subject_item.setText(0, subject_name)
-
-        # Update the session_name in the tree or create it if it doesn't exist
-        #self.session_item = QtGui.QTreeWidgetItem(self.subject_item, [self.session])
-        #self.session_item.setText(0, self.session[["session_name"]])
+        # Clear any children of session_item
+        self.session_item.takeChildren()
 
         for index, measurement in enumerate(measurements):
             self.measurements[index] = measurement
-            measurement_item = QtGui.QTreeWidgetItem(self.subject_item, [measurement])
+            measurement_item = QtGui.QTreeWidgetItem(self.session_item, [measurement])
             measurement_item.setText(0, measurement["measurement_name"])
             # How would I be able to check if this measurement has any contacts?
             #child_item.setForeground(0, green_brush)
@@ -128,7 +141,7 @@ class ProcessingWidget(QtGui.QWidget):
         current_item = self.measurement_tree.currentItem()
         # Check if you didn't accidentally double clicked the subject instead of a measurement:
         try:
-            self.subject_name = str(current_item.parent().text(0))
+            subject_name = str(current_item.parent().parent().text(0))
         except AttributeError:
             print("Double click the measurements, not the subject names!")
             return
@@ -140,7 +153,8 @@ class ProcessingWidget(QtGui.QWidget):
         pub.sendMessage("put_measurement", measurement=measurement)
 
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
-        pub.sendMessage("get_data", data={})
+        data = {'item_id':measurement["measurement_name"]}
+        pub.sendMessage("get_measurement_data", data=data)
         pub.sendMessage("get_contacts", contact={})
 
         ## Manage some GUI elements

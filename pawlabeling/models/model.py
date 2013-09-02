@@ -44,6 +44,7 @@ class Model():
         pub.subscribe(self.get_sessions, "get_sessions")
         pub.subscribe(self.get_measurements, "get_measurements")
         pub.subscribe(self.get_contacts, "get_contacts")
+        pub.subscribe(self.get_measurement_data, "get_measurement_data")
         # PUT
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
@@ -134,11 +135,10 @@ class Model():
         contacts = self.contacts_table.get_contacts(**contact)
         pub.sendMessage("update_contacts_tree", contacts=contacts)
 
-    def get_data(self):
+    def get_measurement_data(self, data):
         group = self.measurements_table.get_group(self.measurements_table.session_group,
                                                   self.measurement["measurement_id"])
-        self.measurement_data = self.measurements_table.get_data(group, self.measurement["measurement_name"])
-        print self.measurement_data.shape
+        self.measurement_data = self.measurements_table.get_data(group, item_id=data["item_id"])
         pub.sendMessage("update_measurement_data", measurement_data=self.measurement_data)
 
     def put_subject(self, subject):

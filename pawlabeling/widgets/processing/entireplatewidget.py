@@ -140,7 +140,6 @@ class EntirePlateWidget(QtGui.QWidget):
         self.n_max = n_max
 
     def update_measurement_data(self, measurement_data):
-        print "Updating entire plate!"
         # Update the measurement
         self.measurement_data = measurement_data
         # Update the slider, in case the shape of the file changes
