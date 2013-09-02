@@ -97,8 +97,8 @@ class EntirePlateWidget(QtGui.QWidget):
         # # Install an event filter
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.update_measurement, "put_measurement")
-        pub.subscribe(self.new_measurement, "update_measurement_data")
-        pub.subscribe(self.update_bounding_boxes, "updated_current_paw")
+        pub.subscribe(self.update_measurement_data, "update_measurement_data")
+        pub.subscribe(self.update_bounding_boxes, "updated_current_contact")
         pub.subscribe(self.new_results, "processing_results")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
@@ -108,7 +108,6 @@ class EntirePlateWidget(QtGui.QWidget):
         self.width = measurement["number_of_cols"]
         self.num_frames = measurement["number_of_frames"]
         self.measurement_name = measurement["measurement_name"]
-
 
     def fast_backward(self):
         self.change_slider(-1, fast=True)
@@ -140,7 +139,8 @@ class EntirePlateWidget(QtGui.QWidget):
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def new_measurement(self, measurement_data):
+    def update_measurement_data(self, measurement_data):
+        print "Updating entire plate!"
         # Update the measurement
         self.measurement_data = measurement_data
         # Update the slider, in case the shape of the file changes
@@ -149,8 +149,8 @@ class EntirePlateWidget(QtGui.QWidget):
         self.slider.setValue(-1)
         self.update_entire_plate()
 
-    def new_results(self, paws, average_data):
-        self.paws = paws
+    def new_results(self, contacts, average_data):
+        self.contacts = contacts
         self.draw_gait_line()
 
     def change_frame(self, frame):
@@ -186,33 +186,33 @@ class EntirePlateWidget(QtGui.QWidget):
             self.scene.removeItem(line)
         self.gait_lines = []
 
-    def draw_bounding_box(self, paw, paw_label):
-        color = self.colors[paw_label]
+    def draw_bounding_box(self, contact, contact_label):
+        color = self.colors[contact_label]
         self.bounding_box_pen = QtGui.QPen(color)
         self.bounding_box_pen.setWidth(3)
 
-        if paw.paw_label == -1:
-            current_paw = 0.5
+        if contact.contact_label == -1:
+            current_contact = 0.5
         else:
-            current_paw = 0
+            current_contact = 0
 
         polygon = QtGui.QPolygonF(
-            [QtCore.QPointF((paw.min_x - current_paw) * self.degree, (paw.min_y - current_paw) * self.degree),
-             QtCore.QPointF((paw.max_x + current_paw) * self.degree, (paw.min_y - current_paw) * self.degree),
-             QtCore.QPointF((paw.max_x + current_paw) * self.degree, (paw.max_y + current_paw) * self.degree),
-             QtCore.QPointF((paw.min_x - current_paw) * self.degree, (paw.max_y + current_paw) * self.degree)])
+            [QtCore.QPointF((contact.min_x - current_contact) * self.degree, (contact.min_y - current_contact) * self.degree),
+             QtCore.QPointF((contact.max_x + current_contact) * self.degree, (contact.min_y - current_contact) * self.degree),
+             QtCore.QPointF((contact.max_x + current_contact) * self.degree, (contact.max_y + current_contact) * self.degree),
+             QtCore.QPointF((contact.min_x - current_contact) * self.degree, (contact.max_y + current_contact) * self.degree)])
 
         bounding_box = self.scene.addPolygon(polygon, self.bounding_box_pen)
         bounding_box.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
         self.bounding_boxes.append(bounding_box)
         self.resizeEvent()
 
-    def update_bounding_boxes(self, paws, current_paw_index,average_data):
+    def update_bounding_boxes(self, contacts, current_contact_index,average_data):
         self.clear_bounding_box()
-        for index, paw in enumerate(paws[self.measurement_name]):
-            self.draw_bounding_box(paws[self.measurement_name][index], paw.paw_label)
-            if current_paw_index == index:
-                self.draw_bounding_box(paws[self.measurement_name][index], paw_label=-1)
+        for index, contact in enumerate(contacts[self.measurement_name]):
+            self.draw_bounding_box(contacts[self.measurement_name][index], contact.contact_label)
+            if current_contact_index == index:
+                self.draw_bounding_box(contacts[self.measurement_name][index], contact_label=-1)
         self.resizeEvent()
 
     def draw_gait_line(self):
@@ -222,12 +222,12 @@ class EntirePlateWidget(QtGui.QWidget):
 
         self.clear_gait_line()
 
-        for index in range(1, len(self.paws[self.measurement_name])):
-            prevPaw = self.paws[self.measurement_name][index - 1]
-            curPaw = self.paws[self.measurement_name][index]
+        for index in range(1, len(self.contacts[self.measurement_name])):
+            prev_contact = self.contacts[self.measurement_name][index - 1]
+            cur_contact = self.contacts[self.measurement_name][index]
             polygon = QtGui.QPolygonF(
-                [QtCore.QPointF(prevPaw.center[0] * self.degree, prevPaw.center[1] * self.degree),
-                 QtCore.QPointF(curPaw.center[0] * self.degree, curPaw.center[1] * self.degree)])
+                [QtCore.QPointF(prev_contact.center[0] * self.degree, prev_contact.center[1] * self.degree),
+                 QtCore.QPointF(cur_contact.center[0] * self.degree, cur_contact.center[1] * self.degree)])
             gait_line = self.scene.addPolygon(polygon, self.gait_line_pen)
             gait_line.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
             self.gait_lines.append(gait_line)

@@ -4,8 +4,8 @@ folders:
   measurement_folder: .\samples\Measurements
   store_results_folder: .\samples\Labels
 interpolation_degree:
+  contacts_widget: 8
   entire_plate: 4
-  paws_widget: 8
   results: 16
 plate:
   brand: rsscan
@@ -22,10 +22,10 @@ thresholds:
   tracking_surface: 0.25
   tracking_temporal: 0.5
 widgets:
+  contacts_widget_height: 170
   entire_plate_widget_height: 450
   entire_plate_widget_width: 800
   main_window_height: 830
   main_window_left: 0
   main_window_top: 25
   main_window_width: 1440
-  paws_widget_height: 170

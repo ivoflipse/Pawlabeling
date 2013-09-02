@@ -4,7 +4,7 @@ import yaml
 from PySide import QtGui, QtCore
 import logging
 
-app_name = "Paw Labeling tool"
+app_name = "contact Labeling tool"
 
 settings_folder = os.path.dirname(__file__)
 root_folder = os.path.dirname(settings_folder)
@@ -45,7 +45,7 @@ with open(config_file, "w") as output_file:
     output_file.write(yaml.dump(config,  default_flow_style=False))
 
 # Lookup table for converting indices to labels
-paw_dict = {
+contact_dict = {
     0: "LF",
     1: "LH",
     2: "RF",
@@ -72,19 +72,19 @@ if desktop:
     left_hind = QtGui.QKeySequence(QtCore.Qt.Key_1)
     right_front = QtGui.QKeySequence(QtCore.Qt.Key_9)
     right_hind = QtGui.QKeySequence(QtCore.Qt.Key_3)
-    previous_paw = QtGui.QKeySequence(QtCore.Qt.Key_4)
-    next_paw = QtGui.QKeySequence(QtCore.Qt.Key_6)
+    previous_contact = QtGui.QKeySequence(QtCore.Qt.Key_4)
+    next_contact = QtGui.QKeySequence(QtCore.Qt.Key_6)
     remove_label = QtGui.QKeySequence(QtCore.Qt.Key_5)
-    invalid_paw = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
+    invalid_contact = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
 else:
     left_front = QtGui.QKeySequence(QtCore.Qt.Key_U)
     left_hind = QtGui.QKeySequence(QtCore.Qt.Key_N)
     right_front = QtGui.QKeySequence(QtCore.Qt.Key_O)
     right_hind = QtGui.QKeySequence(QtCore.Qt.Key_Comma)
-    previous_paw = QtGui.QKeySequence(QtCore.Qt.Key_J)
-    next_paw = QtGui.QKeySequence(QtCore.Qt.Key_L)
+    previous_contact = QtGui.QKeySequence(QtCore.Qt.Key_J)
+    next_contact = QtGui.QKeySequence(QtCore.Qt.Key_L)
     remove_label = QtGui.QKeySequence(QtCore.Qt.Key_K)
-    invalid_paw = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
+    invalid_contact = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
 
 measurement_folder = config["folders"]["measurement_folder"]
 store_results_folder = config["folders"]["store_results_folder"]
@@ -135,12 +135,12 @@ main_window_size = QtCore.QRect(main_window_left, main_window_top, main_window_w
 
 entire_plate_widget_width = config["widgets"]["entire_plate_widget_width"]
 entire_plate_widget_height = config["widgets"]["entire_plate_widget_height"]
-paws_widget_height = config["widgets"]["paws_widget_height"]
+contacts_widget_height = config["widgets"]["contacts_widget_height"]
 
-# This determines the amount of interpolation used to increase the size of the canvas of entire plate and paw
+# This determines the amount of interpolation used to increase the size of the canvas of entire plate and contact
 # Decrease this value if you have a smaller screen
 interpolation_entire_plate = config["interpolation_degree"]["entire_plate"]
-interpolation_paws_widget = config["interpolation_degree"]["paws_widget"]
+interpolation_contacts_widget = config["interpolation_degree"]["contacts_widget"]
 interpolation_results = config["interpolation_degree"]["results"]
 
 zip_files = config["application"]["zip_files"]

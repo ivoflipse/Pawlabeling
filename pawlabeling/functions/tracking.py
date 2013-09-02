@@ -161,7 +161,7 @@ def merging_contacts(contacts):
                         elif ratio >= 0.2 and surface1 < average_surface:
                             merge = True
                     # In some cases we don't get a merge because there's no overlap
-                    # But still its clear these pixels belong to a paw in adjacent frames
+                    # But still its clear these pixels belong to a contact in adjacent frames
                     # If the gap between the two contacts isn't too large, we'll allow that one too
                     else:
                         if length1 <= frame_threshold and not overlap:
@@ -281,7 +281,7 @@ def create_graph(contour_dict, euclidean_distance=15):
                                         G[(frame, index1)].add((f, index2))
                                         G[(f, index2)].add((frame, index1))
                                         # Perhaps this could be sped up, by keeping a cache of centroids of contacts
-                                        # then check if there was a paw in the same place on the last frame
+                                        # then check if there was a contact in the same place on the last frame
                                         # if so, link them and stop looking
     return G
 

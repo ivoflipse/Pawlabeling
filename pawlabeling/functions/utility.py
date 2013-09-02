@@ -40,12 +40,12 @@ def update_bounding_box(contact):
     return total_centroid, total_min_x, total_max_x, total_min_y, total_max_y
 
 
-def calculate_average_data(paw_data):
+def calculate_average_data(contact_data):
     mx = 100
     my = 100
     mz = 200
     # Get the max shape
-    for data in paw_data:
+    for data in contact_data:
         x, y, z = data.shape
         if x > mx:
             mx = x
@@ -56,9 +56,9 @@ def calculate_average_data(paw_data):
 
     # Pad everything with zeros
     empty_slice = np.zeros((mx, my, mz))
-    num_paws = len(paw_data)
-    padded_data = np.zeros((num_paws, mx, my, mz))
-    for index, data in enumerate(paw_data):
+    num_contacts = len(contact_data)
+    padded_data = np.zeros((num_contacts, mx, my, mz))
+    for index, data in enumerate(contact_data):
         x, y, z = data.shape
         offset_x = int((mx - x) / 2)
         offset_y = int((my - y) / 2)
@@ -70,21 +70,21 @@ def calculate_average_data(paw_data):
     return padded_data
 
 
-def standardize_paw(paw, std_num_x=20, std_num_y=20):
-    """Standardizes a paw print onto a std_num_y x std_num_x grid. Returns a 1D,
-    flattened version of the paw measurement_data resample onto this grid."""
+def standardize_contact(contact, std_num_x=20, std_num_y=20):
+    """Standardizes a contact print onto a std_num_y x std_num_x grid. Returns a 1D,
+    flattened version of the contact measurement_data resample onto this grid."""
     from scipy.ndimage import map_coordinates
 
-    ny, nx = np.shape(paw)
+    ny, nx = np.shape(contact)
     # Based on a scientific guess
-    # Make a 20x20 grid to resample the paw pressure values onto
+    # Make a 20x20 grid to resample the contact pressure values onto
     #std_num_x, std_num_y = 20, 20
     xi = np.linspace(0, nx, std_num_x)
     yi = np.linspace(0, ny, std_num_y)
     xi, yi = np.meshgrid(xi, yi)
     # Resample the values onto the 20x20 grid
     coordinates = np.vstack([yi.flatten(), xi.flatten()])
-    zi = map_coordinates(paw, coordinates)
+    zi = map_coordinates(contact, coordinates)
     zi = zi.reshape(std_num_y, std_num_x)
 
     # Rescale the pressure values
@@ -94,14 +94,14 @@ def standardize_paw(paw, std_num_x=20, std_num_y=20):
     return zi
 
 
-def normalize_paw_data(paw_data):
+def normalize_contact_data(contact_data):
     mx = 100
     my = 100
 
-    x, y, z = paw_data.shape
+    x, y, z = contact_data.shape
     offset_x, offset_y = int((mx - x) / 2), int((my - y) / 2)
     average_slice = np.zeros((mx, my))
-    average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = paw_data.max(axis=2)
+    average_slice[offset_x:offset_x + x, offset_y:offset_y + y] = contact_data.max(axis=2)
     return average_slice
 
 
@@ -178,7 +178,7 @@ def interpolate_frame(data, degree):
     std_num_x = nx * degree
     std_num_y = ny * degree
     # Based on a scientific guess
-    # Make a 20x20 grid to resample the paw pressure values onto
+    # Make a 20x20 grid to resample the contact pressure values onto
     #std_num_x, std_num_y = 20, 20
     xi = np.linspace(0, nx, std_num_x)
     yi = np.linspace(0, ny, std_num_y)
@@ -383,7 +383,7 @@ class ImageColorTable():
         return color_table
 
 
-def filter_outliers(data, paw_label, num_std=2):
+def filter_outliers(data, contact_label, num_std=2):
     lengths = np.array([d.shape[2] for d in data])
     forces = np.array([np.max(calculations.force_over_time(d)) for d in data])
     pixel_counts = np.array([np.max(calculations.pixel_count_over_time(d)) for d in data])
@@ -420,8 +420,8 @@ def filter_outliers(data, paw_label, num_std=2):
     if filtered:
         # Notify the system which contacts you deleted
         pub.sendMessage("updata_statusbar",
-                        status="Removed {} contact(s) from {}".format(len(filtered), configuration.paw_dict[paw_label]))
-        logger.info("Removed {} contact(s) from {}".format(len(filtered), configuration.paw_dict[paw_label]))
+                        status="Removed {} contact(s) from {}".format(len(filtered), configuration.contact_dict[contact_label]))
+        logger.info("Removed {} contact(s) from {}".format(len(filtered), configuration.contact_dict[contact_label]))
     # else:
     #     logger.info("No contacts removed")
     # Changed this function so now it returns the indices of filtered contacts

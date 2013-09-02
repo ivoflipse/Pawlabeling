@@ -33,9 +33,9 @@ class ResultsWidget(QtGui.QWidget):
         self.main_layout.addWidget(self.tab_widget)
         self.setLayout(self.main_layout)
 
-    def update_widgets(self, paw_labels, paw_data, average_data):
-        self.paw_labels = paw_labels
-        self.paw_data = paw_data
+    def update_widgets(self, contact_labels, contact_data, average_data):
+        self.contact_labels = contact_labels
+        self.contact_data = contact_data
         self.average_data = average_data
         self.update_active_widget()
 

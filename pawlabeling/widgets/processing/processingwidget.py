@@ -7,7 +7,7 @@ from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
 from pawlabeling.settings import configuration
-from pawlabeling.widgets.processing import pawswidget
+from pawlabeling.widgets.processing import contactswidget
 from pawlabeling.widgets.processing import entireplatewidget
 
 
@@ -32,9 +32,9 @@ class ProcessingWidget(QtGui.QWidget):
         self.path = configuration.measurement_folder
         self.store_path = configuration.store_results_folder
         self.colors = configuration.colors
-        self.paw_dict = configuration.paw_dict
+        self.contact_dict = configuration.contact_dict
 
-        self.current_paw_index = 0
+        self.current_contact_index = 0
 
         self.toolbar = gui.Toolbar(self)
         # Create all the toolbar actions
@@ -62,12 +62,12 @@ class ProcessingWidget(QtGui.QWidget):
         self.entire_plate_widget.setMinimumWidth(configuration.entire_plate_widget_width)
         self.entire_plate_widget.setMaximumHeight(configuration.entire_plate_widget_height)
 
-        self.paws_widget = pawswidget.PawsWidget(self)
+        self.contacts_widget = contactswidget.contactsWidget(self)
 
         self.layout = QtGui.QVBoxLayout()
         self.layout.addWidget(self.nameLabel)
         self.layout.addWidget(self.entire_plate_widget)
-        self.layout.addWidget(self.paws_widget)
+        self.layout.addWidget(self.contacts_widget)
         self.vertical_layout = QtGui.QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
         self.vertical_layout.addWidget(self.contacts_tree)
@@ -83,7 +83,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.subscribe(self.update_contacts_tree, "update_contacts_tree")  # processing_results OLD MESSAGE
+        #pub.subscribe(self.update_contacts_tree, "update_contacts_tree")  # processing_results OLD MESSAGE
         pub.subscribe(self.stored_status, "stored_status")
 
     def put_subject(self, subject):
@@ -123,23 +123,6 @@ class ProcessingWidget(QtGui.QWidget):
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item)
 
-    def load_first_file(self):
-        """
-        To bootstrap the application, the main window calls this function to select the first item in the tree
-        if there are any nodes in it, else it'll log a warning. Selecting an item in the tree will cause
-        load_file to be called
-        """
-        # Check if the tree isn't empty, because else we can't load anything
-        if self.measurement_tree.topLevelItemCount() > 0:
-            # Select the first item in the tree
-            self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0).child(0))
-            # TODO figure out why this isn't automatically triggered
-            self.load_file()
-        else:
-            pub.sendMessage("update_statusbar", status="No measurements found")
-            self.logger.warning(
-                "No measurements found, please check the location for the measurements and restart the program")
-
     def load_file(self):
         # Get the text from the currentItem
         current_item = self.measurement_tree.currentItem()
@@ -173,10 +156,10 @@ class ProcessingWidget(QtGui.QWidget):
         # Clear any existing contacts
         self.contacts_tree.clear()
         # Add the contacts to the contacts_tree
-        for index, contact in enumerate(self.contacts[self.measurement_name]):
+        for index, contact in enumerate(self.contacts):
             rootItem = QtGui.QTreeWidgetItem(self.contacts_tree)
             rootItem.setText(0, str(index))
-            rootItem.setText(1, self.paw_dict[contact.paw_label])
+            rootItem.setText(1, self.contact_dict[contact.contact_label])
             rootItem.setText(2, str(contact.length))  # Sets the frame count
             surface = np.max(contact.surface_over_time)
             rootItem.setText(3, str(int(surface)))
@@ -184,31 +167,31 @@ class ProcessingWidget(QtGui.QWidget):
             rootItem.setText(4, str(int(force)))
 
         # Initialize the current contact index, which we'll need for keep track of the labeling
-        self.current_paw_index = 0
+        self.current_contact_index = 0
 
         # Select the first item in the contacts tree
-        item = self.contacts_tree.topLevelItem(self.current_paw_index)
+        item = self.contacts_tree.topLevelItem(self.current_contact_index)
         self.contacts_tree.setCurrentItem(item)
-        self.update_current_paw()
+        self.update_current_contact()
 
-    def update_current_paw(self):
-        if (self.current_paw_index <= len(self.contacts[self.measurement_name]) and
+    def update_current_contact(self):
+        if (self.current_contact_index <= len(self.contacts[self.measurement_name]) and
                     len(self.contacts[self.measurement_name]) > 0):
-            for index, paw in enumerate(self.contacts[self.measurement_name]):
-                paw_label = paw.paw_label
+            for index, contact in enumerate(self.contacts[self.measurement_name]):
+                contact_label = contact.contact_label
                 # Get the current row from the tree
                 item = self.contacts_tree.topLevelItem(index)
-                item.setText(1, self.paw_dict[paw_label])
+                item.setText(1, self.contact_dict[contact_label])
 
                 # Update the colors in the contact tree
                 for idx in range(item.columnCount()):
-                    if paw_label >= 0:
-                        item.setForeground(idx, self.colors[paw_label])
+                    if contact_label >= 0:
+                        item.setForeground(idx, self.colors[contact_label])
 
-            pub.sendMessage("update_current_paw", current_paw_index=self.current_paw_index, paws=self.contacts)
+            pub.sendMessage("update_current_contact", current_contact_index=self.current_contact_index, contacts=self.contacts)
 
     def undo_label(self):
-        self.previous_paw()
+        self.previous_contact()
         self.remove_label()
 
     def remove_label(self):
@@ -216,55 +199,55 @@ class ProcessingWidget(QtGui.QWidget):
         if not self.contacts_available():
             return
 
-        # Check if any other paw has the label -1, if so change it to -2
-        for index, paw in self.contacts[self.measurement_name]:
-            if paw.paw_label == -1:
-                paw.paw_label = -2
+        # Check if any other contact has the label -1, if so change it to -2
+        for index, contact in self.contacts[self.measurement_name]:
+            if contact.contact_label == -1:
+                contact.contact_label = -2
 
         # Remove the label
-        current_paw = self.get_current_paw()
-        current_paw.paw_label = -1
+        current_contact = self.get_current_contact()
+        current_contact.contact_label = -1
         # Update the screen
-        self.update_current_paw()
+        self.update_current_contact()
 
-    def invalid_paw(self):
+    def invalid_contact(self):
         # Check if we have any contacts available, else don't bother
         if not self.contacts_available():
             return
 
         # I've picked -3 as the label for invalid contacts
-        current_paw = self.get_current_paw()
-        current_paw.paw_label = -3
+        current_contact = self.get_current_contact()
+        current_contact.contact_label = -3
         # Update the screen
-        self.update_current_paw()
+        self.update_current_contact()
 
-    def get_current_paw(self):
-        current_paw = self.contacts[self.measurement_name][self.current_paw_index]
-        return current_paw
+    def get_current_contact(self):
+        current_contact = self.contacts[self.measurement_name][self.current_contact_index]
+        return current_contact
 
     def select_left_front(self):
-        current_paw = self.get_current_paw()
-        if current_paw.paw_label != -3:
-            current_paw.paw_label = 0
-        self.next_paw()
+        current_contact = self.get_current_contact()
+        if current_contact.contact_label != -3:
+            current_contact.contact_label = 0
+        self.next_contact()
 
     def select_left_hind(self):
-        current_paw = self.get_current_paw()
-        if current_paw.paw_label != -3:
-            current_paw.paw_label = 1
-        self.next_paw()
+        current_contact = self.get_current_contact()
+        if current_contact.contact_label != -3:
+            current_contact.contact_label = 1
+        self.next_contact()
 
     def select_right_front(self):
-        current_paw = self.get_current_paw()
-        if current_paw.paw_label != -3:
-            current_paw.paw_label = 2
-        self.next_paw()
+        current_contact = self.get_current_contact()
+        if current_contact.contact_label != -3:
+            current_contact.contact_label = 2
+        self.next_contact()
 
     def select_right_hind(self):
-        current_paw = self.get_current_paw()
-        if current_paw.paw_label != -3:
-            current_paw.paw_label = 3
-        self.next_paw()
+        current_contact = self.get_current_contact()
+        if current_contact.contact_label != -3:
+            current_contact.contact_label = 3
+        self.next_contact()
 
     def contacts_available(self):
         """
@@ -274,67 +257,67 @@ class ProcessingWidget(QtGui.QWidget):
 
     def check_label_status(self):
         results = []
-        for paw in self.contacts[self.measurement_name]:
-            if paw.paw_label == -2:
+        for contact in self.contacts[self.measurement_name]:
+            if contact.contact_label == -2:
                 results.append(True)
             else:
                 results.append(False)
         return any(results)
 
-    def previous_paw(self):
+    def previous_contact(self):
         if not self.contacts_available():
             return
 
-        # If we haven't labeled the current paw yet, mark it as unselected
-        current_paw = self.get_current_paw()
-        if current_paw.paw_label == -1:
-            current_paw.paw_label = -2
+        # If we haven't labeled the current contact yet, mark it as unselected
+        current_contact = self.get_current_contact()
+        if current_contact.contact_label == -1:
+            current_contact.contact_label = -2
 
-        self.current_paw_index -= 1
-        if self.current_paw_index < 0:
-            self.current_paw_index = 0
+        self.current_contact_index -= 1
+        if self.current_contact_index < 0:
+            self.current_contact_index = 0
 
-        current_paw = self.get_current_paw()
-        # If we encounter an invalid paw and its not the first paw, skip this one
-        if current_paw.paw_label == -3 and self.check_label_status():
-            self.previous_paw()
+        current_contact = self.get_current_contact()
+        # If we encounter an invalid contact and its not the first contact, skip this one
+        if current_contact.contact_label == -3 and self.check_label_status():
+            self.previous_contact()
 
-        item = self.contacts_tree.topLevelItem(self.current_paw_index)
+        item = self.contacts_tree.topLevelItem(self.current_contact_index)
         self.contacts_tree.setCurrentItem(item)
-        self.update_current_paw()
+        self.update_current_contact()
 
-    def next_paw(self):
+    def next_contact(self):
         if not self.contacts_available():
             return
 
-        # If we haven't labeled the current paw yet, mark it as unselected
-        current_paw = self.get_current_paw()
-        if current_paw.paw_label == -1:
-            current_paw.paw_label = -2
+        # If we haven't labeled the current contact yet, mark it as unselected
+        current_contact = self.get_current_contact()
+        if current_contact.contact_label == -1:
+            current_contact.contact_label = -2
 
-        self.current_paw_index += 1
-        if self.current_paw_index >= len(self.contacts[self.measurement_name]):
-            self.current_paw_index = len(self.contacts[self.measurement_name]) - 1
+        self.current_contact_index += 1
+        if self.current_contact_index >= len(self.contacts[self.measurement_name]):
+            self.current_contact_index = len(self.contacts[self.measurement_name]) - 1
 
-        current_paw = self.get_current_paw()
-        # If we encounter an invalid paw and its not the last paw, skip this one
-        if current_paw.paw_label == -3 and self.check_label_status():
-            self.next_paw()
+        current_contact = self.get_current_contact()
+        # If we encounter an invalid contact and its not the last contact, skip this one
+        if current_contact.contact_label == -3 and self.check_label_status():
+            self.next_contact()
 
-        item = self.contacts_tree.topLevelItem(self.current_paw_index)
+        item = self.contacts_tree.topLevelItem(self.current_contact_index)
         self.contacts_tree.setCurrentItem(item)
-        self.update_current_paw()
+        self.update_current_contact()
 
     def switch_contacts(self):
         item = self.contacts_tree.selectedItems()[0]
-        self.current_paw_index = int(item.text(0))
-        self.update_current_paw()
+        self.current_contact_index = int(item.text(0))
+        self.update_current_contact()
 
     def track_contacts(self, event=None):
         # Make the model track new contacts
         pub.sendMessage("track_contacts")
         # Make sure every widget gets updated
-        self.update_current_paw()
+        self.update_current_contact()
 
     def store_status(self, event=None):
         pub.sendMessage("store_status")
@@ -371,7 +354,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                    shortcut=configuration.left_front,
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__), "../images/LF_icon.png")),
-                                                   tip="Select the Left Front paw",
+                                                   tip="Select the Left Front contact",
                                                    checkable=False,
                                                    connection=self.select_left_front
         )
@@ -380,7 +363,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                   shortcut=configuration.left_hind,
                                                   icon=QtGui.QIcon(
                                                       os.path.join(os.path.dirname(__file__), "../images/LH_icon.png")),
-                                                  tip="Select the Left Hind paw",
+                                                  tip="Select the Left Hind contact",
                                                   checkable=False,
                                                   connection=self.select_left_hind
         )
@@ -389,7 +372,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                     shortcut=configuration.right_front,
                                                     icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                                   "../images/RF_icon.png")),
-                                                    tip="Select the Right Front paw",
+                                                    tip="Select the Right Front contact",
                                                     checkable=False,
                                                     connection=self.select_right_front
         )
@@ -398,66 +381,66 @@ class ProcessingWidget(QtGui.QWidget):
                                                    shortcut=configuration.right_hind,
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__), "../images/RH_icon.png")),
-                                                   tip="Select the Right Hind paw",
+                                                   tip="Select the Right Hind contact",
                                                    checkable=False,
                                                    connection=self.select_right_hind
         )
 
-        self.previous_paw_action = gui.create_action(text="Select Previous Paw",
-                                                     shortcut=[configuration.previous_paw,
+        self.previous_contact_action = gui.create_action(text="Select Previous contact",
+                                                     shortcut=[configuration.previous_contact,
                                                                QtGui.QKeySequence(QtCore.Qt.Key_Down)],
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
                                                                       "../images/backward.png")),
-                                                     tip="Select the previous paw",
+                                                     tip="Select the previous contact",
                                                      checkable=False,
-                                                     connection=self.previous_paw
+                                                     connection=self.previous_contact
         )
 
-        self.next_paw_action = gui.create_action(text="Select Next Paw",
-                                                 shortcut=[configuration.next_paw,
+        self.next_contact_action = gui.create_action(text="Select Next contact",
+                                                 shortcut=[configuration.next_contact,
                                                            QtGui.QKeySequence(QtCore.Qt.Key_Up)],
                                                  icon=QtGui.QIcon(
                                                      os.path.join(os.path.dirname(__file__), "../images/forward.png")),
-                                                 tip="Select the next paw",
+                                                 tip="Select the next contact",
                                                  checkable=False,
-                                                 connection=self.next_paw
+                                                 connection=self.next_contact
         )
 
-        self.remove_label_action = gui.create_action(text="Delete Label From Paw",
+        self.remove_label_action = gui.create_action(text="Delete Label From contact",
                                                      shortcut=configuration.remove_label,
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
                                                                       "../images/cancel_icon.png")),
-                                                     tip="Delete the label from the paw",
+                                                     tip="Delete the label from the contact",
                                                      checkable=False,
                                                      connection=self.remove_label
         )
 
-        self.invalid_paw_action = gui.create_action(text="Mark Paw as Invalid",
-                                                    shortcut=configuration.invalid_paw,
+        self.invalid_contact_action = gui.create_action(text="Mark contact as Invalid",
+                                                    shortcut=configuration.invalid_contact,
                                                     icon=QtGui.QIcon(
                                                         os.path.join(os.path.dirname(__file__),
                                                                      "../images/trash_icon.png")),
-                                                    tip="Mark the paw as invalid",
+                                                    tip="Mark the contact as invalid",
                                                     checkable=False,
-                                                    connection=self.invalid_paw
+                                                    connection=self.invalid_contact
         )
 
-        self.undo_label_action = gui.create_action(text="Undo Label From Paw",
+        self.undo_label_action = gui.create_action(text="Undo Label From contact",
                                                    shortcut=QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Z),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
                                                                     "../images/undo_icon.png")),
-                                                   tip="Delete the label from the paw",
+                                                   tip="Delete the label from the contact",
                                                    checkable=False,
                                                    connection=self.undo_label
         )
 
         self.actions = [self.store_status_action, self.track_contacts_action, self.left_front_action,
                         self.left_hind_action,
-                        self.right_front_action, self.right_hind_action, self.previous_paw_action, self.next_paw_action,
-                        self.remove_label_action, self.invalid_paw_action, self.undo_label_action]
+                        self.right_front_action, self.right_hind_action, self.previous_contact_action, self.next_contact_action,
+                        self.remove_label_action, self.invalid_contact_action, self.undo_label_action]
 
         for action in self.actions:
             #action.setShortcutContext(Qt.WindowShortcut)

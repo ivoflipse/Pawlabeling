@@ -20,7 +20,7 @@ class MainWindow(QtGui.QMainWindow):
         # while leaving the menubar + taskbar visible
         if not configuration.desktop:
             self.showMaximized()
-        self.setWindowTitle("Paw Labeling tool")
+        self.setWindowTitle("contact Labeling tool")
         self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/pawlabeling.png")))
 
         # Set up the logger before anything else
@@ -66,9 +66,8 @@ class MainWindow(QtGui.QMainWindow):
         pub.sendMessage("update_statusbar", status="Changing tabs to the {} tab".format(self.tab_dict[current_index]))
         if self.tab_widget.currentIndex() == 0:
             pass  # Is there anything you'd like to run when you start the database_widget?
-            #self.database_widget.load_first_file()
         elif self.tab_widget.currentIndex() == 1:
-            self.processing_widget.load_first_file()
+            pass
         elif self.tab_widget.currentIndex() == 2:
             self.analysis_widget.load_first_file()
 

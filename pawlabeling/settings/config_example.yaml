@@ -18,11 +18,11 @@ widgets:
   main_window_height: 830
   entire_plate_widget_width: 800
   entire_plate_widget_height: 450
-  paws_widget_height: 170
+  contacts_widget_height: 170
 
 interpolation_degree:
   entire_plate: 4
-  paws_widget: 8
+  contacts_widget: 8
   results: 16
 
 thresholds:

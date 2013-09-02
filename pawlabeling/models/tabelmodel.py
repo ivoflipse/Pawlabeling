@@ -54,7 +54,8 @@ class Table(object):
         return parent.__getattr__(group_id)
 
     def get_data(self, group, item_id):
-        return group.__getattr__(item_id)
+        # We're calling read, because else we get a pytables object
+        return group.__getattr__(item_id).read()
 
     def close_table(self):
         """

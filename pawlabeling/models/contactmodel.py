@@ -33,8 +33,8 @@ class Contact():
         self.data = np.zeros((self.max_x, self.max_y, self.max_z))
         self.max_of_max = np.zeros((self.max_x, self.max_y))
         self.invalid = False
-        self.filtered = False  # This can be used to check if the paw should be filtered or not
-        self.paw_label = -2  # Paws are labeled as -2 by default
+        self.filtered = False  # This can be used to check if the contact should be filtered or not
+        self.contact_label = -2  # contacts are labeled as -2 by default
         self.index = 0
 
     def create_contact(self, contact, measurement_data, padding=0):
@@ -74,7 +74,7 @@ class Contact():
 
         # Create self.measurement_data from the measurement_data
         self.convert_contour_to_slice(measurement_data)
-        # Check if the paw is valid
+        # Check if the contact is valid
         self.validate_contact(measurement_data)
         # Calculate the results
         self.calculate_results()
@@ -123,11 +123,11 @@ class Contact():
         """
         self.filtered = filtered
 
-    def set_paw_label(self, paw_label):
+    def set_contact_label(self, contact_label):
         """
-        Lets you set the paw_label. Only used, so I can log when/where this happens for bug tracking purposes.
+        Lets you set the contact_label. Only used, so I can log when/where this happens for bug tracking purposes.
         """
-        self.paw_label = paw_label
+        self.contact_label = contact_label
 
     def set_index(self, index):
         """
@@ -139,11 +139,11 @@ class Contact():
         """
         Input: measurement_data = 3D entire plate measurement_data array
         Checks if the contact touches the edge of the plate and if the forces at the beginning or end of a contact
-        aren't too high. If so, it will mark the contact as invalid and set the paw_label to -3
+        aren't too high. If so, it will mark the contact as invalid and set the contact_label to -3
         """
         if self.touches_edge(measurement_data) or self.incomplete_step():
             self.invalid = True
-            self.paw_label = -3
+            self.contact_label = -3
 
     def touches_edge(self, data):
         """

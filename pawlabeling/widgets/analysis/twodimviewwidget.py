@@ -13,35 +13,35 @@ class TwoDimViewWidget(QtGui.QWidget):
         self.label = QtGui.QLabel("2D View")
         self.parent = parent
 
-        self.left_front = PawView(self, label="Left Front", paw_label=0)
-        self.left_hind = PawView(self, label="Left Hind", paw_label=1)
-        self.right_front = PawView(self, label="Right Front", paw_label=2)
-        self.right_hind = PawView(self, label="Right Hind", paw_label=3)
+        self.left_front = contactView(self, label="Left Front", contact_label=0)
+        self.left_hind = contactView(self, label="Left Hind", contact_label=1)
+        self.right_front = contactView(self, label="Right Front", contact_label=2)
+        self.right_hind = contactView(self, label="Right Hind", contact_label=3)
 
-        self.paws_list = {
+        self.contacts_list = {
             0: self.left_front,
             1: self.left_hind,
             2: self.right_front,
             3: self.right_hind,
             }
 
-        self.left_paws_layout = QtGui.QVBoxLayout()
-        self.left_paws_layout.addWidget(self.left_front)
-        self.left_paws_layout.addWidget(self.left_hind)
-        self.right_paws_layout = QtGui.QVBoxLayout()
-        self.right_paws_layout.addWidget(self.right_front)
-        self.right_paws_layout.addWidget(self.right_hind)
+        self.left_contacts_layout = QtGui.QVBoxLayout()
+        self.left_contacts_layout.addWidget(self.left_front)
+        self.left_contacts_layout.addWidget(self.left_hind)
+        self.right_contacts_layout = QtGui.QVBoxLayout()
+        self.right_contacts_layout.addWidget(self.right_front)
+        self.right_contacts_layout.addWidget(self.right_hind)
 
         self.main_layout = QtGui.QHBoxLayout()
-        self.main_layout.addLayout(self.left_paws_layout)
-        self.main_layout.addLayout(self.right_paws_layout)
+        self.main_layout.addLayout(self.left_contacts_layout)
+        self.main_layout.addLayout(self.right_contacts_layout)
         self.setLayout(self.main_layout)
 
-class PawView(QtGui.QWidget):
-    def __init__(self, parent, label, paw_label):
-        super(PawView, self).__init__(parent)
+class contactView(QtGui.QWidget):
+    def __init__(self, parent, label, contact_label):
+        super(contactView, self).__init__(parent)
         self.label = QtGui.QLabel(label)
-        self.paw_label = paw_label
+        self.contact_label = contact_label
         self.parent = parent
         self.degree = configuration.interpolation_results
         self.n_max = 0
@@ -74,7 +74,7 @@ class PawView(QtGui.QWidget):
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.view)
-        self.setMinimumHeight(configuration.paws_widget_height)
+        self.setMinimumHeight(configuration.contacts_widget_height)
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.update_n_max, "update_n_max")
@@ -98,13 +98,13 @@ class PawView(QtGui.QWidget):
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, paws, average_data, results, max_results):
-        if self.paw_label not in average_data:
+    def update(self, contacts, average_data, results, max_results):
+        if self.contact_label not in average_data:
             return
 
-        self.average_data = np.mean(average_data[self.paw_label], axis=0)
+        self.average_data = np.mean(average_data[self.contact_label], axis=0)
         self.max_of_max = np.max(self.average_data, axis=2)
-        self.filtered = results[self.paw_label]["filtered"]
+        self.filtered = results[self.contact_label]["filtered"]
 
         x, y, z = np.nonzero(self.average_data)
         # Pray this never goes out of bounds

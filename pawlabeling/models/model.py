@@ -21,7 +21,7 @@ class Model():
 
         # Initialize our variables that will cache results
         self.average_data = defaultdict()
-        self.paws = defaultdict(list)
+        self.contacts = defaultdict(list)
         self.data_list = defaultdict(list)
         self.results = defaultdict(lambda: defaultdict(list))
         self.max_results = defaultdict()
@@ -31,7 +31,7 @@ class Model():
         # OLD
         #pub.subscribe(self.load_file, "load_file")
         pub.subscribe(self.load_results, "load_results")
-        pub.subscribe(self.update_current_paw, "update_current_paw")
+        pub.subscribe(self.update_current_contact, "update_current_contact")
         pub.subscribe(self.store_status, "store_status")
         pub.subscribe(self.track_contacts, "track_contacts")
         # CREATE
@@ -138,6 +138,7 @@ class Model():
         group = self.measurements_table.get_group(self.measurements_table.session_group,
                                                   self.measurement["measurement_id"])
         self.measurement_data = self.measurements_table.get_data(group, self.measurement["measurement_name"])
+        print self.measurement_data.shape
         pub.sendMessage("update_measurement_data", measurement_data=self.measurement_data)
 
     def put_subject(self, subject):
@@ -161,7 +162,6 @@ class Model():
         self.contacts_table = tabelmodel.ContactsTable(subject_id=self.subject_id,
                                                        session_id=self.session_id,
                                                        measurement_id=self.measurement_id)
-
 
     def put_contact(self, contact):
         self.contact = contact
@@ -199,11 +199,11 @@ class Model():
     def load_results(self, widget):
         self.load_all_results()
         if widget == "processing":
-            pub.sendMessage("processing_results", paws=self.paws, average_data=self.average_data)
+            pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
         elif widget == "analysis":
             # If there's no data_list, there are no labeled contacts to display
             if self.data_list.keys():
-                pub.sendMessage("analysis_results", paws=self.paws, average_data=self.average_data,
+                pub.sendMessage("analysis_results", contacts=self.contacts, average_data=self.average_data,
                                 results=self.results, max_results=self.max_results)
 
     def load_all_results(self):
@@ -213,23 +213,23 @@ class Model():
         """
         self.logger.info("Model.load_all_results: Loading all results for subject: {}".format(self.subject_name))
         # Make sure self.contacts is empty
-        self.paws.clear()
+        self.contacts.clear()
 
         for measurement_name in self.file_paths[self.subject_name]:
             input_path = io.find_stored_file(self.subject_name, measurement_name)
-            paws = io.load_results(input_path)
+            contacts = io.load_results(input_path)
             # Did we get any results?
-            if paws:
-                self.paws[measurement_name] = paws
+            if contacts:
+                self.contacts[measurement_name] = contacts
                 # Check if any of the contacts has a higher n_max
-                for paw in paws:
-                    n_max = np.max(paw.data)
+                for contact in contacts:
+                    n_max = np.max(contact.data)
                     if n_max > self.n_max:
                         self.n_max = n_max
 
         pub.sendMessage("update_n_max", n_max=self.n_max)
 
-        if not self.paws.get(self.measurement_name):
+        if not self.contacts.get(self.measurement_name):
             self.track_contacts()
 
         # Calculate the average, after everything has been loaded
@@ -244,78 +244,79 @@ class Model():
         padding = configuration.padding_factor
         data = np.zeros((x + 2 * padding, y + 2 * padding, z), np.float32)
         data[padding:-padding, padding:-padding, :] = self.measurement
-        paws = tracking.track_contours_graph(data)
+        contacts = tracking.track_contours_graph(data)
 
         # Make sure we don't have any contacts stored if we're tracking again
-        # I'd suggest moving the calculation of average_data out, so I can update it every time I label a paw
-        self.paws[self.measurement_name] = []
+        # I'd suggest moving the calculation of average_data out, so I can update it every time I label a contact
+        self.contacts[self.measurement_name] = []
 
         # Convert them to class objects
-        for index, raw_paw in enumerate(paws):
-            paw = contactmodel.Contact()
-            paw.create_contact(contact=raw_paw, measurement_data=self.measurement, padding=1)
+        for index, raw_contact in enumerate(contacts):
+            contact = contactmodel.Contact()
+            contact.create_contact(contact=raw_contact, measurement_data=self.measurement, padding=1)
             # Skip contacts that have only been around for one frame
-            if len(paw.frames) > 1:
-                self.paws[self.measurement_name].append(paw)
+            if len(contact.frames) > 1:
+                self.contacts[self.measurement_name].append(contact)
 
         # Sort the contacts based on their position along the first dimension
-        self.paws[self.measurement_name] = sorted(self.paws[self.measurement_name], key=lambda paw: paw.min_z)
+        self.contacts[self.measurement_name] = sorted(self.contacts[self.measurement_name],
+                                                      key=lambda contact: contact.min_z)
         # Update their index
-        for index, paw in enumerate(self.paws[self.measurement_name]):
-            paw.set_index(index)
+        for index, contact in enumerate(self.contacts[self.measurement_name]):
+            contact.set_index(index)
 
-        status = "Number of contacts found: {}".format(len(self.paws[self.measurement_name]))
+        status = "Number of contacts found: {}".format(len(self.contacts[self.measurement_name]))
         pub.sendMessage("update_statusbar", status=status)
 
-    def update_current_paw(self, current_paw_index, paws):
+    def update_current_contact(self, current_contact_index, contacts):
         # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
-        self.paws = paws
-        self.current_paw_index = current_paw_index
+        self.contacts = contacts
+        self.current_contact_index = current_contact_index
         # Refresh the average measurement_data
         self.calculate_average()
 
-        pub.sendMessage("updated_current_paw", paws=self.paws, average_data=self.average_data,
-                        current_paw_index=self.current_paw_index)
+        pub.sendMessage("updated_current_contact", contacts=self.contacts, average_data=self.average_data,
+                        current_contact_index=self.current_contact_index)
 
     def calculate_average(self):
         # Empty average measurement_data
         self.average_data.clear()
         self.data_list.clear()
-        # Group all the measurement_data per paw
-        for measurement_name, paws in self.paws.items():
-            for paw in paws:
-                paw_label = paw.paw_label
-                if paw_label >= 0:
-                    self.data_list[paw_label].append(paw.data)
+        # Group all the measurement_data per contact
+        for measurement_name, contacts in self.contacts.items():
+            for contact in contacts:
+                contact_label = contact.contact_label
+                if contact_label >= 0:
+                    self.data_list[contact_label].append(contact.data)
 
         # Then get the normalized measurement_data
-        for paw_label, data in self.data_list.items():
+        for contact_label, data in self.data_list.items():
             normalized_data = utility.calculate_average_data(data)
-            self.average_data[paw_label] = normalized_data
+            self.average_data[contact_label] = normalized_data
 
     def calculate_results(self):
         self.results.clear()
         self.max_results.clear()
         self.filtered = defaultdict()
 
-        for paw_label, data_list in self.data_list.items():
-            self.results[paw_label]["filtered"] = utility.filter_outliers(data_list, paw_label)
-            self.filtered[paw_label] = utility.filter_outliers(data_list, paw_label)
+        for contact_label, data_list in self.data_list.items():
+            self.results[contact_label]["filtered"] = utility.filter_outliers(data_list, contact_label)
+            self.filtered[contact_label] = utility.filter_outliers(data_list, contact_label)
             for data in data_list:
                 force = calculations.force_over_time(data)
-                self.results[paw_label]["force"].append(force)
+                self.results[contact_label]["force"].append(force)
                 max_force = np.max(force)
                 if max_force > self.max_results.get("force", 0):
                     self.max_results["force"] = max_force
 
                 pressure = calculations.pressure_over_time(data)
-                self.results[paw_label]["pressure"].append(pressure)
+                self.results[contact_label]["pressure"].append(pressure)
                 max_pressure = np.max(pressure)
                 if max_pressure > self.max_results.get("pressure", 0):
                     self.max_results["pressure"] = max_pressure
 
                 cop_x, cop_y = calculations.calculate_cop(data)
-                self.results[paw_label]["cop"].append((cop_x, cop_y))
+                self.results[contact_label]["cop"].append((cop_x, cop_y))
 
                 x, y, z = np.nonzero(data)
                 max_duration = np.max(z)
@@ -323,7 +324,7 @@ class Model():
                     self.max_results["duration"] = max_duration
 
                     # for measurement_name, contacts in self.contacts.items():
-                    #     for paw in self.contacts:
+                    #     for contact in self.contacts:
 
 
     def store_status(self):
@@ -336,7 +337,7 @@ class Model():
         # Try storing the results
         try:
             pickle_path = os.path.join(self.new_path, self.measurement_name)
-            io.results_to_pickle(pickle_path, self.paws[self.measurement_name])
+            io.results_to_pickle(pickle_path, self.contacts[self.measurement_name])
             self.logger.info("Model.store_status: Results for {} have been successfully saved".format(
                 self.measurement_name))
             pub.sendMessage("update_statusbar", status="Results saved")
@@ -350,7 +351,7 @@ class Model():
     def clear_cached_values(self):
         self.logger.info("Model.clear_cached_values")
         self.average_data.clear()
-        self.paws.clear()
+        self.contacts.clear()
         self.data_list.clear()
         self.results.clear()
         self.max_results.clear()

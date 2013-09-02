@@ -23,9 +23,9 @@ class AnalysisWidget(QtGui.QTabWidget):
 
         # Initialize our variables that will cache results
         self.average_data = defaultdict(list)
-        self.paw_data = defaultdict(list)
-        self.paw_labels = defaultdict(dict)
-        self.paws = defaultdict(list)
+        self.contact_data = defaultdict(list)
+        self.contact_labels = defaultdict(dict)
+        self.contacts = defaultdict(list)
 
         # This contains all the file_names for each subject_name
         self.file_names = defaultdict(dict)
@@ -33,7 +33,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.path = configuration.measurement_folder
         self.store_path = configuration.store_results_folder
         self.colors = configuration.colors
-        self.paw_dict = configuration.paw_dict
+        self.contact_dict = configuration.contact_dict
 
         self.toolbar = gui.Toolbar(self)
 
@@ -136,28 +136,28 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Send a message so the model starts loading results
         pub.sendMessage("load_results", widget="analysis")
 
-    def update_contact_tree(self, paws, average_data, results, max_results):
+    def update_contact_tree(self, contacts, average_data, results, max_results):
         self.contact_tree.clear()
         self.max_length = 0
 
-        for measurement_name, paws in paws.items():
-            for index, paw in enumerate(paws):
-                if paw.length > self.max_length:
-                    self.max_length = paw.length
-                paw_label = paw.paw_label
+        for measurement_name, contacts in contacts.items():
+            for index, contact in enumerate(contacts):
+                if contact.length > self.max_length:
+                    self.max_length = contact.length
+                contact_label = contact.contact_label
 
-                if paw_label >= 0:
+                if contact_label >= 0:
                     rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
                     rootItem.setText(0, str(index))
-                    rootItem.setText(1, self.paw_dict[paw_label])
-                    rootItem.setText(2, str(paw.length))
-                    surface = np.max(paw.surface_over_time)
+                    rootItem.setText(1, self.contact_dict[contact_label])
+                    rootItem.setText(2, str(contact.length))
+                    surface = np.max(contact.surface_over_time)
                     rootItem.setText(3, str(int(surface)))
-                    force = np.max(paw.force_over_time)
+                    force = np.max(contact.force_over_time)
                     rootItem.setText(4, str(int(force)))
 
                     for idx in range(rootItem.columnCount()):
-                        rootItem.setBackground(idx, self.colors[paw_label])
+                        rootItem.setBackground(idx, self.colors[contact_label])
 
         # Sort the items per label
         self.contact_tree.sortItems(1, Qt.AscendingOrder)
@@ -167,7 +167,7 @@ class AnalysisWidget(QtGui.QTabWidget):
     def clear_cached_values(self):
         self.n_max = 0
         self.average_data.clear()
-        self.paws.clear()
+        self.contacts.clear()
 
     def change_frame(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))

@@ -6,67 +6,67 @@ from pawlabeling.functions import utility, calculations
 from pawlabeling.settings import configuration
 
 
-class PawsWidget(QtGui.QWidget):
+class contactsWidget(QtGui.QWidget):
     def __init__(self, parent):
-        super(PawsWidget, self).__init__(parent)
+        super(contactsWidget, self).__init__(parent)
         self.parent = parent
 
-        self.left_front = PawWidget(self, label="Left Front", paw_label=0)
-        self.left_hind = PawWidget(self, label="Left Hind", paw_label=1)
-        self.right_front = PawWidget(self,label="Right Front", paw_label=2)
-        self.right_hind = PawWidget(self,label="Right Hind", paw_label=3)
-        self.current_paw = PawWidget(self, label="", paw_label=-1)
+        self.left_front = contactWidget(self, label="Left Front", contact_label=0)
+        self.left_hind = contactWidget(self, label="Left Hind", contact_label=1)
+        self.right_front = contactWidget(self,label="Right Front", contact_label=2)
+        self.right_hind = contactWidget(self,label="Right Hind", contact_label=3)
+        self.current_contact = contactWidget(self, label="", contact_label=-1)
 
-        self.paws_list = {
+        self.contacts_list = {
             0: self.left_front,
             1: self.left_hind,
             2: self.right_front,
             3: self.right_hind,
-            -1: self.current_paw
+            -1: self.current_contact
         }
 
         self.logger = logging.getLogger("logger")
-        self.paw_dict = configuration.paw_dict
+        self.contact_dict = configuration.contact_dict
 
-        self.left_paws_layout = QtGui.QVBoxLayout()
-        self.left_paws_layout.addWidget(self.left_front)
-        self.left_paws_layout.addWidget(self.left_hind)
-        self.current_paw_layout = QtGui.QVBoxLayout()
-        self.current_paw_layout.addStretch(1)
-        self.current_paw_layout.addWidget(QtGui.QLabel("Current Paw"))
-        self.current_paw_layout.addWidget(self.current_paw)
-        self.current_paw_layout.setStretchFactor(self.current_paw, 3)
-        self.current_paw_layout.addStretch(1)
-        self.right_paws_layout = QtGui.QVBoxLayout()
-        self.right_paws_layout.addWidget(self.right_front)
-        self.right_paws_layout.addWidget(self.right_hind)
+        self.left_contacts_layout = QtGui.QVBoxLayout()
+        self.left_contacts_layout.addWidget(self.left_front)
+        self.left_contacts_layout.addWidget(self.left_hind)
+        self.current_contact_layout = QtGui.QVBoxLayout()
+        self.current_contact_layout.addStretch(1)
+        self.current_contact_layout.addWidget(QtGui.QLabel("Current contact"))
+        self.current_contact_layout.addWidget(self.current_contact)
+        self.current_contact_layout.setStretchFactor(self.current_contact, 3)
+        self.current_contact_layout.addStretch(1)
+        self.right_contacts_layout = QtGui.QVBoxLayout()
+        self.right_contacts_layout.addWidget(self.right_front)
+        self.right_contacts_layout.addWidget(self.right_hind)
 
         self.main_layout = QtGui.QHBoxLayout()
-        self.main_layout.addLayout(self.left_paws_layout)
-        self.main_layout.addLayout(self.current_paw_layout)
-        self.main_layout.addLayout(self.right_paws_layout)
+        self.main_layout.addLayout(self.left_contacts_layout)
+        self.main_layout.addLayout(self.current_contact_layout)
+        self.main_layout.addLayout(self.right_contacts_layout)
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.new_measurement, "loaded_file")
-        pub.subscribe(self.update_paws, "updated_current_paw")
+        pub.subscribe(self.update_contacts, "updated_current_contact")
 
     def new_measurement(self, measurement, measurement_name, shape):
         self.measurement_name = measurement_name
 
-    def update_paws(self, paws, average_data, current_paw_index):
+    def update_contacts(self, contacts, average_data, current_contact_index):
         # Clear any previous results, which may be out of date
-        self.clear_paws()
+        self.clear_contacts()
         # Update those for which we have a average measurement_data
-        for paw_label, average_list in average_data.items():
-            widget = self.paws_list[paw_label]
+        for contact_label, average_list in average_data.items():
+            widget = self.contacts_list[contact_label]
             widget.update(average_list)
 
-        # Update the current paw widget
-        widget = self.paws_list[-1]
-        current_paw = paws[self.measurement_name][current_paw_index]
-        # We expect current_paw to be a list
-        normalized_current_paw = utility.calculate_average_data([current_paw.data])
-        widget.update(normalized_current_paw)
+        # Update the current contact widget
+        widget = self.contacts_list[-1]
+        current_contact = contacts[self.measurement_name][current_contact_index]
+        # We expect current_contact to be a list
+        normalized_current_contact = utility.calculate_average_data([current_contact.data])
+        widget.update(normalized_current_contact)
 
         try:
             self.predict_label()
@@ -75,29 +75,29 @@ class PawsWidget(QtGui.QWidget):
 
 
     def predict_label(self):
-        current_paw = self.paws_list[-1]
+        current_contact = self.contacts_list[-1]
         # If there's no measurement_data, we can quit
-        if current_paw.max_pressure == float("inf"):
+        if current_contact.max_pressure == float("inf"):
             return
 
-        pressure = current_paw.max_pressure
-        surface = current_paw.mean_surface
-        duration = current_paw.mean_duration
-        data = current_paw.data
+        pressure = current_contact.max_pressure
+        surface = current_contact.mean_surface
+        duration = current_contact.mean_duration
+        data = current_contact.data
 
         pressures = []
         surfaces = []
         durations = []
         data_list = []
         # Then iterate through the other contacts
-        for paw_label, paw in list(self.paws_list.items()):
+        for contact_label, contact in list(self.contacts_list.items()):
             # Skip comparing with yourself
-            if paw_label == -1:
+            if contact_label == -1:
                 continue
-            pressures.append(paw.max_pressure)
-            surfaces.append(paw.mean_surface)
-            durations.append(paw.mean_duration)
-            data_list.append(paw.data)
+            pressures.append(contact.max_pressure)
+            surfaces.append(contact.mean_surface)
+            durations.append(contact.mean_duration)
+            data_list.append(contact.data)
 
         # For each value calculate how much % it varies
         if all([pressure, surface, duration, data_list]):
@@ -111,20 +111,20 @@ class PawsWidget(QtGui.QWidget):
                 results.append(p + s + d + d2)
 
             best_result = np.argmin(results)
-            current_paw.label_prediction.setText("{}".format(self.paw_dict[best_result]))
+            current_contact.label_prediction.setText("{}".format(self.contact_dict[best_result]))
 
-    def clear_paws(self):
-        for paw_label, widget in self.paws_list.items():
+    def clear_contacts(self):
+        for contact_label, widget in self.contacts_list.items():
             widget.clear_cached_values()
 
-class PawWidget(QtGui.QWidget):
-    def __init__(self, parent, label, paw_label):
-        super(PawWidget, self).__init__(parent)
+class contactWidget(QtGui.QWidget):
+    def __init__(self, parent, label, contact_label):
+        super(contactWidget, self).__init__(parent)
         self.parent = parent
-        self.degree = configuration.interpolation_paws_widget
+        self.degree = configuration.interpolation_contacts_widget
         self.n_max = 0
         self.label = label
-        self.paw_label = paw_label
+        self.contact_label = contact_label
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
         self.mx = 100
@@ -167,7 +167,7 @@ class PawWidget(QtGui.QWidget):
         self.main_layout.addWidget(self.view)
         self.main_layout.addLayout(self.number_layout)
 
-        self.setMinimumHeight(configuration.paws_widget_height)
+        self.setMinimumHeight(configuration.contacts_widget_height)
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.update_n_max, "update_n_max")
@@ -177,7 +177,7 @@ class PawWidget(QtGui.QWidget):
         self.n_max = n_max
 
     def update(self, average_data):
-        # Calculate an average paw from the list of arrays
+        # Calculate an average contact from the list of arrays
         self.average_data = np.mean(average_data, axis=0)
         self.max_pressure = np.max(calculations.force_over_time(self.average_data))
         x, y, z = np.nonzero(self.average_data)

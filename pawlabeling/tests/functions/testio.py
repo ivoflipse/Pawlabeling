@@ -164,25 +164,25 @@ class TestResultsToPickle(TestCase):
 
         # Load contacts from an existing pickle file
         with open(self.input_path, "rb") as pickle_file:
-            self.paws = pickle.load(pickle_file)
+            self.contacts = pickle.load(pickle_file)
 
         # Remove the folder if it exists
         if os.path.exists(self.pickle_path_after):
             shutil.rmtree(self.pickle_path_after, ignore_errors=True)
 
     def test_results_to_pickle(self):
-        io.results_to_pickle(self.pickle_path_before, self.paws)
+        io.results_to_pickle(self.pickle_path_before, self.contacts)
 
         exists = os.path.exists(self.pickle_path_after)
         self.assertTrue(exists)
 
     def test_results_to_pickle_wrong_path(self):
         with self.assertRaises(Exception):
-            io.results_to_pickle(pickle_path="", paws=self.paws)
+            io.results_to_pickle(pickle_path="", contacts=self.contacts)
 
-    def test_results_to_pickle_no_paws(self):
+    def test_results_to_pickle_no_contacts(self):
         with self.assertRaises(Exception):
-            io.results_to_pickle(pickle_path=self.pickle_path_before, paws=[])
+            io.results_to_pickle(pickle_path=self.pickle_path_before, contacts=[])
 
     def tearDown(self):
         # Remove the folder if it still exists

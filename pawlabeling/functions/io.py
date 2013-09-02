@@ -97,7 +97,7 @@ def load_zebris(infile):
 
 
 # This functions is modified from:
-# http://stackoverflow.com/questions/4087919/how-can-i-improve-my-paw-detection
+# http://stackoverflow.com/questions/4087919/how-can-i-improve-my-contact-detection
 def load_rsscan(infile):
     """Reads all measurement_data in the datafile. Returns an array of times for each
     slice, and a 3D array of pressure measurement_data with shape (nx, ny, nz)."""
@@ -225,7 +225,7 @@ def create_results_folder(subject_name):
     return new_path
 
 
-def results_to_pickle(pickle_path, paws):
+def results_to_pickle(pickle_path, contacts):
     """
     pickle_path is a path like "subject_name\\measurement_name"
     contacts is a list of Contacts
@@ -238,12 +238,12 @@ def results_to_pickle(pickle_path, paws):
     if not os.path.exists(parent_folder):
         raise Exception("Parent folder does not exists, can't save the file")
 
-    if not paws:
+    if not contacts:
         raise Exception("There are no contacts in this measurement, can't save the file")
 
     # Open a file with pkl (pickle) added to the path_name
     with open(pickle_path + ".pkl", "wb") as pickle_file:
-        pickle.dump(paws, pickle_file)
+        pickle.dump(contacts, pickle_file)
 
 
 def zip_file(root, file_name):

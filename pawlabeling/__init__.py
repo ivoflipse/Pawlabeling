@@ -1,5 +1,5 @@
 """
-Paw Labeling is a tool to process (veterinary) pressure measurements.
+contact Labeling is a tool to process (veterinary) pressure measurements.
 ===================================================================
 """
 
