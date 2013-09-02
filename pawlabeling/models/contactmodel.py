@@ -129,11 +129,11 @@ class Contact():
         """
         self.contact_label = contact_label
 
-    def set_index(self, index):
+    def set_contact_id(self, contact_id):
         """
-        Lets you set the index. Only used, so I can log when/where this happens for bug tracking purposes.
+        Lets you set the contact_id. Only used, so I can log when/where this happens for bug tracking purposes.
         """
-        self.index = index
+        self.contact_id = contact_id
 
     def validate_contact(self, measurement_data):
         """

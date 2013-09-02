@@ -51,7 +51,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.measurement_tree.setMinimumWidth(300)
         self.measurement_tree.setColumnCount(1)
         self.measurement_tree.setHeaderLabel("Measurements")
-        self.measurement_tree.itemActivated.connect(self.load_file)
+        self.measurement_tree.itemActivated.connect(self.put_measurement)
 
         self.contacts_tree = QtGui.QTreeWidget(self)
         self.contacts_tree.setMaximumWidth(300)
@@ -88,7 +88,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        #pub.subscribe(self.update_contacts_tree, "update_contacts_tree")  # processing_results OLD MESSAGE
+        pub.subscribe(self.update_contacts_tree, "update_contacts_tree")
         pub.subscribe(self.stored_status, "stored_status")
 
     def put_subject(self, subject):
@@ -101,12 +101,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.session_name_label.setText("Session: {}\t".format(self.session["session_name"]))
 
     def update_measurements_tree(self, measurements):
-        """
-        This function is called when the model sends out the measurements as a response to get_measurements
-        It will then fill the tree making a root node for the selected subject and a child node for the selected session
-        then it will start making child nodes for each measurement within that session
-        If the measurement has already been labeled it will also be marked as green instead of the default black.
-        """
         # # Create a green brush for coloring stored results
         # green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
         self.measurement_tree.clear()
@@ -122,10 +116,10 @@ class ProcessingWidget(QtGui.QWidget):
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item)
 
-    def load_file(self):
+    def put_measurement(self):
         # Notify the model to update the subject_name + measurement_name if necessary
-        measurement_name = self.measurement_tree.currentItem().text(0)
-        measurement = self.measurements[measurement_name]
+        self.measurement_name = self.measurement_tree.currentItem().text(0)
+        measurement = self.measurements[self.measurement_name]
         pub.sendMessage("put_measurement", measurement=measurement)
 
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
@@ -135,26 +129,26 @@ class ProcessingWidget(QtGui.QWidget):
 
         ## Manage some GUI elements
         self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
-        self.contacts_tree.clear()
 
         # Send a message so the model starts loading results
-        #pub.sendMessage("load_results", widget="processing")
+        pub.sendMessage("load_results", widget="processing")
 
     def update_contacts_tree(self, contacts):
+        print contacts
         self.contacts = contacts
 
         # Clear any existing contacts
         self.contacts_tree.clear()
         # Add the contacts to the contacts_tree
-        for index, contact in enumerate(self.contacts):
+        for contact in self.contacts[self.measurement_name]:
             rootItem = QtGui.QTreeWidgetItem(self.contacts_tree)
-            rootItem.setText(0, str(index))
+            rootItem.setText(0, str(contact.contact_id))
             rootItem.setText(1, self.contact_dict[contact.contact_label])
             rootItem.setText(2, str(contact.length))  # Sets the frame count
-            surface = np.max(contact.surface_over_time)
-            rootItem.setText(3, str(int(surface)))
-            force = np.max(contact.force_over_time)
-            rootItem.setText(4, str(int(force)))
+            # surface = np.max(contact.surface_over_time)
+            # rootItem.setText(3, str(int(surface)))
+            # force = np.max(contact.force_over_time)
+            # rootItem.setText(4, str(int(force)))
 
         # Initialize the current contact index, which we'll need for keep track of the labeling
         self.current_contact_index = 0

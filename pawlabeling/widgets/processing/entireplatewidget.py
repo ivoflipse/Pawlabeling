@@ -5,6 +5,7 @@ from pubsub import pub
 from pawlabeling.functions import utility, gui
 from pawlabeling.settings import configuration
 
+
 class EntirePlateWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(EntirePlateWidget, self).__init__(parent)
@@ -70,7 +71,8 @@ class EntirePlateWidget(QtGui.QWidget):
         )
 
         self.fast_backward_action = gui.create_action(text="Fast Back",
-                                                      shortcut=QtGui.QKeySequence.MoveToNextWord,#QKeySequence(Qt.CTRL + Qt.Key_Left),
+                                                      shortcut=QtGui.QKeySequence.MoveToNextWord,
+                                                      #QKeySequence(Qt.CTRL + Qt.Key_Left),
                                                       icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                                     "../images/arrow_left_icon.png")),
                                                       tip="Move the slider to the left faster",
@@ -79,7 +81,8 @@ class EntirePlateWidget(QtGui.QWidget):
         )
 
         self.fast_forward_action = gui.create_action(text="Fast Forward",
-                                                     shortcut=QtGui.QKeySequence.MoveToPreviousWord, #QKeySequence(Qt.CTRL + Qt.Key_Right),
+                                                     shortcut=QtGui.QKeySequence.MoveToPreviousWord,
+                                                     #QKeySequence(Qt.CTRL + Qt.Key_Right),
                                                      icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                                    "../images/arrow_right_icon.png")),
                                                      tip="Move the slider to the right faster",
@@ -196,17 +199,21 @@ class EntirePlateWidget(QtGui.QWidget):
             current_contact = 0
 
         polygon = QtGui.QPolygonF(
-            [QtCore.QPointF((contact.min_x - current_contact) * self.degree, (contact.min_y - current_contact) * self.degree),
-             QtCore.QPointF((contact.max_x + current_contact) * self.degree, (contact.min_y - current_contact) * self.degree),
-             QtCore.QPointF((contact.max_x + current_contact) * self.degree, (contact.max_y + current_contact) * self.degree),
-             QtCore.QPointF((contact.min_x - current_contact) * self.degree, (contact.max_y + current_contact) * self.degree)])
+            [QtCore.QPointF((contact.min_x - current_contact) * self.degree,
+                            (contact.min_y - current_contact) * self.degree),
+             QtCore.QPointF((contact.max_x + current_contact) * self.degree,
+                            (contact.min_y - current_contact) * self.degree),
+             QtCore.QPointF((contact.max_x + current_contact) * self.degree,
+                            (contact.max_y + current_contact) * self.degree),
+             QtCore.QPointF((contact.min_x - current_contact) * self.degree,
+                            (contact.max_y + current_contact) * self.degree)])
 
         bounding_box = self.scene.addPolygon(polygon, self.bounding_box_pen)
         bounding_box.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
         self.bounding_boxes.append(bounding_box)
         self.resizeEvent()
 
-    def update_bounding_boxes(self, contacts, current_contact_index,average_data):
+    def update_bounding_boxes(self, contacts, current_contact_index, average_data):
         self.clear_bounding_box()
         for index, contact in enumerate(contacts[self.measurement_name]):
             self.draw_bounding_box(contacts[self.measurement_name][index], contact.contact_label)
@@ -235,10 +242,10 @@ class EntirePlateWidget(QtGui.QWidget):
 
     def resizeEvent(self, event=None):
         item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
-        ratio = min(self.view.viewport().width()/float(item_size.width()),
-                    self.view.viewport().height()/float(item_size.height()))
+        ratio = min(self.view.viewport().width() / float(item_size.width()),
+                    self.view.viewport().height() / float(item_size.height()))
 
-        if abs(1-ratio) > 0.1:
+        if abs(1 - ratio) > 0.1:
             # Store the ratio and use it to draw the bounding boxes
             self.ratio = self.ratio * ratio
             self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)

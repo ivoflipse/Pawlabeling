@@ -47,11 +47,11 @@ class contactsWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.right_contacts_layout)
         self.setLayout(self.main_layout)
 
-        pub.subscribe(self.new_measurement, "loaded_file")
+        pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.update_contacts, "updated_current_contact")
 
-    def new_measurement(self, measurement, measurement_name, shape):
-        self.measurement_name = measurement_name
+    def put_measurement(self, measurement):
+        self.measurement_name = measurement["measurement_name"]
 
     def update_contacts(self, contacts, average_data, current_contact_index):
         # Clear any previous results, which may be out of date

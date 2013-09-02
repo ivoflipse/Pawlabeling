@@ -38,7 +38,7 @@ class Model():
         pub.subscribe(self.create_subject, "create_subject")
         pub.subscribe(self.create_session, "create_session")
         pub.subscribe(self.create_measurement, "create_measurement")
-        pub.subscribe(self.create_contact, "create_contact")
+        pub.subscribe(self.create_contacts, "create_contacts")
         # GET
         pub.subscribe(self.get_subjects, "get_subjects")
         pub.subscribe(self.get_sessions, "get_sessions")
@@ -108,7 +108,25 @@ class Model():
         except MissingIdentifier:
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
 
-    def create_contact(self, contacts):
+    def create_contacts(self, contacts):
+        """
+            measurement_id = tables.StringCol(64)
+            session_id = tables.StringCol(64)
+            subject_id = tables.StringCol(64)
+            contact_id = tables.UInt16Col()
+            label = tables.UInt16Col()
+            min_x = tables.UInt16Col()
+            max_x = tables.UInt16Col()
+            min_y = tables.UInt16Col()
+            max_y = tables.UInt16Col()
+            min_z = tables.UInt16Col()
+            max_z = tables.UInt16Col()
+            width = tables.UInt16Col()
+            height = tables.UInt16Col()
+            length = tables.UInt16Col()
+            invalid = tables.BoolCol()
+            filtered = tables.BoolCol()
+        """
         # TODO You might want to check if the contact_id key is present and that each contact is a dictionary
         # We'll track the contact groups using this contact_ids dictionary
         self.contact_ids = {}
@@ -117,7 +135,7 @@ class Model():
                 contact_group = self.contacts_table.create_contact(**contact)
                 self.contact_ids[contact_group._v_name] = contact_group
             except MissingIdentifier:
-                self.logger.warning("Model.create_contact: Some of the required fields are missing")
+                self.logger.warning("Model.create_contacts: Some of the required fields are missing")
 
     def get_subjects(self, subject):
         subjects = self.subjects_table.get_subjects(**subject)
@@ -133,7 +151,12 @@ class Model():
 
     def get_contacts(self, contact):
         contacts = self.contacts_table.get_contacts(**contact)
-        pub.sendMessage("update_contacts_tree", contacts=contacts)
+        # If we don't get anything back, that means there are no contacts yet
+        if not contacts:
+            contacts = self.track_contacts()
+
+        self.contacts[self.measurement_name] = contacts
+        pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
     def get_measurement_data(self, data):
         group = self.measurements_table.get_group(self.measurements_table.session_group,
@@ -158,6 +181,7 @@ class Model():
     def put_measurement(self, measurement):
         self.measurement = measurement
         self.measurement_id = measurement["measurement_id"]
+        self.measurement_name = measurement["measurement_name"]
         self.logger.info("Measurement ID set to {}".format(self.measurement_id))
         self.contacts_table = tabelmodel.ContactsTable(subject_id=self.subject_id,
                                                        session_id=self.session_id,
@@ -176,25 +200,6 @@ class Model():
         self.logger.info("Model.load_file_paths: Loading file paths")
         self.file_paths = io.get_file_paths()
         pub.sendMessage("get_file_paths", file_paths=self.file_paths)
-
-
-    # def load_file(self, measurement):
-    #     self.measurement = measurement
-    #     # Log which measurement we're loading
-    #     subject_name = "{} {}".format(self.subject["first_name"], self.subject["last_name"])
-    #     measurement_name = measurement["measurement_name"]
-    #     self.logger.info("Model.load_file: Loading measurement for subject: {} {} - {}".format(subject_name,
-    #                                                                                     measurement_name))
-    #
-    #     # Get the measurement_data
-    #
-    #     measurement[""]
-    #
-    #     # Notify the widgets that there's a new n_max available
-    #     pub.sendMessage("update_n_max", n_max=self.n_max)
-    #     # Notify the widgets that a new measurement is available
-    #     pub.sendMessage("loaded_file", measurement=self.measurement, measurement_name=self.measurement_name,
-    #                     shape=self.measurement.shape)
 
     def load_results(self, widget):
         self.load_all_results()
@@ -215,58 +220,76 @@ class Model():
         # Make sure self.contacts is empty
         self.contacts.clear()
 
-        for measurement_name in self.file_paths[self.subject_name]:
-            input_path = io.find_stored_file(self.subject_name, measurement_name)
-            contacts = io.load_results(input_path)
-            # Did we get any results?
-            if contacts:
-                self.contacts[measurement_name] = contacts
-                # Check if any of the contacts has a higher n_max
-                for contact in contacts:
-                    n_max = np.max(contact.data)
-                    if n_max > self.n_max:
-                        self.n_max = n_max
+        # for measurement_name in self.file_paths[self.subject_name]:
+        #     input_path = io.find_stored_file(self.subject_name, measurement_name)
+        #     contacts = io.load_results(input_path)
+        #     # Did we get any results?
+        #     if contacts:
+        #         self.contacts[measurement_name] = contacts
+        #         # Check if any of the contacts has a higher n_max
+        #         for contact in contacts:
+        #             n_max = np.max(contact.data)
+        #             if n_max > self.n_max:
+        #                 self.n_max = n_max
+
+        self.n_max = 0
+
+        # Go through all the measurements in this session's table
+        for measurement in self.measurements_table.get_measurements():
+            n_max = measurement["maximum_value"]
+            if n_max > self.n_max:
+                self.n_max = n_max
+
+            # Extract the contacts and create contactmodel -> Contact instances with them + the data
+            contacts_table = tabelmodel.ContactsTable(subject_id=measurement["subject_id"],
+                                                      session_id=measurement["session_id"],
+                                                      measurement_id=measurement["measurement_id"])
+            contacts = contacts_table.get_contacts()
+
+
+        # Calculate the highest n_max and publish that
+
 
         pub.sendMessage("update_n_max", n_max=self.n_max)
 
         if not self.contacts.get(self.measurement_name):
-            self.track_contacts()
+            self.contacts[self.measurement_name] = self.track_contacts()
 
         # Calculate the average, after everything has been loaded
-        self.calculate_average()
-        self.calculate_results()
+        #self.calculate_average()
+        #self.calculate_results()
 
 
     def track_contacts(self):
         pub.sendMessage("update_statusbar", status="Starting tracking")
         # Add padding to the measurement
-        x, y, z = self.measurement.shape
+        x = self.measurement["number_of_rows"]
+        y = self.measurement["number_of_cols"]
+        z = self.measurement["number_of_frames"]
         padding = configuration.padding_factor
         data = np.zeros((x + 2 * padding, y + 2 * padding, z), np.float32)
-        data[padding:-padding, padding:-padding, :] = self.measurement
-        contacts = tracking.track_contours_graph(data)
+        data[padding:-padding, padding:-padding, :] = self.measurement_data
+        raw_contacts = tracking.track_contours_graph(data)
 
-        # Make sure we don't have any contacts stored if we're tracking again
-        # I'd suggest moving the calculation of average_data out, so I can update it every time I label a contact
-        self.contacts[self.measurement_name] = []
+        contacts = []
 
         # Convert them to class objects
-        for index, raw_contact in enumerate(contacts):
+        for index, raw_contact in enumerate(raw_contacts):
             contact = contactmodel.Contact()
-            contact.create_contact(contact=raw_contact, measurement_data=self.measurement, padding=1)
+            contact.create_contact(contact=raw_contact, measurement_data=self.measurement_data, padding=padding)
             # Skip contacts that have only been around for one frame
             if len(contact.frames) > 1:
-                self.contacts[self.measurement_name].append(contact)
+                contacts.append(contact)
 
         # Sort the contacts based on their position along the first dimension
-        self.contacts[self.measurement_name] = sorted(self.contacts[self.measurement_name],
-                                                      key=lambda contact: contact.min_z)
+        contacts = sorted(contacts, key=lambda contact: contact.min_z)
         # Update their index
-        for index, contact in enumerate(self.contacts[self.measurement_name]):
-            contact.set_index(index)
+        for contact_id, contact in enumerate(contacts):
+            contact.set_contact_id(contact_id)
 
-        status = "Number of contacts found: {}".format(len(self.contacts[self.measurement_name]))
+        status = "Number of contacts found: {}".format(len(contacts))
         pub.sendMessage("update_statusbar", status=status)
+        return contacts
 
     def update_current_contact(self, current_contact_index, contacts):
         # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
