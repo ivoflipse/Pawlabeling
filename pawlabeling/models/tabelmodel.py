@@ -55,7 +55,8 @@ class Table(object):
 
     def get_data(self, group, item_id):
         # We're calling read, because else we get a pytables object
-        return group.__getattr__(item_id).read()
+        if hasattr(group, item_id):
+            return group.__getattr__(item_id).read()
 
     def close_table(self):
         """
@@ -265,7 +266,7 @@ class ContactsTable(Table):
         measurement_id = tables.StringCol(64)
         session_id = tables.StringCol(64)
         subject_id = tables.StringCol(64)
-        contact_id = tables.UInt16Col()
+        contact_id = tables.StringCol(16)
         contact_label = tables.Int16Col()  # These might also be negative...
         min_x = tables.UInt16Col()
         max_x = tables.UInt16Col()
@@ -302,7 +303,8 @@ class ContactsTable(Table):
 
         if self.get_contact_row(self.contacts_table, contact_id=kwargs["contact_id"]):
             print "Contact already exists"
-            return -1
+            # Return the group instead
+            return self.measurement_group.__getattr__(kwargs["contact_id"])
 
         self.create_row(self.contacts_table, **kwargs)
         group = self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])

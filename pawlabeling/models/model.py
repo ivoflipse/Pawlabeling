@@ -38,7 +38,7 @@ class Model():
         pub.subscribe(self.create_subject, "create_subject")
         pub.subscribe(self.create_session, "create_session")
         pub.subscribe(self.create_measurement, "create_measurement")
-        pub.subscribe(self.create_contacts, "create_contacts")
+        pub.subscribe(self.create_contact, "create_contact")
         # GET
         pub.subscribe(self.get_subjects, "get_subjects")
         pub.subscribe(self.get_sessions, "get_sessions")
@@ -108,22 +108,30 @@ class Model():
         except MissingIdentifier:
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
 
-    def create_contacts(self, contacts):
-        # We'll track the contact groups using this contact_ids dictionary
-        self.contact_ids = {}
-        for contact in contacts:
-            contact = contact.to_dict()  # This takes care of some of the book keeping for us
-            contact["subject_id"] = self.subject_id
-            contact["session_id"] = self.session_id
-            contact["measurement_id"] = self.measurement_id
+    def create_contact(self, contact):
+        try:
+            contact_data = contact["data"]
+            # Remove the key
+            del contact["data"]
+            self.contact_group = self.contacts_table.create_contact(**contact)
 
-            contact_group = self.contacts_table.create_contact(**contact)
-            self.contact_ids[contact_group._v_name] = contact_group
+            # These are all the results (for now) I want to add to the contact
+            results = {"data": contact_data,
+                       "max_of_max": contact_data.max(axis=2),
+                       "force_over_time": calculations.force_over_time(contact_data),
+                       "pressure_over_time": calculations.pressure_over_time(contact_data),
+                       "surface_over_time": calculations.surface_over_time(contact_data),
+                       "cop_x": calculations.calculate_cop(contact_data)[0],
+                       "cop_y": calculations.calculate_cop(contact_data)[1]}  # Uhoh, this is expensive...
 
-        # try:
-        #     pass
-        # except MissingIdentifier:
-        #     self.logger.warning("Model.create_contacts: Some of the required fields are missing")
+            for item_id, data in results.items():
+                # Check if it doesn't already exist
+                if not self.contacts_table.get_data(group=self.contact_group, item_id=item_id):
+                    self.contacts_table.store_data(group=self.contact_group,
+                                                   item_id=item_id,
+                                                   data=data)
+        except MissingIdentifier:
+            self.logger.warning("Model.create_contacts: Some of the required fields are missing")
 
     def get_subjects(self, subject):
         subjects = self.subjects_table.get_subjects(**subject)
@@ -141,11 +149,21 @@ class Model():
         contacts = self.contacts_table.get_contacts(**contact)
         # If we don't get anything back, that means there are no contacts yet
         if contacts:
-           # The stored object isn't really a contact though
-            contacts = contactmodel.restore(contacts)
+            new_contacts = []
+            # The stored object isn't really a contact though
+            for c in contacts:
+                contact_data = self.get_contact_data(c)
+                # Create a contact object
+                contact = contactmodel.Contact()
+                # Restore it from the dictionary object
+                # http://stackoverflow.com/questions/38987/how-can-i-merge-union-two-python-dictionaries-in-a-single-expression
+                contact.restore(dict(c, **contact_data))  # This basically merged c and contact_data
+
+                # Append it to our new list
+                new_contacts.append(contact)
         else:
-            contacts = self.track_contacts()
-        self.contacts[self.measurement_name] = contacts
+            new_contacts = self.track_contacts()
+        self.contacts[self.measurement_name] = new_contacts
         pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
     def get_measurement_data(self, data):
@@ -153,6 +171,17 @@ class Model():
                                                   self.measurement["measurement_id"])
         self.measurement_data = self.measurements_table.get_data(group, item_id=data["item_id"])
         pub.sendMessage("update_measurement_data", measurement_data=self.measurement_data)
+
+    def get_contact_data(self, contact):
+        group = self.contacts_table.get_group(self.contacts_table.measurement_group,
+                                              contact["contact_id"])
+        # TODO perhaps I want to store these somewhere, so I can easily extend it and keep things DRY
+        item_ids = ["data", "max_of_max", "pressure_over_time", "force_over_time", "surface_over_time", "cop_x",
+                    "cop_y"]
+        contact_data = {}
+        for item_id in item_ids:
+            contact_data["result"] = self.contacts_table.get_data(group, item_id=item_id)
+        return contact_data
 
     def put_subject(self, subject):
         self.subject = subject
@@ -232,9 +261,9 @@ class Model():
         if not self.contacts.get(self.measurement_name):
             self.contacts[self.measurement_name] = self.track_contacts()
 
-        # Calculate the average, after everything has been loaded
-        #self.calculate_average()
-        #self.calculate_results()
+            # Calculate the average, after everything has been loaded
+            #self.calculate_average()
+            #self.calculate_results()
 
 
     def track_contacts(self):
@@ -328,9 +357,14 @@ class Model():
 
 
     def store_status(self):
-        try:
-            self.create_contacts(self.contacts[self.measurement_name])
+        for contact in self.contacts[self.measurement_name]:
+            contact = contact.to_dict()  # This takes care of some of the book keeping for us
+            contact["subject_id"] = self.subject_id
+            contact["session_id"] = self.session_id
+            contact["measurement_id"] = self.measurement_id
+            self.create_contact(contact)
 
+        try:
             self.logger.info("Model.store_status: Results for {} have been successfully saved".format(
                 self.measurement_name))
             pub.sendMessage("update_statusbar", status="Results saved")

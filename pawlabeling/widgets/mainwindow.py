@@ -67,7 +67,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.tab_widget.currentIndex() == 0:
             pass  # Is there anything you'd like to run when you start the database_widget?
         elif self.tab_widget.currentIndex() == 1:
-            pass
+            self.processing_widget.put_measurement()
         elif self.tab_widget.currentIndex() == 2:
             self.analysis_widget.load_first_file()
 

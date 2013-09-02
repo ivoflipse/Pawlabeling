@@ -171,7 +171,9 @@ class Contact():
         This function takes a dictionary of the stored_results (the result of contact_to_dict) and recreates all the
         attributes.
         """
-        self.contour_list = {} # I can't really be bothered to reconstruct this
+        print contact
+        self.contact_id = int(contact["contact_id"].split("_")[1])  # Convert it back
+        self.contact_label = contact["contact_label"]
         self.frames = [x for x in range(contact["min_z"], contact["max_z"] + 1)]
         self.width = contact["width"]
         self.height = contact["height"]
@@ -180,11 +182,23 @@ class Contact():
         self.max_x = contact["max_x"]
         self.min_y = contact["min_y"]
         self.max_y = contact["max_y"]
+        self.min_z = contact["min_z"]
+        self.max_z = contact["max_z"]
+        self.invalid = contact["invalid"]
+        self.filtered = contact["filtered"]
+        self.data = contact["data"]
+        self.force_over_time = contact["force_over_time"]
+        self.pressure_over_time = contact["pressure_over_time"]
+        self.surface_over_time = contact["surface_over_time"]
+        self.cop_x = contact["cop_x"]
+        self.cop_y = contact["cop_y"]
+        self.max_of_max = contact["max_of_max"]
 
     def to_dict(self):
         return {
-            "contact_id": str(self.contact_id),  # The rest of the application uses an int here!
+            "contact_id": "contact_{}".format(self.contact_id),
             "contact_label": self.contact_label,
+            "data": self.data,
             "min_x": self.min_x,
             "max_x": self.max_x,
             "min_y": self.min_y,

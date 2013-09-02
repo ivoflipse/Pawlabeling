@@ -79,7 +79,7 @@ def pixel_count_over_time(data):
 def surface_over_time(data):
     assert len(data.shape) == 3
     pixel_counts = pixel_count_over_time(data)
-    return[p_c * configuration.sensor_surface for p_c in pixel_counts]
+    return np.array([p_c * configuration.sensor_surface for p_c in pixel_counts])  # Can't this be rewritten?
 
 
 def pressure_over_time(data):

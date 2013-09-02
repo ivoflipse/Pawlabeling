@@ -115,8 +115,6 @@ class ProcessingWidget(QtGui.QWidget):
 
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item, True)
-        # Fire the event, while you're at it
-        self.put_measurement()
 
     def put_measurement(self):
         # Check if the tree aint empty!
@@ -139,14 +137,12 @@ class ProcessingWidget(QtGui.QWidget):
         pub.sendMessage("load_results", widget="processing")
 
     def update_contacts_tree(self, contacts):
-        print contacts
         self.contacts = contacts
 
         # Clear any existing contacts
         self.contacts_tree.clear()
         # Add the contacts to the contacts_tree
         for contact in self.contacts[self.measurement_name]:
-            print contact
             rootItem = QtGui.QTreeWidgetItem(self.contacts_tree)
             rootItem.setText(0, str(contact.contact_id))
             rootItem.setText(1, self.contact_dict[contact.contact_label])

@@ -232,8 +232,10 @@ class EntirePlateWidget(QtGui.QWidget):
             prev_contact = self.contacts[self.measurement_name][index - 1]
             cur_contact = self.contacts[self.measurement_name][index]
             polygon = QtGui.QPolygonF(
-                [QtCore.QPointF(prev_contact.center[0] * self.degree, prev_contact.center[1] * self.degree),
-                 QtCore.QPointF(cur_contact.center[0] * self.degree, cur_contact.center[1] * self.degree)])
+                [QtCore.QPointF((prev_contact.min_x + (prev_contact.width/2)) * self.degree,
+                                 (prev_contact.min_y + (prev_contact.height/2)) * self.degree),
+                 QtCore.QPointF((cur_contact.min_x + (cur_contact.width/2)) * self.degree,
+                                 (cur_contact.min_y + (cur_contact.height/2)) * self.degree)])
             gait_line = self.scene.addPolygon(polygon, self.gait_line_pen)
             gait_line.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
             self.gait_lines.append(gait_line)
