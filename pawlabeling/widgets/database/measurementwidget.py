@@ -14,10 +14,10 @@ class MeasurementWidget(QtGui.QWidget):
         super(MeasurementWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
-        self.date_format = parent.date_format
+        self.date_format = configuration.date_format
 
         self.files_tree_label = QtGui.QLabel("Session folder")
-        self.files_tree_label.setFont(parent.font)
+        self.files_tree_label.setFont(configuration.label_font)
 
         self.measurement_folder_label = QtGui.QLabel("File path:")
         self.measurement_folder = QtGui.QLineEdit()
@@ -73,7 +73,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.files_tree.header().resizeSection(0, 200)
 
         self.measurement_tree_label = QtGui.QLabel("Measurements")
-        self.measurement_tree_label.setFont(parent.font)
+        self.measurement_tree_label.setFont(configuration.label_font)
         self.measurement_tree = QtGui.QTreeWidget(self)
         #self.measurement_tree.setMinimumWidth(300)
         self.measurement_tree.setColumnCount(1)

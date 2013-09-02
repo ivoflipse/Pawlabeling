@@ -145,6 +145,9 @@ interpolation_results = config["interpolation_degree"]["results"]
 
 zip_files = config["application"]["zip_files"]
 
+label_font = QtGui.QFont("Helvetica", 14, QtGui.QFont.Bold)
+date_format = QtCore.QLocale.system().dateFormat(QtCore.QLocale.ShortFormat)
+
 logging_levels = {
     "debug": logging.DEBUG,
     "info": logging.INFO,

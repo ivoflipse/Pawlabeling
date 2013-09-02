@@ -23,11 +23,16 @@ class ProcessingWidget(QtGui.QWidget):
 
         self.logger = logging.getLogger("logger")
 
-        # This contains all the file paths for each subject_name
-        self.file_paths = defaultdict(dict)
-
         # Create a label to display the measurement name
-        self.nameLabel = QtGui.QLabel(self)
+        self.subject_name_label = QtGui.QLabel(self)
+        self.session_name_label = QtGui.QLabel(self)
+        self.measurement_name_label = QtGui.QLabel(self)
+
+        self.label_layout = QtGui.QHBoxLayout()
+        self.label_layout.addWidget(self.subject_name_label)
+        self.label_layout.addWidget(self.session_name_label)
+        self.label_layout.addWidget(self.measurement_name_label)
+        self.label_layout.addStretch(1)
 
         self.path = configuration.measurement_folder
         self.store_path = configuration.store_results_folder
@@ -47,8 +52,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.measurement_tree.setColumnCount(1)
         self.measurement_tree.setHeaderLabel("Measurements")
         self.measurement_tree.itemActivated.connect(self.load_file)
-        # Create some dummy variables which will be overwritten later
-        self.initialize_tree()
 
         self.contacts_tree = QtGui.QTreeWidget(self)
         self.contacts_tree.setMaximumWidth(300)
@@ -67,7 +70,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.contacts_widget = contactswidget.contactsWidget(self)
 
         self.layout = QtGui.QVBoxLayout()
-        self.layout.addWidget(self.nameLabel)
+        self.layout.addLayout(self.label_layout)
         self.layout.addWidget(self.entire_plate_widget)
         self.layout.addWidget(self.contacts_widget)
         self.vertical_layout = QtGui.QVBoxLayout()
@@ -88,28 +91,14 @@ class ProcessingWidget(QtGui.QWidget):
         #pub.subscribe(self.update_contacts_tree, "update_contacts_tree")  # processing_results OLD MESSAGE
         pub.subscribe(self.stored_status, "stored_status")
 
-    def initialize_tree(self):
-        self.subject_item = QtGui.QTreeWidgetItem(self.measurement_tree, [])
-        self.subject_item.setText(0, "Subject Name")
-
-        self.session_item = QtGui.QTreeWidgetItem(self.subject_item, [])
-        self.session_item.setText(0, "Session Name")
-
-        #measurement_item = QtGui.QTreeWidgetItem(self.session_item, [])
-        #measurement_item.setText(0, "Measurement Name")
-
     def put_subject(self, subject):
         self.subject = subject
-        #self.subject_item = QtGui.QTreeWidgetItem(self.measurement_tree, [self.subject])
         subject_name = "{} {}".format(self.subject["first_name"], self.subject["last_name"])
-        self.subject_item.setText(0, subject_name)
-        self.subject_item.setExpanded(True)
+        self.subject_name_label.setText("Subject: {}\t".format(subject_name))
 
     def put_session(self, session):
         self.session = session
-        #self.session_item = QtGui.QTreeWidgetItem(self.subject_item, [self.session])
-        self.session_item.setText(0, self.session["session_name"])
-        self.session_item.setExpanded(True)
+        self.session_name_label.setText("Session: {}\t".format(self.session["session_name"]))
 
     def update_measurements_tree(self, measurements):
         """
@@ -120,15 +109,12 @@ class ProcessingWidget(QtGui.QWidget):
         """
         # # Create a green brush for coloring stored results
         # green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
-        #self.measurement_tree.clear()
+        self.measurement_tree.clear()
         self.measurements = {}
 
-        # Clear any children of session_item
-        self.session_item.takeChildren()
-
-        for index, measurement in enumerate(measurements):
-            self.measurements[index] = measurement
-            measurement_item = QtGui.QTreeWidgetItem(self.session_item, [measurement])
+        for measurement in measurements:
+            self.measurements[measurement["measurement_name"]] = measurement
+            measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
             measurement_item.setText(0, measurement["measurement_name"])
             # How would I be able to check if this measurement has any contacts?
             #child_item.setForeground(0, green_brush)
@@ -137,28 +123,18 @@ class ProcessingWidget(QtGui.QWidget):
         self.measurement_tree.setCurrentItem(item)
 
     def load_file(self):
-        # Get the text from the currentItem
-        current_item = self.measurement_tree.currentItem()
-        # Check if you didn't accidentally double clicked the subject instead of a measurement:
-        try:
-            subject_name = str(current_item.parent().parent().text(0))
-        except AttributeError:
-            print("Double click the measurements, not the subject names!")
-            return
-
         # Notify the model to update the subject_name + measurement_name if necessary
-        subject_item = self.measurement_tree.topLevelItem(0)
-        measurement_index = subject_item.indexOfChild(current_item)
-        measurement = self.measurements[measurement_index]
+        measurement_name = self.measurement_tree.currentItem().text(0)
+        measurement = self.measurements[measurement_name]
         pub.sendMessage("put_measurement", measurement=measurement)
 
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
-        data = {'item_id':measurement["measurement_name"]}
+        data = {'item_id': measurement["measurement_name"]}
         pub.sendMessage("get_measurement_data", data=data)
         pub.sendMessage("get_contacts", contact={})
 
         ## Manage some GUI elements
-        self.nameLabel.setText("Measurement name: {}".format(measurement["measurement_name"]))
+        self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
         self.contacts_tree.clear()
 
         # Send a message so the model starts loading results
@@ -202,7 +178,8 @@ class ProcessingWidget(QtGui.QWidget):
                     if contact_label >= 0:
                         item.setForeground(idx, self.colors[contact_label])
 
-            pub.sendMessage("update_current_contact", current_contact_index=self.current_contact_index, contacts=self.contacts)
+            pub.sendMessage("update_current_contact", current_contact_index=self.current_contact_index,
+                            contacts=self.contacts)
 
     def undo_label(self):
         self.previous_contact()
@@ -367,7 +344,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.left_front_action = gui.create_action(text="Select Left Front",
                                                    shortcut=configuration.left_front,
                                                    icon=QtGui.QIcon(
-                                                       os.path.join(os.path.dirname(__file__), "../images/LF_icon.png")),
+                                                       os.path.join(os.path.dirname(__file__),
+                                                                    "../images/LF_icon.png")),
                                                    tip="Select the Left Front contact",
                                                    checkable=False,
                                                    connection=self.select_left_front
@@ -394,31 +372,33 @@ class ProcessingWidget(QtGui.QWidget):
         self.right_hind_action = gui.create_action(text="Select Right Hind",
                                                    shortcut=configuration.right_hind,
                                                    icon=QtGui.QIcon(
-                                                       os.path.join(os.path.dirname(__file__), "../images/RH_icon.png")),
+                                                       os.path.join(os.path.dirname(__file__),
+                                                                    "../images/RH_icon.png")),
                                                    tip="Select the Right Hind contact",
                                                    checkable=False,
                                                    connection=self.select_right_hind
         )
 
         self.previous_contact_action = gui.create_action(text="Select Previous contact",
-                                                     shortcut=[configuration.previous_contact,
-                                                               QtGui.QKeySequence(QtCore.Qt.Key_Down)],
-                                                     icon=QtGui.QIcon(
-                                                         os.path.join(os.path.dirname(__file__),
-                                                                      "../images/backward.png")),
-                                                     tip="Select the previous contact",
-                                                     checkable=False,
-                                                     connection=self.previous_contact
+                                                         shortcut=[configuration.previous_contact,
+                                                                   QtGui.QKeySequence(QtCore.Qt.Key_Down)],
+                                                         icon=QtGui.QIcon(
+                                                             os.path.join(os.path.dirname(__file__),
+                                                                          "../images/backward.png")),
+                                                         tip="Select the previous contact",
+                                                         checkable=False,
+                                                         connection=self.previous_contact
         )
 
         self.next_contact_action = gui.create_action(text="Select Next contact",
-                                                 shortcut=[configuration.next_contact,
-                                                           QtGui.QKeySequence(QtCore.Qt.Key_Up)],
-                                                 icon=QtGui.QIcon(
-                                                     os.path.join(os.path.dirname(__file__), "../images/forward.png")),
-                                                 tip="Select the next contact",
-                                                 checkable=False,
-                                                 connection=self.next_contact
+                                                     shortcut=[configuration.next_contact,
+                                                               QtGui.QKeySequence(QtCore.Qt.Key_Up)],
+                                                     icon=QtGui.QIcon(
+                                                         os.path.join(os.path.dirname(__file__),
+                                                                      "../images/forward.png")),
+                                                     tip="Select the next contact",
+                                                     checkable=False,
+                                                     connection=self.next_contact
         )
 
         self.remove_label_action = gui.create_action(text="Delete Label From contact",
@@ -432,13 +412,13 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.invalid_contact_action = gui.create_action(text="Mark contact as Invalid",
-                                                    shortcut=configuration.invalid_contact,
-                                                    icon=QtGui.QIcon(
-                                                        os.path.join(os.path.dirname(__file__),
-                                                                     "../images/trash_icon.png")),
-                                                    tip="Mark the contact as invalid",
-                                                    checkable=False,
-                                                    connection=self.invalid_contact
+                                                        shortcut=configuration.invalid_contact,
+                                                        icon=QtGui.QIcon(
+                                                            os.path.join(os.path.dirname(__file__),
+                                                                         "../images/trash_icon.png")),
+                                                        tip="Mark the contact as invalid",
+                                                        checkable=False,
+                                                        connection=self.invalid_contact
         )
 
         self.undo_label_action = gui.create_action(text="Undo Label From contact",
@@ -453,7 +433,8 @@ class ProcessingWidget(QtGui.QWidget):
 
         self.actions = [self.store_status_action, self.track_contacts_action, self.left_front_action,
                         self.left_hind_action,
-                        self.right_front_action, self.right_hind_action, self.previous_contact_action, self.next_contact_action,
+                        self.right_front_action, self.right_hind_action, self.previous_contact_action,
+                        self.next_contact_action,
                         self.remove_label_action, self.invalid_contact_action, self.undo_label_action]
 
         for action in self.actions:

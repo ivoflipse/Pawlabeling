@@ -3,6 +3,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
+from pawlabeling.settings import configuration
 
 
 class SessionWidget(QtGui.QWidget):
@@ -12,7 +13,7 @@ class SessionWidget(QtGui.QWidget):
         self.logger = logging.getLogger("logger")
 
         self.session_label = QtGui.QLabel("Session")
-        self.session_label.setFont(parent.font)
+        self.session_label.setFont(configuration.label_font)
         self.session_name_label = QtGui.QLabel("Session Name")
         self.session_date_label = QtGui.QLabel("Session Date")
         self.session_time_label = QtGui.QLabel("Session Time")
@@ -21,13 +22,13 @@ class SessionWidget(QtGui.QWidget):
         self.session_date = QtGui.QDateEdit(QtCore.QDate.currentDate())
         self.session_date.setMinimumDate(QtCore.QDate.currentDate().addYears(-100))
         self.session_date.setMaximumDate(QtCore.QDate.currentDate())
-        self.session_date.setDisplayFormat(parent.date_format)
+        self.session_date.setDisplayFormat(configuration.date_format)
         self.session_time = QtGui.QTimeEdit(QtCore.QTime.currentTime())
         #self.time_format = QtCore.QLocale.system().timeFormat(QtCore.QLocale.ShortFormat)
         self.session_time.setDisplayFormat(u"HH:mm")
 
         self.session_tree_label = QtGui.QLabel("Sessions")
-        self.session_tree_label.setFont(parent.font)
+        self.session_tree_label.setFont(configuration.label_font)
         self.session_tree = QtGui.QTreeWidget(self)
         #self.session_tree.setMinimumWidth(300)
         #self.session_tree.setMaximumWidth(400)
