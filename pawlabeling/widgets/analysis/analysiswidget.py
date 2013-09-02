@@ -17,7 +17,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Initialize num_frames, in case measurements aren't loaded
         self.frame = 0
         self.n_max = 0
-        self.dog_name = ""
+        self.subject_name = ""
         self.outlier_toggle = False
         self.logger = logging.getLogger("logger")
 
@@ -27,7 +27,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.paw_labels = defaultdict(dict)
         self.paws = defaultdict(list)
 
-        # This contains all the file_names for each dog_name
+        # This contains all the file_names for each subject_name
         self.file_names = defaultdict(dict)
 
         self.path = configuration.measurement_folder
@@ -97,11 +97,11 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
 
-        for dog_name, file_paths in file_paths.items():
-            root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
+        for subject_name, file_paths in file_paths.items():
+            root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [subject_name])
             for file_path in file_paths:
                 # Check if there are any results stored
-                if io.find_stored_file(dog_name, file_path) is not None:
+                if io.find_stored_file(subject_name, file_path) is not None:
                     root_item.setForeground(0, green_brush)
                     break
 
@@ -120,14 +120,14 @@ class AnalysisWidget(QtGui.QTabWidget):
 
     def load_all_results(self):
         """
-        Check if there if any measurements for this dog have already been processed
+        Check if there if any measurements for this subject have already been processed
         If so, retrieve the data and convert them to a usable format
         """
         # Get the text from the currentItem
-        self.dog_name = self.measurement_tree.currentItem().text(0)
+        self.subject_name = self.measurement_tree.currentItem().text(0)
 
-        # Notify the model to update the dog_name + measurement_name if necessary
-        pub.sendMessage("switch_dogs", dog_name=self.dog_name)
+        # Notify the model to update the subject_name + measurement_name if necessary
+        pub.sendMessage("switch_subjects", subject_name=self.subject_name)
         # Blank out the measurement_name
         #pub.sendMessage("switch_measurements", measurement_name="")
 

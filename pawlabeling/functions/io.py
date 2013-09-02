@@ -28,7 +28,7 @@ def fix_orientation(data):
     end_x, end_y = center_of_mass(data[:, :, end])
     # We've calculated the start and end point of the measurement (if at all)
     x_distance = end_x - start_x
-    # If this distance is negative, the dog walked right to left
+    # If this distance is negative, the subject walked right to left
     #print .The distance between the start and end is: {}".format(x_distance)
     if x_distance < 0:
         # So we flip the data around
@@ -49,7 +49,7 @@ def check_orientation(data):
     end_x, end_y = center_of_mass(data[:, :, end])
     # We've calculated the start and end point of the measurement (if at all)
     x_distance = end_x - start_x
-    # If this distance is negative, the dog walked right to left
+    # If this distance is negative, the subject walked right to left
     return True if x_distance < 0 else False
 
 
@@ -163,12 +163,12 @@ def open_zip_file(file_name):
     return input_file
 
 
-def find_stored_file(dog_name, file_name):
+def find_stored_file(subject_name, file_name):
     # Note that the file_name might have a ZIP extension, so we'll ignore that for now
     file_name = file_name.split(".")[0]
     root_folder = configuration.store_results_folder
     # For the current file_name, check if the results have been stored, if so load it
-    path = os.path.join(root_folder, dog_name)
+    path = os.path.join(root_folder, subject_name)
     # If the folder exists
     if os.path.exists(path):
         # Check if the current file's name is in that folder
@@ -208,17 +208,17 @@ def load_results(input_path):
         raise Exception("Results do not contain Contact's. You've used an incorrect file")
 
 
-def create_results_folder(dog_name):
+def create_results_folder(subject_name):
     """
     This function takes a path and creates a folder called
     Returns the path of the folder just created
     """
-    if not dog_name:
+    if not subject_name:
         raise Exception("You can't supply an empty name")
 
     store_path = configuration.store_results_folder
-    # The name of the dog is the second last element in file_name
-    new_path = os.path.join(store_path, dog_name)
+    # The name of the subject is the second last element in file_name
+    new_path = os.path.join(store_path, subject_name)
     # Create a new folder in the base folder if it doesn't already exist
     if not os.path.exists(new_path):
         os.mkdir(new_path)
@@ -227,7 +227,7 @@ def create_results_folder(dog_name):
 
 def results_to_pickle(pickle_path, paws):
     """
-    pickle_path is a path like "dog_name\\measurement_name"
+    pickle_path is a path like "subject_name\\measurement_name"
     paws is a list of Contacts
 
     It appends .pkl as an extensions to the pickle_path and

@@ -7,7 +7,7 @@ from pawlabeling.functions import io
 from pawlabeling.settings import configuration
 
 class TestLoad(TestCase):
-    def test_load_sample_dog1(self):
+    def test_load_sample_subject1(self):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
         file_location = "files\\rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
@@ -55,7 +55,7 @@ class TestFindStoredFile(TestCase):
         configuration.store_results_folder = file_name
 
     def test_find_stored_file(self):
-        io.find_stored_file(dog_name="Dog1", file_name="fake_export_1")
+        io.find_stored_file(subject_name="Dog1", file_name="fake_export_1")
 
     def tearDown(self):
         # Restore it to the old folder
@@ -123,9 +123,9 @@ class TestLoadResults(TestCase):
 class TestCreateResultsFolder(TestCase):
     def setUp(self):
         # Use some name hopefully nobody will ever use
-        self.dog_name = "Professor Xavier Test"
+        self.subject_name = "Professor Xavier Test"
         store_path = configuration.store_results_folder
-        self.new_path = os.path.join(store_path, self.dog_name)
+        self.new_path = os.path.join(store_path, self.subject_name)
 
         if os.path.exists(self.new_path):
             #os.remove(self.new_path)
@@ -137,7 +137,7 @@ class TestCreateResultsFolder(TestCase):
         exists = os.path.exists(self.new_path)
         self.assertFalse(exists)
 
-        return_path = io.create_results_folder(self.dog_name)
+        return_path = io.create_results_folder(self.subject_name)
         self.assertEqual(return_path, self.new_path)
 
         exists = os.path.exists(return_path)
@@ -145,7 +145,7 @@ class TestCreateResultsFolder(TestCase):
 
     def test_create_results_folder_with_empty_name(self):
         with self.assertRaises(Exception):
-            io.create_results_folder(dog_name="")
+            io.create_results_folder(subject_name="")
 
     def tearDown(self):
         # Remove the folder we just created

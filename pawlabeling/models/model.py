@@ -16,7 +16,7 @@ class Model():
 
         self.subjects_table = tabelmodel.SubjectsTable()
 
-        self.dog_name = ""
+        self.subject_name = ""
         self.measurement_name = ""
 
         # Initialize our variables that will cache results
@@ -28,26 +28,28 @@ class Model():
 
         self.logger = logging.getLogger("logger")
 
-        pub.subscribe(self.switch_dogs, "switch_dogs")
+        # OLD
+        pub.subscribe(self.switch_subjects, "switch_subjects")
         pub.subscribe(self.switch_measurements, "switch_measurements")
         pub.subscribe(self.load_file, "load_file")
         pub.subscribe(self.load_results, "load_results")
         pub.subscribe(self.update_current_paw, "update_current_paw")
         pub.subscribe(self.store_status, "store_status")
         pub.subscribe(self.track_contacts, "track_contacts")
-
+        # CREATE
         pub.subscribe(self.create_subject, "create_subject")
         pub.subscribe(self.create_session, "create_session")
         pub.subscribe(self.create_measurement, "create_measurement")
         pub.subscribe(self.create_contact, "create_contact")
-
+        # GET
         pub.subscribe(self.get_subjects, "get_subjects")
-        pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.get_sessions, "get_sessions")
-        pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.get_measurements, "get_measurements")
-        pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.get_contacts, "get_contacts")
+        # PUT
+        pub.subscribe(self.put_subject, "put_subject")
+        pub.subscribe(self.put_session, "put_session")
+        pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.put_contact, "put_contact")
 
     def create_subject(self, subject):
@@ -126,11 +128,6 @@ class Model():
         sessions = self.sessions_table.get_sessions(**session)
         pub.sendMessage("update_sessions_tree", sessions=sessions)
 
-    # Is this version even needed?
-    def search_sessions(self, subject_id):
-        sessions = self.sessions_table.get_sessions(subject_id=subject_id)
-        pub.sendMessage("update_sessions_tree", sessions=sessions)
-
     def get_measurements(self, measurement):
         measurements = self.measurements_table.get_measurements(**measurement)
         pub.sendMessage("update_measurements_tree", measurements=measurements)
@@ -177,16 +174,16 @@ class Model():
         self.file_paths = io.get_file_paths()
         pub.sendMessage("get_file_paths", file_paths=self.file_paths)
 
-    def switch_dogs(self, dog_name):
+    def switch_subjects(self, subject_name):
         """
-        This function should always be called when you want to access other dog's results
+        This function should always be called when you want to access other subject's results
         """
-        if dog_name != self.dog_name:
+        if subject_name != self.subject_name:
             self.logger.info(
-                "Model.switch_dogs: Switching dogs from {} to {}".format(self.dog_name, dog_name))
-            self.dog_name = dog_name
+                "Model.switch_subjects: Switching subjects from {} to {}".format(self.subject_name, subject_name))
+            self.subject_name = subject_name
 
-            # If switching dogs, we also want to clear our caches, because those values are useless
+            # If switching subjects, we also want to clear our caches, because those values are useless
             self.clear_cached_values()
 
     def switch_measurements(self, measurement_name):
@@ -200,10 +197,10 @@ class Model():
 
     def load_file(self):
         # Get the path from the file_paths dictionary
-        self.file_path = self.file_paths[self.dog_name][self.measurement_name]
+        self.file_path = self.file_paths[self.subject_name][self.measurement_name]
 
         # Log which measurement we're loading
-        self.logger.info("Model.load_file: Loading measurement for dog: {} - {}".format(self.dog_name,
+        self.logger.info("Model.load_file: Loading measurement for subject: {} - {}".format(self.subject_name,
                                                                                         self.measurement_name))
         # Pass the new measurement through to the widget
         self.measurement = io.load(self.file_path)
@@ -232,15 +229,15 @@ class Model():
 
     def load_all_results(self):
         """
-        Check if there if any measurements for this dog have already been processed
+        Check if there if any measurements for this subject have already been processed
         If so, retrieve the data and convert them to a usable format
         """
-        self.logger.info("Model.load_all_results: Loading all results for dog: {}".format(self.dog_name))
+        self.logger.info("Model.load_all_results: Loading all results for subject: {}".format(self.subject_name))
         # Make sure self.paws is empty
         self.paws.clear()
 
-        for measurement_name in self.file_paths[self.dog_name]:
-            input_path = io.find_stored_file(self.dog_name, measurement_name)
+        for measurement_name in self.file_paths[self.subject_name]:
+            input_path = io.find_stored_file(self.subject_name, measurement_name)
             paws = io.load_results(input_path)
             # Did we get any results?
             if paws:
@@ -356,7 +353,7 @@ class Model():
         It will notify the status bar, log and return a boolean value depending on the success or failure of execution
         """
         # Try and create a folder to add store the store_results_folder result
-        self.new_path = io.create_results_folder(self.dog_name)
+        self.new_path = io.create_results_folder(self.subject_name)
         # Try storing the results
         try:
             pickle_path = os.path.join(self.new_path, self.measurement_name)

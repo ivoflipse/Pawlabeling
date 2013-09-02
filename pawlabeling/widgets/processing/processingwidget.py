@@ -19,11 +19,11 @@ class ProcessingWidget(QtGui.QWidget):
         self.num_frames = 248
         self.frame = 0
         self.n_max = 0
-        self.dog_name = ""
+        self.subject_name = ""
 
         self.logger = logging.getLogger("logger")
 
-        # This contains all the file paths for each dog_name
+        # This contains all the file paths for each subject_name
         self.file_paths = defaultdict(dict)
 
         # Create a label to display the measurement name
@@ -86,7 +86,7 @@ class ProcessingWidget(QtGui.QWidget):
     def add_measurements(self, file_paths):
         """
         This function calls the processing model to search for measurements in the measurement_folder
-        It will then fill the tree making root nodes for each dog and making child nodes for each measurement
+        It will then fill the tree making root nodes for each subject and making child nodes for each measurement
         If the measurement has already been labeled it will also be marked as green instead of the default black.
         """
         # Clear any existing measurements
@@ -94,12 +94,12 @@ class ProcessingWidget(QtGui.QWidget):
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
 
-        for dog_name, file_paths in file_paths.items():
-            root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [dog_name])
+        for subject_name, file_paths in file_paths.items():
+            root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [subject_name])
             for file_path in file_paths:
                 childItem = QtGui.QTreeWidgetItem(root_item, [file_path])
                 # Check if the measurement has already been store_results_folder
-                if io.find_stored_file(dog_name, file_path) is not None:
+                if io.find_stored_file(subject_name, file_path) is not None:
                     # Change the foreground to green
                     childItem.setForeground(0, green_brush)
         self.measurement_tree.sortItems(0, Qt.AscendingOrder)
@@ -124,15 +124,15 @@ class ProcessingWidget(QtGui.QWidget):
     def load_file(self):
         # Get the text from the currentItem
         current_item = self.measurement_tree.currentItem()
-        # Check if you didn't accidentally double clicked the dog instead of a measurement:
+        # Check if you didn't accidentally double clicked the subject instead of a measurement:
         try:
-            self.dog_name = str(current_item.parent().text(0))
+            self.subject_name = str(current_item.parent().text(0))
         except AttributeError:
-            print("Double click the measurements, not the dog names!")
+            print("Double click the measurements, not the subject names!")
             return
 
-        # Notify the model to update the dog_name + measurement_name if necessary
-        pub.sendMessage("switch_dogs", dog_name=self.dog_name)
+        # Notify the model to update the subject_name + measurement_name if necessary
+        pub.sendMessage("switch_subjects", subject_name=self.subject_name)
         self.measurement_name = str(current_item.text(0))
         pub.sendMessage("switch_measurements", measurement_name=self.measurement_name)
         # Tell the model to load the file
