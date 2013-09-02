@@ -171,7 +171,6 @@ class Contact():
         This function takes a dictionary of the stored_results (the result of contact_to_dict) and recreates all the
         attributes.
         """
-        print contact
         self.contact_id = int(contact["contact_id"].split("_")[1])  # Convert it back
         self.contact_label = contact["contact_label"]
         self.frames = [x for x in range(contact["min_z"], contact["max_z"] + 1)]

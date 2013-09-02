@@ -157,6 +157,7 @@ class Model():
                 contact = contactmodel.Contact()
                 # Restore it from the dictionary object
                 # http://stackoverflow.com/questions/38987/how-can-i-merge-union-two-python-dictionaries-in-a-single-expression
+                print contact_data
                 contact.restore(dict(c, **contact_data))  # This basically merged c and contact_data
 
                 # Append it to our new list
@@ -180,7 +181,7 @@ class Model():
                     "cop_y"]
         contact_data = {}
         for item_id in item_ids:
-            contact_data["result"] = self.contacts_table.get_data(group, item_id=item_id)
+            contact_data[item_id] = self.contacts_table.get_data(group, item_id=item_id)
         return contact_data
 
     def put_subject(self, subject):
