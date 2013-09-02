@@ -79,30 +79,49 @@ class ProcessingWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
-        pub.subscribe(self.add_measurements, "get_file_paths")
+        #pub.subscribe(self.update_measurements_tree, "get_file_paths")
+        pub.subscribe(self.put_subject, "put_subject")
+        pub.subscribe(self.put_session, "put_session")
+        pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.subscribe(self.update_contact_tree, "processing_results")
         pub.subscribe(self.stored_status, "stored_status")
 
-    def add_measurements(self, file_paths):
+    def put_subject(self, subject):
+        self.subject = subject
+
+    def put_session(self, session):
+        self.session = session
+
+    def update_measurements_tree(self, measurements):
         """
-        This function calls the processing model to search for measurements in the measurement_folder
-        It will then fill the tree making root nodes for each subject and making child nodes for each measurement
+        This function is called when the model sends out the measurements as a response to get_measurements
+        It will then fill the tree making a root node for the selected subject and a child node for the selected session
+        then it will start making child nodes for each measurement within that session
         If the measurement has already been labeled it will also be marked as green instead of the default black.
         """
-        # Clear any existing measurements
+        # # Create a green brush for coloring stored results
+        # green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
         self.measurement_tree.clear()
-        # Create a green brush for coloring stored results
-        green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
+        self.measurements = {}
 
-        for subject_name, file_paths in file_paths.items():
-            root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [subject_name])
-            for file_path in file_paths:
-                childItem = QtGui.QTreeWidgetItem(root_item, [file_path])
-                # Check if the measurement has already been store_results_folder
-                if io.find_stored_file(subject_name, file_path) is not None:
-                    # Change the foreground to green
-                    childItem.setForeground(0, green_brush)
-        self.measurement_tree.sortItems(0, Qt.AscendingOrder)
+        # Update the root item of the tree
+        self.subject_item = QtGui.QTreeWidgetItem(self.measurement_tree, [self.subject])
+        subject_name = "{} {}".format(self.subject["first_name"], self.subject["last_name"])
+        self.subject_item.setText(0, subject_name)
+
+        # Update the session_name in the tree or create it if it doesn't exist
+        #self.session_item = QtGui.QTreeWidgetItem(self.subject_item, [self.session])
+        #self.session_item.setText(0, self.session[["session_name"]])
+
+        for index, measurement in enumerate(measurements):
+            self.measurements[index] = measurement
+            measurement_item = QtGui.QTreeWidgetItem(self.subject_item, [measurement])
+            measurement_item.setText(0, measurement["measurement_name"])
+            # How would I be able to check if this measurement has any contacts?
+            #child_item.setForeground(0, green_brush)
+
+        item = self.measurement_tree.topLevelItem(0)
+        self.measurement_tree.setCurrentItem(item)
 
     def load_first_file(self):
         """

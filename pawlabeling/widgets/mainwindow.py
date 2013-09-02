@@ -23,6 +23,9 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle("Paw Labeling tool")
         self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/pawlabeling.png")))
 
+        # Set up the logger before anything else
+        self.logger = configuration.setup_logging()
+
         # Create the base model for the entire application
         # Make sure to do this first, in case anything relies on it
         self.model = model.Model()
@@ -46,14 +49,10 @@ class MainWindow(QtGui.QMainWindow):
         # Load all the measurements into the measurement tree
         #self.model.load_file_paths()
         # Then load the first measurement
-        self.processing_widget.load_first_file()
+        #self.processing_widget.load_first_file()
 
         self.installEventFilter(self)
-
         self.tab_widget.currentChanged.connect(self.change_tabs)
-
-        self.logger = configuration.setup_logging()
-
         pub.subscribe(self.change_status, "update_statusbar")
 
     def center(self):
@@ -66,7 +65,8 @@ class MainWindow(QtGui.QMainWindow):
         current_index = self.tab_widget.currentIndex()
         pub.sendMessage("update_statusbar", status="Changing tabs to the {} tab".format(self.tab_dict[current_index]))
         if self.tab_widget.currentIndex() == 0:
-            self.database_widget.load_first_file()
+            pass  # Is there anything you'd like to run when you start the database_widget?
+            #self.database_widget.load_first_file()
         elif self.tab_widget.currentIndex() == 1:
             self.processing_widget.load_first_file()
         elif self.tab_widget.currentIndex() == 2:

@@ -22,6 +22,7 @@ class DatabaseWidget(QtGui.QWidget):
         self.store_path = configuration.store_results_folder
 
         self.toolbar = gui.Toolbar(self)
+        # TODO set this as the application font?
         self.font = QtGui.QFont("Helvetica", 14, QtGui.QFont.Bold)
         self.date_format = QtCore.QLocale.system().dateFormat(QtCore.QLocale.ShortFormat)
 
