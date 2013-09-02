@@ -1,6 +1,6 @@
 import logging
 from pubsub import pub
-from pawlabeling.models import tabelmodel
+from pawlabeling.models import table
 
 
 
@@ -10,7 +10,7 @@ class MissingIdentifier(Exception):
 
 class SessionModel():
     def __init__(self):
-        self.sessions_table = tabelmodel.SessionsTable()
+        self.sessions_table = table.SessionsTable()
         self.logger = logging.getLogger("logger")
         pub.subscribe(self.create_session, "create_session")
 

@@ -175,6 +175,8 @@ class contactWidget(QtGui.QWidget):
 
     def update_n_max(self, n_max):
         self.n_max = n_max
+        # Redraw, just in case
+        self.redraw()
 
     def update(self, average_data):
         # Calculate an average contact from the list of arrays
@@ -202,13 +204,19 @@ class contactWidget(QtGui.QWidget):
             sliced_data = self.data[min_x:max_x, min_y:max_y]
 
         # Flip around the vertical axis (god knows why)
-        sliced_data = sliced_data[:, ::-1]
-        self.pixmap = utility.get_QPixmap(sliced_data, self.degree, self.n_max, self.color_table, interpolation="cubic")
+        self.sliced_data = sliced_data[:, ::-1]
+        self.pixmap = utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table, interpolation="cubic")
+        self.image.setPixmap(self.pixmap)
+        self.resizeEvent()
+
+    def redraw(self):
+        self.pixmap = utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table, interpolation="cubic")
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 
     def clear_cached_values(self):
         self.data = np.zeros((self.mx, self.my))
+        self.sliced_data = self.data[:]
         self.average_data = []
         # Put the screen to black
         self.image.setPixmap(utility.get_QPixmap(np.zeros((15, 15)), self.degree, self.n_max, self.color_table))

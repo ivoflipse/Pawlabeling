@@ -4,7 +4,7 @@ import yaml
 from PySide import QtGui, QtCore
 import logging
 
-app_name = "contact Labeling tool"
+app_name = "Paw Labeling tool"
 
 settings_folder = os.path.dirname(__file__)
 root_folder = os.path.dirname(settings_folder)

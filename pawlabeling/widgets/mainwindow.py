@@ -20,9 +20,9 @@ class MainWindow(QtGui.QMainWindow):
         # while leaving the menubar + taskbar visible
         if not configuration.desktop:
             self.showMaximized()
-        self.setWindowTitle("contact Labeling tool")
-        self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images/pawlabeling.png")))
-
+        self.setWindowTitle(configuration.app_name)
+        # Y U NO WORK?
+        self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images\pawlabeling.png")))
         # Set up the logger before anything else
         self.logger = configuration.setup_logging()
 

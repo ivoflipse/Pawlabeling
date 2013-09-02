@@ -126,15 +126,14 @@ class ProcessingWidget(QtGui.QWidget):
         pub.sendMessage("put_measurement", measurement=measurement)
 
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
-        data = {'item_id': measurement["measurement_name"]}
-        pub.sendMessage("get_measurement_data", data=data)
-        pub.sendMessage("get_contacts", contact={})
+        pub.sendMessage("get_measurement_data")
+        pub.sendMessage("get_contacts")
 
-        ## Manage some GUI elements
         self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
 
-        # Send a message so the model starts loading results
-        pub.sendMessage("load_results", widget="processing")
+        # # Send a message so the model starts loading results
+        # pub.sendMessage("load_results", widget="processing")
+        pub.sendMessage("load_contacts")
 
     def update_contacts_tree(self, contacts):
         self.contacts = contacts
@@ -147,10 +146,10 @@ class ProcessingWidget(QtGui.QWidget):
             rootItem.setText(0, str(contact.contact_id))
             rootItem.setText(1, self.contact_dict[contact.contact_label])
             rootItem.setText(2, str(contact.length))  # Sets the frame count
-            # surface = np.max(contact.surface_over_time)
-            # rootItem.setText(3, str(int(surface)))
-            # force = np.max(contact.force_over_time)
-            # rootItem.setText(4, str(int(force)))
+            surface = np.max(contact.surface_over_time)
+            rootItem.setText(3, str(int(surface)))
+            force = np.max(contact.force_over_time)
+            rootItem.setText(4, str(int(force)))
 
         # Initialize the current contact index, which we'll need for keep track of the labeling
         self.current_contact_index = 0

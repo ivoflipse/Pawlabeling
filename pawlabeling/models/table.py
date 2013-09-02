@@ -323,3 +323,26 @@ class ContactsTable(Table):
                 contact[column] = value
             contacts.append(contact)
         return contacts
+
+class ContactDataTable(Table):
+    def __init__(self, subject_id, session_id, measurement_id):
+        super(ContactDataTable, self).__init__()
+        self.table_name = "contact"
+        self.subject_id = subject_id
+        self.session_id = session_id
+        self.measurement_id = measurement_id
+        self.session_group = self.table.root.__getattr__(self.subject_id).__getattr__(self.session_id)
+        self.measurement_group = self.session_group.__getattr__(measurement_id)
+        self.item_ids = ["data", "max_of_max", "pressure_over_time", "force_over_time", "surface_over_time",
+                         "cop_x","cop_y"]
+
+    def get_data(self):
+        contacts = []
+        for contact in self.measurement_group.contacts:
+            contact_id = contact["contact_id"]
+            group = self.measurement_group.__getattr__(contact_id)
+            contact_data = {}
+            for item_id in self.item_ids:
+                contact_data[item_id] = group.__getattr__(item_id).read()
+            contacts.append(contact_data)
+        return contacts

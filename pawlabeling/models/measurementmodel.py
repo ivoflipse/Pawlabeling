@@ -1,6 +1,6 @@
 import logging
 from pubsub import pub
-from pawlabeling.models import tabelmodel
+from pawlabeling.models import table
 
 
 class MissingIdentifier(Exception):
@@ -9,7 +9,7 @@ class MissingIdentifier(Exception):
 
 class MeasurementModel():
     def __init__(self):
-        self.measurements_table = tabelmodel.MeasurementsTable()
+        self.measurements_table = table.MeasurementsTable()
         self.logger = logging.getLogger("logger")
         pub.subscribe(self.create_measurement, "create_measurement")
 

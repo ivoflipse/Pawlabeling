@@ -1,13 +1,13 @@
 import logging
 from pubsub import pub
-from pawlabeling.models import tabelmodel
+from pawlabeling.models import table
 
 class MissingIdentifier(Exception):
     pass
 
 class SubjectModel():
     def __init__(self):
-        self.subjects_table = tabelmodel.SubjectsTable()
+        self.subjects_table = table.SubjectsTable()
         self.logger = logging.getLogger("logger")
         pub.subscribe(self.create_subject, "create_subject")
 

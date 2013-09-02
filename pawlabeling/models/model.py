@@ -5,7 +5,7 @@ import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
 from pawlabeling.settings import configuration
-from pawlabeling.models import contactmodel, tabelmodel
+from pawlabeling.models import contactmodel, table
 
 
 class Model():
@@ -14,7 +14,7 @@ class Model():
         self.path = configuration.measurement_folder
         self.store_path = configuration.store_results_folder
 
-        self.subjects_table = tabelmodel.SubjectsTable()
+        self.subjects_table = table.SubjectsTable()
 
         self.subject_name = ""
         self.measurement_name = ""
@@ -29,8 +29,7 @@ class Model():
         self.logger = logging.getLogger("logger")
 
         # OLD
-        #pub.subscribe(self.load_file, "load_file")
-        pub.subscribe(self.load_results, "load_results")
+        pub.subscribe(self.load_contacts, "load_contacts")
         pub.subscribe(self.update_current_contact, "update_current_contact")
         pub.subscribe(self.store_status, "store_status")
         pub.subscribe(self.track_contacts, "track_contacts")
@@ -145,65 +144,64 @@ class Model():
         measurements = self.measurements_table.get_measurements(**measurement)
         pub.sendMessage("update_measurements_tree", measurements=measurements)
 
-    def get_contacts(self, contact):
-        contacts = self.contacts_table.get_contacts(**contact)
-        # If we don't get anything back, that means there are no contacts yet
-        if contacts:
-            new_contacts = []
-            # The stored object isn't really a contact though
-            for c in contacts:
-                contact_data = self.get_contact_data(c)
-                # Create a contact object
-                contact = contactmodel.Contact()
-                # Restore it from the dictionary object
-                # http://stackoverflow.com/questions/38987/how-can-i-merge-union-two-python-dictionaries-in-a-single-expression
-                print contact_data
-                contact.restore(dict(c, **contact_data))  # This basically merged c and contact_data
+    def get_contacts(self, contact=None):
+        #contacts = self.contacts_table.get_contacts(**contact)
+        if not self.contacts.get(self.measurement_name):
+            contacts = self.get_contact_data(self.measurement)
+            if not contacts:
+                self.contacts[self.measurement_name] = self.track_contacts()
+            else:
+                self.contacts[self.measurement_name] = contacts
 
-                # Append it to our new list
-                new_contacts.append(contact)
-        else:
-            new_contacts = self.track_contacts()
-        self.contacts[self.measurement_name] = new_contacts
         pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
-    def get_measurement_data(self, data):
+    def get_measurement_data(self):
         group = self.measurements_table.get_group(self.measurements_table.session_group,
                                                   self.measurement["measurement_id"])
-        self.measurement_data = self.measurements_table.get_data(group, item_id=data["item_id"])
+        item_id = self.measurement_name
+        self.measurement_data = self.measurements_table.get_data(group=group, item_id=item_id)
         pub.sendMessage("update_measurement_data", measurement_data=self.measurement_data)
 
-    def get_contact_data(self, contact):
-        group = self.contacts_table.get_group(self.contacts_table.measurement_group,
-                                              contact["contact_id"])
-        # TODO perhaps I want to store these somewhere, so I can easily extend it and keep things DRY
-        item_ids = ["data", "max_of_max", "pressure_over_time", "force_over_time", "surface_over_time", "cop_x",
-                    "cop_y"]
-        contact_data = {}
-        for item_id in item_ids:
-            contact_data[item_id] = self.contacts_table.get_data(group, item_id=item_id)
-        return contact_data
+    def get_contact_data(self, measurement):
+        new_contacts = []
+        measurement_id = measurement["measurement_id"]
+        contact_data_table = table.ContactDataTable(subject_id=self.subject_id,
+                                                    session_id=self.session_id,
+                                                    measurement_id=measurement_id)
+        contacts_table = table.ContactsTable(subject_id=self.subject_id,
+                                             session_id=self.session_id,
+                                             measurement_id=measurement_id)
+        # Get the rows from the table and their corresponding data
+        contact_data = contact_data_table.get_data()
+        contacts = contacts_table.get_contacts()
+        # Create Contact instances out of them
+        for x, y in zip(contacts, contact_data):
+            contact = contactmodel.Contact()
+            # Restore it from the dictionary object
+            # http://stackoverflow.com/questions/38987/how-can-i-merge-union-two-python-dictionaries-in-a-single-expression
+            contact.restore(dict(x, **y))  # This basically merges the two dicts into one
+            new_contacts.append(contact)
+        return new_contacts
 
     def put_subject(self, subject):
         self.subject = subject
         self.subject_id = subject["subject_id"]
         self.logger.info("Subject ID set to {}".format(self.subject_id))
         # As soon as a subject is selected, we instantiate our sessions table
-        self.sessions_table = tabelmodel.SessionsTable(subject_id=self.subject_id)
+        self.sessions_table = table.SessionsTable(subject_id=self.subject_id)
 
     def put_session(self, session):
         self.session = session
         self.session_id = session["session_id"]
         self.logger.info("Session ID set to {}".format(self.session_id))
-        self.measurements_table = self.measurements_table = tabelmodel.MeasurementsTable(subject_id=self.subject_id,
-                                                                                         session_id=self.session_id)
+        self.measurements_table = table.MeasurementsTable(subject_id=self.subject_id, session_id=self.session_id)
 
     def put_measurement(self, measurement):
         self.measurement = measurement
         self.measurement_id = measurement["measurement_id"]
         self.measurement_name = measurement["measurement_name"]
         self.logger.info("Measurement ID set to {}".format(self.measurement_id))
-        self.contacts_table = tabelmodel.ContactsTable(subject_id=self.subject_id,
+        self.contacts_table = table.ContactsTable(subject_id=self.subject_id,
                                                        session_id=self.session_id,
                                                        measurement_id=self.measurement_id)
 
@@ -221,51 +219,46 @@ class Model():
         self.file_paths = io.get_file_paths()
         pub.sendMessage("get_file_paths", file_paths=self.file_paths)
 
-    def load_results(self, widget):
-        self.load_all_results()
-        if widget == "processing":
-            pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
-        elif widget == "analysis":
-            # If there's no data_list, there are no labeled contacts to display
-            if self.data_list.keys():
-                pub.sendMessage("analysis_results", contacts=self.contacts, average_data=self.average_data,
-                                results=self.results, max_results=self.max_results)
+    # def load_results(self, widget):
+    #     self.load_all_results()
+    #     if widget == "processing":
+    #         pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
+    #     elif widget == "analysis":
+    #         # If there's no data_list, there are no labeled contacts to display
+    #         if self.data_list.keys():
+    #             pub.sendMessage("analysis_results", contacts=self.contacts, average_data=self.average_data,
+    #                             results=self.results, max_results=self.max_results)
 
-    def load_all_results(self):
+    def load_contacts(self):
         """
         Check if there if any measurements for this subject have already been processed
         If so, retrieve the measurement_data and convert them to a usable format
         """
-        self.logger.info("Model.load_all_results: Loading all results for subject: {}".format(self.subject_name))
+        self.logger.info("Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
+            self.subject_name, self.session["session_name"]))
+
         # Make sure self.contacts is empty
         self.contacts.clear()
         self.n_max = 0
 
-        # Go through all the measurements in this session's table
-        for measurement in self.measurements_table.get_measurements():
-            n_max = measurement["maximum_value"]
+        measurement_names = {}
+        for m in self.measurements_table.measurements_table:
+            measurement_names[m["measurement_id"]] = m["measurement_name"]
+            n_max = m["maximum_value"]
             if n_max > self.n_max:
                 self.n_max = n_max
 
-            # Extract the contacts and create contactmodel -> Contact instances with them + the data
-            contacts_table = tabelmodel.ContactsTable(subject_id=measurement["subject_id"],
-                                                      session_id=measurement["session_id"],
-                                                      measurement_id=measurement["measurement_id"])
-            contacts = contacts_table.get_contacts()
-
+            contacts = self.get_contact_data(m)
+            if contacts:
+                self.contacts[m["measurement_name"]] = contacts
 
         # Calculate the highest n_max and publish that
-
-
         pub.sendMessage("update_n_max", n_max=self.n_max)
+        pub.sendMessage("update_contacts", contacts=self.contacts)
 
-        if not self.contacts.get(self.measurement_name):
-            self.contacts[self.measurement_name] = self.track_contacts()
-
-            # Calculate the average, after everything has been loaded
-            #self.calculate_average()
-            #self.calculate_results()
-
+        # Calculate the average, after everything has been loaded
+        self.calculate_average()
+        pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
 
     def track_contacts(self):
         pub.sendMessage("update_statusbar", status="Starting tracking")
@@ -284,6 +277,7 @@ class Model():
         for index, raw_contact in enumerate(raw_contacts):
             contact = contactmodel.Contact()
             contact.create_contact(contact=raw_contact, measurement_data=self.measurement_data, padding=padding)
+            contact.calculate_results()
             # Skip contacts that have only been around for one frame
             if len(contact.frames) > 1:
                 contacts.append(contact)
@@ -352,9 +346,6 @@ class Model():
                 max_duration = np.max(z)
                 if max_duration > self.max_results.get("duration", 0):
                     self.max_results["duration"] = max_duration
-
-                    # for measurement_name, contacts in self.contacts.items():
-                    #     for contact in self.contacts:
 
 
     def store_status(self):
