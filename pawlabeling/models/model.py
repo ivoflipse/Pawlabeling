@@ -45,6 +45,10 @@ class Model():
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.get_sessions, "get_sessions")
         pub.subscribe(self.put_session, "put_session")
+        pub.subscribe(self.get_measurements, "get_measurements")
+        pub.subscribe(self.put_measurement, "put_measurement")
+        pub.subscribe(self.get_contacts, "get_contacts")
+        pub.subscribe(self.put_contact, "put_contact")
 
     def create_subject(self, subject):
         """
@@ -88,7 +92,7 @@ class Model():
         measurement["number_of_cols"] = number_of_cols
         measurement["number_of_frames"] = number_of_frames
         measurement["orientation"] = io.check_orientation(data)  # TODO This function seems to be incorrect somehow!
-        measurement["maximum_value"] = data.max() # Perhaps round this and store it as an int?
+        measurement["maximum_value"] = data.max()  # Perhaps round this and store it as an int?
         # Store the file_name without the .zip
 
         # We're not going to store this, so we delete the key
@@ -122,9 +126,18 @@ class Model():
         sessions = self.sessions_table.get_sessions(**session)
         pub.sendMessage("update_sessions_tree", sessions=sessions)
 
+    # Is this version even needed?
+    def search_sessions(self, subject_id):
+        sessions = self.sessions_table.get_sessions(subject_id=subject_id)
+        pub.sendMessage("update_sessions_tree", sessions=sessions)
+
     def get_measurements(self, measurement):
         measurements = self.measurements_table.get_measurements(**measurement)
         pub.sendMessage("update_measurements_tree", measurements=measurements)
+
+    def get_contacts(self, contact):
+        contacts = self.contacts_table.get_contacts(**contact)
+        pub.sendMessage("update_contacts_tree", contacts=contacts)
 
     def put_subject(self, subject):
         self.subject = subject
@@ -149,9 +162,13 @@ class Model():
                                                        session_id=self.session_id,
                                                        measurement_id=self.measurement_id)
 
-    def search_sessions(self, subject_id):
-        sessions = self.sessions_table.get_sessions(subject_id=subject_id)
-        pub.sendMessage("update_sessions_tree", sessions=sessions)
+
+    def put_contact(self, contact):
+        self.contact = contact
+        self.contact_id = contact["contact_id"]
+        self.logger.info("Contact ID set to {}".format(self.contact_id))
+        # I probably need to load stuff from this contacts group, perhaps GET it?
+
 
     ##################################################################################################################
 

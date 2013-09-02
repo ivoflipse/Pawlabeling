@@ -95,8 +95,8 @@ class MeasurementWidget(QtGui.QWidget):
 
         self.setLayout(self.measurement_layout)
 
-        pub.subscribe(self.update_measurement_tree, "update_measurement_tree")
-        pub.subscribe(self.get_measurements, "put_sessions")
+        pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
+        pub.subscribe(self.get_measurements, "put_session")
 
         self.update_files_tree()
 
@@ -164,7 +164,7 @@ class MeasurementWidget(QtGui.QWidget):
             # Update the tree after a measurement has been created
             pub.sendMessage("get_measurements", measurement={})
 
-    def update_measurement_tree(self, measurements):
+    def update_measurements_tree(self, measurements):
         self.measurement_tree.clear()
         self.measurements = {}
         for index, measurement in enumerate(measurements):

@@ -84,6 +84,7 @@ class Contact():
         Creates self.data which contains the pixels that are enclosed by the contour
         """
         # Create an empty array that should fit the entire contact
+        # TODO reduce this size to the size of the boudning box of the contact (width, length, duration)
         new_data = np.zeros_like(measurement_data)
 
         for frame, contours in list(self.contour_list.items()):
@@ -99,6 +100,7 @@ class Contact():
                     if cv2.pointPolygonTest(contour, coordinate, 0) > -1.0:
                         new_data[coordinate[0], coordinate[1], frame] = measurement_data[
                             coordinate[0], coordinate[1], frame]
+                        # TODO Subtract the origin of the location of the contact slice from the coordinates
 
         # Create an attribute data with the updated slice
         # I believe padding is required here, because Python slices up to, not including the upper limit
