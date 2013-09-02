@@ -100,7 +100,7 @@ class PawView(QtGui.QWidget):
         self.draw()
 
     def draw(self):
-        # If there's no data, return
+        # If there's no measurement_data, return
         if not self.pressures:
             return
 

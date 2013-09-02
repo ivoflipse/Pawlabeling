@@ -100,6 +100,20 @@ class MeasurementWidget(QtGui.QWidget):
 
         self.update_files_tree()
 
+    def update_measurements_tree(self, measurements):
+        self.measurement_tree.clear()
+        self.measurements = {}
+        for index, measurement in enumerate(measurements):
+            self.measurements[index] = measurement
+            root_item = QtGui.QTreeWidgetItem(self.measurement_tree)
+            root_item.setText(0, measurement["measurement_name"])
+
+        item = self.measurement_tree.topLevelItem(0)
+        self.measurement_tree.setCurrentItem(item)
+
+    def get_measurements(self, session=None):
+        pub.sendMessage("get_measurements", measurement={})
+
     def change_file_location(self, evt=None):
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
@@ -163,20 +177,6 @@ class MeasurementWidget(QtGui.QWidget):
             pub.sendMessage("create_measurement", measurement=measurement)
             # Update the tree after a measurement has been created
             pub.sendMessage("get_measurements", measurement={})
-
-    def update_measurements_tree(self, measurements):
-        self.measurement_tree.clear()
-        self.measurements = {}
-        for index, measurement in enumerate(measurements):
-            self.measurements[index] = measurement
-            root_item = QtGui.QTreeWidgetItem(self.measurement_tree)
-            root_item.setText(0, measurement["measurement_name"])
-
-        item = self.measurement_tree.topLevelItem(0)
-        self.measurement_tree.setCurrentItem(item)
-
-    def get_measurements(self, session=None):
-        pub.sendMessage("get_measurements", measurement={})
 
     def change_brand(self, index):
         brand = self.brand.itemText(index)

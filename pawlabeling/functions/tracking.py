@@ -94,8 +94,8 @@ def merging_contacts(contacts):
     contacts is <= the euclidean distance, then we check if they also made contact during the
     same frames. This ensures that only contours that are in each others vicinity for a sufficient
     amount of frames are considered for merging. Just naively merging based on distance would
-    cause problems if dogs place the paws too close too each other.
-    This will fail if the dogs paws are close for more frames than the threshold.
+    cause problems if dogs place the contacts too close too each other.
+    This will fail if the dogs contacts are close for more frames than the threshold.
     """
     import heapq
 
@@ -229,7 +229,7 @@ def find_contours(data):
     rows, cols, numFrames = data.shape
     for frame in range(numFrames):
         copy_data = data[:, :, frame].T * 1.
-        # Threshold the data
+        # Threshold the measurement_data
         _, copy_data = cv2.threshold(copy_data, 0.0, 1, cv2.THRESH_BINARY)
         # The astype conversion here is quite expensive!
         # Also replaced # CHAIN_APPROX_NONE with CHAIN APPROX SIMPLE
@@ -280,7 +280,7 @@ def create_graph(contour_dict, euclidean_distance=15):
                                         # Create a bi-directional edge between the two keys
                                         G[(frame, index1)].add((f, index2))
                                         G[(f, index2)].add((frame, index1))
-                                        # Perhaps this could be sped up, by keeping a cache of centroids of paws
+                                        # Perhaps this could be sped up, by keeping a cache of centroids of contacts
                                         # then check if there was a paw in the same place on the last frame
                                         # if so, link them and stop looking
     return G

@@ -48,15 +48,15 @@ class ProcessingWidget(QtGui.QWidget):
         self.measurement_tree.setHeaderLabel("Measurements")
         self.measurement_tree.itemActivated.connect(self.load_file)
 
-        self.contact_tree = QtGui.QTreeWidget(self)
-        self.contact_tree.setMaximumWidth(300)
-        self.contact_tree.setMinimumWidth(300)
-        self.contact_tree.setColumnCount(5)
-        self.contact_tree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
+        self.contacts_tree = QtGui.QTreeWidget(self)
+        self.contacts_tree.setMaximumWidth(300)
+        self.contacts_tree.setMinimumWidth(300)
+        self.contacts_tree.setColumnCount(5)
+        self.contacts_tree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
         # Set the widths of the columns
-        for column in range(self.contact_tree.columnCount()):
-            self.contact_tree.setColumnWidth(column, 60)
-        self.contact_tree.itemActivated.connect(self.switch_contacts)
+        for column in range(self.contacts_tree.columnCount()):
+            self.contacts_tree.setColumnWidth(column, 60)
+        self.contacts_tree.itemActivated.connect(self.switch_contacts)
 
         self.entire_plate_widget = entireplatewidget.EntirePlateWidget(self)
         self.entire_plate_widget.setMinimumWidth(configuration.entire_plate_widget_width)
@@ -70,7 +70,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.layout.addWidget(self.paws_widget)
         self.vertical_layout = QtGui.QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
-        self.vertical_layout.addWidget(self.contact_tree)
+        self.vertical_layout.addWidget(self.contacts_tree)
         self.horizontal_layout = QtGui.QHBoxLayout()
         self.horizontal_layout.addLayout(self.vertical_layout)
         self.horizontal_layout.addLayout(self.layout)
@@ -83,7 +83,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.subscribe(self.update_contact_tree, "processing_results")
+        pub.subscribe(self.update_contacts_tree, "update_contacts_tree")  # processing_results OLD MESSAGE
         pub.subscribe(self.stored_status, "stored_status")
 
     def put_subject(self, subject):
@@ -151,50 +151,53 @@ class ProcessingWidget(QtGui.QWidget):
             return
 
         # Notify the model to update the subject_name + measurement_name if necessary
-        pub.sendMessage("switch_subjects", subject_name=self.subject_name)
-        self.measurement_name = str(current_item.text(0))
-        pub.sendMessage("switch_measurements", measurement_name=self.measurement_name)
-        # Tell the model to load the file
-        pub.sendMessage("load_file")
+        subject_item = self.measurement_tree.topLevelItem(0)
+        measurement_index = subject_item.indexOfChild(current_item)
+        measurement = self.measurements[measurement_index]
+        pub.sendMessage("put_measurement", measurement=measurement)
+
+        # Now get everything that belongs to the measurement, the contacts and the measurement_data
+        pub.sendMessage("get_data", data={})
+        pub.sendMessage("get_contacts", contact={})
 
         ## Manage some GUI elements
-        self.nameLabel.setText("Measurement name: {}".format(self.measurement_name))
-        self.contact_tree.clear()
+        self.nameLabel.setText("Measurement name: {}".format(measurement["measurement_name"]))
+        self.contacts_tree.clear()
 
         # Send a message so the model starts loading results
-        pub.sendMessage("load_results", widget="processing")
+        #pub.sendMessage("load_results", widget="processing")
 
-    def update_contact_tree(self, paws, average_data):
-        self.paws = paws
+    def update_contacts_tree(self, contacts):
+        self.contacts = contacts
 
         # Clear any existing contacts
-        self.contact_tree.clear()
-        # Add the paws to the contact_tree
-        for index, paw in enumerate(self.paws[self.measurement_name]):
-            rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
+        self.contacts_tree.clear()
+        # Add the contacts to the contacts_tree
+        for index, contact in enumerate(self.contacts[self.measurement_name]):
+            rootItem = QtGui.QTreeWidgetItem(self.contacts_tree)
             rootItem.setText(0, str(index))
-            rootItem.setText(1, self.paw_dict[paw.paw_label])
-            rootItem.setText(2, str(paw.length))  # Sets the frame count
-            surface = np.max(paw.surface_over_time)
+            rootItem.setText(1, self.paw_dict[contact.paw_label])
+            rootItem.setText(2, str(contact.length))  # Sets the frame count
+            surface = np.max(contact.surface_over_time)
             rootItem.setText(3, str(int(surface)))
-            force = np.max(paw.force_over_time)
+            force = np.max(contact.force_over_time)
             rootItem.setText(4, str(int(force)))
 
-        # Initialize the current paw index, which we'll need for keep track of the labeling
+        # Initialize the current contact index, which we'll need for keep track of the labeling
         self.current_paw_index = 0
 
         # Select the first item in the contacts tree
-        item = self.contact_tree.topLevelItem(self.current_paw_index)
-        self.contact_tree.setCurrentItem(item)
+        item = self.contacts_tree.topLevelItem(self.current_paw_index)
+        self.contacts_tree.setCurrentItem(item)
         self.update_current_paw()
 
     def update_current_paw(self):
-        if (self.current_paw_index <= len(self.paws[self.measurement_name]) and
-                    len(self.paws[self.measurement_name]) > 0):
-            for index, paw in enumerate(self.paws[self.measurement_name]):
+        if (self.current_paw_index <= len(self.contacts[self.measurement_name]) and
+                    len(self.contacts[self.measurement_name]) > 0):
+            for index, paw in enumerate(self.contacts[self.measurement_name]):
                 paw_label = paw.paw_label
                 # Get the current row from the tree
-                item = self.contact_tree.topLevelItem(index)
+                item = self.contacts_tree.topLevelItem(index)
                 item.setText(1, self.paw_dict[paw_label])
 
                 # Update the colors in the contact tree
@@ -202,7 +205,7 @@ class ProcessingWidget(QtGui.QWidget):
                     if paw_label >= 0:
                         item.setForeground(idx, self.colors[paw_label])
 
-            pub.sendMessage("update_current_paw", current_paw_index=self.current_paw_index, paws=self.paws)
+            pub.sendMessage("update_current_paw", current_paw_index=self.current_paw_index, paws=self.contacts)
 
     def undo_label(self):
         self.previous_paw()
@@ -214,7 +217,7 @@ class ProcessingWidget(QtGui.QWidget):
             return
 
         # Check if any other paw has the label -1, if so change it to -2
-        for index, paw in self.paws[self.measurement_name]:
+        for index, paw in self.contacts[self.measurement_name]:
             if paw.paw_label == -1:
                 paw.paw_label = -2
 
@@ -229,14 +232,14 @@ class ProcessingWidget(QtGui.QWidget):
         if not self.contacts_available():
             return
 
-        # I've picked -3 as the label for invalid paws
+        # I've picked -3 as the label for invalid contacts
         current_paw = self.get_current_paw()
         current_paw.paw_label = -3
         # Update the screen
         self.update_current_paw()
 
     def get_current_paw(self):
-        current_paw = self.paws[self.measurement_name][self.current_paw_index]
+        current_paw = self.contacts[self.measurement_name][self.current_paw_index]
         return current_paw
 
     def select_left_front(self):
@@ -267,11 +270,11 @@ class ProcessingWidget(QtGui.QWidget):
         """
         This function checks if there is a contact with index 0, if not, the tree must be empty
         """
-        return True if self.paws[self.measurement_name] else False
+        return True if self.contacts[self.measurement_name] else False
 
     def check_label_status(self):
         results = []
-        for paw in self.paws[self.measurement_name]:
+        for paw in self.contacts[self.measurement_name]:
             if paw.paw_label == -2:
                 results.append(True)
             else:
@@ -296,8 +299,8 @@ class ProcessingWidget(QtGui.QWidget):
         if current_paw.paw_label == -3 and self.check_label_status():
             self.previous_paw()
 
-        item = self.contact_tree.topLevelItem(self.current_paw_index)
-        self.contact_tree.setCurrentItem(item)
+        item = self.contacts_tree.topLevelItem(self.current_paw_index)
+        self.contacts_tree.setCurrentItem(item)
         self.update_current_paw()
 
     def next_paw(self):
@@ -310,20 +313,20 @@ class ProcessingWidget(QtGui.QWidget):
             current_paw.paw_label = -2
 
         self.current_paw_index += 1
-        if self.current_paw_index >= len(self.paws[self.measurement_name]):
-            self.current_paw_index = len(self.paws[self.measurement_name]) - 1
+        if self.current_paw_index >= len(self.contacts[self.measurement_name]):
+            self.current_paw_index = len(self.contacts[self.measurement_name]) - 1
 
         current_paw = self.get_current_paw()
         # If we encounter an invalid paw and its not the last paw, skip this one
         if current_paw.paw_label == -3 and self.check_label_status():
             self.next_paw()
 
-        item = self.contact_tree.topLevelItem(self.current_paw_index)
-        self.contact_tree.setCurrentItem(item)
+        item = self.contacts_tree.topLevelItem(self.current_paw_index)
+        self.contacts_tree.setCurrentItem(item)
         self.update_current_paw()
 
     def switch_contacts(self):
-        item = self.contact_tree.selectedItems()[0]
+        item = self.contacts_tree.selectedItems()[0]
         self.current_paw_index = int(item.text(0))
         self.update_current_paw()
 

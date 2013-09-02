@@ -32,7 +32,7 @@ def calculate_cop_numpy(data):
     x_coordinate, y_coordinate = np.arange(x), np.arange(y)
     temp_x, temp_y = np.zeros(y), np.zeros(x)
     for frame in range(z):
-        #print frame, np.sum(data[:, :, frame])
+        #print frame, np.sum(measurement_data[:, :, frame])
         if np.sum(data[:, :, frame]) > 0.0:  # Else divide by zero
             # This can be rewritten as a vector calculation
             for col in range(y):

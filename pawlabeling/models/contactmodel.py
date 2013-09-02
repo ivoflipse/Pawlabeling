@@ -72,7 +72,7 @@ class Contact():
         self.min_z, self.max_z = self.frames[0], self.frames[-1]
         self.center = (int(center[0]), int(center[1]))
 
-        # Create self.data from the data
+        # Create self.measurement_data from the measurement_data
         self.convert_contour_to_slice(measurement_data)
         # Check if the paw is valid
         self.validate_contact(measurement_data)
@@ -81,7 +81,7 @@ class Contact():
 
     def convert_contour_to_slice(self, measurement_data):
         """
-        Creates self.data which contains the pixels that are enclosed by the contour
+        Creates self.measurement_data which contains the pixels that are enclosed by the contour
         """
         # Create an empty array that should fit the entire contact
         # TODO reduce this size to the size of the boudning box of the contact (width, length, duration)
@@ -102,7 +102,7 @@ class Contact():
                             coordinate[0], coordinate[1], frame]
                         # TODO Subtract the origin of the location of the contact slice from the coordinates
 
-        # Create an attribute data with the updated slice
+        # Create an attribute measurement_data with the updated slice
         # I believe padding is required here, because Python slices up to, not including the upper limit
         self.data = new_data[self.min_x:self.max_x+1, self.min_y:self.max_y+1, self.min_z:self.max_z+1]
 
@@ -137,7 +137,7 @@ class Contact():
 
     def validate_contact(self, measurement_data):
         """
-        Input: measurement_data = 3D entire plate data array
+        Input: measurement_data = 3D entire plate measurement_data array
         Checks if the contact touches the edge of the plate and if the forces at the beginning or end of a contact
         aren't too high. If so, it will mark the contact as invalid and set the paw_label to -3
         """

@@ -121,7 +121,7 @@ class AnalysisWidget(QtGui.QTabWidget):
     def load_all_results(self):
         """
         Check if there if any measurements for this subject have already been processed
-        If so, retrieve the data and convert them to a usable format
+        If so, retrieve the measurement_data and convert them to a usable format
         """
         # Get the text from the currentItem
         self.subject_name = self.measurement_tree.currentItem().text(0)

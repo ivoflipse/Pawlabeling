@@ -56,7 +56,7 @@ class PawsWidget(QtGui.QWidget):
     def update_paws(self, paws, average_data, current_paw_index):
         # Clear any previous results, which may be out of date
         self.clear_paws()
-        # Update those for which we have a average data
+        # Update those for which we have a average measurement_data
         for paw_label, average_list in average_data.items():
             widget = self.paws_list[paw_label]
             widget.update(average_list)
@@ -76,7 +76,7 @@ class PawsWidget(QtGui.QWidget):
 
     def predict_label(self):
         current_paw = self.paws_list[-1]
-        # If there's no data, we can quit
+        # If there's no measurement_data, we can quit
         if current_paw.max_pressure == float("inf"):
             return
 
@@ -89,7 +89,7 @@ class PawsWidget(QtGui.QWidget):
         surfaces = []
         durations = []
         data_list = []
-        # Then iterate through the other paws
+        # Then iterate through the other contacts
         for paw_label, paw in list(self.paws_list.items()):
             # Skip comparing with yourself
             if paw_label == -1:
@@ -188,7 +188,7 @@ class PawWidget(QtGui.QWidget):
         self.mean_duration_label.setText("{} frames".format(int(self.mean_duration)))
         self.mean_surface_label.setText("{:3.1f} pixels".format(self.mean_surface))
 
-        # Make sure the paws are facing upright
+        # Make sure the contacts are facing upright
         self.data = np.rot90(np.rot90(self.average_data.max(axis=2)))
         # Only display the non-zero part, regardless of its size
         x, y = np.nonzero(self.data)

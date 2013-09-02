@@ -72,7 +72,7 @@ def calculate_average_data(paw_data):
 
 def standardize_paw(paw, std_num_x=20, std_num_y=20):
     """Standardizes a paw print onto a std_num_y x std_num_x grid. Returns a 1D,
-    flattened version of the paw data resample onto this grid."""
+    flattened version of the paw measurement_data resample onto this grid."""
     from scipy.ndimage import map_coordinates
 
     ny, nx = np.shape(paw)
@@ -90,7 +90,7 @@ def standardize_paw(paw, std_num_x=20, std_num_y=20):
     # Rescale the pressure values
     zi -= zi.min()
     zi /= zi.max()
-    zi -= zi.mean() #<- Helps distinguish front from hind paws...
+    zi -= zi.mean() #<- Helps distinguish front from hind contacts...
     return zi
 
 
@@ -257,7 +257,7 @@ def get_QPixmap(data, degree, n_max, color_table, interpolation="cubic"):
 
     # This can be used to interpolate, but it doesn't seem to work entirely correct yet...
     data = cv2.resize(data, (height * degree, width * degree), interpolation=interpolation)
-    # Normalize the data
+    # Normalize the measurement_data
     data = normalize(data, n_max)
     # Convert it from numpy to qimage
     qimage = array_to_qimage(data, color_table)
@@ -534,7 +534,7 @@ def timeseries2symbol(data, N, n, alphabet_size):
     N = data_len or sliding window
     n = nseg
     When calculating the ratio N / n, make sure one of them is a float!
-    Use as: current_string = timeseries2symbol(data, data_len, nseg, alphabet_size)
+    Use as: current_string = timeseries2symbol(measurement_data, data_len, nseg, alphabet_size)
     """
     from math import floor
 
@@ -547,13 +547,13 @@ def timeseries2symbol(data, N, n, alphabet_size):
     # If N == data_len, then this will only be done once
     # So then we don't use a sliding window
     for i in range(len(data) - (N - 1)):
-    # Slice the data
+    # Slice the measurement_data
         sub_section = data[i:i + N]
         # Z normalize it
         # Turned off for now, since its already applied, but then to the entire dataset
         sub_section = (sub_section - np.mean(sub_section)) / np.std(sub_section)
 
-        # If the data is as long as the number of segments, we don't have to piecewise_aggregate_approximation
+        # If the measurement_data is as long as the number of segments, we don't have to piecewise_aggregate_approximation
         if N == n:
             piecewise_aggregate_approximation = sub_section
         else:
@@ -579,7 +579,7 @@ def timeseries2symbol(data, N, n, alphabet_size):
 
 def saxify(data, n=10, alphabet_size=4):
     """
-    data is expected to be a 1D time serie
+    measurement_data is expected to be a 1D time serie
     n = number of segments
     alphabet_size has to be 2 < size < 20, defines how the number of intervals in Y
     Assumes numpy is imported as np

@@ -96,7 +96,7 @@ if store_results_folder[0] == ".":
     store_results_folder = os.path.join(root_folder, "samples\\Labels")
 else:
     try:
-        # Add the folder for the store_results_folder data if it doesn't exist
+        # Add the folder for the store_results_folder measurement_data if it doesn't exist
         if not os.path.exists(store_results_folder):
             os.mkdir(store_results_folder)
     except Exception, e:

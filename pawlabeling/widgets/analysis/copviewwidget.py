@@ -138,7 +138,7 @@ class PawView(QtGui.QWidget):
         # This value determines how many points of the COP are being plotted.
         self.x = 15
 
-        # Just calculate the COP over the average data
+        # Just calculate the COP over the average measurement_data
         average_data = np.rot90(np.rot90(self.average_data[self.min_x:self.max_x, self.min_y:self.max_y, :self.max_z]))
         # For some reason I can't do the slicing in the above call
         average_data = average_data[:,::-1,:]
@@ -193,10 +193,10 @@ class PawView(QtGui.QWidget):
             self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y, self.frame]
             self.update_cop()
 
-        # Make sure the paws are facing upright
+        # Make sure the contacts are facing upright
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
         self.sliced_data = self.sliced_data[:, ::-1]
-        # Display the average data for the requested frame
+        # Display the average measurement_data for the requested frame
         self.pixmap = utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table)
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()

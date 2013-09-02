@@ -29,9 +29,7 @@ class Model():
         self.logger = logging.getLogger("logger")
 
         # OLD
-        pub.subscribe(self.switch_subjects, "switch_subjects")
-        pub.subscribe(self.switch_measurements, "switch_measurements")
-        pub.subscribe(self.load_file, "load_file")
+        #pub.subscribe(self.load_file, "load_file")
         pub.subscribe(self.load_results, "load_results")
         pub.subscribe(self.update_current_paw, "update_current_paw")
         pub.subscribe(self.store_status, "store_status")
@@ -74,7 +72,7 @@ class Model():
         measurement["subject_id"] = self.subject_id
         measurement["session_id"] = self.session_id
 
-        # Check if the file is zipped or not and extract the raw data
+        # Check if the file is zipped or not and extract the raw measurement_data
         if measurement_name[-3:] == "zip":
             # Unzip the file
             input_file = io.open_zip_file(file_path)
@@ -87,7 +85,7 @@ class Model():
             if configuration.zip_files:
                 io.zip_file(configuration.measurement_folder, measurement_name)
 
-        # Extract the data
+        # Extract the measurement_data
         data = io.load(input_file, brand=measurement["brand"])
         number_of_rows, number_of_cols, number_of_frames = data.shape
         measurement["number_of_rows"] = number_of_rows
@@ -102,7 +100,7 @@ class Model():
 
         try:
             self.measurement_group = self.measurements_table.create_measurement(**measurement)
-            # Don't forget to store the data for the measurement as well!
+            # Don't forget to store the measurement_data for the measurement as well!
             self.measurements_table.store_data(group=self.measurement_group,
                                                item_id=measurement["measurement_name"],
                                                data=data)
@@ -136,6 +134,12 @@ class Model():
         contacts = self.contacts_table.get_contacts(**contact)
         pub.sendMessage("update_contacts_tree", contacts=contacts)
 
+    def get_data(self):
+        group = self.measurements_table.get_group(self.measurements_table.session_group,
+                                                  self.measurement["measurement_id"])
+        self.measurement_data = self.measurements_table.get_data(group, self.measurement["measurement_name"])
+        pub.sendMessage("update_measurement_data", measurement_data=self.measurement_data)
+
     def put_subject(self, subject):
         self.subject = subject
         self.subject_id = subject["subject_id"]
@@ -150,7 +154,6 @@ class Model():
         self.measurements_table = self.measurements_table = tabelmodel.MeasurementsTable(subject_id=self.subject_id,
                                                                                          session_id=self.session_id)
 
-    # TODO How do you plan to keep these in sync between tabs? Will you update the selection on all tabs?
     def put_measurement(self, measurement):
         self.measurement = measurement
         self.measurement_id = measurement["measurement_id"]
@@ -174,55 +177,31 @@ class Model():
         self.file_paths = io.get_file_paths()
         pub.sendMessage("get_file_paths", file_paths=self.file_paths)
 
-    def switch_subjects(self, subject_name):
-        """
-        This function should always be called when you want to access other subject's results
-        """
-        if subject_name != self.subject_name:
-            self.logger.info(
-                "Model.switch_subjects: Switching subjects from {} to {}".format(self.subject_name, subject_name))
-            self.subject_name = subject_name
 
-            # If switching subjects, we also want to clear our caches, because those values are useless
-            self.clear_cached_values()
-
-    def switch_measurements(self, measurement_name):
-        """
-        This function should always be called when you want to access a new measurement
-        """
-        if measurement_name != self.measurement_name:
-            self.logger.info(
-                "Model.switch_measurements: Switching measurements to {}".format(measurement_name))
-            self.measurement_name = measurement_name
-
-    def load_file(self):
-        # Get the path from the file_paths dictionary
-        self.file_path = self.file_paths[self.subject_name][self.measurement_name]
-
-        # Log which measurement we're loading
-        self.logger.info("Model.load_file: Loading measurement for subject: {} - {}".format(self.subject_name,
-                                                                                        self.measurement_name))
-        # Pass the new measurement through to the widget
-        self.measurement = io.load(self.file_path)
-        # Check the orientation of the plate and make sure its left to right
-        self.measurement = io.fix_orientation(self.measurement)
-        # Get the number of frames for the slider
-        self.height, self.width, self.num_frames = self.measurement.shape
-        # Get the normalizing factor for the color bars
-        self.n_max = self.measurement.max()
-
-        # Notify the widgets that there's a new n_max available
-        pub.sendMessage("update_n_max", n_max=self.n_max)
-        # Notify the widgets that a new measurement is available
-        pub.sendMessage("loaded_file", measurement=self.measurement, measurement_name=self.measurement_name,
-                        shape=self.measurement.shape)
+    # def load_file(self, measurement):
+    #     self.measurement = measurement
+    #     # Log which measurement we're loading
+    #     subject_name = "{} {}".format(self.subject["first_name"], self.subject["last_name"])
+    #     measurement_name = measurement["measurement_name"]
+    #     self.logger.info("Model.load_file: Loading measurement for subject: {} {} - {}".format(subject_name,
+    #                                                                                     measurement_name))
+    #
+    #     # Get the measurement_data
+    #
+    #     measurement[""]
+    #
+    #     # Notify the widgets that there's a new n_max available
+    #     pub.sendMessage("update_n_max", n_max=self.n_max)
+    #     # Notify the widgets that a new measurement is available
+    #     pub.sendMessage("loaded_file", measurement=self.measurement, measurement_name=self.measurement_name,
+    #                     shape=self.measurement.shape)
 
     def load_results(self, widget):
         self.load_all_results()
         if widget == "processing":
             pub.sendMessage("processing_results", paws=self.paws, average_data=self.average_data)
         elif widget == "analysis":
-            # If there's no data_list, there are no labeled paws to display
+            # If there's no data_list, there are no labeled contacts to display
             if self.data_list.keys():
                 pub.sendMessage("analysis_results", paws=self.paws, average_data=self.average_data,
                                 results=self.results, max_results=self.max_results)
@@ -230,10 +209,10 @@ class Model():
     def load_all_results(self):
         """
         Check if there if any measurements for this subject have already been processed
-        If so, retrieve the data and convert them to a usable format
+        If so, retrieve the measurement_data and convert them to a usable format
         """
         self.logger.info("Model.load_all_results: Loading all results for subject: {}".format(self.subject_name))
-        # Make sure self.paws is empty
+        # Make sure self.contacts is empty
         self.paws.clear()
 
         for measurement_name in self.file_paths[self.subject_name]:
@@ -242,7 +221,7 @@ class Model():
             # Did we get any results?
             if paws:
                 self.paws[measurement_name] = paws
-                # Check if any of the paws has a higher n_max
+                # Check if any of the contacts has a higher n_max
                 for paw in paws:
                     n_max = np.max(paw.data)
                     if n_max > self.n_max:
@@ -267,7 +246,7 @@ class Model():
         data[padding:-padding, padding:-padding, :] = self.measurement
         paws = tracking.track_contours_graph(data)
 
-        # Make sure we don't have any paws stored if we're tracking again
+        # Make sure we don't have any contacts stored if we're tracking again
         # I'd suggest moving the calculation of average_data out, so I can update it every time I label a paw
         self.paws[self.measurement_name] = []
 
@@ -275,7 +254,7 @@ class Model():
         for index, raw_paw in enumerate(paws):
             paw = contactmodel.Contact()
             paw.create_contact(contact=raw_paw, measurement_data=self.measurement, padding=1)
-            # Skip paws that have only been around for one frame
+            # Skip contacts that have only been around for one frame
             if len(paw.frames) > 1:
                 self.paws[self.measurement_name].append(paw)
 
@@ -285,31 +264,31 @@ class Model():
         for index, paw in enumerate(self.paws[self.measurement_name]):
             paw.set_index(index)
 
-        status = "Number of paws found: {}".format(len(self.paws[self.measurement_name]))
+        status = "Number of contacts found: {}".format(len(self.paws[self.measurement_name]))
         pub.sendMessage("update_statusbar", status=status)
 
     def update_current_paw(self, current_paw_index, paws):
         # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
         self.paws = paws
         self.current_paw_index = current_paw_index
-        # Refresh the average data
+        # Refresh the average measurement_data
         self.calculate_average()
 
         pub.sendMessage("updated_current_paw", paws=self.paws, average_data=self.average_data,
                         current_paw_index=self.current_paw_index)
 
     def calculate_average(self):
-        # Empty average data
+        # Empty average measurement_data
         self.average_data.clear()
         self.data_list.clear()
-        # Group all the data per paw
+        # Group all the measurement_data per paw
         for measurement_name, paws in self.paws.items():
             for paw in paws:
                 paw_label = paw.paw_label
                 if paw_label >= 0:
                     self.data_list[paw_label].append(paw.data)
 
-        # Then get the normalized data
+        # Then get the normalized measurement_data
         for paw_label, data in self.data_list.items():
             normalized_data = utility.calculate_average_data(data)
             self.average_data[paw_label] = normalized_data
@@ -343,8 +322,8 @@ class Model():
                 if max_duration > self.max_results.get("duration", 0):
                     self.max_results["duration"] = max_duration
 
-                    # for measurement_name, paws in self.paws.items():
-                    #     for paw in self.paws:
+                    # for measurement_name, contacts in self.contacts.items():
+                    #     for paw in self.contacts:
 
 
     def store_status(self):

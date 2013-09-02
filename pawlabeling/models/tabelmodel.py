@@ -39,9 +39,9 @@ class Table(object):
         rows = table.readWhere(query)
         return rows
 
-    # This function can be used for data, contact_data and normalized_contact_data
+    # This function can be used for measurement_data, contact_data and normalized_contact_data
     # Actually also for all the different results (at least the time series)
-    # TODO: check if I'm not creating duplicate data, so check if the item_id already exists in the group
+    # TODO: check if I'm not creating duplicate measurement_data, so check if the item_id already exists in the group
     def store_data(self, group, item_id, data):
         atom = tables.Atom.from_dtype(data.dtype)
         filters = tables.Filters(complib="blosc", complevel=9)
@@ -49,6 +49,12 @@ class Table(object):
                                         atom=atom, shape=data.shape, filters=filters)
         data_array[:] = data
         self.table.flush()
+
+    def get_group(self, parent, group_id):
+        return parent.__getattr__(group_id)
+
+    def get_data(self, group, item_id):
+        return group.__getattr__(item_id)
 
     def close_table(self):
         """
@@ -194,7 +200,7 @@ class MeasurementsTable(Table):
         measurement_name = tables.StringCol(64)
         number_of_frames = tables.UInt32Col()
         number_of_rows = tables.UInt32Col()
-        number_of_cols = tables.UInt32Col()
+        number_of_cols = tables.UInt32Col()  # Shouldn't this be number_of_columns?
         frequency = tables.UInt32Col()
         orientation = tables.BoolCol()
         maximum_value = tables.Float32Col()

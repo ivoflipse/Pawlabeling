@@ -40,8 +40,8 @@ class TestLoad(TestCase):
     #     parent_folder = os.path.dirname(os.path.abspath(__file__))
     #     file_location = "files\\zebris_export.zip"
     #     file_name = os.path.join(parent_folder, file_location)
-    #     data = io.load(file_name=file_name)
-    #     self.assertEqual(data.shape, (128L, 56L, 1472L))
+    #     measurement_data = io.load(file_name=file_name)
+    #     self.assertEqual(measurement_data.shape, (128L, 56L, 1472L))
 
 
 class TestFindStoredFile(TestCase):
@@ -80,7 +80,7 @@ class TestFixOrientation(TestCase):
         # Reverse the plate around the longitudinal axis
         reversed_data = np.rot90(np.rot90(data))
         new_data = io.fix_orientation(data=reversed_data)
-        # Check to see if its equal to the normal data again
+        # Check to see if its equal to the normal measurement_data again
         equal = np.array_equal(data, new_data)
         self.assertEqual(equal, True)
 
@@ -89,7 +89,7 @@ class TestLoadResults(TestCase):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
         file_location = "files\\rsscan_export.zip.pkl"
         input_path = os.path.join(parent_folder, file_location)
-        # This contains all the paws, check if they're all there
+        # This contains all the contacts, check if they're all there
         results = io.load_results(input_path=input_path)
         # Perhaps I want to check more things here?
         self.assertEqual(len(results), 11)
@@ -162,7 +162,7 @@ class TestResultsToPickle(TestCase):
         file_location = "files\\rsscan_export.zip.pkl"
         self.input_path = os.path.join(parent_folder, file_location)
 
-        # Load paws from an existing pickle file
+        # Load contacts from an existing pickle file
         with open(self.input_path, "rb") as pickle_file:
             self.paws = pickle.load(pickle_file)
 

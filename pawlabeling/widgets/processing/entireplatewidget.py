@@ -96,10 +96,19 @@ class EntirePlateWidget(QtGui.QWidget):
 
         # # Install an event filter
         pub.subscribe(self.update_n_max, "update_n_max")
-        pub.subscribe(self.new_measurement, "loaded_file")
+        pub.subscribe(self.update_measurement, "put_measurement")
+        pub.subscribe(self.new_measurement, "update_measurement_data")
         pub.subscribe(self.update_bounding_boxes, "updated_current_paw")
         pub.subscribe(self.new_results, "processing_results")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
+
+    def update_measurement(self, measurement):
+        self.n_max = measurement["maximum_value"]
+        self.height = measurement["number_of_rows"]
+        self.width = measurement["number_of_cols"]
+        self.num_frames = measurement["number_of_frames"]
+        self.measurement_name = measurement["measurement_name"]
+
 
     def fast_backward(self):
         self.change_slider(-1, fast=True)
@@ -131,11 +140,9 @@ class EntirePlateWidget(QtGui.QWidget):
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def new_measurement(self, measurement, measurement_name, shape):
+    def new_measurement(self, measurement_data):
         # Update the measurement
-        self.measurement = measurement
-        self.measurement_name = measurement_name
-        self.height, self.width, self.num_frames = shape
+        self.measurement_data = measurement_data
         # Update the slider, in case the shape of the file changes
         self.slider.setMaximum(self.num_frames - 1)
         # Reset the frame slider
@@ -153,10 +160,10 @@ class EntirePlateWidget(QtGui.QWidget):
 
     def update_entire_plate(self):
         if self.frame == -1:
-            self.data = self.measurement.max(axis=2).T
+            self.data = self.measurement_data.max(axis=2).T
         else:
-            # Slice out the data from the measurement
-            self.data = self.measurement[:, :, self.frame].T
+            # Slice out the measurement_data from the measurement
+            self.data = self.measurement_data[:, :, self.frame].T
 
         # Update the pixmap
         self.pixmap = utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table)

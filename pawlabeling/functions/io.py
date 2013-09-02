@@ -18,7 +18,7 @@ def calculate_distance(a, b):
 
 def fix_orientation(data):
     from scipy.ndimage.measurements import center_of_mass
-    # Find the first and last frame with nonzero data (from z)
+    # Find the first and last frame with nonzero measurement_data (from z)
     x, y, z = np.nonzero(data)
     # For some reason I was loading the file in such a way that it wasn't sorted
     z = sorted(z)
@@ -31,15 +31,15 @@ def fix_orientation(data):
     # If this distance is negative, the subject walked right to left
     #print .The distance between the start and end is: {}".format(x_distance)
     if x_distance < 0:
-        # So we flip the data around
+        # So we flip the measurement_data around
         data = np.rot90(np.rot90(data))
-        #data = data[::-1,::-1,:]  #Alternative
+        #measurement_data = measurement_data[::-1,::-1,:]  #Alternative
     return data
 
 
 def check_orientation(data):
     from scipy.ndimage.measurements import center_of_mass
-    # Find the first and last frame with nonzero data (from z)
+    # Find the first and last frame with nonzero measurement_data (from z)
     x, y, z = np.nonzero(data)
     # For some reason I was loading the file in such a way that it wasn't sorted
     z = sorted(z)
@@ -99,8 +99,8 @@ def load_zebris(infile):
 # This functions is modified from:
 # http://stackoverflow.com/questions/4087919/how-can-i-improve-my-paw-detection
 def load_rsscan(infile):
-    """Reads all data in the datafile. Returns an array of times for each
-    slice, and a 3D array of pressure data with shape (nx, ny, nz)."""
+    """Reads all measurement_data in the datafile. Returns an array of times for each
+    slice, and a 3D array of pressure measurement_data with shape (nx, ny, nz)."""
     data_slices = []
     data = []
     for line in iter(infile.splitlines()):
@@ -228,10 +228,10 @@ def create_results_folder(subject_name):
 def results_to_pickle(pickle_path, paws):
     """
     pickle_path is a path like "subject_name\\measurement_name"
-    paws is a list of Contacts
+    contacts is a list of Contacts
 
     It appends .pkl as an extensions to the pickle_path and
-    uses pickle to dump the paws to the file location
+    uses pickle to dump the contacts to the file location
     """
     # Check if the parent folder exists
     parent_folder = os.path.dirname(pickle_path)

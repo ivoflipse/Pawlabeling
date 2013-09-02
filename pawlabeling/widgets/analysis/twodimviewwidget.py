@@ -122,11 +122,11 @@ class PawView(QtGui.QWidget):
         else:
             self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y, self.frame]
 
-        # Make sure the paws are facing upright
+        # Make sure the contacts are facing upright
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
         self.sliced_data = self.sliced_data[:, ::-1]
 
-        # Display the average data for the requested frame
+        # Display the average measurement_data for the requested frame
         self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
         self.resizeEvent()
 
