@@ -266,7 +266,7 @@ class ContactsTable(Table):
         session_id = tables.StringCol(64)
         subject_id = tables.StringCol(64)
         contact_id = tables.UInt16Col()
-        label = tables.UInt16Col()
+        contact_label = tables.Int16Col()  # These might also be negative...
         min_x = tables.UInt16Col()
         max_x = tables.UInt16Col()
         min_y = tables.UInt16Col()

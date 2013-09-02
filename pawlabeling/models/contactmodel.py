@@ -24,7 +24,6 @@ class Contact():
         self.max_y = 1
         self.min_z = 0
         self.max_z = 1
-        self.center = (0, 0)
         self.width = 1
         self.height = 1
         self.length = 1
@@ -56,21 +55,19 @@ class Contact():
                     contour = np.array(new_contour)
                 self.contour_list[frame].append(contour)
 
-        center, min_x, max_x, min_y, max_y = utility.update_bounding_box(contact)
+        _, min_x, max_x, min_y, max_y = utility.update_bounding_box(contact)
         # Subtract the amount of padding everywhere
         if padding:
             min_x -= padding
             max_x -= padding
             min_y -= padding
             max_y -= padding
-            center = (center[0] - padding, center[1] - padding)
         self.width = int(abs(max_x - min_x))
         self.height = int(abs(max_y - min_y))
         self.length = len(self.frames)
         self.min_x, self.max_x = int(min_x), int(max_x)
         self.min_y, self.max_y = int(min_y), int(max_y)
         self.min_z, self.max_z = self.frames[0], self.frames[-1]
-        self.center = (int(center[0]), int(center[1]))
 
         # Create self.measurement_data from the measurement_data
         self.convert_contour_to_slice(measurement_data)
@@ -91,7 +88,7 @@ class Contact():
         # Pass a single contour as if it were a contact
             center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: contours})
             # Get the non_zero pixels coordinates for that frame
-            pixels = np.transpose(np.nonzero(measurement_data[min_x:max_x+1, min_y:max_y+1, frame]))
+            pixels = np.transpose(np.nonzero(measurement_data[min_x:max_x + 1, min_y:max_y + 1, frame]))
             # Check if they are in any of the contours
             for pixel in pixels:
                 for contour in contours:
@@ -104,7 +101,7 @@ class Contact():
 
         # Create an attribute measurement_data with the updated slice
         # I believe padding is required here, because Python slices up to, not including the upper limit
-        self.data = new_data[self.min_x:self.max_x+1, self.min_y:self.max_y+1, self.min_z:self.max_z+1]
+        self.data = new_data[self.min_x:self.max_x + 1, self.min_y:self.max_y + 1, self.min_z:self.max_z + 1]
 
     def calculate_results(self):
         """
@@ -183,20 +180,20 @@ class Contact():
         self.max_x = contact["max_x"]
         self.min_y = contact["min_y"]
         self.max_y = contact["max_y"]
-        self.center = (contact["center_x"], contact["center_y"])
 
-    def contact_to_dict(self):
-        # TODO make this and restore up to date!
+    def to_dict(self):
         return {
-            "width": self.width,
-            "height": self.height,
-            "length": self.length,
+            "contact_id": str(self.contact_id),  # The rest of the application uses an int here!
+            "contact_label": self.contact_label,
             "min_x": self.min_x,
             "max_x": self.max_x,
             "min_y": self.min_y,
             "max_y": self.max_y,
-            "min_z": self.frames[0],
-            "max_z": self.frames[-1],
-            "center_x": self.center[0],
-            "center_y": self.center[1]
+            "min_z": self.min_z,
+            "max_z": self.max_z,
+            "width": self.width,
+            "height": self.height,
+            "length": self.length,
+            "invalid": self.invalid,
+            "filtered": self.filtered
         }

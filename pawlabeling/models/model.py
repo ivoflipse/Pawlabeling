@@ -109,33 +109,21 @@ class Model():
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
 
     def create_contacts(self, contacts):
-        """
-            measurement_id = tables.StringCol(64)
-            session_id = tables.StringCol(64)
-            subject_id = tables.StringCol(64)
-            contact_id = tables.UInt16Col()
-            label = tables.UInt16Col()
-            min_x = tables.UInt16Col()
-            max_x = tables.UInt16Col()
-            min_y = tables.UInt16Col()
-            max_y = tables.UInt16Col()
-            min_z = tables.UInt16Col()
-            max_z = tables.UInt16Col()
-            width = tables.UInt16Col()
-            height = tables.UInt16Col()
-            length = tables.UInt16Col()
-            invalid = tables.BoolCol()
-            filtered = tables.BoolCol()
-        """
-        # TODO You might want to check if the contact_id key is present and that each contact is a dictionary
         # We'll track the contact groups using this contact_ids dictionary
         self.contact_ids = {}
         for contact in contacts:
-            try:
-                contact_group = self.contacts_table.create_contact(**contact)
-                self.contact_ids[contact_group._v_name] = contact_group
-            except MissingIdentifier:
-                self.logger.warning("Model.create_contacts: Some of the required fields are missing")
+            contact = contact.to_dict()  # This takes care of some of the book keeping for us
+            contact["subject_id"] = self.subject_id
+            contact["session_id"] = self.session_id
+            contact["measurement_id"] = self.measurement_id
+
+            contact_group = self.contacts_table.create_contact(**contact)
+            self.contact_ids[contact_group._v_name] = contact_group
+
+        # try:
+        #     pass
+        # except MissingIdentifier:
+        #     self.logger.warning("Model.create_contacts: Some of the required fields are missing")
 
     def get_subjects(self, subject):
         subjects = self.subjects_table.get_subjects(**subject)
@@ -152,9 +140,11 @@ class Model():
     def get_contacts(self, contact):
         contacts = self.contacts_table.get_contacts(**contact)
         # If we don't get anything back, that means there are no contacts yet
-        if not contacts:
+        if contacts:
+           # The stored object isn't really a contact though
+            contacts = contactmodel.restore(contacts)
+        else:
             contacts = self.track_contacts()
-
         self.contacts[self.measurement_name] = contacts
         pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
@@ -219,19 +209,6 @@ class Model():
         self.logger.info("Model.load_all_results: Loading all results for subject: {}".format(self.subject_name))
         # Make sure self.contacts is empty
         self.contacts.clear()
-
-        # for measurement_name in self.file_paths[self.subject_name]:
-        #     input_path = io.find_stored_file(self.subject_name, measurement_name)
-        #     contacts = io.load_results(input_path)
-        #     # Did we get any results?
-        #     if contacts:
-        #         self.contacts[measurement_name] = contacts
-        #         # Check if any of the contacts has a higher n_max
-        #         for contact in contacts:
-        #             n_max = np.max(contact.data)
-        #             if n_max > self.n_max:
-        #                 self.n_max = n_max
-
         self.n_max = 0
 
         # Go through all the measurements in this session's table
@@ -351,16 +328,9 @@ class Model():
 
 
     def store_status(self):
-        """
-        This function creates a file in the store_results_folder and create the folder if it doesn't exist
-        It will notify the status bar, log and return a boolean value depending on the success or failure of execution
-        """
-        # Try and create a folder to add store the store_results_folder result
-        self.new_path = io.create_results_folder(self.subject_name)
-        # Try storing the results
         try:
-            pickle_path = os.path.join(self.new_path, self.measurement_name)
-            io.results_to_pickle(pickle_path, self.contacts[self.measurement_name])
+            self.create_contacts(self.contacts[self.measurement_name])
+
             self.logger.info("Model.store_status: Results for {} have been successfully saved".format(
                 self.measurement_name))
             pub.sendMessage("update_statusbar", status="Results saved")
