@@ -61,7 +61,6 @@ class SessionWidget(QtGui.QWidget):
         self.setLayout(self.session_tree_layout)
 
         pub.subscribe(self.update_sessions_tree, "update_sessions_tree")
-        pub.subscribe(self.get_sessions, "put_subject")
 
     def create_session(self):
         session = {}
@@ -72,8 +71,6 @@ class SessionWidget(QtGui.QWidget):
         pub.sendMessage("create_session", session=session)
         # After creating a new session, get the updated table
         pub.sendMessage("get_sessions", session={})
-        # TODO figure out how to select the session we just created
-
 
     def get_session_fields(self):
         session = {}
@@ -82,11 +79,14 @@ class SessionWidget(QtGui.QWidget):
         session["session_time"] = self.session_time.time().toString(u"HH:mm")  # Qt.ISODate
         return session
 
-    def get_sessions(self, subject=None):
-        session = self.get_session_fields()
-        pub.sendMessage("get_sessions", session=session)
+    # If we ever get around adding search functionality, this is the one you should use
+    # def get_sessions(self):
+    #     print "sessionwidget.get_sessions"
+    #     session = self.get_session_fields()
+    #     pub.sendMessage("get_sessions", session=session)
 
     def put_session(self, evt=None):
+        print "sessionwidget.put_session"
         current_item = self.session_tree.currentItem()
         # Get the index
         index = self.session_tree.indexFromItem(current_item).row()
@@ -103,6 +103,7 @@ class SessionWidget(QtGui.QWidget):
             rootItem.setText(1, session["session_date"])
             rootItem.setText(2, session["session_time"])
 
+        # We select the last session, assuming this is the one we just created
         count = self.session_tree.topLevelItemCount()
         if count:
             # Select the last session

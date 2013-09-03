@@ -43,16 +43,11 @@ class MainWindow(QtGui.QMainWindow):
         self.tab_widget.addTab(self.database_widget, "Database")
         self.tab_widget.addTab(self.processing_widget, "Processing")
         self.tab_widget.addTab(self.analysis_widget, "Analysis")
+        self.tab_widget.currentChanged.connect(self.change_tabs)
 
         self.setCentralWidget(self.tab_widget)
 
-        # Load all the measurements into the measurement tree
-        #self.model.load_file_paths()
-        # Then load the first measurement
-        #self.processing_widget.load_first_file()
-
         self.installEventFilter(self)
-        self.tab_widget.currentChanged.connect(self.change_tabs)
         pub.subscribe(self.change_status, "update_statusbar")
 
     def center(self):
