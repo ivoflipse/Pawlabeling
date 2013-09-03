@@ -96,7 +96,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.setLayout(self.measurement_layout)
 
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.subscribe(self.get_measurements, "put_session")
+        #pub.subscribe(self.get_measurements, "put_session")
         pub.subscribe(self.update_measurement_status, "update_contacts")
 
         self.update_files_tree()

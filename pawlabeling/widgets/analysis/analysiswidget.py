@@ -44,7 +44,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.measurement_tree.setMaximumHeight(200)
         self.measurement_tree.setColumnCount(1)
         self.measurement_tree.setHeaderLabel("Measurements")
-        self.measurement_tree.itemActivated.connect(self.load_all_results)
+        self.measurement_tree.itemActivated.connect(self.put_measurement)
 
         self.contact_tree = QtGui.QTreeWidget(self)
         self.contact_tree.setMaximumWidth(300)
@@ -127,23 +127,23 @@ class AnalysisWidget(QtGui.QTabWidget):
     #         self.logger.warning(
     #             "No results found, please check the location for the results and restart the program")
 
-    def load_all_results(self):
-        """
-        Check if there if any measurements for this subject have already been processed
-        If so, retrieve the measurement_data and convert them to a usable format
-        """
-        # Get the text from the currentItem
-        self.subject_name = self.measurement_tree.currentItem().text(0)
-
-        # Notify the model to update the subject_name + measurement_name if necessary
-        pub.sendMessage("switch_subjects", subject_name=self.subject_name)
-        # Blank out the measurement_name
-        #pub.sendMessage("switch_measurements", measurement_name="")
-
-        pub.sendMessage("clear_cached_values")
-        self.contact_tree.clear()
-        # Send a message so the model starts loading results
-        pub.sendMessage("load_results", widget="analysis")
+    # def load_all_results(self):
+    #     """
+    #     Check if there if any measurements for this subject have already been processed
+    #     If so, retrieve the measurement_data and convert them to a usable format
+    #     """
+    #     # Get the text from the currentItem
+    #     self.subject_name = self.measurement_tree.currentItem().text(0)
+    #
+    #     # Notify the model to update the subject_name + measurement_name if necessary
+    #     pub.sendMessage("switch_subjects", subject_name=self.subject_name)
+    #     # Blank out the measurement_name
+    #     #pub.sendMessage("switch_measurements", measurement_name="")
+    #
+    #     pub.sendMessage("clear_cached_values")
+    #     self.contact_tree.clear()
+    #     # Send a message so the model starts loading results
+    #     pub.sendMessage("load_results", widget="analysis")
 
     def update_contact_tree(self, contacts, average_data, results, max_results):
         self.contact_tree.clear()
@@ -194,17 +194,16 @@ class AnalysisWidget(QtGui.QTabWidget):
             # Notify the model to update the subject_name + measurement_name if necessary
         self.measurement_name = self.measurement_tree.currentItem().text(0)
         measurement = self.measurements[self.measurement_name]
+        self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
+
         pub.sendMessage("put_measurement", measurement=measurement)
 
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
-        pub.sendMessage("get_measurement_data")
-        pub.sendMessage("get_contacts")
-
-        self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
-
+        #pub.sendMessage("get_measurement_data")
+        #pub.sendMessage("get_contacts")
         # # Send a message so the model starts loading results
         # pub.sendMessage("load_results", widget="processing")
-        pub.sendMessage("load_contacts")
+        #pub.sendMessage("load_contacts")
 
     def show_average_results(self, evt=None):
         pass

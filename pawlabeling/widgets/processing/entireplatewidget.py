@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
@@ -12,6 +13,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.parent = parent
         #self.resize(configuration.entire_plate_widget_width, configuration.entire_plate_widget_height)
         self.ratio = 1
+        self.num_frames = 0
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
@@ -175,6 +177,9 @@ class EntirePlateWidget(QtGui.QWidget):
     def clear_cached_values(self):
         self.clear_bounding_box()
         self.clear_gait_line()
+        self.num_frames = 0
+        self.data = np.zeros((15, 15))
+        self.frame = -1
 
     def clear_bounding_box(self):
         # Remove the old ones and redraw
@@ -213,7 +218,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.bounding_boxes.append(bounding_box)
         self.resizeEvent()
 
-    def update_bounding_boxes(self, contacts, current_contact_index, average_data):
+    def update_bounding_boxes(self, contacts, current_contact_index):
         self.clear_bounding_box()
         for index, contact in enumerate(contacts[self.measurement_name]):
             self.draw_bounding_box(contacts[self.measurement_name][index], contact.contact_label)

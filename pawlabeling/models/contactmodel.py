@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 from pawlabeling.functions import utility, calculations
 from pawlabeling.settings import configuration
-
+#from memory_profiler import profile
 
 logger = logging.getLogger("logger")
 

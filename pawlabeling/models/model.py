@@ -6,6 +6,7 @@ from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
 from pawlabeling.settings import configuration
 from pawlabeling.models import contactmodel, table
+#from memory_profiler import profile
 
 
 class Model():
@@ -132,19 +133,19 @@ class Model():
         except MissingIdentifier:
             self.logger.warning("Model.create_contacts: Some of the required fields are missing")
 
-    def get_subjects(self, subject):
+    def get_subjects(self, subject={}):
         subjects = self.subjects_table.get_subjects(**subject)
         pub.sendMessage("update_subjects_tree", subjects=subjects)
 
-    def get_sessions(self, session):
+    def get_sessions(self, session={}):
         sessions = self.sessions_table.get_sessions(**session)
         pub.sendMessage("update_sessions_tree", sessions=sessions)
 
-    def get_measurements(self, measurement):
+    def get_measurements(self, measurement={}):
         measurements = self.measurements_table.get_measurements(**measurement)
         pub.sendMessage("update_measurements_tree", measurements=measurements)
 
-    def get_contacts(self, contact=None):
+    def get_contacts(self, contact={}):
         #contacts = self.contacts_table.get_contacts(**contact)
         if not self.contacts.get(self.measurement_name):
             contacts = self.get_contact_data(self.measurement)
@@ -152,7 +153,6 @@ class Model():
                 self.contacts[self.measurement_name] = self.track_contacts()
             else:
                 self.contacts[self.measurement_name] = contacts
-
         pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
     def get_measurement_data(self):
@@ -194,8 +194,10 @@ class Model():
                                                   subject_id=self.subject_id)
         pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject["first_name"],
                                                                            self.subject["last_name"]))
+        self.get_sessions()
 
     def put_session(self, session):
+        print "putting session"
         self.session = session
         self.session_id = session["session_id"]
         self.logger.info("Session ID set to {}".format(self.session_id))
@@ -203,6 +205,13 @@ class Model():
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)
         pub.sendMessage("update_statusbar", status="Session: {}".format(self.session["session_name"]))
+        # Whenever we switch sessions, clear the cache
+        self.clear_cached_values()
+        self.get_measurements()
+        # Load the contacts, but have it not send out anything
+        self.load_contacts()
+        # Next calculate the average based on the contacts
+        self.calculate_average()
 
     def put_measurement(self, measurement):
         self.measurement = measurement
@@ -248,17 +257,12 @@ class Model():
             if contacts:
                 self.contacts[m["measurement_name"]] = contacts
 
-        if self.measurement_name not in self.contacts:
-            self.contacts[self.measurement_name] = self.track_contacts()
-
         # Calculate the highest n_max and publish that
         pub.sendMessage("update_n_max", n_max=self.n_max)
-        pub.sendMessage("update_contacts", contacts=self.contacts)
-        # Calculate the average, after everything has been loaded
-        self.calculate_average()
+        #pub.sendMessage("update_contacts", contacts=self.contacts)
         # These two messages could pretty much be consolidated, possibly even the one above
-        pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
-        pub.sendMessage("update_contacts_tree", contacts=self.contacts)
+        #pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
+        #pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
     #@profile
     def track_contacts(self):
@@ -298,13 +302,12 @@ class Model():
         # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
         self.contacts = contacts
         self.current_contact_index = current_contact_index
-        # Refresh the average measurement_data
-        self.calculate_average()
 
-        pub.sendMessage("updated_current_contact", contacts=self.contacts, average_data=self.average_data,
+        pub.sendMessage("updated_current_contact", contacts=self.contacts,
                         current_contact_index=self.current_contact_index)
 
     def calculate_average(self):
+        print "calculating average"
         # Empty average measurement_data
         self.average_data.clear()
         data_list = defaultdict(list)
@@ -331,6 +334,8 @@ class Model():
         for contact_label, data in data_list.items():
             normalized_data = utility.calculate_average_data(data, shape)
             self.average_data[contact_label] = normalized_data
+
+        pub.sendMessage("update_average", average_data=self.average_data)
 
     # This won't work as is, so we'll fix it later
     # def calculate_results(self):

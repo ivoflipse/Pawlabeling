@@ -33,6 +33,10 @@ class ProcessingWidget(QtGui.QWidget):
         self.colors = configuration.colors
         self.contact_dict = configuration.contact_dict
 
+        self.contacts = defaultdict(list)
+        self.subject = {}
+        self.session = {}
+
         self.current_contact_index = 0
 
         self.toolbar = gui.Toolbar(self)
@@ -139,14 +143,14 @@ class ProcessingWidget(QtGui.QWidget):
         # Notify the model to update the subject_name + measurement_name if necessary
         self.measurement_name = self.measurement_tree.currentItem().text(0)
         measurement = self.measurements[self.measurement_name]
+        self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
+
         pub.sendMessage("put_measurement", measurement=measurement)
 
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
         pub.sendMessage("get_measurement_data")
-        pub.sendMessage("load_contacts")
+        #pub.sendMessage("load_contacts")
         pub.sendMessage("get_contacts")
-
-        self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
 
         # # Send a message so the model starts loading results
         # pub.sendMessage("load_results", widget="processing")

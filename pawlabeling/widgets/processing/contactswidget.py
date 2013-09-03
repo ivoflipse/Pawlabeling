@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 from PySide import QtGui
 import numpy as np
 from pubsub import pub
@@ -16,6 +17,8 @@ class contactsWidget(QtGui.QWidget):
         self.right_front = contactWidget(self,label="Right Front", contact_label=2)
         self.right_hind = contactWidget(self,label="Right Hind", contact_label=3)
         self.current_contact = contactWidget(self, label="", contact_label=-1)
+
+        self.average_data = defaultdict(list)
 
         self.contacts_list = {
             0: self.left_front,
@@ -49,17 +52,23 @@ class contactsWidget(QtGui.QWidget):
 
         pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.update_contacts, "updated_current_contact")
+        pub.subscribe(self.update_average, "update_average")
+
+    def update_average(self, average_data):
+        print "contactswidget.update_average"
+        self.average_data = average_data
 
     def put_measurement(self, measurement):
         self.measurement_name = measurement["measurement_name"]
 
-    def update_contacts(self, contacts, average_data, current_contact_index):
+    def update_contacts(self, contacts, current_contact_index):
+        print "contactswidget.update_contacts"
         # Clear any previous results, which may be out of date
         self.clear_contacts()
 
         average_contact = None
         # Update those for which we have a average measurement_data
-        for contact_label, average_contact in average_data.items():
+        for contact_label, average_contact in self.average_data.items():
             widget = self.contacts_list[contact_label]
             widget.update(average_contact)
 
@@ -127,6 +136,7 @@ class contactsWidget(QtGui.QWidget):
             current_contact.label_prediction.setText("{}".format(self.contact_dict[best_result]))
 
     def clear_contacts(self):
+        self.average_data.clear()
         for contact_label, widget in self.contacts_list.items():
             widget.clear_cached_values()
 
