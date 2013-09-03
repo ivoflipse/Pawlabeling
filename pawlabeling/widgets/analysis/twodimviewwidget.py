@@ -53,11 +53,13 @@ class contactView(QtGui.QWidget):
         self.max_x = self.mx
         self.min_y = 0
         self.max_y = self.my
+        self.max_z = 0
         self.frame = -1
         self.active = False
         self.filtered = []
         self.outlier_toggle = False
         self.data = np.zeros((self.mx, self.my))
+        self.average_data = np.zeros((self.mx, self.my, 1))
         self.max_of_max = self.data.copy()
         self.sliced_data = self.data.copy()
         self.data_list = []
@@ -79,10 +81,9 @@ class contactView(QtGui.QWidget):
 
         # TODO I might want to (un)subscribe these
         pub.subscribe(self.update_n_max, "update_n_max")
-        #pub.subscribe(self.change_frame, "analysis.change_frame")
+        pub.subscribe(self.change_frame, "analysis.change_frame")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        #pub.subscribe(self.update, "analysis_results")
-        #pub.subscribe(self.check_active, "active_widget")
+        pub.subscribe(self.check_active, "active_widget")
         pub.subscribe(self.filter_outliers, "filter_outliers")
         pub.subscribe(self.update_average, "update_average")
 
@@ -132,7 +133,7 @@ class contactView(QtGui.QWidget):
     def change_frame(self, frame):
         self.frame = frame
         # If we're not displaying the empty array
-        if (self.max_of_max.shape != (self.mx, self.my) or self.max_z < self.frame) and self.active:
+        if self.max_of_max.shape != (self.mx, self.my) and self.active:
             self.draw_frame()
 
     def clear_cached_values(self):

@@ -87,10 +87,8 @@ class contactView(QtGui.QWidget):
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.change_frame, "analysis.change_frame")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        #pub.subscribe(self.update, "analysis_results")
         pub.subscribe(self.check_active, "active_widget")
         pub.subscribe(self.filter_outliers, "filter_outliers")
-        #pub.subscribe(self.resizeEvent, "resize_event")
         pub.subscribe(self.update_average, "update_average")
 
     # TODO I have no idea how to filter this
