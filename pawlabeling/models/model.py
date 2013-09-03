@@ -255,10 +255,11 @@ class Model():
         # Calculate the highest n_max and publish that
         pub.sendMessage("update_n_max", n_max=self.n_max)
         pub.sendMessage("update_contacts", contacts=self.contacts)
-
         # Calculate the average, after everything has been loaded
         self.calculate_average()
+        # These two messages could pretty much be consolidated, possibly even the one above
         pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
+        pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
     def track_contacts(self):
         pub.sendMessage("update_statusbar", status="Starting tracking")
