@@ -122,6 +122,8 @@ class MeasurementWidget(QtGui.QWidget):
         self.measurement_tree.setCurrentItem(item)
 
     def get_measurements(self, session=None):
+        # If we have a different session, clear the tree
+        self.measurement_tree.clear()
         pub.sendMessage("get_measurements", measurement={})
 
     def change_file_location(self, evt=None):

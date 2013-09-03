@@ -100,7 +100,6 @@ class ProcessingWidget(QtGui.QWidget):
     def put_session(self, session):
         self.session = session
         self.session_name_label.setText("Session: {}\t".format(self.session["session_name"]))
-        pub.sendMessage("load_contacts")
 
     def update_measurements_tree(self, measurements):
         self.measurement_tree.clear()
@@ -136,13 +135,14 @@ class ProcessingWidget(QtGui.QWidget):
 
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
         pub.sendMessage("get_measurement_data")
+        pub.sendMessage("load_contacts")
         pub.sendMessage("get_contacts")
 
         self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
 
         # # Send a message so the model starts loading results
         # pub.sendMessage("load_results", widget="processing")
-        # pub.sendMessage("load_contacts")
+
 
     def update_contacts_tree(self, contacts):
         self.contacts = contacts

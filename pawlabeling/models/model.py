@@ -249,6 +249,9 @@ class Model():
             if contacts:
                 self.contacts[m["measurement_name"]] = contacts
 
+        if self.measurement_name not in self.contacts:
+            self.contacts[self.measurement_name] = self.track_contacts()
+
         # Calculate the highest n_max and publish that
         pub.sendMessage("update_n_max", n_max=self.n_max)
         pub.sendMessage("update_contacts", contacts=self.contacts)
@@ -304,16 +307,28 @@ class Model():
         # Empty average measurement_data
         self.average_data.clear()
         self.data_list.clear()
+
+        mx = 0
+        my = 0
+        mz = 0
         # Group all the measurement_data per contact
         for measurement_name, contacts in self.contacts.items():
             for contact in contacts:
                 contact_label = contact.contact_label
                 if contact_label >= 0:
                     self.data_list[contact_label].append(contact.data)
+                    x, y, z = contact.data.shape
+                    if x > mx:
+                        mx = x
+                    if y > my:
+                        my = y
+                    if z > mz:
+                        mz = z
 
+        shape = (mx, my, mz)
         # Then get the normalized measurement_data
         for contact_label, data in self.data_list.items():
-            normalized_data = utility.calculate_average_data(data)
+            normalized_data = utility.calculate_average_data(data, shape)
             self.average_data[contact_label] = normalized_data
 
     def calculate_results(self):

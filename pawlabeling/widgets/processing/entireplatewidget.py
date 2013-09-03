@@ -150,8 +150,6 @@ class EntirePlateWidget(QtGui.QWidget):
         # Reset the frame slider
         self.slider.setValue(-1)
         self.update_entire_plate()
-        # Perhaps I need to redraw it here?
-        self.draw_gait_line()
 
     def new_results(self, contacts, average_data):
         self.contacts = contacts
@@ -242,7 +240,6 @@ class EntirePlateWidget(QtGui.QWidget):
             gait_line.setTransform(QtGui.QTransform.fromScale(self.ratio, self.ratio), True)
             self.gait_lines.append(gait_line)
         self.resizeEvent()
-
 
     def resizeEvent(self, event=None):
         item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()

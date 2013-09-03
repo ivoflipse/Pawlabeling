@@ -40,19 +40,12 @@ def update_bounding_box(contact):
     return total_centroid, total_min_x, total_max_x, total_min_y, total_max_y
 
 
-def calculate_average_data(contact_data):
-    mx = 0
-    my = 0
-    mz = 0
-    # Get the max shape
-    for data in contact_data:
-        x, y, z = data.shape
-        if x > mx:
-            mx = x
-        if y > my:
-            my = y
-        if z > mz:
-            mz = z
+def calculate_average_data(contact_data, shape):
+    mx, my, mz = shape
+    # To be save, pad all the dimensions (z might give us problems)
+    mx += 10
+    my += 10
+    mz += 10
 
     # Pad everything with zeros
     empty_slice = np.zeros((mx, my, mz))
