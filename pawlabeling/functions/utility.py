@@ -41,9 +41,9 @@ def update_bounding_box(contact):
 
 
 def calculate_average_data(contact_data):
-    mx = 100
-    my = 100
-    mz = 200
+    mx = 0
+    my = 0
+    mz = 0
     # Get the max shape
     for data in contact_data:
         x, y, z = data.shape

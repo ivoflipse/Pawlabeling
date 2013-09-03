@@ -150,6 +150,8 @@ class EntirePlateWidget(QtGui.QWidget):
         # Reset the frame slider
         self.slider.setValue(-1)
         self.update_entire_plate()
+        # Perhaps I need to redraw it here?
+        self.draw_gait_line()
 
     def new_results(self, contacts, average_data):
         self.contacts = contacts
