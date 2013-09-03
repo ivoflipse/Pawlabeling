@@ -1,14 +1,13 @@
 import tables
 
-
 class MissingIdentifier(Exception):
     pass
 
 # I should add some helper function to check if something can be found, if not raise an exception or log something
 class Table(object):
-    def __init__(self):
+    def __init__(self, database_file):
         # Make this configurable
-        self.table = tables.openFile("data.h5", mode="a", title="Data")
+        self.table = tables.openFile(database_file, mode="a", title="Data")
         self.table_name = "table"
 
     def create_row(self, table, **kwargs):
@@ -78,8 +77,8 @@ class SubjectsTable(Table):
         birthday = tables.StringCol(32)
         mass = tables.Float32Col()
 
-    def __init__(self):
-        super(SubjectsTable, self).__init__()
+    def __init__(self, database_file):
+        super(SubjectsTable, self).__init__(database_file=database_file)
         self.table_name = "subject"
 
         # Check if table has subjects table
@@ -143,8 +142,8 @@ class SessionsTable(Table):
         session_id = tables.StringCol(64)
         session_label = tables.StringCol(64)
 
-    def __init__(self, subject_id):
-        super(SessionsTable, self).__init__()
+    def __init__(self, database_file, subject_id):
+        super(SessionsTable, self).__init__(database_file=database_file)
         self.table_name = "session"
         self.subject_id = subject_id
         self.subject_group = self.table.root.__getattr__(self.subject_id)
@@ -211,8 +210,8 @@ class MeasurementsTable(Table):
         date = tables.StringCol(32)
         time = tables.StringCol(32)
 
-    def __init__(self, subject_id, session_id):
-        super(MeasurementsTable, self).__init__()
+    def __init__(self, database_file, subject_id, session_id):
+        super(MeasurementsTable, self).__init__(database_file=database_file)
         self.table_name = "measurement"
         self.subject_id = subject_id
         self.session_id = session_id
@@ -268,6 +267,7 @@ class ContactsTable(Table):
         subject_id = tables.StringCol(64)
         contact_id = tables.StringCol(16)
         contact_label = tables.Int16Col()  # These might also be negative...
+        orientation = tables.BoolCol()
         min_x = tables.UInt16Col()
         max_x = tables.UInt16Col()
         min_y = tables.UInt16Col()
@@ -280,8 +280,8 @@ class ContactsTable(Table):
         invalid = tables.BoolCol()
         filtered = tables.BoolCol()
 
-    def __init__(self, subject_id, session_id, measurement_id):
-        super(ContactsTable, self).__init__()
+    def __init__(self, database_file, subject_id, session_id, measurement_id):
+        super(ContactsTable, self).__init__(database_file=database_file)
         self.table_name = "contact"
         self.subject_id = subject_id
         self.session_id = session_id
@@ -325,8 +325,8 @@ class ContactsTable(Table):
         return contacts
 
 class ContactDataTable(Table):
-    def __init__(self, subject_id, session_id, measurement_id):
-        super(ContactDataTable, self).__init__()
+    def __init__(self, database_file, subject_id, session_id, measurement_id):
+        super(ContactDataTable, self).__init__(database_file=database_file)
         self.table_name = "contact"
         self.subject_id = subject_id
         self.session_id = session_id

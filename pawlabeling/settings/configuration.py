@@ -89,11 +89,17 @@ else:
 measurement_folder = config["folders"]["measurement_folder"]
 store_results_folder = config["folders"]["store_results_folder"]
 
+database_folder = config["database"]["database_folder"]
+database_file = config["database"]["database_file"]
+database_file = os.path.join(database_folder, database_file)
+
 # If the path isn't the one created by me
 if store_results_folder[0] == ".":
     # Convert them to absolute paths
     measurement_folder = os.path.join(root_folder, "samples\\Measurements")
     store_results_folder = os.path.join(root_folder, "samples\\Labels")
+    database_file = os.path.join(root_folder, "database\\data.h5")
+
 else:
     try:
         # Add the folder for the store_results_folder measurement_data if it doesn't exist

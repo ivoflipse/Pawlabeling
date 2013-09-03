@@ -92,6 +92,7 @@ class SubjectWidget(QtGui.QWidget):
         pub.sendMessage("get_subjects", subject={})
         # TODO figure out how to select the subject we just created
 
+
     def get_subject_fields(self):
         # TODO Check here if the required fields have been entered
         # Also add some validation, to check if they're acceptable
@@ -123,9 +124,13 @@ class SubjectWidget(QtGui.QWidget):
             rootItem.setText(1, subject["last_name"])
             rootItem.setText(2, subject["birthday"])
 
-        # Select the first item in the contacts tree
-        item = self.subject_tree.topLevelItem(0)
-        self.subject_tree.setCurrentItem(item)
+        # This only works if the tree aint empty
+        subject_count = self.subject_tree.topLevelItemCount()
+        if subject_count:
+            # Select the last item in the contacts tree
+            item = self.subject_tree.topLevelItem(subject_count - 1) # Get the last one
+            self.subject_tree.setCurrentItem(item)
+            self.put_subject()
 
     # TODO If a subject is selected in the subject_tree, fill in its information in the subject fields
     # TODO Allow for a way to edit the information for a subject and/or session

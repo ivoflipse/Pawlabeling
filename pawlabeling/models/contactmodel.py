@@ -34,7 +34,7 @@ class Contact():
         self.invalid = False
         self.filtered = False  # This can be used to check if the contact should be filtered or not
         self.contact_label = -2  # contacts are labeled as -2 by default
-        self.index = 0
+        self.orientation = False  # True means the contact is upside down
 
     def create_contact(self, contact, measurement_data, padding=0):
         """
@@ -113,6 +113,12 @@ class Contact():
         self.cop_x, self.cop_y = calculations.calculate_cop(self.data)
         self.max_of_max = np.max(self.data, axis=2)
 
+    def set_orientation(self, orientation):
+        """
+        If a contact is upside down, we set this boolean flag, so we can rotate it when we need to calculate averages
+        """
+        self.orientation = orientation
+
     def set_filtered(self, filtered):
         """
         If a contact deviates too many standard deviations from the rest of the contacts, you can set it to filtered
@@ -185,6 +191,7 @@ class Contact():
         self.max_z = contact["max_z"]
         self.invalid = contact["invalid"]
         self.filtered = contact["filtered"]
+        self.orientation = contact["orientation"]
         self.data = contact["data"]
         self.force_over_time = contact["force_over_time"]
         self.pressure_over_time = contact["pressure_over_time"]
@@ -208,5 +215,6 @@ class Contact():
             "height": self.height,
             "length": self.length,
             "invalid": self.invalid,
-            "filtered": self.filtered
+            "filtered": self.filtered,
+            "orientation": self.orientation
         }

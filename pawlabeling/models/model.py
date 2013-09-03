@@ -13,8 +13,9 @@ class Model():
         self.file_paths = defaultdict(dict)
         self.path = configuration.measurement_folder
         self.store_path = configuration.store_results_folder
+        self.database_file = configuration.database_file
 
-        self.subjects_table = table.SubjectsTable()
+        self.subjects_table = table.SubjectsTable(database_file=self.database_file)
 
         self.subject_name = ""
         self.measurement_name = ""
@@ -76,6 +77,7 @@ class Model():
         if measurement_name[-3:] == "zip":
             # Unzip the file
             input_file = io.open_zip_file(file_path)
+            # Store the file_name without the .zip
             measurement["measurement_name"] = measurement_name[:-4]  # Store without the zip part please
         else:
             with open(file_path, "r") as infile:
@@ -91,9 +93,8 @@ class Model():
         measurement["number_of_rows"] = number_of_rows
         measurement["number_of_cols"] = number_of_cols
         measurement["number_of_frames"] = number_of_frames
-        measurement["orientation"] = io.check_orientation(data)  # TODO This function seems to be incorrect somehow!
+        measurement["orientation"] = io.check_orientation(data)
         measurement["maximum_value"] = data.max()  # Perhaps round this and store it as an int?
-        # Store the file_name without the .zip
 
         # We're not going to store this, so we delete the key
         del measurement["file_path"]
@@ -165,10 +166,12 @@ class Model():
     def get_contact_data(self, measurement):
         new_contacts = []
         measurement_id = measurement["measurement_id"]
-        contact_data_table = table.ContactDataTable(subject_id=self.subject_id,
+        contact_data_table = table.ContactDataTable(database_file=self.database_file,
+                                                    subject_id=self.subject_id,
                                                     session_id=self.session_id,
                                                     measurement_id=measurement_id)
-        contacts_table = table.ContactsTable(subject_id=self.subject_id,
+        contacts_table = table.ContactsTable(database_file=self.database_file,
+                                             subject_id=self.subject_id,
                                              session_id=self.session_id,
                                              measurement_id=measurement_id)
         # Get the rows from the table and their corresponding data
@@ -188,22 +191,30 @@ class Model():
         self.subject_id = subject["subject_id"]
         self.logger.info("Subject ID set to {}".format(self.subject_id))
         # As soon as a subject is selected, we instantiate our sessions table
-        self.sessions_table = table.SessionsTable(subject_id=self.subject_id)
+        self.sessions_table = table.SessionsTable(database_file=self.database_file,
+                                                  subject_id=self.subject_id)
+        pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject["first_name"],
+                                                                           self.subject["last_name"]))
 
     def put_session(self, session):
         self.session = session
         self.session_id = session["session_id"]
         self.logger.info("Session ID set to {}".format(self.session_id))
-        self.measurements_table = table.MeasurementsTable(subject_id=self.subject_id, session_id=self.session_id)
+        self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
+                                                          subject_id=self.subject_id,
+                                                          session_id=self.session_id)
+        pub.sendMessage("update_statusbar", status="Session: {}".format(self.session["session_name"]))
 
     def put_measurement(self, measurement):
         self.measurement = measurement
         self.measurement_id = measurement["measurement_id"]
         self.measurement_name = measurement["measurement_name"]
         self.logger.info("Measurement ID set to {}".format(self.measurement_id))
-        self.contacts_table = table.ContactsTable(subject_id=self.subject_id,
+        self.contacts_table = table.ContactsTable(database_file=self.database_file,
+                                                  subject_id=self.subject_id,
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
+        pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
 
     def put_contact(self, contact):
         self.contact = contact
@@ -258,12 +269,13 @@ class Model():
         raw_contacts = tracking.track_contours_graph(data)
 
         contacts = []
-
         # Convert them to class objects
         for index, raw_contact in enumerate(raw_contacts):
             contact = contactmodel.Contact()
             contact.create_contact(contact=raw_contact, measurement_data=self.measurement_data, padding=padding)
             contact.calculate_results()
+            # Give each contact the same orientation as the measurement it originates from
+            contact.set_orientation(self.measurement["orientation"])
             # Skip contacts that have only been around for one frame
             if len(contact.frames) > 1:
                 contacts.append(contact)

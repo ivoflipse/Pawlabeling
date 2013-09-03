@@ -1,5 +1,8 @@
 application:
   zip_files: true
+database:
+  database_file: data.h5
+  database_folder: .\database
 folders:
   measurement_folder: .\samples\Measurements
   store_results_folder: .\samples\Labels

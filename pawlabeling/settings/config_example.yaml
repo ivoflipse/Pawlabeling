@@ -2,6 +2,10 @@ folders:
   measurement_folder: ".\\samples\\Measurements"
   store_results_folder: ".\\samples\\Labels"
 
+database:
+  database_folder: ".\\database"
+  database_file: "data.h5"
+
 plate:
   brand: "rsscan"
   model: "2m 2nd gen"
