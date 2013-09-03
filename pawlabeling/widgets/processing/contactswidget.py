@@ -130,6 +130,7 @@ class contactWidget(QtGui.QWidget):
         self.mx = 100
         self.my = 100
         self.data = np.zeros((self.mx, self.my))
+        self.sliced_data = self.data[:]
         self.data_list = []
         self.average_data = []
 
