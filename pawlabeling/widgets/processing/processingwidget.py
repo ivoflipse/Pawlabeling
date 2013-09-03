@@ -15,12 +15,6 @@ class ProcessingWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ProcessingWidget, self).__init__(parent)
 
-        # Initialize num_frames, in case measurements aren't loaded
-        self.num_frames = 248
-        self.frame = 0
-        self.n_max = 0
-        self.subject_name = ""
-
         self.logger = logging.getLogger("logger")
 
         # Create a label to display the measurement name
@@ -84,6 +78,12 @@ class ProcessingWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
+        self.subscribe()
+        pub.subscribe(self.clear_cached_values, "clear_cached_values")
+
+    # I've added subscribe/unsubscribe, such that when we're in the analysis tab, we don't want to respond to
+    # everything it sends/receives
+    def subscribe(self):
         #pub.subscribe(self.update_measurements_tree, "get_file_paths")
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
@@ -91,6 +91,15 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.update_measurement_status, "update_contacts")
         pub.subscribe(self.update_contacts_tree, "update_contacts_tree")
         pub.subscribe(self.stored_status, "stored_status")
+
+    def unsubscribe(self):
+        pub.unsubscribe(self.put_subject)
+        pub.unsubscribe(self.put_session())
+        pub.unsubscribe(self.update_measurements_tree)
+        pub.unsubscribe(self.update_contacts_tree)
+        pub.unsubscribe(self.update_measurement_status)
+        pub.unsubscribe(self.stored_status)
+
 
     def put_subject(self, subject):
         self.subject = subject
@@ -323,6 +332,9 @@ class ProcessingWidget(QtGui.QWidget):
             current_item = self.measurement_tree.currentItem()
             green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
             current_item.setForeground(0, green_brush)
+
+    def clear_cached_values(self):
+        self.contacts.clear()
 
     def create_toolbar_actions(self):
         self.track_contacts_action = gui.create_action(text="&Track Contacts",

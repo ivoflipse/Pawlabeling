@@ -87,9 +87,18 @@ class AnalysisWidget(QtGui.QTabWidget):
 
         self.create_toolbar_actions()
 
+        self.subscribe()
+
+        pub.subscribe(self.clear_cached_values, "clear_cached_values")
+
+    def subscribe(self):
         pub.subscribe(self.add_measurements, "get_file_paths")
         pub.subscribe(self.update_contact_tree, "analysis_results")
-        pub.subscribe(self.clear_cached_values, "clear_cached_values")
+
+    def unsubscribe(self):
+        pub.ubsubscribe(self.add_measurements)
+        pub.ubsubscribe(self.update_contact_tree)
+
 
     def add_measurements(self, file_paths):
         # Clear any existing measurements
