@@ -90,7 +90,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.subscribe()
 
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        pub.subscribe(self.update_average, "update_average")
+        pub.subscribe(self.update_measurement, "put_measurement")
 
     def subscribe(self):
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
@@ -100,8 +100,8 @@ class AnalysisWidget(QtGui.QTabWidget):
         pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.unsubscribe(self.update_contacts_tree, "update_contacts_tree")
 
-    def update_average(self, average_data):
-        self.average_data = average_data
+    def update_measurement(self, measurement):
+        self.measurement_name = measurement["measurement_name"]
 
     def update_measurements_tree(self, measurements):
         self.measurement_tree.clear()
@@ -151,7 +151,6 @@ class AnalysisWidget(QtGui.QTabWidget):
 
     def clear_cached_values(self):
         self.n_max = 0
-        self.average_data.clear()
         self.contacts.clear()
 
     def change_frame(self, frame):

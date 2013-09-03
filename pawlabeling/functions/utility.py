@@ -42,10 +42,10 @@ def update_bounding_box(contact):
 
 def calculate_average_data(contact_data, shape):
     mx, my, mz = shape
-    # To be save, pad all the dimensions
-    mx += int(0.3 * mx)
-    my += int(0.3 * my)
-    mz += int(0.3 * mz)
+    # Pad all the dimensions with a 4 pixel margin for visualization
+    mx += 4
+    my += 4
+    mz += 4
 
     num_contacts = len(contact_data)
     weight = 1. / num_contacts

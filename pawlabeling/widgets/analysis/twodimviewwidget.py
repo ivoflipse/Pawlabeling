@@ -77,12 +77,29 @@ class contactView(QtGui.QWidget):
         self.setMinimumHeight(configuration.contacts_widget_height)
         self.setLayout(self.main_layout)
 
+        # TODO I might want to (un)subscribe these
         pub.subscribe(self.update_n_max, "update_n_max")
-        pub.subscribe(self.change_frame, "analysis.change_frame")
+        #pub.subscribe(self.change_frame, "analysis.change_frame")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        pub.subscribe(self.update, "analysis_results")
-        pub.subscribe(self.check_active, "active_widget")
+        #pub.subscribe(self.update, "analysis_results")
+        #pub.subscribe(self.check_active, "active_widget")
         pub.subscribe(self.filter_outliers, "filter_outliers")
+        pub.subscribe(self.update_average, "update_average")
+
+    def update_average(self, average_data):
+        if self.contact_label in average_data:
+            self.average_data = average_data[self.contact_label]
+            self.max_of_max = self.average_data.max(axis=2)
+
+            x, y, z = np.nonzero(self.average_data)
+            # Pray this never goes out of bounds
+            # TODO I knew this would happen some day, but I'm going out of bounds here
+            self.min_x = np.min(x) - 2
+            self.max_x = np.max(x) + 2
+            self.min_y = np.min(y) - 2
+            self.max_y = np.max(y) + 2
+            self.max_z = np.max(z) + 1 # Added some padding here
+            self.draw_frame()
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
@@ -98,24 +115,6 @@ class contactView(QtGui.QWidget):
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, contacts, average_data, results, max_results):
-        if self.contact_label not in average_data:
-            return
-
-        self.average_data = np.mean(average_data[self.contact_label], axis=0)
-        self.max_of_max = np.max(self.average_data, axis=2)
-        self.filtered = results[self.contact_label]["filtered"]
-
-        x, y, z = np.nonzero(self.average_data)
-        # Pray this never goes out of bounds
-        self.min_x = np.min(x) - 2
-        self.max_x = np.max(x) + 2
-        self.min_y = np.min(y) - 2
-        self.max_y = np.max(y) + 2
-        self.max_z = np.max(z)
-
-        self.draw_frame()
-
     def draw_frame(self):
         if self.frame == -1:
             self.sliced_data = self.max_of_max[self.min_x:self.max_x,self.min_y:self.max_y]
@@ -123,9 +122,9 @@ class contactView(QtGui.QWidget):
             self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y, self.frame]
 
         # Make sure the contacts are facing upright
+        # TODO wait what? I rotate, rotate, then mirror?!?
         self.sliced_data = np.rot90(np.rot90(self.sliced_data))
         self.sliced_data = self.sliced_data[:, ::-1]
-
         # Display the average measurement_data for the requested frame
         self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
         self.resizeEvent()

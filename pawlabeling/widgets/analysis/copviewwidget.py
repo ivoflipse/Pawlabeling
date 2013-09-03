@@ -54,7 +54,6 @@ class contactView(QtGui.QWidget):
         self.max_z = 0
         self.frame = -1
         self.active = False
-        self.filtered = []
         self.outlier_toggle = False
         self.ratio = 1
         self.cop_x = np.zeros(15)
@@ -88,10 +87,27 @@ class contactView(QtGui.QWidget):
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.change_frame, "analysis.change_frame")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        pub.subscribe(self.update, "analysis_results")
+        #pub.subscribe(self.update, "analysis_results")
         pub.subscribe(self.check_active, "active_widget")
         pub.subscribe(self.filter_outliers, "filter_outliers")
         #pub.subscribe(self.resizeEvent, "resize_event")
+        pub.subscribe(self.update_average, "update_average")
+
+    # TODO I have no idea how to filter this
+    def update_average(self, average_data):
+        if self.contact_label in average_data:
+            self.average_data = average_data[self.contact_label]
+            self.max_of_max = self.average_data.max(axis=2)
+
+            x, y, z = np.nonzero(self.average_data)
+            # Pray this never goes out of bounds
+            self.min_x = np.min(x) - 2
+            self.max_x = np.max(x) + 2
+            self.min_y = np.min(y) - 2
+            self.max_y = np.max(y) + 2
+            self.max_z = np.max(z) + 1 # Added some padding here
+
+            self.draw_frame()
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
@@ -106,24 +122,6 @@ class contactView(QtGui.QWidget):
 
     def update_n_max(self, n_max):
         self.n_max = n_max
-
-    def update(self, contacts, average_data, results, max_results):
-        if self.contact_label not in average_data:
-            return
-
-        self.average_data = np.mean(average_data[self.contact_label], axis=0)
-        self.max_of_max = np.max(self.average_data, axis=2)
-        self.filtered = results[self.contact_label]["filtered"]
-
-        x, y, z = np.nonzero(self.average_data)
-        # Pray this never goes out of bounds
-        self.min_x = np.min(x) - 2
-        self.max_x = np.max(x) + 2
-        self.min_y = np.min(y) - 2
-        self.max_y = np.max(y) + 2
-        self.max_z = np.max(z) + 1 # Added some padding here
-
-        self.draw_frame()
 
     def draw_cop(self):
         # If we still have the default shape, don't bother
