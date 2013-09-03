@@ -202,32 +202,18 @@ class Model():
         self.measurement_name = measurement["measurement_name"]
         self.logger.info("Measurement ID set to {}".format(self.measurement_id))
         self.contacts_table = table.ContactsTable(subject_id=self.subject_id,
-                                                       session_id=self.session_id,
-                                                       measurement_id=self.measurement_id)
+                                                  session_id=self.session_id,
+                                                  measurement_id=self.measurement_id)
 
     def put_contact(self, contact):
         self.contact = contact
         self.contact_id = contact["contact_id"]
         self.logger.info("Contact ID set to {}".format(self.contact_id))
-        # I probably need to load stuff from this contacts group, perhaps GET it?
-
-
-    ##################################################################################################################
 
     def load_file_paths(self):
         self.logger.info("Model.load_file_paths: Loading file paths")
         self.file_paths = io.get_file_paths()
         pub.sendMessage("get_file_paths", file_paths=self.file_paths)
-
-    # def load_results(self, widget):
-    #     self.load_all_results()
-    #     if widget == "processing":
-    #         pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
-    #     elif widget == "analysis":
-    #         # If there's no data_list, there are no labeled contacts to display
-    #         if self.data_list.keys():
-    #             pub.sendMessage("analysis_results", contacts=self.contacts, average_data=self.average_data,
-    #                             results=self.results, max_results=self.max_results)
 
     def load_contacts(self):
         """

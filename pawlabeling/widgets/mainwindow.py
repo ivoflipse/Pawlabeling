@@ -69,7 +69,8 @@ class MainWindow(QtGui.QMainWindow):
         elif self.tab_widget.currentIndex() == 1:
             self.processing_widget.put_measurement()
         elif self.tab_widget.currentIndex() == 2:
-            self.analysis_widget.load_first_file()
+            #self.analysis_widget.load_first_file()
+            self.processing_widget.put_measurement()
 
     def change_status(self, status):
         self.logger.info(status)

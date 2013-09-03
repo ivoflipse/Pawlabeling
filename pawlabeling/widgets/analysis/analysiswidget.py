@@ -107,16 +107,16 @@ class AnalysisWidget(QtGui.QTabWidget):
 
         self.measurement_tree.sortItems(0, Qt.AscendingOrder)
 
-    def load_first_file(self):
-        # Check if the tree isn't empty, because else we can't load anything
-        if self.measurement_tree.topLevelItemCount() > 0:
-            # Select the first item in the tree
-            self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0))
-            self.load_all_results()
-        else:
-            pub.sendMessage("update_statusbar", status="No results found")
-            self.logger.warning(
-                "No results found, please check the location for the results and restart the program")
+    # def load_first_file(self):
+    #     # Check if the tree isn't empty, because else we can't load anything
+    #     if self.measurement_tree.topLevelItemCount() > 0:
+    #         # Select the first item in the tree
+    #         self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0))
+    #         self.load_all_results()
+    #     else:
+    #         pub.sendMessage("update_statusbar", status="No results found")
+    #         self.logger.warning(
+    #             "No results found, please check the location for the results and restart the program")
 
     def load_all_results(self):
         """
@@ -178,6 +178,28 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.outlier_toggle = not self.outlier_toggle
         pub.sendMessage("filter_outliers", toggle=self.outlier_toggle)
 
+    def put_measurement(self):
+        # Check if the tree aint empty!
+        if not self.measurement_tree.topLevelItemCount():
+            return
+            # Notify the model to update the subject_name + measurement_name if necessary
+        self.measurement_name = self.measurement_tree.currentItem().text(0)
+        measurement = self.measurements[self.measurement_name]
+        pub.sendMessage("put_measurement", measurement=measurement)
+
+        # Now get everything that belongs to the measurement, the contacts and the measurement_data
+        pub.sendMessage("get_measurement_data")
+        pub.sendMessage("get_contacts")
+
+        self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
+
+        # # Send a message so the model starts loading results
+        # pub.sendMessage("load_results", widget="processing")
+        pub.sendMessage("load_contacts")
+
+    def show_average_results(self, evt=None):
+        pass
+
     def create_toolbar_actions(self):
         self.filter_outliers_action = gui.create_action(text="&Track Contacts",
                                                        shortcut=QtGui.QKeySequence("CTRL+F"),
@@ -189,7 +211,17 @@ class AnalysisWidget(QtGui.QTabWidget):
                                                        connection=self.filter_outliers
         )
 
-        self.actions = [self.filter_outliers_action]
+        self.show_average_results_action = gui.create_action(text="&Show Average results",
+                                                     shortcut=QtGui.QKeySequence("CTRL+A"),
+                                                     icon=QtGui.QIcon(
+                                                         os.path.join(os.path.dirname(__file__),
+                                                                      "../images/force_graph_icon.png")),
+                                                     tip="Switch to average results",
+                                                     checkable=True,
+                                                     connection=self.show_average_results
+        )
+
+        self.actions = [self.filter_outliers_action, self.show_average_results_action]
 
         for action in self.actions:
             self.toolbar.addAction(action)
