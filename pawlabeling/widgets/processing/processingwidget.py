@@ -93,13 +93,12 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.stored_status, "stored_status")
 
     def unsubscribe(self):
-        pub.unsubscribe(self.put_subject)
-        pub.unsubscribe(self.put_session())
-        pub.unsubscribe(self.update_measurements_tree)
-        pub.unsubscribe(self.update_contacts_tree)
-        pub.unsubscribe(self.update_measurement_status)
-        pub.unsubscribe(self.stored_status)
-
+        pub.unsubscribe(self.put_subject, "put_subject")
+        pub.unsubscribe(self.put_session, "put_session")
+        pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
+        pub.unsubscribe(self.update_measurement_status, "update_contacts")
+        pub.unsubscribe(self.update_contacts_tree, "update_contacts_tree")
+        pub.unsubscribe(self.stored_status, "stored_status")
 
     def put_subject(self, subject):
         self.subject = subject
@@ -317,6 +316,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.current_contact_index = int(item.text(0))
         self.update_current_contact()
 
+    # TODO I don't think this function will work right now, because I don't have a way to 'get' the result
     def track_contacts(self, event=None):
         # Make the model track new contacts
         pub.sendMessage("track_contacts")
@@ -335,6 +335,8 @@ class ProcessingWidget(QtGui.QWidget):
 
     def clear_cached_values(self):
         self.contacts.clear()
+        self.subject.clear()
+        self.session.clear()
 
     def create_toolbar_actions(self):
         self.track_contacts_action = gui.create_action(text="&Track Contacts",

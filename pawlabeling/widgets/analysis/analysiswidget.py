@@ -96,8 +96,8 @@ class AnalysisWidget(QtGui.QTabWidget):
         pub.subscribe(self.update_contact_tree, "analysis_results")
 
     def unsubscribe(self):
-        pub.ubsubscribe(self.add_measurements)
-        pub.ubsubscribe(self.update_contact_tree)
+        pub.ubsubscribe(self.add_measurements, "get_file_paths")
+        pub.ubsubscribe(self.update_contact_tree, "analysis_results")
 
 
     def add_measurements(self, file_paths):

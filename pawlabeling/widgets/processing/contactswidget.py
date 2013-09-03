@@ -57,33 +57,26 @@ class contactsWidget(QtGui.QWidget):
         # Clear any previous results, which may be out of date
         self.clear_contacts()
 
+        average_contact = None
         # Update those for which we have a average measurement_data
-        for contact_label, average_list in average_data.items():
+        for contact_label, average_contact in average_data.items():
             widget = self.contacts_list[contact_label]
-            widget.update(average_list)
+            widget.update(average_contact)
 
         # Update the current contact widget
         widget = self.contacts_list[-1]
         current_contact = contacts[self.measurement_name][current_contact_index]
-        average_contact = None
-        # Get the size of an average contact
-        for contact_label, average_list in average_data.items():
-            if average_list.size:
-                average_contact = average_list[0]
-                break
 
         x, y, z = current_contact.data.shape
         # This only works if we have an average_contact
         if hasattr(average_contact, "shape"):
             mx, my, mz = average_contact.shape
-            # Make sure its 4D
-            normalized_current_contact = np.zeros((1, mx, my, mz))
+            normalized_current_contact = np.zeros((mx, my, mz))
             offset_x = int((mx - x) / 2)
             offset_y = int((my - y) / 2)
-            normalized_current_contact[0, offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = current_contact.data
+            normalized_current_contact[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = current_contact.data
         else:
-            normalized_current_contact = np.zeros((1, x, y, z))
-            normalized_current_contact[0, :, :, :] = current_contact.data
+            normalized_current_contact = current_contact.data
 
         widget.update(normalized_current_contact)
 
@@ -201,7 +194,7 @@ class contactWidget(QtGui.QWidget):
 
     def update(self, average_data):
         # Calculate an average contact from the list of arrays
-        self.average_data = np.mean(average_data, axis=0)
+        self.average_data = average_data
         self.max_pressure = np.max(calculations.force_over_time(self.average_data))
         x, y, z = np.nonzero(self.average_data)
         self.mean_duration = np.max(z)

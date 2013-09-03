@@ -23,7 +23,6 @@ class Model():
         # Initialize our variables that will cache results
         self.average_data = defaultdict()
         self.contacts = defaultdict(list)
-        self.data_list = defaultdict(list)
         self.results = defaultdict(lambda: defaultdict(list))
         self.max_results = defaultdict()
 
@@ -261,6 +260,7 @@ class Model():
         pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
         pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
+    #@profile
     def track_contacts(self):
         pub.sendMessage("update_statusbar", status="Starting tracking")
         # Add padding to the measurement
@@ -307,7 +307,7 @@ class Model():
     def calculate_average(self):
         # Empty average measurement_data
         self.average_data.clear()
-        self.data_list.clear()
+        data_list = defaultdict(list)
 
         mx = 0
         my = 0
@@ -317,7 +317,7 @@ class Model():
             for contact in contacts:
                 contact_label = contact.contact_label
                 if contact_label >= 0:
-                    self.data_list[contact_label].append(contact.data)
+                    data_list[contact_label].append(contact.data)
                     x, y, z = contact.data.shape
                     if x > mx:
                         mx = x
@@ -328,38 +328,39 @@ class Model():
 
         shape = (mx, my, mz)
         # Then get the normalized measurement_data
-        for contact_label, data in self.data_list.items():
+        for contact_label, data in data_list.items():
             normalized_data = utility.calculate_average_data(data, shape)
             self.average_data[contact_label] = normalized_data
 
-    def calculate_results(self):
-        self.results.clear()
-        self.max_results.clear()
-        self.filtered = defaultdict()
-
-        for contact_label, data_list in self.data_list.items():
-            self.results[contact_label]["filtered"] = utility.filter_outliers(data_list, contact_label)
-            self.filtered[contact_label] = utility.filter_outliers(data_list, contact_label)
-            for data in data_list:
-                force = calculations.force_over_time(data)
-                self.results[contact_label]["force"].append(force)
-                max_force = np.max(force)
-                if max_force > self.max_results.get("force", 0):
-                    self.max_results["force"] = max_force
-
-                pressure = calculations.pressure_over_time(data)
-                self.results[contact_label]["pressure"].append(pressure)
-                max_pressure = np.max(pressure)
-                if max_pressure > self.max_results.get("pressure", 0):
-                    self.max_results["pressure"] = max_pressure
-
-                cop_x, cop_y = calculations.calculate_cop(data)
-                self.results[contact_label]["cop"].append((cop_x, cop_y))
-
-                x, y, z = np.nonzero(data)
-                max_duration = np.max(z)
-                if max_duration > self.max_results.get("duration", 0):
-                    self.max_results["duration"] = max_duration
+    # This won't work as is, so we'll fix it later
+    # def calculate_results(self):
+    #     self.results.clear()
+    #     self.max_results.clear()
+    #     self.filtered = defaultdict()
+    #
+    #     for contact_label, data_list in self.data_list.items():
+    #         self.results[contact_label]["filtered"] = utility.filter_outliers(data_list, contact_label)
+    #         self.filtered[contact_label] = utility.filter_outliers(data_list, contact_label)
+    #         for data in data_list:
+    #             force = calculations.force_over_time(data)
+    #             self.results[contact_label]["force"].append(force)
+    #             max_force = np.max(force)
+    #             if max_force > self.max_results.get("force", 0):
+    #                 self.max_results["force"] = max_force
+    #
+    #             pressure = calculations.pressure_over_time(data)
+    #             self.results[contact_label]["pressure"].append(pressure)
+    #             max_pressure = np.max(pressure)
+    #             if max_pressure > self.max_results.get("pressure", 0):
+    #                 self.max_results["pressure"] = max_pressure
+    #
+    #             cop_x, cop_y = calculations.calculate_cop(data)
+    #             self.results[contact_label]["cop"].append((cop_x, cop_y))
+    #
+    #             x, y, z = np.nonzero(data)
+    #             max_duration = np.max(z)
+    #             if max_duration > self.max_results.get("duration", 0):
+    #                 self.max_results["duration"] = max_duration
 
 
     def store_status(self):
@@ -385,7 +386,6 @@ class Model():
         self.logger.info("Model.clear_cached_values")
         self.average_data.clear()
         self.contacts.clear()
-        self.data_list.clear()
         self.results.clear()
         self.max_results.clear()
         pub.sendMessage("clear_cached_values")

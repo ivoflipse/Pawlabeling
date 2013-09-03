@@ -97,7 +97,6 @@ class MainWindow(QtGui.QMainWindow):
         else:
             return False
 
-
 def main():
     appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A2'
     app = QtSingleApplication(appGuid, sys.argv)

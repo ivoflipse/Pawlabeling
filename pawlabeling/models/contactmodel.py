@@ -76,15 +76,16 @@ class Contact():
         # Calculate the results
         self.calculate_results()
 
+    #@profile
     def convert_contour_to_slice(self, measurement_data):
         """
         Creates self.measurement_data which contains the pixels that are enclosed by the contour
         """
         # Create an empty array that should fit the entire contact
-        # TODO reduce this size to the size of the boudning box of the contact (width, length, duration)
-        new_data = np.zeros_like(measurement_data)
+        # TODO reduce this size to the size of the bounding box of the contact (width, length, duration)
+        self.data = np.zeros((self.width, self.height, self.length))
 
-        for frame, contours in list(self.contour_list.items()):
+        for index, (frame, contours) in enumerate(self.contour_list.items()):
         # Pass a single contour as if it were a contact
             center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: contours})
             # Get the non_zero pixels coordinates for that frame
@@ -95,13 +96,10 @@ class Contact():
                     # Remember the coordinates are only for the slice, so we need to add padding
                     coordinate = (min_x + pixel[0], min_y + pixel[1])
                     if cv2.pointPolygonTest(contour, coordinate, 0) > -1.0:
-                        new_data[coordinate[0], coordinate[1], frame] = measurement_data[
+                        self.data[coordinate[0]-self.min_x, coordinate[1]-self.min_y, index] = measurement_data[
                             coordinate[0], coordinate[1], frame]
-                        # TODO Subtract the origin of the location of the contact slice from the coordinates
 
-        # Create an attribute measurement_data with the updated slice
-        # I believe padding is required here, because Python slices up to, not including the upper limit
-        self.data = new_data[self.min_x:self.max_x + 1, self.min_y:self.max_y + 1, self.min_z:self.max_z + 1]
+
 
     def calculate_results(self):
         """

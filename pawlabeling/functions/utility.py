@@ -42,25 +42,20 @@ def update_bounding_box(contact):
 
 def calculate_average_data(contact_data, shape):
     mx, my, mz = shape
-    # To be save, pad all the dimensions (z might give us problems)
-    mx += 10
-    my += 10
-    mz += 10
+    # To be save, pad all the dimensions
+    mx += int(0.3 * mx)
+    my += int(0.3 * my)
+    mz += int(0.3 * mz)
 
-    # Pad everything with zeros
-    empty_slice = np.zeros((mx, my, mz))
     num_contacts = len(contact_data)
-    padded_data = np.zeros((num_contacts, mx, my, mz))
+    weight = 1. / num_contacts
+    padded_data = np.zeros((mx, my, mz))
     for index, data in enumerate(contact_data):
         x, y, z = data.shape
         offset_x = int((mx - x) / 2)
         offset_y = int((my - y) / 2)
-        # Create a deep copy of the empty array to fill up
-        padded_slice = empty_slice.copy()
-        padded_slice[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = data
-        padded_data[index, :, :, :] = padded_slice
-
-    return padded_data
+        padded_data[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] += data
+    return np.multiply(padded_data, weight)
 
 
 def standardize_contact(contact, std_num_x=20, std_num_y=20):
