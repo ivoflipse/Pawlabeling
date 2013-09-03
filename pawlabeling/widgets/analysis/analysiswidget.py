@@ -46,14 +46,14 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.measurement_tree.setHeaderLabel("Measurements")
         self.measurement_tree.itemActivated.connect(self.put_measurement)
 
-        self.contact_tree = QtGui.QTreeWidget(self)
-        self.contact_tree.setMaximumWidth(300)
-        self.contact_tree.setMinimumWidth(300)
-        self.contact_tree.setColumnCount(5)
-        self.contact_tree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
+        self.contacts_tree = QtGui.QTreeWidget(self)
+        self.contacts_tree.setMaximumWidth(300)
+        self.contacts_tree.setMinimumWidth(300)
+        self.contacts_tree.setColumnCount(5)
+        self.contacts_tree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
         # Set the widths of the columns
-        for column in range(self.contact_tree.columnCount()):
-            self.contact_tree.setColumnWidth(column, 55)
+        for column in range(self.contacts_tree.columnCount()):
+            self.contacts_tree.setColumnWidth(column, 55)
 
         self.results_widget = resultswidget.ResultsWidget(self)
 
@@ -76,7 +76,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.layout.addLayout(self.slider_layout)
         self.vertical_layout = QtGui.QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
-        self.vertical_layout.addWidget(self.contact_tree)
+        self.vertical_layout.addWidget(self.contacts_tree)
         self.horizontal_layout = QtGui.QHBoxLayout()
         self.horizontal_layout.addLayout(self.vertical_layout)
         self.horizontal_layout.addLayout(self.layout)
@@ -90,86 +90,62 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.subscribe()
 
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
+        pub.subscribe(self.update_average, "update_average")
 
     def subscribe(self):
-        pub.subscribe(self.add_measurements, "get_file_paths")
-        pub.subscribe(self.update_contact_tree, "analysis_results")
+        pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
+        pub.subscribe(self.update_contacts_tree, "update_contacts_tree")
 
     def unsubscribe(self):
-        pub.ubsubscribe(self.add_measurements, "get_file_paths")
-        pub.ubsubscribe(self.update_contact_tree, "analysis_results")
+        pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
+        pub.unsubscribe(self.update_contacts_tree, "update_contacts_tree")
 
+    def update_average(self, average_data):
+        self.average_data = average_data
 
-    def add_measurements(self, file_paths):
-        # Clear any existing measurements
+    def update_measurements_tree(self, measurements):
         self.measurement_tree.clear()
-        # Create a green brush for coloring stored results
-        green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
+        self.measurements = {}
 
-        for subject_name, file_paths in file_paths.items():
-            root_item = QtGui.QTreeWidgetItem(self.measurement_tree, [subject_name])
-            for file_path in file_paths:
-                # Check if there are any results stored
-                if io.find_stored_file(subject_name, file_path) is not None:
-                    root_item.setForeground(0, green_brush)
-                    break
+        for measurement in measurements:
+            self.measurements[measurement["measurement_name"]] = measurement
+            measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
+            measurement_item.setText(0, measurement["measurement_name"])
 
-        self.measurement_tree.sortItems(0, Qt.AscendingOrder)
+        item = self.measurement_tree.topLevelItem(0)
+        self.measurement_tree.setCurrentItem(item, True)
 
-    # def load_first_file(self):
-    #     # Check if the tree isn't empty, because else we can't load anything
-    #     if self.measurement_tree.topLevelItemCount() > 0:
-    #         # Select the first item in the tree
-    #         self.measurement_tree.setCurrentItem(self.measurement_tree.topLevelItem(0))
-    #         self.load_all_results()
-    #     else:
-    #         pub.sendMessage("update_statusbar", status="No results found")
-    #         self.logger.warning(
-    #             "No results found, please check the location for the results and restart the program")
-
-    # def load_all_results(self):
-    #     """
-    #     Check if there if any measurements for this subject have already been processed
-    #     If so, retrieve the measurement_data and convert them to a usable format
-    #     """
-    #     # Get the text from the currentItem
-    #     self.subject_name = self.measurement_tree.currentItem().text(0)
-    #
-    #     # Notify the model to update the subject_name + measurement_name if necessary
-    #     pub.sendMessage("switch_subjects", subject_name=self.subject_name)
-    #     # Blank out the measurement_name
-    #     #pub.sendMessage("switch_measurements", measurement_name="")
-    #
-    #     pub.sendMessage("clear_cached_values")
-    #     self.contact_tree.clear()
-    #     # Send a message so the model starts loading results
-    #     pub.sendMessage("load_results", widget="analysis")
-
-    def update_contact_tree(self, contacts, average_data, results, max_results):
-        self.contact_tree.clear()
+    def update_contacts_tree(self, contacts):
+        self.contacts = contacts
         self.max_length = 0
+        # Clear any existing contacts
+        self.contacts_tree.clear()
+        # Add the contacts to the contacts_tree
+        for contact in self.contacts[self.measurement_name]:
+            if contact.length > self.max_length:
+                self.max_length = contact.length
+            rootItem = QtGui.QTreeWidgetItem(self.contacts_tree)
+            rootItem.setText(0, str(contact.contact_id))
+            rootItem.setText(1, self.contact_dict[contact.contact_label])
+            rootItem.setText(2, str(contact.length))  # Sets the frame count
+            surface = np.max(contact.surface_over_time)
+            rootItem.setText(3, str(int(surface)))
+            force = np.max(contact.force_over_time)
+            rootItem.setText(4, str(int(force)))
 
-        for measurement_name, contacts in contacts.items():
-            for index, contact in enumerate(contacts):
-                if contact.length > self.max_length:
-                    self.max_length = contact.length
-                contact_label = contact.contact_label
+            for idx in range(rootItem.columnCount()):
+                rootItem.setBackground(idx, self.colors[contact.contact_label])
 
-                if contact_label >= 0:
-                    rootItem = QtGui.QTreeWidgetItem(self.contact_tree)
-                    rootItem.setText(0, str(index))
-                    rootItem.setText(1, self.contact_dict[contact_label])
-                    rootItem.setText(2, str(contact.length))
-                    surface = np.max(contact.surface_over_time)
-                    rootItem.setText(3, str(int(surface)))
-                    force = np.max(contact.force_over_time)
-                    rootItem.setText(4, str(int(force)))
+        # Initialize the current contact index, which we'll need for keep track of the labeling
+        self.current_contact_index = 0
 
-                    for idx in range(rootItem.columnCount()):
-                        rootItem.setBackground(idx, self.colors[contact_label])
+        # Select the first item in the contacts tree
+        item = self.contacts_tree.topLevelItem(self.current_contact_index)
+        self.contacts_tree.setCurrentItem(item)
+        #self.update_current_contact()
 
         # Sort the items per label
-        self.contact_tree.sortItems(1, Qt.AscendingOrder)
+        self.contacts_tree.sortItems(1, Qt.AscendingOrder)
         # Update the slider's max value
         self.slider.setMaximum(self.max_length)
 
@@ -194,16 +170,12 @@ class AnalysisWidget(QtGui.QTabWidget):
             # Notify the model to update the subject_name + measurement_name if necessary
         self.measurement_name = self.measurement_tree.currentItem().text(0)
         measurement = self.measurements[self.measurement_name]
-        self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
-
         pub.sendMessage("put_measurement", measurement=measurement)
 
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
-        #pub.sendMessage("get_measurement_data")
-        #pub.sendMessage("get_contacts")
-        # # Send a message so the model starts loading results
-        # pub.sendMessage("load_results", widget="processing")
+        pub.sendMessage("get_measurement_data")
         #pub.sendMessage("load_contacts")
+        pub.sendMessage("get_contacts")
 
     def show_average_results(self, evt=None):
         pass

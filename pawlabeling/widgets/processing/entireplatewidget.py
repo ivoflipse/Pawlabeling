@@ -99,7 +99,7 @@ class EntirePlateWidget(QtGui.QWidget):
         for action in self.non_toolbar_actions:
             action.setShortcutContext(Qt.ApplicationShortcut)  # WidgetWithChildrenShortcut
 
-        # # Install an event filter
+        # TODO I might have to unsubscribe these as well...
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.update_measurement, "put_measurement")
         pub.subscribe(self.update_measurement_data, "update_measurement_data")

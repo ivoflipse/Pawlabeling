@@ -187,7 +187,7 @@ class Model():
         return new_contacts
 
     def put_subject(self, subject):
-        print "model.put_subject"
+        #print "model.put_subject"
         self.subject = subject
         self.subject_id = subject["subject_id"]
         self.logger.info("Subject ID set to {}".format(self.subject_id))
@@ -199,7 +199,7 @@ class Model():
         self.get_sessions()
 
     def put_session(self, session):
-        print "model.put_session"
+        #print "model.put_session"
         self.session = session
         self.session_id = session["session_id"]
         self.logger.info("Session ID set to {}".format(self.session_id))
@@ -309,7 +309,7 @@ class Model():
                         current_contact_index=self.current_contact_index)
 
     def calculate_average(self):
-        print "model.calculate_average"
+        #print "model.calculate_average"
         # Empty average measurement_data
         self.average_data.clear()
         data_list = defaultdict(list)

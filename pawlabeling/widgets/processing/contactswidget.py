@@ -50,19 +50,18 @@ class contactsWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.right_contacts_layout)
         self.setLayout(self.main_layout)
 
+        # TODO I might have to unsubscribe these as well...
         pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.update_contacts, "updated_current_contact")
         pub.subscribe(self.update_average, "update_average")
 
     def update_average(self, average_data):
-        print "contactswidget.update_average"
         self.average_data = average_data
 
     def put_measurement(self, measurement):
         self.measurement_name = measurement["measurement_name"]
 
     def update_contacts(self, contacts, current_contact_index):
-        print "contactswidget.update_contacts"
         # Clear any previous results, which may be out of date
         self.clear_contacts()
 
@@ -136,7 +135,6 @@ class contactsWidget(QtGui.QWidget):
             current_contact.label_prediction.setText("{}".format(self.contact_dict[best_result]))
 
     def clear_contacts(self):
-        self.average_data.clear()
         for contact_label, widget in self.contacts_list.items():
             widget.clear_cached_values()
 
