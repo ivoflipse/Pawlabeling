@@ -2,4 +2,31 @@ language: python
 python:
     - "2.7"
 # command to install dependencies
-install: "pip install -r requirements.txt --use-mirrors"
+install:
+  # Copied from: https://github.com/heynemann/frec/blob/master/.travis.yml
+  # weird travis-ci python paths
+  - export PYTHONPATH=$PYTHONPATH:/usr/lib/pymodules/python2.7/
+  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages
+  - export PYTHONPATH=$PYTHONPATH:/usr/lib/pyshared/python2.7/
+  - export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages/
+
+  # verify both requirements were met
+  - INSTALLDIR=$(python -c "import os; import numpy; print(os.path.dirname(numpy.__file__))")
+  - INSTALLDIR=$(python -c "import os; import scipy; print(os.path.dirname(scipy.__file__))")
+
+    # install python requirements
+  - "pip install -r requirements.txt --use-mirrors"
+
+# command to run tests
+script:
+    # weird travis-ci python paths
+    - export PYTHONPATH=$PYTHONPATH:/usr/lib/pymodules/python2.7/
+    - export PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages
+    - export PYTHONPATH=$PYTHONPATH:/usr/lib/pyshared/python2.7/
+    - export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages/
+
+    # install opencv
+    - ./install-opencv.sh
+
+    # finally run tests
+    - make ci_test
