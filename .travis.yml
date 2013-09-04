@@ -43,6 +43,6 @@ install:
   - "pip install -q numexpr==1.4.2 --use-mirrors"
   - "pip install -q cython --use-mirrors"
   - "pip install -q tables==2.4.0 --use-mirrors"
-  - "pip install -q yaml --use-mirrors"
+  - "pip install -q pyyaml --use-mirrors"
 
 script: nosetests
