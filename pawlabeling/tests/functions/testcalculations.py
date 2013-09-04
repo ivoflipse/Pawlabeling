@@ -10,7 +10,8 @@ class TestCalculateCOP(TestCase):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
         file_location = "files\\rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
-        data = io.load(file_name=file_name)
+        input_file = io.open_zip_file(file_name)
+        data = io.load(input_file)
 
         calculations.calculate_cop(data, version="scipy")
 
@@ -21,7 +22,8 @@ class TestCalculateCOP(TestCase):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
         file_location = "files\\rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
-        data = io.load(file_name=file_name)
+        input_file = io.open_zip_file(file_name)
+        data = io.load(input_file)
 
         calculations.calculate_cop(data, version="numpy")
 
@@ -31,7 +33,8 @@ class TestCalculateCOP(TestCase):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
         file_location = "files\\rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
-        data = io.load(file_name=file_name)
+        input_file = io.open_zip_file(file_name)
+        data = io.load(input_file)
 
         cop_x1, cop_y1 = calculations.calculate_cop(data, version="numpy")
         cop_x2, cop_y2 = calculations.calculate_cop(data, version="scipy")
