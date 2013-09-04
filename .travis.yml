@@ -12,7 +12,7 @@ before_install:
     # For pytables
   -  sudo apt-get install libhdf5-serial-dev hdf5-tools
     # For numpy/scipy
-  -  sudo apt-get install -qq gfortran swig liblapack-dev libzmq-dev
+  -  sudo apt-get install -qq gfortran swig liblapack-dev
   -  sudo apt-get install -qq libatlas-base-dev libjpeg-dev libhdf5-serial-dev
   -  sudo apt-get install -qq liblzo2-dev libsuitesparse-dev
     # For matplotlib
