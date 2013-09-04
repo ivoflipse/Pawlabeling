@@ -9,7 +9,7 @@ from pawlabeling.settings import configuration
 class TestLoad(TestCase):
     def test_load_sample_subject1(self):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
-        file_location = "files\\rsscan_export.zip"
+        file_location = "files/rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
         data = io.load(input_file)
@@ -21,7 +21,7 @@ class TestLoad(TestCase):
 
     def test_load_non_zip_file(self):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
-        file_location = "files\\rsscan_export.zip.pkl"
+        file_location = "files/rsscan_export.zip.pkl"
         file_name = os.path.join(parent_folder, file_location)
         with open(file_name, "r") as infile:
             data = io.load(infile)
@@ -29,7 +29,7 @@ class TestLoad(TestCase):
 
     def test_load_incorrect_file(self):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
-        file_location = "files\\fake_export.zip"
+        file_location = "files/fake_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
         data = io.load(input_file)
@@ -68,7 +68,7 @@ class TestFindStoredFile(TestCase):
 class TestFixOrientation(TestCase):
     def test_not_fixing(self):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
-        file_location = "files\\rsscan_export.zip"
+        file_location = "files/rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
         data = io.load(input_file)
@@ -78,7 +78,7 @@ class TestFixOrientation(TestCase):
 
     def test_fixing(self):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
-        file_location = "files\\rsscan_export.zip"
+        file_location = "files/rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
         data = io.load(input_file)

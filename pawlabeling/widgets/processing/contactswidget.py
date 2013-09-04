@@ -14,8 +14,8 @@ class contactsWidget(QtGui.QWidget):
 
         self.left_front = contactWidget(self, label="Left Front", contact_label=0)
         self.left_hind = contactWidget(self, label="Left Hind", contact_label=1)
-        self.right_front = contactWidget(self,label="Right Front", contact_label=2)
-        self.right_hind = contactWidget(self,label="Right Hind", contact_label=3)
+        self.right_front = contactWidget(self, label="Right Front", contact_label=2)
+        self.right_hind = contactWidget(self, label="Right Hind", contact_label=3)
         self.current_contact = contactWidget(self, label="", contact_label=-1)
 
         self.average_data = defaultdict(list)
@@ -84,7 +84,11 @@ class contactsWidget(QtGui.QWidget):
             offset_y = int((my - y) / 2)
             normalized_current_contact[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = current_contact.data
         else:
-            normalized_current_contact = current_contact.data
+            # Pad it with zero's
+            normalized_current_contact = np.zeros((x+4, y+4, z))
+            offset_x = 2
+            offset_y = 2
+            normalized_current_contact[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = current_contact.data
 
         widget.update(normalized_current_contact)
 
@@ -125,7 +129,7 @@ class contactsWidget(QtGui.QWidget):
             percentages_pressures = [np.sqrt((p - pressure) ** 2) / pressure for p in pressures]
             percentages_surfaces = [np.sqrt((s - surface) ** 2) / surface for s in surfaces]
             percentages_durations = [np.sqrt((d - duration) ** 2) / duration for d in durations]
-            percentages_data = [np.sum(np.sqrt((d - data)**2)) / np.sum(np.sum(data)) for d in data_list]
+            percentages_data = [np.sum(np.sqrt((d - data) ** 2)) / np.sum(np.sum(data)) for d in data_list]
             results = []
             for p, s, d, d2 in zip(percentages_pressures, percentages_surfaces, percentages_durations,
                                    percentages_data):
@@ -137,6 +141,7 @@ class contactsWidget(QtGui.QWidget):
     def clear_contacts(self):
         for contact_label, widget in self.contacts_list.items():
             widget.clear_cached_values()
+
 
 class contactWidget(QtGui.QWidget):
     def __init__(self, parent, label, contact_label):
@@ -214,25 +219,36 @@ class contactWidget(QtGui.QWidget):
 
         # Make sure the contacts are facing upright
         self.data = np.rot90(np.rot90(self.average_data.max(axis=2)))
-        # Only display the non-zero part, regardless of its size
-        x, y = np.nonzero(self.data)
-        sliced_data = self.data
-        if len(x):  # This won't work for empty array's
-            # This might off course go out of bounds some day
-            min_x = np.min(x) - 2
-            max_x = np.max(x) + 2
-            min_y = np.min(y) - 2
-            max_y = np.max(y) + 2
-            sliced_data = self.data[min_x:max_x, min_y:max_y]
+        #x, y = self.data.shape
+        # # Only display the non-zero part, regardless of its size
+        # nx, ny = np.nonzero(self.data)
+        # sliced_data = self.data
+        # if len(nx):  # This won't work for empty array's
+        #     min_x = int(np.min(nx) - 2)
+        #     if min_x < 0:
+        #         min_x = 0
+        #     max_x = int(np.max(nx) + 2)
+        #     if max_x > x:
+        #         max_x = x
+        #     min_y = int(np.min(ny) - 2)
+        #     if min_y < 0:
+        #         min_y = 0
+        #     max_y = int(np.max(ny) + 2)
+        #     if max_y > y:
+        #         max_y = y
+        #     sliced_data = self.data[min_x:max_x, min_y:max_y]
 
         # Flip around the vertical axis (god knows why)
-        self.sliced_data = sliced_data[:, ::-1]
-        self.pixmap = utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table, interpolation="cubic")
+        #self.sliced_data = sliced_data[:, ::-1]
+        self.sliced_data = self.data[:, ::-1]
+        self.pixmap = utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table,
+                                          interpolation="cubic")
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 
     def redraw(self):
-        self.pixmap = utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table, interpolation="cubic")
+        self.pixmap = utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table,
+                                          interpolation="cubic")
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 
@@ -255,10 +271,10 @@ class contactWidget(QtGui.QWidget):
 
     def resizeEvent(self, event=None):
         item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()
-        ratio = min(self.view.viewport().width()/float(item_size.width()),
-                    self.view.viewport().height()/float(item_size.height()))
+        ratio = min(self.view.viewport().width() / float(item_size.width()),
+                    self.view.viewport().height() / float(item_size.height()))
 
-        if abs(1-ratio) > 0.1:
+        if abs(1 - ratio) > 0.1:
             self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
             self.view.setSceneRect(self.view.rect())
             self.view.centerOn(self.image)

@@ -161,6 +161,9 @@ class Model():
             else:
                 self.contacts[self.measurement_name] = contacts
         pub.sendMessage("update_contacts_tree", contacts=self.contacts)
+        # Check if we should update n_max everywhere
+        self.update_n_max()
+
 
     def get_measurement_data(self):
         group = self.measurements_table.get_group(self.measurements_table.session_group,
@@ -194,6 +197,8 @@ class Model():
 
     def put_subject(self, subject):
         #print "model.put_subject"
+        # Whenever we switch subjects, clear the cache
+        self.clear_cached_values()
         self.subject = subject
         self.subject_id = subject["subject_id"]
         self.logger.info("Subject ID set to {}".format(self.subject_id))
@@ -205,9 +210,6 @@ class Model():
         self.get_sessions()
 
     def put_session(self, session):
-        # Whenever we switch sessions, clear the cache
-        #self.clear_cached_values()
-
         #print "model.put_session"
         self.session = session
         self.session_id = session["session_id"]
@@ -246,6 +248,14 @@ class Model():
         self.file_paths = io.get_file_paths()
         pub.sendMessage("get_file_paths", file_paths=self.file_paths)
 
+    def update_n_max(self):
+        self.n_max = 0
+        for m in self.measurements_table.measurements_table:
+            n_max = m["maximum_value"]
+            if n_max > self.n_max:
+                self.n_max = n_max
+        pub.sendMessage("update_n_max", n_max=self.n_max)
+
     def load_contacts(self):
         """
         Check if there if any measurements for this subject have already been processed
@@ -256,30 +266,17 @@ class Model():
 
         # Make sure self.contacts is empty
         self.contacts.clear()
-        self.n_max = 0
 
         measurement_names = {}
         for m in self.measurements_table.measurements_table:
             measurement_names[m["measurement_id"]] = m["measurement_name"]
-            n_max = m["maximum_value"]
-            if n_max > self.n_max:
-                self.n_max = n_max
-
             contacts = self.get_contact_data(m)
             if contacts:
                 self.contacts[m["measurement_name"]] = contacts
 
-        # Calculate the highest n_max and publish that
-        pub.sendMessage("update_n_max", n_max=self.n_max)
-        #pub.sendMessage("update_contacts", contacts=self.contacts)
-        # These two messages could pretty much be consolidated, possibly even the one above
-        #pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
-        #pub.sendMessage("update_contacts_tree", contacts=self.contacts)
-
     def repeat_track_contacts(self):
         self.contacts[self.measurement_name] = self.track_contacts()
         pub.sendMessage("update_contacts_tree", contacts=self.contacts)
-
 
     #@profile
     def track_contacts(self):
@@ -414,13 +411,14 @@ class Model():
     def clear_cached_values(self):
         self.logger.info("Model.clear_cached_values")
         #self.subject = {} # Not if we clear from put_session
-        #self.session = {}
+        self.session = {}
         self.measurement = {}
         self.contact = {}
         self.average_data.clear()
         self.contacts.clear()
         self.results.clear()
         self.max_results.clear()
+        self.n_max = 0
         pub.sendMessage("clear_cached_values")
 
 

@@ -152,9 +152,6 @@ class ProcessingWidget(QtGui.QWidget):
         #pub.sendMessage("load_contacts")
         pub.sendMessage("get_contacts")
 
-        # # Send a message so the model starts loading results
-        # pub.sendMessage("load_results", widget="processing")
-
 
     def update_contacts_tree(self, contacts):
         self.contacts = contacts
