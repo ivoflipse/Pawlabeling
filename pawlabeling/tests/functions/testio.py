@@ -256,7 +256,7 @@ class TestGetFilePaths2(TestCase):
     def setUp(self):
         # Let's try and change the measurement folder
         root = os.path.dirname(os.path.abspath(__file__))
-        file_name = os.path.join(root, "files/empty_folder")
+        file_name = os.path.join(root, "files/zip_folder")
         # Cache the old location so we can reset it
         self.old_folder = configuration.measurement_folder
         # Change the configuration's folder
