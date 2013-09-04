@@ -18,9 +18,9 @@ sensors:
   height: 1
   width: 1
 thresholds:
-  end_force_percentage: 0.99
+  end_force_percentage: 0.25
   padding_factor: 1
-  start_force_percentage: 0.99
+  start_force_percentage: 0.25
   tracking_spatial: 1.25
   tracking_surface: 0.25
   tracking_temporal: 0.5
