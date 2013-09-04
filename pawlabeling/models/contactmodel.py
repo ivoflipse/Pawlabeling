@@ -85,7 +85,6 @@ class Contact():
         Creates self.measurement_data which contains the pixels that are enclosed by the contour
         """
         # Create an empty array that should fit the entire contact
-        # TODO reduce this size to the size of the bounding box of the contact (width, length, duration)
         self.data = np.zeros((self.width, self.height, self.length))
 
 
