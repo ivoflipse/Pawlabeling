@@ -1,0 +1,116 @@
+C:\Dropbox\Development\Pawlabeling>python -m memory_profiler pawlabeling.py
+Filename: pawlabeling\models\model.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   308                                 @profile
+   309                                 def calculate_average(self):
+   310   660.465 MB     0.000 MB           # Empty average measurement_data
+   311   660.805 MB     0.340 MB           self.average_data.clear()
+   312   660.805 MB     0.000 MB           data_list = defaultdict(list)
+   313
+   314   660.805 MB     0.000 MB           mx = 0
+   315   660.805 MB     0.000 MB           my = 0
+   316   660.477 MB    -0.328 MB           mz = 0
+   317                                     # Group all the measurement_data percontact
+   318   660.465 MB    -0.012 MB           for measurement_name, contacts in self.contacts.items():
+   319   660.805 MB     0.340 MB               for contact in contacts:
+   320   660.805 MB     0.000 MB                   contact_label = contact.contact_label
+   321   660.805 MB     0.000 MB                   if contact_label >= 0:
+   322                                                 data_list[contact_label].append(contact.data)
+   323                                                 x, y, z = contact.data.shape
+   324                                                 if x > mx:
+   325                                                     mx = x
+   326                                                 if y > my:
+   327                                                     my = y
+   328                                                 if z > mz:
+   329                                                     mz = z
+   330
+   331   660.805 MB     0.000 MB           shape = (mx, my, mz)
+   332                                     # Then get the normalized measurement_data
+   333   660.805 MB     0.000 MB           for contact_label, data in data_list.items():
+   334                                         normalized_data = utility.calculate_average_data(data, shape)
+   335                                         self.average_data[contact_label]= normalized_data
+
+
+Filename: pawlabeling\models\model.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   228                                 @profile
+   229                                 def load_contacts(self):
+   230                                     """
+   231                                     Check if there if any measurements for this subject have already been processed
+   232                                     If so, retrieve the measurement_data and convert them to a usable format
+   233   135.098 MB     0.000 MB           """
+   234   135.102 MB     0.004 MB           self.logger.info("Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
+   235   135.102 MB     0.000 MB               self.subject_name, self.session["session_name"]))
+   236
+   237                                     # Make sure self.contacts is empty
+   238   135.102 MB     0.000 MB           self.contacts.clear()
+   239   135.102 MB     0.000 MB           self.n_max = 0
+   240
+   241   135.102 MB     0.000 MB           measurement_names = {}
+   242   135.125 MB     0.023 MB           for m in self.measurements_table.measurements_table:
+   243   135.125 MB     0.000 MB               measurement_names[m["measurement_id"]] = m["measurement_name"]
+   244   135.125 MB     0.000 MB               n_max = m["maximum_value"]
+   245   135.109 MB    -0.016 MB               if n_max > self.n_max:
+   246   135.109 MB     0.000 MB                   self.n_max = n_max
+   247
+   248   135.156 MB     0.047 MB               contacts = self.get_contact_data(m)
+   249   135.156 MB     0.000 MB               if contacts:
+   250                                             self.contacts[m["measurement_name"]] = contacts
+   251
+   252   135.156 MB     0.000 MB           if self.measurement_name not in self.contacts:
+   253   660.465 MB   525.309 MB               self.contacts[self.measurement_name] = self.track_contacts()
+   254
+   255                                     # Calculate the highest n_max and publish that
+   256   660.465 MB     0.000 MB           pub.sendMessage("update_n_max", n_max=self.n_max)
+   257   660.465 MB     0.000 MB           pub.sendMessage("update_contacts", contacts=self.contacts)
+   258                                     # Calculate the average, after everything has been loaded
+   259   660.465 MB     0.000 MB           self.calculate_average()
+   260                                     # These two messages could pretty much be consolidated, possibly even the one above
+   261   660.477 MB     0.012 MB           pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
+   262   660.809 MB     0.332 MB           pub.sendMessage("update_contacts_tree", contacts=self.contacts)
+
+
+Filename: pawlabeling\models\model.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   264                                 @profile
+   265   135.156 MB     0.000 MB       def track_contacts(self):
+   266   135.160 MB     0.004 MB           pub.sendMessage("update_statusbar", status="Starting tracking")
+   267                                     # Add padding to the measurement
+   268   135.160 MB     0.000 MB           x = self.measurement["number_of_rows"]
+   269   135.160 MB     0.000 MB           y = self.measurement["number_of_cols"]
+   270   135.160 MB     0.000 MB           z = self.measurement["number_of_frames"]
+   271   135.160 MB     0.000 MB           padding = configuration.padding_factor
+   272   177.586 MB    42.426 MB           data = np.zeros((x + 2 * padding, y + 2 * padding, z), np.float32)
+   273   177.586 MB     0.000 MB           data[padding:-padding, padding:-padding, :] = self.measurement_data
+   274   177.840 MB     0.254 MB           raw_contacts = tracking.track_contours_graph(data)
+   275
+   276   177.840 MB     0.000 MB           contacts = []
+   277                                     # Convert them to class objects
+   278   662.496 MB   484.656 MB           for index, raw_contact in enumerate(raw_contacts):
+   279   662.496 MB     0.000 MB               contact = contactmodel.Contact()
+   280   702.859 MB    40.363 MB               contact.create_contact(contact=raw_contact, measurement_data=self.measurement_data, padding=padding)
+   281   702.887 MB     0.027 MB               contact.calculate_results()
+   282                                         # Give each contact the same orientation as the measurement it originates from
+   283   702.887 MB     0.000 MB               contact.set_orientation(self.measurement["orientation"])
+   284                                         # Skip contacts that have only been around for one frame
+   285   702.887 MB     0.000 MB               if len(contact.frames) > 1:
+   286   702.887 MB     0.000 MB                   contacts.append(contact)
+   287
+   288                                     # Sort the contacts based on their position along the first dimension
+   289   702.887 MB     0.000 MB           contacts = sorted(contacts, key=lambda contact: contact.min_z)
+   290                                     # Update their index
+   291   702.887 MB     0.000 MB           for contact_id, contact in enumerate(contacts):
+   292   702.887 MB     0.000 MB               contact.set_contact_id(contact_id)
+   293
+   294   702.887 MB     0.000 MB           status = "Number of contacts found: {}".format(len(contacts))
+   295   702.887 MB     0.000 MB           pub.sendMessage("update_statusbar", status=status)
+   296   702.887 MB     0.000 MB           return contacts
+
+
+Closing remaining open files: pawlabeling\database\data.h5... done

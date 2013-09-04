@@ -1,0 +1,75 @@
+C:\Dropbox\Development\Pawlabeling>python -m memory_profiler pawlabeling.py
+Filename: pawlabeling\models\model.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+   263                                 @profile
+   264   134.578 MB     0.000 MB       def track_contacts(self):
+   265   134.582 MB     0.004 MB           pub.sendMessage("update_statusbar", status="Starting tracking")
+   266                                     # Add padding to the measurement
+   267   134.582 MB     0.000 MB           x = self.measurement["number_of_rows"]
+   268   134.582 MB     0.000 MB           y = self.measurement["number_of_cols"]
+   269   134.582 MB     0.000 MB           z = self.measurement["number_of_frames"]
+   270   134.582 MB     0.000 MB           padding = configuration.padding_factor
+   271   177.008 MB    42.426 MB           data = np.zeros((x + 2 * padding, y + 2 * padding, z), np.float32)
+   272   177.008 MB     0.000 MB           data[padding:-padding, padding:-padding, :] = self.measurement_data
+   273   177.480 MB     0.473 MB           raw_contacts = tracking.track_contours_graph(data)
+   274
+   275   177.480 MB     0.000 MB           contacts = []
+   276                                     # Convert them to class objects
+   277   688.258 MB   510.777 MB           for index, raw_contact in enumerate(raw_contacts):
+   278   688.258 MB     0.000 MB               contact = contactmodel.Contact()
+   279   731.727 MB    43.469 MB               contact.create_contact(contact=raw_contact, measurement_data=self.measurement_data, padding=padding)
+   280   731.727 MB     0.000 MB               contact.calculate_results()
+   281                                         # Give each contact the same orientation as the measurement it originates from
+   282   731.727 MB     0.000 MB               contact.set_orientation(self.measurement["orientation"])
+   283                                         # Skip contacts that have only been around for one frame
+   284   731.727 MB     0.000 MB               if len(contact.frames) > 1:
+   285   731.727 MB     0.000 MB                   contacts.append(contact)
+   286
+   287                                     # Sort the contacts based on their position along the first dimension
+   288   731.727 MB     0.000 MB           contacts = sorted(contacts, key=lambda contact: contact.min_z)
+   289                                     # Update their index
+   290   731.727 MB     0.000 MB           for contact_id, contact in enumerate(contacts):
+   291   731.727 MB     0.000 MB               contact.set_contact_id(contact_id)
+   292
+   293   731.727 MB     0.000 MB           status = "Number of contacts found: {}".format(len(contacts))
+   294   731.727 MB     0.000 MB           pub.sendMessage("update_statusbar", status=status)
+   295   731.727 MB     0.000 MB           return contacts
+
+
+Filename: pawlabeling\models\contactmodel.py
+
+Line #    Mem usage    Increment   Line Contents
+================================================
+    79                                 @profile
+    80                                 def convert_contour_to_slice(self, measurement_data):
+    81                                     """
+    82                                     Creates self.measurement_data which contains the pixels that are enclosed by the contour
+    83                                     """
+    84                                     # Create an empty array that should fit the entire contact
+    85   177.480 MB     0.000 MB           # TODO reduce this size to the size of the boudning box of the contact (width, length, duration)
+    86   217.812 MB    40.332 MB           new_data = np.zeros_like(measurement_data)
+    87
+    88   731.695 MB   513.883 MB           for frame, contours in list(self.contour_list.items()):
+    89                                     # Pass a single contour as if it were a contact
+    90   731.695 MB     0.000 MB               center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: contours})
+    91                                         # Get the non_zero pixels coordinates for that frame
+    92   217.812 MB  -513.883 MB               pixels = np.transpose(np.nonzero(measurement_data[min_x:max_x + 1, min_y:max_y + 1, frame]))
+    93                                         # Check if they are in any of the contours
+    94   432.422 MB   214.609 MB               for pixel in pixels:
+    95   731.695 MB   299.273 MB                   for contour in contours:
+    96                                                 # Remember the coordinates are only for the slice, so we need to add padding
+    97   731.695 MB     0.000 MB                       coordinate = (min_x + pixel[0], min_y + pixel[1])
+    98   731.695 MB     0.000 MB                       if cv2.pointPolygonTest(contour, coordinate,0) > -1.0:
+    99   731.695 MB     0.000 MB                           new_data[coordinate[0], coordinate[1], frame] = measurement_data[
+   100   731.695 MB     0.000 MB                               coordinate[0], coordinate[1], frame]
+   101                                                     # TODO Subtract the origin of the location of the contact slice from the coordinates
+   102
+   103                                     # Create an attribute measurement_data with the updated slice
+   104                                     # I believe padding is required here, because Python slices up to, not including the upper limit
+   105   731.695 MB     0.000 MB           self.data = new_data[self.min_x:self.max_x + 1, self.min_y:self.max_y + 1, self.min_z:self.max_z + 1]
+   
+   
+   
+   

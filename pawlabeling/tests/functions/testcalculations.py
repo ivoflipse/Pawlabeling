@@ -8,7 +8,7 @@ class TestCalculateCOP(TestCase):
     def test_calculate_cop_scipy(self):
         # How do I verify the COP is correct?
         parent_folder = os.path.dirname(os.path.abspath(__file__))
-        file_location = "files\\rsscan_export.zip"
+        file_location = "files/rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
         data = io.load(input_file)
@@ -20,7 +20,7 @@ class TestCalculateCOP(TestCase):
     def test_calculate_cop_numpy(self):
         # How do I verify the COP is correct?
         parent_folder = os.path.dirname(os.path.abspath(__file__))
-        file_location = "files\\rsscan_export.zip"
+        file_location = "files/rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
         data = io.load(input_file)
@@ -31,7 +31,7 @@ class TestCalculateCOP(TestCase):
     def test_compare_cop(self):
         # Hurray both versions give the same results! Guess I did do something right then
         parent_folder = os.path.dirname(os.path.abspath(__file__))
-        file_location = "files\\rsscan_export.zip"
+        file_location = "files/rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
         data = io.load(input_file)

@@ -89,7 +89,7 @@ class Contact():
         self.data = np.zeros((self.width, self.height, self.length))
 
         for index, (frame, contours) in enumerate(self.contour_list.items()):
-        # Pass a single contour as if it were a contact
+            # Pass a single contour as if it were a contact
             center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: contours})
             # Get the non_zero pixels coordinates for that frame
             pixels = np.transpose(np.nonzero(measurement_data[min_x:max_x + 1, min_y:max_y + 1, frame]))
@@ -101,8 +101,6 @@ class Contact():
                     if cv2.pointPolygonTest(contour, coordinate, 0) > -1.0:
                         self.data[coordinate[0]-self.min_x, coordinate[1]-self.min_y, index] = measurement_data[
                             coordinate[0], coordinate[1], frame]
-
-
 
     def calculate_results(self):
         """
@@ -168,6 +166,7 @@ class Contact():
         """
         force_over_time = calculations.force_over_time(self.data)
         max_force = np.max(force_over_time)
+        print force_over_time[0], force_over_time[-1], max_force, configuration.start_force_percentage
         if (force_over_time[0] > (configuration.start_force_percentage * max_force) or
                     force_over_time[-1] > (configuration.end_force_percentage * max_force)):
             return True
