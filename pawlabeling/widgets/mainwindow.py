@@ -73,6 +73,7 @@ class MainWindow(QtGui.QMainWindow):
             self.processing_widget.put_measurement()
         elif self.tab_widget.currentIndex() == 2:
             self.processing_widget.unsubscribe()
+            self.analysis_widget.calculate_results()
             self.analysis_widget.put_measurement()
 
     def change_status(self, status):

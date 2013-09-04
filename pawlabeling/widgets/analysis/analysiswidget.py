@@ -100,6 +100,9 @@ class AnalysisWidget(QtGui.QTabWidget):
         pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.unsubscribe(self.update_contacts_tree, "update_contacts_tree")
 
+    def calculate_results(self):
+        pub.sendMessage("calculate_results")
+
     def update_measurement(self, measurement):
         self.measurement_name = measurement["measurement_name"]
 

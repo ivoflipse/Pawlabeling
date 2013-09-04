@@ -71,7 +71,7 @@ class contactView(QtGui.QWidget):
 
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.change_frame, "analysis.change_frame")
-        pub.subscribe(self.update, "analysis_results")
+        pub.subscribe(self.update_results, "update_results")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.check_active, "active_widget")
         pub.subscribe(self.filter_outliers, "filter_outliers")
@@ -92,7 +92,7 @@ class contactView(QtGui.QWidget):
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, contacts, average_data, results, max_results):
+    def update_results(self, results, max_results):
         self.pressures = results[self.contact_label]["pressure"]
         self.max_duration = max_results["duration"]
         self.max_pressure = max_results["pressure"]
@@ -121,18 +121,18 @@ class contactView(QtGui.QWidget):
             # Calculate the length AFTER padding the pressure
             lengths.append(len(pressure))
             pressure_over_time[index, :] = calculations.interpolate_time_series(pressure, interpolate_length)
-            self.axes.plot(calculations.interpolate_time_series(range(np.max(len(pressure))), interpolate_length),
-                           pressure_over_time[index, :], alpha=0.5)
+            time_line = calculations.interpolate_time_series(np.arange(np.max(len(pressure))), interpolate_length)
+            self.axes.plot(time_line, pressure_over_time[index, :], alpha=0.5)
 
         mean_length = np.mean(lengths)
-        interpolated_timeline = calculations.interpolate_time_series(range(int(mean_length)), interpolate_length)
+        interpolated_time_line = calculations.interpolate_time_series(np.arange(int(mean_length)), interpolate_length)
         mean_pressure = np.mean(pressure_over_time, axis=0)
         std_pressure = np.std(pressure_over_time, axis=0)
-        self.axes.plot(interpolated_timeline, mean_pressure, color="r", linewidth=3)
-        self.axes.plot(interpolated_timeline, mean_pressure + std_pressure, color="r", linewidth=1)
-        self.axes.fill_between(interpolated_timeline, mean_pressure - std_pressure, mean_pressure + std_pressure,
+        self.axes.plot(interpolated_time_line, mean_pressure, color="r", linewidth=3)
+        self.axes.plot(interpolated_time_line, mean_pressure + std_pressure, color="r", linewidth=1)
+        self.axes.fill_between(interpolated_time_line, mean_pressure - std_pressure, mean_pressure + std_pressure,
                                facecolor="r", alpha=0.5)
-        self.axes.plot(interpolated_timeline, mean_pressure - std_pressure, color="r", linewidth=1)
+        self.axes.plot(interpolated_time_line, mean_pressure - std_pressure, color="r", linewidth=1)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.vertical_line.set_xdata(self.frame)
         self.axes.set_xlim([0, self.max_duration + 2])  # +2 because we padded the array

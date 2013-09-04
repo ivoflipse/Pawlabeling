@@ -33,7 +33,8 @@ class Model():
         pub.subscribe(self.load_contacts, "load_contacts")
         pub.subscribe(self.update_current_contact, "update_current_contact")
         pub.subscribe(self.store_status, "store_status")
-        pub.subscribe(self.track_contacts, "track_contacts")
+        pub.subscribe(self.repeat_track_contacts, "track_contacts")
+        pub.subscribe(self.calculate_results, "calculate_results")
         # CREATE
         pub.subscribe(self.create_subject, "create_subject")
         pub.subscribe(self.create_session, "create_session")
@@ -210,11 +211,14 @@ class Model():
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)
         pub.sendMessage("update_statusbar", status="Session: {}".format(self.session["session_name"]))
+
         self.get_measurements()
         # Load the contacts, but have it not send out anything
         self.load_contacts()
         # Next calculate the average based on the contacts
         self.calculate_average()
+        # This needs to come after calculate average, perhaps refactor calculate_average into 2 functions?
+        self.calculate_results()
 
     def put_measurement(self, measurement):
         self.measurement = measurement
@@ -267,6 +271,11 @@ class Model():
         #pub.sendMessage("processing_results", contacts=self.contacts, average_data=self.average_data)
         #pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
+    def repeat_track_contacts(self):
+        self.contacts[self.measurement_name] = self.track_contacts()
+        pub.sendMessage("update_contacts_tree", contacts=self.contacts)
+
+
     #@profile
     def track_contacts(self):
         pub.sendMessage("update_statusbar", status="Starting tracking")
@@ -318,7 +327,7 @@ class Model():
         #print "model.calculate_average"
         # Empty average measurement_data
         self.average_data.clear()
-        data_list = defaultdict(list)
+        self.data_list = defaultdict(list)
 
         mx = 0
         my = 0
@@ -328,7 +337,7 @@ class Model():
             for contact in contacts:
                 contact_label = contact.contact_label
                 if contact_label >= 0:
-                    data_list[contact_label].append(contact.data)
+                    self.data_list[contact_label].append(contact.data)
                     x, y, z = contact.data.shape
                     if x > mx:
                         mx = x
@@ -339,42 +348,40 @@ class Model():
 
         shape = (mx, my, mz)
         # Then get the normalized measurement_data
-        for contact_label, data in data_list.items():
+        for contact_label, data in self.data_list.items():
             normalized_data = utility.calculate_average_data(data, shape)
             self.average_data[contact_label] = normalized_data
 
         pub.sendMessage("update_average", average_data=self.average_data)
 
-    # This won't work as is, so we'll fix it later
-    # def calculate_results(self):
-    #     self.results.clear()
-    #     self.max_results.clear()
-    #     self.filtered = defaultdict()
-    #
-    #     for contact_label, data_list in self.data_list.items():
-    #         self.results[contact_label]["filtered"] = utility.filter_outliers(data_list, contact_label)
-    #         self.filtered[contact_label] = utility.filter_outliers(data_list, contact_label)
-    #         for data in data_list:
-    #             force = calculations.force_over_time(data)
-    #             self.results[contact_label]["force"].append(force)
-    #             max_force = np.max(force)
-    #             if max_force > self.max_results.get("force", 0):
-    #                 self.max_results["force"] = max_force
-    #
-    #             pressure = calculations.pressure_over_time(data)
-    #             self.results[contact_label]["pressure"].append(pressure)
-    #             max_pressure = np.max(pressure)
-    #             if max_pressure > self.max_results.get("pressure", 0):
-    #                 self.max_results["pressure"] = max_pressure
-    #
-    #             cop_x, cop_y = calculations.calculate_cop(data)
-    #             self.results[contact_label]["cop"].append((cop_x, cop_y))
-    #
-    #             x, y, z = np.nonzero(data)
-    #             max_duration = np.max(z)
-    #             if max_duration > self.max_results.get("duration", 0):
-    #                 self.max_results["duration"] = max_duration
+    def calculate_results(self):
+        self.results.clear()
+        self.max_results.clear()
 
+        for contact_label, data_list in self.data_list.items():
+            self.results[contact_label]["filtered"] = utility.filter_outliers(data_list, contact_label)
+            for data in data_list:
+                force = calculations.force_over_time(data)
+                self.results[contact_label]["force"].append(force)
+                max_force = np.max(force)
+                if max_force > self.max_results.get("force", 0):
+                    self.max_results["force"] = max_force
+
+                pressure = calculations.pressure_over_time(data)
+                self.results[contact_label]["pressure"].append(pressure)
+                max_pressure = np.max(pressure)
+                if max_pressure > self.max_results.get("pressure", 0):
+                    self.max_results["pressure"] = max_pressure
+
+                cop_x, cop_y = calculations.calculate_cop(data)
+                self.results[contact_label]["cop"].append((cop_x, cop_y))
+
+                x, y, z = np.nonzero(data)
+                max_duration = np.max(z)
+                if max_duration > self.max_results.get("duration", 0):
+                    self.max_results["duration"] = max_duration
+
+        pub.sendMessage("update_results", results=self.results, max_results=self.max_results)
 
     def store_status(self):
         for contact in self.contacts[self.measurement_name]:

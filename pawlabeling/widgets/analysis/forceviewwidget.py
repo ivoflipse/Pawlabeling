@@ -72,7 +72,7 @@ class contactView(QtGui.QWidget):
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.change_frame, "analysis.change_frame")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        pub.subscribe(self.update, "analysis_results")
+        pub.subscribe(self.update_results, "update_results")
         pub.subscribe(self.check_active, "active_widget")
         pub.subscribe(self.filter_outliers, "filter_outliers")
 
@@ -91,7 +91,7 @@ class contactView(QtGui.QWidget):
     def update_n_max(self, n_max):
         self.n_max = n_max
 
-    def update(self, contacts, average_data, results, max_results):
+    def update_results(self, results, max_results):
         self.forces = results[self.contact_label]["force"]
         self.max_duration = max_results["duration"]
         self.max_force = max_results["force"]
@@ -120,18 +120,18 @@ class contactView(QtGui.QWidget):
             force = np.pad(force, 1, mode="constant", constant_values=0)
             lengths.append(len(force))
             force_over_time[index, :] = calculations.interpolate_time_series(force, interpolate_length)
-            self.axes.plot(calculations.interpolate_time_series(range(np.max(len(force))), interpolate_length),
-                           force_over_time[index, :], alpha=0.5)
+            time_line = calculations.interpolate_time_series(np.arange(np.max(len(force))), interpolate_length)
+            self.axes.plot(time_line, force_over_time[index, :], alpha=0.5)
 
         mean_length = np.mean(lengths)
-        interpolated_timeline = calculations.interpolate_time_series(range(int(mean_length)), interpolate_length)
+        interpolated_time_line = calculations.interpolate_time_series(np.arange(int(mean_length)), interpolate_length)
         mean_force = np.mean(force_over_time, axis=0)
         std_force = np.std(force_over_time, axis=0)
-        self.axes.plot(interpolated_timeline, mean_force, color="r", linewidth=3)
-        self.axes.plot(interpolated_timeline, mean_force + std_force, color="r", linewidth=1)
-        self.axes.fill_between(interpolated_timeline, mean_force - std_force, mean_force + std_force, facecolor="r",
+        self.axes.plot(interpolated_time_line, mean_force, color="r", linewidth=3)
+        self.axes.plot(interpolated_time_line, mean_force + std_force, color="r", linewidth=1)
+        self.axes.fill_between(interpolated_time_line, mean_force - std_force, mean_force + std_force, facecolor="r",
                                alpha=0.5)
-        self.axes.plot(interpolated_timeline, mean_force - std_force, color="r", linewidth=1)
+        self.axes.plot(interpolated_time_line, mean_force - std_force, color="r", linewidth=1)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.vertical_line.set_xdata(self.frame)
         self.axes.set_xlim([0, self.max_duration + 2])  # +2 because we padded the array
