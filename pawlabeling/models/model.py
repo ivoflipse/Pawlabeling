@@ -355,6 +355,10 @@ class Model():
         pub.sendMessage("update_average", average_data=self.average_data)
 
     def calculate_results(self):
+        # If we don't have any data, its no use to try and calculate something
+        if len(self.data_list.keys()) == 0:
+            return
+
         self.results.clear()
         self.max_results.clear()
 

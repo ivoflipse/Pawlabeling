@@ -78,7 +78,6 @@ class contactView(QtGui.QWidget):
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
-        self.clear_cached_values()
         self.draw()
 
     def check_active(self, widget):
@@ -103,7 +102,7 @@ class contactView(QtGui.QWidget):
         if not self.forces:
             return
 
-        self.clear_cached_values()
+        self.clear_axes()
         interpolate_length = 100
         lengths = []
 
@@ -144,7 +143,14 @@ class contactView(QtGui.QWidget):
             self.vertical_line.set_xdata(self.frame)
             self.canvas.draw()
 
-    def clear_cached_values(self):
-        # Put the screen to black
+    def clear_axes(self):
         self.axes.cla()
         self.canvas.draw()
+
+    def clear_cached_values(self):
+        # Put the screen to black
+        self.clear_axes()
+        self.forces = None
+        self.max_duration = None
+        self.max_force = None
+        self.filtered = None

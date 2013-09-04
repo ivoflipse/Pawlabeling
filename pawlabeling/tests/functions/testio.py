@@ -11,13 +11,12 @@ class TestLoad(TestCase):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
         file_location = "files\\rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
-        with open(file_name, "r") as infile:
-            input_file = infile.read()
+        input_file = io.open_zip_file(file_name)
         data = io.load(input_file)
         self.assertEqual(data.shape, (256L, 63L, 250L))
 
-    def test_load_empty_file_name(self):
-        data = io.load(file_name="")
+    def test_load_empty_string(self):
+        data = io.load("")
         self.assertEqual(data, None)
 
     def test_load_non_zip_file(self):
@@ -25,16 +24,14 @@ class TestLoad(TestCase):
         file_location = "files\\rsscan_export.zip.pkl"
         file_name = os.path.join(parent_folder, file_location)
         with open(file_name, "r") as infile:
-            input_file = infile.read()
-        data = io.load(input_file)
+            data = io.load(infile)
         self.assertEqual(data, None)
 
     def test_load_incorrect_file(self):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
         file_location = "files\\fake_export.zip"
         file_name = os.path.join(parent_folder, file_location)
-        with open(file_name, "r") as infile:
-            input_file = infile.read()
+        input_file = io.open_zip_file(file_name)
         data = io.load(input_file)
         self.assertEqual(data, None)
 
@@ -73,8 +70,7 @@ class TestFixOrientation(TestCase):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
         file_location = "files\\rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
-        with open(file_name, "r") as infile:
-            input_file = infile.read()
+        input_file = io.open_zip_file(file_name)
         data = io.load(input_file)
         new_data = io.fix_orientation(data=data)
         equal = np.array_equal(data, new_data)
@@ -84,8 +80,7 @@ class TestFixOrientation(TestCase):
         parent_folder = os.path.dirname(os.path.abspath(__file__))
         file_location = "files\\rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
-        with open(file_name, "r") as infile:
-            input_file = infile.read()
+        input_file = io.open_zip_file(file_name)
         data = io.load(input_file)
         # Reverse the plate around the longitudinal axis
         reversed_data = np.rot90(np.rot90(data))
@@ -97,7 +92,7 @@ class TestFixOrientation(TestCase):
 # class TestLoadResults(TestCase):
 #     def test_load_successful(self):
 #         parent_folder = os.path.dirname(os.path.abspath(__file__))
-#         file_location = "files\\rsscan_export.zip.pkl"
+#         file_location = "files/rsscan_export.zip.pkl"
 #         input_path = os.path.join(parent_folder, file_location)
 #         # This contains all the contacts, check if they're all there
 #         results = io.load_results(input_path=input_path)
@@ -114,7 +109,7 @@ class TestFixOrientation(TestCase):
 #     def test_empty_results(self):
 #         parent_folder = os.path.dirname(os.path.abspath(__file__))
 #         # This file contains an empty dictionary
-#         file_location = "files\\fake_results.zip.pkl"
+#         file_location = "files/fake_results.zip.pkl"
 #         input_path = os.path.join(parent_folder, file_location)
 #         # Loading this empty file should raise an exception
 #         with self.assertRaises(Exception):
@@ -123,7 +118,7 @@ class TestFixOrientation(TestCase):
 #     def test_empty_results_2(self):
 #         parent_folder = os.path.dirname(os.path.abspath(__file__))
 #         # This file contains json full of tweets
-#         file_location = "files\\fake_results_2.zip.pkl"
+#         file_location = "files/fake_results_2.zip.pkl"
 #         input_path = os.path.join(parent_folder, file_location)
 #         # Loading this empty file should raise an exception
 #         with self.assertRaises(Exception):
@@ -166,10 +161,10 @@ class TestFixOrientation(TestCase):
 # class TestResultsToPickle(TestCase):
 #     def setUp(self):
 #         parent_folder = os.path.dirname(os.path.abspath(__file__))
-#         new_location = "files\\temp.zip"
+#         new_location = "files/temp.zip"
 #         self.pickle_path_before = os.path.join(parent_folder, new_location)
 #         self.pickle_path_after = self.pickle_path_before + ".pkl"
-#         file_location = "files\\rsscan_export.zip.pkl"
+#         file_location = "files/rsscan_export.zip.pkl"
 #         self.input_path = os.path.join(parent_folder, file_location)
 #
 #         # Load contacts from an existing pickle file
@@ -204,9 +199,9 @@ class TestZipFile(TestCase):
     def setUp(self):
         # Create a copy of an unzipped file
         self.root = os.path.dirname(os.path.abspath(__file__))
-        file_location = "files\\fake_export"
+        file_location = "files/fake_export"
         file_name = os.path.join(self.root, file_location)
-        new_file_location = "files\\new_fake_export"
+        new_file_location = "files/new_fake_export"
         self.new_file_name = os.path.join(self.root, new_file_location)
         # Create a copy of fake export
         shutil.copyfile(file_name, self.new_file_name)
@@ -237,33 +232,21 @@ class TestGetFilePaths(TestCase):
     def setUp(self):
         # Let's try and change the measurement folder
         root = os.path.dirname(os.path.abspath(__file__))
-        self.file_name = os.path.join(root, "files/zip_folder")
+        file_name = os.path.join(root, "files/zip_folder/Dog1")
         # Cache the old location so we can reset it
         self.old_folder = configuration.measurement_folder
         # Change the configuration's folder
-        configuration.measurement_folder = self.file_name
-
-        # If for some reason the folder doesn't exist, copy it over
-        if not os.path.exists(self.file_name):
-            # Copy files from zip_folder_copy
-            shutil.copytree(self.file_name + "_copy", self.file_name)
+        configuration.measurement_folder = file_name
 
     def test_get_file_paths(self):
         # Get the file_paths
         file_paths = io.get_file_paths()
-
         # Check if file_paths is correct
-        self.assertEqual(sorted(file_paths.keys()), ["Dog1", "Dog2"])
-        self.assertEqual(sorted(file_paths["Dog1"].keys()), ["fake_export_1.zip", "fake_export_2.zip", "fake_export_3.zip"])
+        self.assertEqual(sorted(file_paths.keys()), ["fake_export_1", "fake_export_2", "fake_export_3"])
 
     def tearDown(self):
         # Restore it to the old folder
         configuration.measurement_folder = self.old_folder
-        # Delete the .zip  files
-        shutil.rmtree(self.file_name)
-        # Copy files from zip_folder_copy
-        shutil.copytree(self.file_name + "_copy", self.file_name)
-
 
 class TestGetFilePaths2(TestCase):
     """
@@ -280,8 +263,8 @@ class TestGetFilePaths2(TestCase):
         configuration.measurement_folder = file_name
 
     def test_get_file_paths(self):
-        with self.assertRaises(Exception):
-            file_paths = io.get_file_paths()
+        file_paths = io.get_file_paths()
+        self.assertEqual(file_paths.keys(), [])
 
     def tearDown(self):
         # Restore it to the old folder
