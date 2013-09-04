@@ -199,6 +199,9 @@ class Model():
         self.get_sessions()
 
     def put_session(self, session):
+        # Whenever we switch sessions, clear the cache
+        self.clear_cached_values()
+
         #print "model.put_session"
         self.session = session
         self.session_id = session["session_id"]
@@ -207,8 +210,6 @@ class Model():
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)
         pub.sendMessage("update_statusbar", status="Session: {}".format(self.session["session_name"]))
-        # Whenever we switch sessions, clear the cache
-        self.clear_cached_values()
         self.get_measurements()
         # Load the contacts, but have it not send out anything
         self.load_contacts()
@@ -305,6 +306,8 @@ class Model():
         self.contacts = contacts
         self.current_contact_index = current_contact_index
 
+        self.calculate_average()
+
         pub.sendMessage("updated_current_contact", contacts=self.contacts,
                         current_contact_index=self.current_contact_index)
 
@@ -391,6 +394,10 @@ class Model():
 
     def clear_cached_values(self):
         self.logger.info("Model.clear_cached_values")
+        #self.subject = {} # Not if we clear from put_session
+        self.session = {}
+        self.measurement = {}
+        self.contact = {}
         self.average_data.clear()
         self.contacts.clear()
         self.results.clear()
