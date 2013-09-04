@@ -21,7 +21,8 @@ before_install:
   - sudo apt-get install python-scipy
   - sudo apt-get install python-matplotlib
    #For Opencv
-  - sudo apt-get install opencv
+  #- sudo apt-get install opencv
+  - ./install-opencv.sh
   - sudo apt-get install python-opencv
   # For PySide
   - sudo apt-get install python-pyside
