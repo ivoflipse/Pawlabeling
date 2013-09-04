@@ -31,9 +31,9 @@ before_install:
 
 install:
   #- "pip install -r requirements.txt --use-mirrors"
-  - "pip install pypubsub"
-  - "pip install numexpr"
-  - "pip install cython"
-  - "pip install tables"
+  - "pip install -q pypubsub --use-mirrors"
+  - "pip install -q numexpr==1.4.2 --use-mirrors"
+  - "pip install -q cython --use-mirrors"
+  - "pip install -q tables==2.4.0 --use-mirrors"
 
 script: nosetests
