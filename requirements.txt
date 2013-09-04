@@ -4,3 +4,5 @@ cv2
 scipy
 matplotlib
 pypubsub
+tables
+nose
