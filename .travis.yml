@@ -7,7 +7,7 @@ virtualenv:
   system_site_packages: true
 
 before_install:
-  - before_install.sh
+  - ci/before_install.sh
 
 install:
   - "pip install -r requirements.txt --use-mirrors"
