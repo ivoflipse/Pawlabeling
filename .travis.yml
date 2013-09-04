@@ -1,39 +1,19 @@
 language: python
+
 python:
-    - "2.7"
-# command to install dependencies
+  - "2.7"
+
+virtualenv:
+  system_site_packages: true
+
+SITE_PKG_DIR=$VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/site-packages
+rm -f $VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/no-global-site-packages.tx
+
+before_install:
+  - sudo apt-get -qq install python-numpy python-scipy python-opencv
+  - sudo apt-get -qq install libhdf5-serial-dev hdf5-tools
+
 install:
-  # Copied from: https://github.com/heynemann/frec/blob/master/.travis.yml
-  # update aptitude
-  - sudo apt-get remove -y ffmpeg x264 libx264-dev
-  - sudo apt-get update -y
-
-  # install aptitude packages
-  - LDFLAGS=-lm sudo aptitude install -y $(< requirements)
-
-  # weird travis-ci python paths
-  - export PYTHONPATH=$PYTHONPATH:/usr/lib/pymodules/python2.7/
-  - export PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages
-  - export PYTHONPATH=$PYTHONPATH:/usr/lib/pyshared/python2.7/
-  - export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages/
-
-  # verify both requirements were met
-  - INSTALLDIR=$(python -c "import os; import numpy; print(os.path.dirname(numpy.__file__))")
-  - INSTALLDIR=$(python -c "import os; import scipy; print(os.path.dirname(scipy.__file__))")
-
-    # install python requirements
   - "pip install -r requirements.txt --use-mirrors"
 
-# command to run tests
-script:
-    # weird travis-ci python paths
-    - export PYTHONPATH=$PYTHONPATH:/usr/lib/pymodules/python2.7/
-    - export PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages
-    - export PYTHONPATH=$PYTHONPATH:/usr/lib/pyshared/python2.7/
-    - export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.7/site-packages/
-
-    # install opencv
-    - ./install-opencv.sh
-
-    # finally run tests
-    - make ci_test
+script: nosetests
