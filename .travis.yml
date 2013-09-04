@@ -9,18 +9,18 @@ before_install:
   - SITE_PKG_DIR=$VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/site-packages
     # workaround for travis ignoring system_site_packages in travis.yml
   - rm -f $VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/no-global-site-packages.txt
-  - sudo apt-get update
+  - sudo apt-get update -qq
   # For pytables
-  - sudo apt-get install libhdf5-serial-dev hdf5-tools python-numexpr cython
+  - sudo apt-get install -qq libhdf5-serial-dev hdf5-tools python-numexpr cython
   # For numpy/scipy
   - sudo apt-get install -qq gfortran swig liblapack-dev
   - sudo apt-get install -qq libatlas-base-dev libjpeg-dev libhdf5-serial-dev
   - sudo apt-get install -qq liblzo2-dev libsuitesparse-dev
   # For matplotlib
   - sudo apt-get install -qq libpng12-dev libfreetype6-dev tk-dev
-  - sudo apt-get install python-numpy
-  - sudo apt-get install python-scipy
-  - sudo apt-get install python-matplotlib
+  - sudo apt-get install -qq python-numpy
+  - sudo apt-get install -qq python-scipy
+  - sudo apt-get install -qq python-matplotlib
    #For Opencv
   #- sudo apt-get install opencv
   - sudo apt-get install python-opencv
@@ -32,6 +32,8 @@ before_install:
 install:
   #- "pip install -r requirements.txt --use-mirrors"
   - "pip install pypubsub"
+  - "pip install numexpr"
+  - "pip install cython"
   - "pip install tables"
 
 script: nosetests
