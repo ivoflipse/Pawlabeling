@@ -43,14 +43,16 @@ class contactView(QtGui.QWidget):
         self.label = QtGui.QLabel(label)
         self.contact_label = contact_label
         self.parent = parent
-        self.n_max = 0
         self.degree = configuration.interpolation_results
+        self.n_max = 0
+        self.image_color_table = utility.ImageColorTable()
+        self.color_table = self.image_color_table.create_color_table()
         self.mx = 15
         self.my = 15
         self.min_x = 0
-        self.max_x = 15
+        self.max_x = self.mx
         self.min_y = 0
-        self.max_y = 15
+        self.max_y = self.my
         self.max_z = 0
         self.frame = -1
         self.active = False
@@ -58,8 +60,10 @@ class contactView(QtGui.QWidget):
         self.ratio = 1
         self.cop_x = np.zeros(15)
         self.cop_y = np.zeros(15)
-        self.image_color_table = utility.ImageColorTable()
-        self.color_table = self.image_color_table.create_color_table()
+        self.data = np.zeros((self.mx, self.my))
+        self.average_data = np.zeros((self.mx, self.my, 1))
+        self.max_of_max = self.data.copy()
+        self.sliced_data = self.data.copy()
 
         self.line_pen = QtGui.QPen(QtCore.Qt.white)
         self.line_pen.setWidth(2)
@@ -104,8 +108,7 @@ class contactView(QtGui.QWidget):
             self.min_y = np.min(y) - 2
             self.max_y = np.max(y) + 2
             self.max_z = np.max(z) + 1 # Added some padding here
-
-            self.draw_frame()
+            self.change_frame(frame=-1)
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
@@ -116,7 +119,7 @@ class contactView(QtGui.QWidget):
         # Check if I'm the active widget
         if self.parent == widget:
             self.active = True
-            self.draw_frame()
+            self.change_frame(frame=self.frame)
 
     def update_n_max(self, n_max):
         self.n_max = n_max
@@ -207,7 +210,6 @@ class contactView(QtGui.QWidget):
         self.sliced_data = np.zeros((self.mx, self.my))
         self.average_data = np.zeros((self.mx, self.my, 15))
         self.max_of_max = self.sliced_data
-        self.contact_data = []
         self.min_x, self.max_x, self.min_y, self.max_y = 0, self.mx, 0, self.my
         # Put the screen to black
         self.image.setPixmap(

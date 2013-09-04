@@ -62,8 +62,6 @@ class contactView(QtGui.QWidget):
         self.average_data = np.zeros((self.mx, self.my, 1))
         self.max_of_max = self.data.copy()
         self.sliced_data = self.data.copy()
-        self.data_list = []
-        self.average_data_list = []
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
@@ -100,7 +98,7 @@ class contactView(QtGui.QWidget):
             self.min_y = np.min(y) - 2
             self.max_y = np.max(y) + 2
             self.max_z = np.max(z) + 1 # Added some padding here
-            self.draw_frame()
+            self.change_frame(frame=-1)
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
@@ -111,7 +109,7 @@ class contactView(QtGui.QWidget):
         # Check if I'm the active widget
         if self.parent == widget:
             self.active = True
-            self.draw_frame()
+            self.change_frame(frame=self.frame)
 
     def update_n_max(self, n_max):
         self.n_max = n_max

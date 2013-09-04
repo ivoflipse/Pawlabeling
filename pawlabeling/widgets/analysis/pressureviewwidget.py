@@ -1,5 +1,9 @@
 import numpy as np
 from PySide import QtGui
+# http://stackoverflow.com/questions/6723527/getting-pyside-to-work-with-matplotlib
+import matplotlib
+matplotlib.use("Qt4Agg")
+matplotlib.rcParams["backend.qt4"] ="PySide"
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from pubsub import pub
