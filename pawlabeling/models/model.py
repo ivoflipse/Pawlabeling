@@ -283,7 +283,10 @@ class Model():
         # Convert them to class objects
         for index, raw_contact in enumerate(raw_contacts):
             contact = contactmodel.Contact()
-            contact.create_contact(contact=raw_contact, measurement_data=self.measurement_data, padding=padding)
+            contact.create_contact(contact=raw_contact,
+                                   measurement_data=self.measurement_data,
+                                   padding=padding,
+                                   orientation=self.measurement["orientation"])
             contact.calculate_results()
             # Give each contact the same orientation as the measurement it originates from
             contact.set_orientation(self.measurement["orientation"])

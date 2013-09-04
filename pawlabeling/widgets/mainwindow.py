@@ -3,6 +3,12 @@ import os
 import logging
 from PySide import QtGui, QtCore
 from pubsub import pub
+# Set this right away, so its set for the whole application
+# http://stackoverflow.com/questions/6723527/getting-pyside-to-work-with-matplotlib
+import matplotlib
+matplotlib.use("Qt4Agg")
+matplotlib.rcParams["backend.qt4"] ="PySide"
+
 from pawlabeling.settings import configuration
 from pawlabeling.functions.qsingleapplication import QtSingleApplication
 from pawlabeling.models import model

@@ -36,7 +36,7 @@ class Contact():
         self.contact_label = -2  # contacts are labeled as -2 by default
         self.orientation = False  # True means the contact is upside down
 
-    def create_contact(self, contact, measurement_data, padding=0):
+    def create_contact(self, contact, measurement_data, padding=0, orientation=False):
         """
         This function expects a contact object, which is a dictionary of frames:list of contours and a padding value
         It will remove the padding from the contours and calculate the dimensions of a bounding box
@@ -73,6 +73,9 @@ class Contact():
         self.convert_contour_to_slice(measurement_data)
         # Check if the contact is valid
         self.validate_contact(measurement_data)
+        # If the contact is upside down, fix that
+        if orientation:
+            self.data = np.rot90(np.rot90(self.data))
         # Calculate the results
         self.calculate_results()
 
