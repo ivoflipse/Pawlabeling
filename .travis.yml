@@ -4,6 +4,13 @@ python:
 # command to install dependencies
 install:
   # Copied from: https://github.com/heynemann/frec/blob/master/.travis.yml
+  # update aptitude
+  - sudo apt-get remove -y ffmpeg x264 libx264-dev
+  - sudo apt-get update -y
+
+  # install aptitude packages
+  - LDFLAGS=-lm sudo aptitude install -y $(< requirements)
+
   # weird travis-ci python paths
   - export PYTHONPATH=$PYTHONPATH:/usr/lib/pymodules/python2.7/
   - export PYTHONPATH=$PYTHONPATH:/usr/lib/python2.7/dist-packages
