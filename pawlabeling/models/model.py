@@ -111,27 +111,32 @@ class Model():
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
 
     def create_contact(self, contact):
+        contact_data = contact["data"]
+        # Remove the key
+        del contact["data"]
+        self.contact_group = self.contacts_table.create_contact(**contact)
+
+        # These are all the results (for now) I want to add to the contact
+        results = {"data": contact_data,
+                   "max_of_max": contact_data.max(axis=2),
+                   "force_over_time": calculations.force_over_time(contact_data),
+                   "pressure_over_time": calculations.pressure_over_time(contact_data),
+                   "surface_over_time": calculations.surface_over_time(contact_data),
+                   "cop_x": calculations.calculate_cop(contact_data)[0],
+                   "cop_y": calculations.calculate_cop(contact_data)[1]}  # Uhoh, this is expensive...
+
+
         try:
-            contact_data = contact["data"]
-            # Remove the key
-            del contact["data"]
-            self.contact_group = self.contacts_table.create_contact(**contact)
-
-            # These are all the results (for now) I want to add to the contact
-            results = {"data": contact_data,
-                       "max_of_max": contact_data.max(axis=2),
-                       "force_over_time": calculations.force_over_time(contact_data),
-                       "pressure_over_time": calculations.pressure_over_time(contact_data),
-                       "surface_over_time": calculations.surface_over_time(contact_data),
-                       "cop_x": calculations.calculate_cop(contact_data)[0],
-                       "cop_y": calculations.calculate_cop(contact_data)[1]}  # Uhoh, this is expensive...
-
             for item_id, data in results.items():
-                # Check if it doesn't already exist
+                # TODO fix this test, since it doesn't work as it should
                 if not self.contacts_table.get_data(group=self.contact_group, item_id=item_id):
                     self.contacts_table.store_data(group=self.contact_group,
                                                    item_id=item_id,
                                                    data=data)
+                else:
+                    # TODO If it already exists, we need to update the row instead
+                    pass
+
         except MissingIdentifier:
             self.logger.warning("Model.create_contacts: Some of the required fields are missing")
 
@@ -201,7 +206,7 @@ class Model():
 
     def put_session(self, session):
         # Whenever we switch sessions, clear the cache
-        self.clear_cached_values()
+        #self.clear_cached_values()
 
         #print "model.put_session"
         self.session = session
@@ -409,7 +414,7 @@ class Model():
     def clear_cached_values(self):
         self.logger.info("Model.clear_cached_values")
         #self.subject = {} # Not if we clear from put_session
-        self.session = {}
+        #self.session = {}
         self.measurement = {}
         self.contact = {}
         self.average_data.clear()

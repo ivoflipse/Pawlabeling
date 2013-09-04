@@ -88,7 +88,8 @@ class Contact():
         # TODO reduce this size to the size of the bounding box of the contact (width, length, duration)
         self.data = np.zeros((self.width, self.height, self.length))
 
-        for index, (frame, contours) in enumerate(self.contour_list.items()):
+
+        for index, (frame, contours) in enumerate(sorted(self.contour_list.items())):
             # Pass a single contour as if it were a contact
             center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: contours})
             # Get the non_zero pixels coordinates for that frame
