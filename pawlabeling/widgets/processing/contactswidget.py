@@ -12,11 +12,11 @@ class contactsWidget(QtGui.QWidget):
         super(contactsWidget, self).__init__(parent)
         self.parent = parent
 
-        self.left_front = contactWidget(self, label="Left Front", contact_label=0)
-        self.left_hind = contactWidget(self, label="Left Hind", contact_label=1)
-        self.right_front = contactWidget(self, label="Right Front", contact_label=2)
-        self.right_hind = contactWidget(self, label="Right Hind", contact_label=3)
-        self.current_contact = contactWidget(self, label="", contact_label=-1)
+        self.left_front = ContactWidget(self, label="Left Front", contact_label=0)
+        self.left_hind = ContactWidget(self, label="Left Hind", contact_label=1)
+        self.right_front = ContactWidget(self, label="Right Front", contact_label=2)
+        self.right_hind = ContactWidget(self, label="Right Hind", contact_label=3)
+        self.current_contact = ContactWidget(self, label="", contact_label=-1)
 
         self.average_data = defaultdict(list)
 
@@ -136,9 +136,9 @@ class contactsWidget(QtGui.QWidget):
             widget.clear_cached_values()
 
 
-class contactWidget(QtGui.QWidget):
+class ContactWidget(QtGui.QWidget):
     def __init__(self, parent, label, contact_label):
-        super(contactWidget, self).__init__(parent)
+        super(ContactWidget, self).__init__(parent)
         self.parent = parent
         self.degree = configuration.interpolation_contacts_widget
         self.n_max = 0
