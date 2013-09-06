@@ -13,9 +13,6 @@ class MeasurementModel():
         self.logger = logging.getLogger("logger")
         pub.subscribe(self.create_measurement, "create_measurement")
 
-    def set_parent_id(self, subject_id, session_id):
-        self.measurements_table.set_parent_id(subject_id=subject_id, session_id=session_id)
-
     def create_measurement(self, measurement=None):
         try:
             self.measurements_table.create_measurement(**measurement)

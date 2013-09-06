@@ -65,7 +65,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.entire_plate_widget.setMinimumWidth(configuration.entire_plate_widget_width)
         self.entire_plate_widget.setMaximumHeight(configuration.entire_plate_widget_height)
 
-        self.contacts_widget = contactswidget.contactsWidget(self)
+        self.contacts_widget = contactswidget.ContactWidgets(self)
 
         self.layout = QtGui.QVBoxLayout()
         self.layout.addLayout(self.label_layout)

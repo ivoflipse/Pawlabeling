@@ -26,7 +26,7 @@ widgets:
 
 interpolation_degree:
   entire_plate: 4
-  contacts_widget: 8
+  contact_widgets: 8
   results: 16
 
 thresholds:

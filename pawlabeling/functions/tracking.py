@@ -94,8 +94,8 @@ def merging_contacts(contacts):
     contacts is <= the euclidean distance, then we check if they also made contact during the
     same frames. This ensures that only contours that are in each others vicinity for a sufficient
     amount of frames are considered for merging. Just naively merging based on distance would
-    cause problems if dogs place the contacts too close too each other.
-    This will fail if the dogs contacts are close for more frames than the threshold.
+    cause problems if the contacts are too close too each other.
+    This will fail if the contacts are close for more frames than the threshold.
     """
     import heapq
 

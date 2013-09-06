@@ -7,9 +7,9 @@ from pawlabeling.functions import utility, calculations
 from pawlabeling.settings import configuration
 
 
-class contactsWidget(QtGui.QWidget):
+class ContactWidgets(QtGui.QWidget):
     def __init__(self, parent):
-        super(contactsWidget, self).__init__(parent)
+        super(ContactWidgets, self).__init__(parent)
         self.parent = parent
 
         self.left_front = ContactWidget(self, label="Left Front", contact_label=0)
@@ -140,7 +140,7 @@ class ContactWidget(QtGui.QWidget):
     def __init__(self, parent, label, contact_label):
         super(ContactWidget, self).__init__(parent)
         self.parent = parent
-        self.degree = configuration.interpolation_contacts_widget
+        self.degree = configuration.interpolation_contact_widgets
         self.n_max = 0
         self.label = label
         self.contact_label = contact_label

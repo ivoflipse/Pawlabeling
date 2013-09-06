@@ -149,7 +149,7 @@ contacts_widget_height = config["widgets"]["contacts_widget_height"]
 # This determines the amount of interpolation used to increase the size of the canvas of entire plate and contact
 # Decrease this value if you have a smaller screen
 interpolation_entire_plate = config["interpolation_degree"]["entire_plate"]
-interpolation_contacts_widget = config["interpolation_degree"]["contacts_widget"]
+interpolation_contact_widgets = config["interpolation_degree"]["contact_widgets"]
 interpolation_results = config["interpolation_degree"]["results"]
 
 zip_files = config["application"]["zip_files"]

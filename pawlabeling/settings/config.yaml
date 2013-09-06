@@ -7,7 +7,7 @@ folders:
   measurement_folder: .\samples\Measurements
   store_results_folder: .\samples\Labels
 interpolation_degree:
-  contacts_widget: 8
+  contact_widgets: 8
   entire_plate: 4
   results: 16
 plate:

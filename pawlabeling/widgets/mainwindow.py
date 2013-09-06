@@ -15,6 +15,7 @@ from pawlabeling.models import model
 from pawlabeling.widgets.analysis import analysiswidget
 from pawlabeling.widgets.processing import processingwidget
 from pawlabeling.widgets.database import databasewidget
+from pawlabeling.widgets.settings import settingswidget
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -39,8 +40,10 @@ class MainWindow(QtGui.QMainWindow):
         self.database_widget = databasewidget.DatabaseWidget(self)
         self.processing_widget = processingwidget.ProcessingWidget(self)
         self.analysis_widget = analysiswidget.AnalysisWidget(self)
+        self.settings_widget = settingswidget.SettingsWidget(self)
 
-        self.tab_dict = {0:"Database", 1:"Processing", 2:"Analysis"}
+        self.tab_dict = {0:"Database", 1:"Processing",
+                         2:"Analysis", 3:"Settings"}
 
         self.status = self.statusBar()
         self.status.showMessage("Ready")
@@ -51,6 +54,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tab_widget.addTab(self.database_widget, "Database")
         self.tab_widget.addTab(self.processing_widget, "Processing")
         self.tab_widget.addTab(self.analysis_widget, "Analysis")
+        self.tab_widget.addTab(self.settings_widget, "Settings")
         self.tab_widget.currentChanged.connect(self.change_tabs)
 
         self.setCentralWidget(self.tab_widget)
@@ -76,8 +80,10 @@ class MainWindow(QtGui.QMainWindow):
             self.processing_widget.put_measurement()
         elif self.tab_widget.currentIndex() == 2:
             self.processing_widget.unsubscribe()
-            self.analysis_widget.calculate_results()
+            #self.analysis_widget.calculate_results()  # I think this is already done
             self.analysis_widget.put_measurement()
+        elif self.tab_widget.currentIndex() == 3:
+            self.processing_widget.unsubscribe()
 
     def change_status(self, status):
         self.logger.info(status)
