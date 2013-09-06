@@ -29,7 +29,6 @@ class Table(object):
         self.table.flush()
         return group
 
-    # TODO I removed the assertion to check whether we have multiple hits
     # Though in practice this should NOT be possible
     def search_table(self, table, **kwargs):
         # Create a query out of the kwargs
@@ -271,15 +270,12 @@ class ContactsTable(Table):
         if "contact_id" not in kwargs:
             raise MissingIdentifier("I need at least a contact id")
 
-        if self.get_contact_row(self.contacts_table, contact_id=kwargs["contact_id"]):
-            print "Contact already exists"
-            # Return the group instead
-            return self.measurement_group.__getattr__(kwargs["contact_id"])
-
         self.create_row(self.contacts_table, **kwargs)
         group = self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])
-        print "Contact created"
         return group
+
+    def update_contact(self, **kwargs):
+        pass
 
     def get_contact_row(self, table, contact_id=""):
         return self.search_table(table, contact_id=contact_id)

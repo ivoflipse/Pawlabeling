@@ -67,11 +67,9 @@ class Model():
         subject_id = self.subjects_table.get_new_id(self.subjects_table)
         subject["subject_id"] = subject_id
 
-        try:
-            self.subject_group = self.subjects_table.create_subject(**subject)
-            pub.sendMessage("update_statusbar", status="Model.create_subject: Subject created")
-        except MissingIdentifier:
-            self.logger.warning("Model.create_subject: Some of the required fields are missing")
+        self.subject_group = self.subjects_table.create_subject(**subject)
+        pub.sendMessage("update_statusbar", status="Model.create_subject: Subject created")
+
 
     def create_session(self, session):
         # Check if the session isn't already in the table
@@ -83,11 +81,9 @@ class Model():
         session_id = self.sessions_table.get_new_id(self.sessions_table)
         session["session_id"] = session_id
 
-        try:
-            self.session_group = self.sessions_table.create_session(**session)
-            pub.sendMessage("update_statusbar", status="Model.create_session: Session created")
-        except MissingIdentifier:
-            self.logger.warning("Model.create_session: Some of the required fields are missing")
+        self.session_group = self.sessions_table.create_session(**session)
+        pub.sendMessage("update_statusbar", status="Model.create_session: Session created")
+
 
     # TODO consider moving this to a Measurement class
     def create_measurement(self, measurement):
@@ -103,7 +99,7 @@ class Model():
         self.measurement["subject_id"] = self.subject_id
         self.measurement["session_id"] = self.session_id
         measurement_id = self.measurements_table.get_new_id(self.measurements_table)
-        measurement["measurement_id"] = measurement_id
+        self.measurement["measurement_id"] = measurement_id
 
         # Check if the file is zipped or not and extract the raw measurement_data
         if measurement_name[-3:] == "zip":
@@ -131,52 +127,60 @@ class Model():
         # We're not going to store this, so we delete the key
         del self.measurement["file_path"]
 
-        try:
-            self.measurement_group = self.measurements_table.create_measurement(**self.measurement)
-            # Don't forget to store the measurement_data for the measurement as well!
-            self.measurements_table.store_data(group=self.measurement_group,
-                                               item_id=self.measurement["measurement_name"],
-                                               data=self.measurement_data)
-        except MissingIdentifier:
-            self.logger.warning("Model.create_measurement: Some of the required fields are missing")
+        self.measurement_group = self.measurements_table.create_measurement(**self.measurement)
+        pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement created")
+        # Don't forget to store the measurement_data for the measurement as well!
+        self.measurements_table.store_data(group=self.measurement_group,
+                                           item_id=self.measurement["measurement_name"],
+                                           data=self.measurement_data)
+        pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement data created")
 
         contacts = self.track_contacts()
         for contact in contacts:
             contact = contact.to_dict()  # This takes care of some of the book keeping for us
             contact["subject_id"] = self.subject_id
             contact["session_id"] = self.session_id
-            contact["measurement_id"] = self.measurement_group._v_name
+            contact["measurement_id"] = self.measurement["measurement_id"]
             self.create_contact(contact)
 
     def create_contact(self, contact):
+        update = False
+        # If a contact already exists, we'll overwrite it
+        if self.contacts_table.get_contact_row(self.contacts_table, contact_id=contact["contact_id"]):
+            update = True
+
         contact_data = contact["data"]
         # Remove the key
         del contact["data"]
-        # TODO If it already exists, we need to update the row instead
-        contact_group = self.contacts_table.create_contact(**contact)
+
+        if update:
+            contact_group = self.contacts_table.update_contact(**contact)
+        else:
+            contact_group = self.contacts_table.create_contact(**contact)
+
+        pub.sendMessage("update_statusbar", status="model.create_contact: Contact created")
 
         # These are all the results (for now) I want to add to the contact
+        cop_x, cop_y = calculations.calculate_cop(contact_data)
         results = {"data": contact_data,
                    "max_of_max": contact_data.max(axis=2),
                    "force_over_time": calculations.force_over_time(contact_data),
                    "pressure_over_time": calculations.pressure_over_time(contact_data),
                    "surface_over_time": calculations.surface_over_time(contact_data),
-                   "cop_x": calculations.calculate_cop(contact_data)[0],
-                   "cop_y": calculations.calculate_cop(contact_data)[1]}  # Uhoh, this is expensive...
+                   "cop_x": cop_x,
+                   "cop_y": cop_y
+        }
 
+        for item_id, data in results.items():
+            if not self.contacts_table.get_data(group=contact_group, item_id=item_id):
+                self.contacts_table.store_data(group=contact_group,
+                                               item_id=item_id,
+                                               data=data)
+            else:
+                # TODO If it already exists, we need to update the row instead
+                pass
+        pub.sendMessage("update_statusbar", status="model.create_contact: Contact data created")
 
-        try:
-            for item_id, data in results.items():
-                if not self.contacts_table.get_data(group=contact_group, item_id=item_id):
-                    self.contacts_table.store_data(group=contact_group,
-                                                   item_id=item_id,
-                                                   data=data)
-                else:
-                    # TODO If it already exists, we need to update the row instead
-                    pass
-
-        except MissingIdentifier:
-            self.logger.warning("Model.create_contacts: Some of the required fields are missing")
 
     def store_contacts(self):
         try:
