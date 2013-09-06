@@ -95,20 +95,8 @@ class SubjectsTable(Table):
         if "first_name" not in kwargs and "last_name" not in kwargs and "birthday" not in kwargs:
             raise MissingIdentifier("I need at least a first name, last name and birthday")
 
-        # TODO Add some other validation to see if the input values are correct
-
-        # Check if the subject is already in the table
-        if self.get_subject(first_name=kwargs["first_name"],
-                            last_name=kwargs["last_name"], birthday=kwargs["birthday"]):
-            print "Subject already exists"
-            return -1
-
-        subject_id = self.get_new_id(self.subjects_table)
-        kwargs["subject_id"] = subject_id
-
         self.create_row(self.subjects_table, **kwargs)
-        group = self.create_group(parent=self.table.root, item_id=subject_id)
-        print "Subject created"
+        group = self.create_group(parent=self.table.root, item_id=kwargs["subject_id"])
         return group
 
     def get_subject(self, first_name="", last_name="", birthday=""):
@@ -161,18 +149,8 @@ class SessionsTable(Table):
         if "session_name" not in kwargs:
             raise MissingIdentifier("I need at least a session name")
 
-        # Check if the session isn't already in the table
-        if self.get_session_row(self.sessions_table, session_name=kwargs["session_name"]):
-            print "Session already exists"
-            return -1
-
-        # How many sessions do we already have?
-        session_id = self.get_new_id(self.sessions_table)
-        kwargs["session_id"] = session_id
-
         self.create_row(self.sessions_table, **kwargs)
-        group = self.create_group(parent=self.subject_group, item_id=session_id)
-        print "Session created"
+        group = self.create_group(parent=self.subject_group, item_id=kwargs["session_id"])
         return group
 
     def get_session_row(self, table, session_name=""):
@@ -230,16 +208,8 @@ class MeasurementsTable(Table):
         if "measurement_name" not in kwargs:
             raise MissingIdentifier("I need at least a measurement name")
 
-        if self.get_measurement_row(self.measurements_table, measurement_name=kwargs["measurement_name"]):
-            print "Measurement already exists"
-            return -1
-
-        measurement_id = self.get_new_id(self.measurements_table)
-        kwargs["measurement_id"] = measurement_id
-
         self.create_row(self.measurements_table, **kwargs)
-        group = self.create_group(parent=self.session_group, item_id=measurement_id)
-        print "Measurement created"
+        group = self.create_group(parent=self.session_group, item_id=kwargs["measurement_id"])
         return group
 
     def get_measurement_row(self, table, measurement_name=""):

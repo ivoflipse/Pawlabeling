@@ -56,14 +56,36 @@ class Model():
         """
         This function takes a subject dictionary object and stores it in PyTables
         """
+        # TODO Add some other validation to see if the input values are correct
+        # Check if the subject is already in the table
+        if self.subjects_table.get_subject(first_name=subject["first_name"], last_name=subject["last_name"],
+                                           birthday=subject["birthday"]):
+            pub.sendMessage("update_statusbar", status="Model.create_subject: Subject already exists")
+            return
+
+        # Create a subject id
+        subject_id = self.subjects_table.get_new_id(self.subjects_table)
+        subject["subject_id"] = subject_id
+
         try:
             self.subject_group = self.subjects_table.create_subject(**subject)
+            pub.sendMessage("update_statusbar", status="Model.create_subject: Subject created")
         except MissingIdentifier:
             self.logger.warning("Model.create_subject: Some of the required fields are missing")
 
     def create_session(self, session):
+        # Check if the session isn't already in the table
+        if self.sessions_table.get_session_row(self.sessions_table, session_name=session["session_name"]):
+            pub.sendMessage("update_statusbar", status="Model.create_session: Session already exists")
+            return
+
+        # How many sessions do we already have?
+        session_id = self.sessions_table.get_new_id(self.sessions_table)
+        session["session_id"] = session_id
+
         try:
             self.session_group = self.sessions_table.create_session(**session)
+            pub.sendMessage("update_statusbar", status="Model.create_session: Session created")
         except MissingIdentifier:
             self.logger.warning("Model.create_session: Some of the required fields are missing")
 
@@ -72,8 +94,16 @@ class Model():
         measurement_name = measurement["measurement_name"]
         file_path = measurement["file_path"]
 
+        if self.measurements_table.get_measurement_row(self.measurements_table,
+                                                       measurement_name=measurement["measurement_name"]):
+            pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement already exists")
+            return
+
+        self.measurement = measurement
         self.measurement["subject_id"] = self.subject_id
         self.measurement["session_id"] = self.session_id
+        measurement_id = self.measurements_table.get_new_id(self.measurements_table)
+        measurement["measurement_id"] = measurement_id
 
         # Check if the file is zipped or not and extract the raw measurement_data
         if measurement_name[-3:] == "zip":
@@ -90,13 +120,13 @@ class Model():
                 io.zip_file(configuration.measurement_folder, measurement_name)
 
         # Extract the measurement_data
-        data = io.load(input_file, brand=self.measurement["brand"])
-        number_of_rows, number_of_cols, number_of_frames = data.shape
+        self.measurement_data = io.load(input_file, brand=self.measurement["brand"])
+        number_of_rows, number_of_cols, number_of_frames = self.measurement_data.shape
         self.measurement["number_of_rows"] = number_of_rows
         self.measurement["number_of_cols"] = number_of_cols
         self.measurement["number_of_frames"] = number_of_frames
-        self.measurement["orientation"] = io.check_orientation(data)
-        self.measurement["maximum_value"] = data.max()  # Perhaps round this and store it as an int?
+        self.measurement["orientation"] = io.check_orientation(self.measurement_data)
+        self.measurement["maximum_value"] = self.measurement_data.max()  # Perhaps round this and store it as an int?
 
         # We're not going to store this, so we delete the key
         del self.measurement["file_path"]
@@ -106,37 +136,24 @@ class Model():
             # Don't forget to store the measurement_data for the measurement as well!
             self.measurements_table.store_data(group=self.measurement_group,
                                                item_id=self.measurement["measurement_name"],
-                                               data=data)
+                                               data=self.measurement_data)
         except MissingIdentifier:
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
 
-        # TODO Create the contacts, just leave some fields unassigned
         contacts = self.track_contacts()
-        self.store_contacts()
-
-    def store_contacts(self):
-        for contact in self.contacts[self.measurement_name]:
+        for contact in contacts:
             contact = contact.to_dict()  # This takes care of some of the book keeping for us
             contact["subject_id"] = self.subject_id
             contact["session_id"] = self.session_id
-            contact["measurement_id"] = self.measurement_id
+            contact["measurement_id"] = self.measurement_group._v_name
             self.create_contact(contact)
-
-        try:
-            self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
-                self.measurement_name))
-            pub.sendMessage("update_statusbar", status="Results saved")
-            pub.sendMessage("stored_status", success=True)
-        except Exception as e:
-            self.logger.critical("Model.store_contacts: Storing failed! {}".format(e))
-            pub.sendMessage("update_statusbar", status="Storing results failed!")
-            pub.sendMessage("stored_status", success=False)
 
     def create_contact(self, contact):
         contact_data = contact["data"]
         # Remove the key
         del contact["data"]
-        self.contact_group = self.contacts_table.create_contact(**contact)
+        # TODO If it already exists, we need to update the row instead
+        contact_group = self.contacts_table.create_contact(**contact)
 
         # These are all the results (for now) I want to add to the contact
         results = {"data": contact_data,
@@ -150,9 +167,8 @@ class Model():
 
         try:
             for item_id, data in results.items():
-                # TODO fix this test, since it doesn't work as it should
-                if not self.contacts_table.get_data(group=self.contact_group, item_id=item_id):
-                    self.contacts_table.store_data(group=self.contact_group,
+                if not self.contacts_table.get_data(group=contact_group, item_id=item_id):
+                    self.contacts_table.store_data(group=contact_group,
                                                    item_id=item_id,
                                                    data=data)
                 else:
@@ -161,6 +177,24 @@ class Model():
 
         except MissingIdentifier:
             self.logger.warning("Model.create_contacts: Some of the required fields are missing")
+
+    def store_contacts(self):
+        try:
+            for contact in self.contacts[self.measurement_name]:
+                contact = contact.to_dict()  # This takes care of some of the book keeping for us
+                contact["subject_id"] = self.subject_id
+                contact["session_id"] = self.session_id
+                contact["measurement_id"] = self.measurement_id
+                self.create_contact(contact)
+
+            self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
+                self.measurement_name))
+            pub.sendMessage("update_statusbar", status="Results saved")
+            pub.sendMessage("stored_status", success=True)
+        except Exception as e:
+            self.logger.critical("Model.store_contacts: Storing failed! {}".format(e))
+            pub.sendMessage("update_statusbar", status="Storing results failed!")
+            pub.sendMessage("stored_status", success=False)
 
     def get_subjects(self, subject={}):
         subjects = self.subjects_table.get_subjects(**subject)
