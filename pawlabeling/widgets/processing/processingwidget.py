@@ -272,16 +272,16 @@ class ProcessingWidget(QtGui.QWidget):
         if not self.contacts_available():
             return
 
+        # We can't go to a previous contact
+        if self.current_contact_index == 0:
+            return
+
         # If we haven't labeled the current contact yet, mark it as unselected
         current_contact = self.get_current_contact()
         if current_contact.contact_label == -1:
             current_contact.contact_label = -2
 
         self.current_contact_index -= 1
-        if self.current_contact_index < 0:
-            self.current_contact_index = 0
-            return
-
         current_contact = self.get_current_contact()
         # If we encounter an invalid contact and its not the first contact, skip this one
         if current_contact.contact_label == -3 and self.check_label_status():
@@ -295,16 +295,16 @@ class ProcessingWidget(QtGui.QWidget):
         if not self.contacts_available():
             return
 
+        # We can't go further so return
+        if self.current_contact_index == len(self.contacts[self.measurement_name]):
+            return
+
         # If we haven't labeled the current contact yet, mark it as unselected
         current_contact = self.get_current_contact()
         if current_contact.contact_label == -1:
             current_contact.contact_label = -2
 
         self.current_contact_index += 1
-        if self.current_contact_index >= len(self.contacts[self.measurement_name]):
-            self.current_contact_index = len(self.contacts[self.measurement_name]) - 1
-            return
-
         current_contact = self.get_current_contact()
         # If we encounter an invalid contact and its not the last contact, skip this one
         if current_contact.contact_label == -3 and self.check_label_status():

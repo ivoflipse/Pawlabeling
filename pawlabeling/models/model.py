@@ -20,6 +20,8 @@ class Model():
 
         self.subject_name = ""
         self.measurement_name = ""
+        self.session_id = ""
+        self.subject_id = ""
 
         # Initialize our variables that will cache results
         self.average_data = defaultdict()
@@ -72,6 +74,11 @@ class Model():
 
 
     def create_session(self, session):
+        if not self.subject_id:
+            pub.sendMessage("update_statusbar", status="Model.create_session: Subject not selected")
+            pub.sendMessage("message_box", message="Please select a subject")
+            return
+
         # Check if the session isn't already in the table
         if self.sessions_table.get_session_row(session_name=session["session_name"]).size:
             pub.sendMessage("update_statusbar", status="Model.create_session: Session already exists")
@@ -87,6 +94,11 @@ class Model():
 
     # TODO consider moving this to a Measurement class or at least refactoring it
     def create_measurement(self, measurement):
+        if not self.session_id:
+            pub.sendMessage("update_statusbar", status="Model.create_measurement: Session not selected")
+            pub.sendMessage("message_box", message="Please select a session")
+            return
+
         measurement_name = measurement["measurement_name"]
         file_path = measurement["file_path"]
 
@@ -468,10 +480,13 @@ class Model():
 
     def clear_cached_values(self):
         self.logger.info("Model.clear_cached_values")
-        #self.subject = {} # Not if we clear from put_session
         self.session = {}
         self.measurement = {}
         self.contact = {}
+        self.subject_name = ""
+        self.measurement_name = ""
+        self.session_id = ""
+        self.subject_id = ""
         self.average_data.clear()
         self.contacts.clear()
         self.results.clear()

@@ -45,6 +45,8 @@ class MainWindow(QtGui.QMainWindow):
         self.status = self.statusBar()
         self.status.showMessage("Ready")
 
+        self.message_box = QtGui.QMessageBox()
+
         self.tab_widget = QtGui.QTabWidget(self)
         self.tab_widget.addTab(self.database_widget, "Database")
         self.tab_widget.addTab(self.processing_widget, "Processing")
@@ -55,6 +57,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.installEventFilter(self)
         pub.subscribe(self.change_status, "update_statusbar")
+        pub.subscribe(self.launch_message_box, "message_box")
 
     def center(self):
         qr = self.frameGeometry()
@@ -79,6 +82,10 @@ class MainWindow(QtGui.QMainWindow):
     def change_status(self, status):
         self.logger.info(status)
         self.status.showMessage(status)
+
+    def launch_message_box(self, message):
+        self.message_box.setText(message)
+        self.message_box.exec_()
 
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.KeyPress:
