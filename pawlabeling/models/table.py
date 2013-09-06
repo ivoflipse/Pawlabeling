@@ -21,9 +21,6 @@ class Table(object):
         # Flush the changes
         table.flush()
 
-    def get_new_id(self, table):
-        return "{}_{}".format(self.table_name, len(table))
-
     def create_group(self, parent, item_id):
         group = self.table.createGroup(where=parent, name=item_id)
         self.table.flush()
@@ -98,6 +95,9 @@ class SubjectsTable(Table):
         group = self.create_group(parent=self.table.root, item_id=kwargs["subject_id"])
         return group
 
+    def get_new_id(self):
+        return "{}_{}".format(self.table_name, len(self.subjects_table))
+
     def get_subject(self, first_name="", last_name="", birthday=""):
         return self.search_table(self.subjects_table, first_name=first_name,
                                  last_name=last_name, birthday=birthday)
@@ -152,8 +152,11 @@ class SessionsTable(Table):
         group = self.create_group(parent=self.subject_group, item_id=kwargs["session_id"])
         return group
 
-    def get_session_row(self, table, session_name=""):
-        return self.search_table(table, session_name=session_name)
+    def get_new_id(self):
+        return "{}_{}".format(self.table_name, len(self.sessions_table))
+
+    def get_session_row(self, session_name=""):
+        return self.search_table(self.sessions_table, session_name=session_name)
 
     def get_sessions(self, **kwargs):
         if kwargs.get("session_name", None):
@@ -211,8 +214,11 @@ class MeasurementsTable(Table):
         group = self.create_group(parent=self.session_group, item_id=kwargs["measurement_id"])
         return group
 
-    def get_measurement_row(self, table, measurement_name=""):
-        return self.search_table(table, measurement_name=measurement_name)
+    def get_new_id(self):
+        return "{}_{}".format(self.table_name, len(self.measurements_table))
+
+    def get_measurement_row(self, measurement_name=""):
+        return self.search_table(self.measurements_table, measurement_name=measurement_name)
 
     def get_measurements(self, **kwargs):
         if kwargs.get("measurement_name", None):
@@ -274,11 +280,21 @@ class ContactsTable(Table):
         group = self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])
         return group
 
-    def update_contact(self, **kwargs):
-        pass
+    def get_new_id(self):
+        return "{}_{}".format(self.table_name, len(self.contacts_table))
 
-    def get_contact_row(self, table, contact_id=""):
-        return self.search_table(table, contact_id=contact_id)
+    def update_contact(self, **kwargs):
+        for row in self.contacts_table:
+            if row["contact_id"] == kwargs["contact_id"]:
+                # Update any fields that have changed
+                for key, value in kwargs.items():
+                    if row[key] != value:
+                        row[key] = value
+                        row.update()
+        self.table.flush()
+
+    def get_contact_row(self, contact_id=""):
+        return self.search_table(self.contacts_table, contact_id=contact_id)
 
     def get_contacts(self, **kwargs):
         contact_list = self.contacts_table.read()
@@ -302,7 +318,7 @@ class ContactDataTable(Table):
         self.item_ids = ["data", "max_of_max", "pressure_over_time", "force_over_time", "surface_over_time",
                          "cop_x","cop_y"]
 
-    def get_data(self):
+    def get_contact_data(self):
         contacts = []
         for contact in self.measurement_group.contacts:
             contact_id = contact["contact_id"]

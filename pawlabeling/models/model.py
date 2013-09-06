@@ -59,12 +59,12 @@ class Model():
         # TODO Add some other validation to see if the input values are correct
         # Check if the subject is already in the table
         if self.subjects_table.get_subject(first_name=subject["first_name"], last_name=subject["last_name"],
-                                           birthday=subject["birthday"]):
+                                           birthday=subject["birthday"]).size:
             pub.sendMessage("update_statusbar", status="Model.create_subject: Subject already exists")
             return
 
         # Create a subject id
-        subject_id = self.subjects_table.get_new_id(self.subjects_table)
+        subject_id = self.subjects_table.get_new_id()
         subject["subject_id"] = subject_id
 
         self.subject_group = self.subjects_table.create_subject(**subject)
@@ -73,40 +73,40 @@ class Model():
 
     def create_session(self, session):
         # Check if the session isn't already in the table
-        if self.sessions_table.get_session_row(self.sessions_table, session_name=session["session_name"]):
+        if self.sessions_table.get_session_row(session_name=session["session_name"]).size:
             pub.sendMessage("update_statusbar", status="Model.create_session: Session already exists")
             return
 
         # How many sessions do we already have?
-        session_id = self.sessions_table.get_new_id(self.sessions_table)
+        session_id = self.sessions_table.get_new_id()
         session["session_id"] = session_id
 
         self.session_group = self.sessions_table.create_session(**session)
         pub.sendMessage("update_statusbar", status="Model.create_session: Session created")
 
 
-    # TODO consider moving this to a Measurement class
+    # TODO consider moving this to a Measurement class or at least refactoring it
     def create_measurement(self, measurement):
         measurement_name = measurement["measurement_name"]
         file_path = measurement["file_path"]
 
-        if self.measurements_table.get_measurement_row(self.measurements_table,
-                                                       measurement_name=measurement["measurement_name"]):
-            pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement already exists")
-            return
-
         self.measurement = measurement
         self.measurement["subject_id"] = self.subject_id
         self.measurement["session_id"] = self.session_id
-        measurement_id = self.measurements_table.get_new_id(self.measurements_table)
+        measurement_id = self.measurements_table.get_new_id()
         self.measurement["measurement_id"] = measurement_id
+        if measurement_name[-3:] == "zip":
+            # Store the file_name without the .zip
+            self.measurement["measurement_name"] = measurement_name[:-4]
+
+        if self.measurements_table.get_measurement_row(measurement_name=self.measurement["measurement_name"]).size:
+            pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement already exists")
+            return
 
         # Check if the file is zipped or not and extract the raw measurement_data
         if measurement_name[-3:] == "zip":
             # Unzip the file
             input_file = io.open_zip_file(file_path)
-            # Store the file_name without the .zip
-            self.measurement["measurement_name"] = measurement_name[:-4]  # Store without the zip part please
         else:
             with open(file_path, "r") as infile:
                 input_file = infile.read()
@@ -135,6 +135,10 @@ class Model():
                                            data=self.measurement_data)
         pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement data created")
 
+        self.contacts_table = table.ContactsTable(database_file=self.database_file,
+                                                  subject_id=self.subject_id,
+                                                  session_id=self.session_id,
+                                                  measurement_id=measurement_id)
         contacts = self.track_contacts()
         for contact in contacts:
             contact = contact.to_dict()  # This takes care of some of the book keeping for us
@@ -144,20 +148,17 @@ class Model():
             self.create_contact(contact)
 
     def create_contact(self, contact):
-        update = False
-        # If a contact already exists, we'll overwrite it
-        if self.contacts_table.get_contact_row(self.contacts_table, contact_id=contact["contact_id"]):
-            update = True
-
         contact_data = contact["data"]
         # Remove the key
         del contact["data"]
 
-        if update:
+        if self.contacts_table.get_contact_row(contact_id=contact["contact_id"]).size:
             contact_group = self.contacts_table.update_contact(**contact)
-        else:
-            contact_group = self.contacts_table.create_contact(**contact)
+            pub.sendMessage("update_statusbar", status="model.create_contact: Contact updated")
+            return
 
+        # If it doesn't already exist, we create the contact and store the data
+        contact_group = self.contacts_table.create_contact(**contact)
         pub.sendMessage("update_statusbar", status="model.create_contact: Contact created")
 
         # These are all the results (for now) I want to add to the contact
@@ -176,25 +177,29 @@ class Model():
                 self.contacts_table.store_data(group=contact_group,
                                                item_id=item_id,
                                                data=data)
-            else:
-                # TODO If it already exists, we need to update the row instead
-                pass
         pub.sendMessage("update_statusbar", status="model.create_contact: Contact data created")
 
+    def update_contact(self, contact):
+        # Remove the key
+        del contact["data"]
+        contact_group = self.contacts_table.update_contact(**contact)
+        pub.sendMessage("update_statusbar", status="model.create_contact: Contact updated")
 
     def store_contacts(self):
-        try:
-            for contact in self.contacts[self.measurement_name]:
-                contact = contact.to_dict()  # This takes care of some of the book keeping for us
-                contact["subject_id"] = self.subject_id
-                contact["session_id"] = self.session_id
-                contact["measurement_id"] = self.measurement_id
-                self.create_contact(contact)
+        for contact in self.contacts[self.measurement_name]:
+            contact = contact.to_dict()  # This takes care of some of the book keeping for us
+            contact["subject_id"] = self.subject_id
+            contact["session_id"] = self.session_id
+            contact["measurement_id"] = self.measurement_id
+            self.update_contact(contact)
 
-            self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
-                self.measurement_name))
-            pub.sendMessage("update_statusbar", status="Results saved")
-            pub.sendMessage("stored_status", success=True)
+        self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
+            self.measurement_name))
+        pub.sendMessage("update_statusbar", status="Results saved")
+        pub.sendMessage("stored_status", success=True)
+
+        try:
+            pass
         except Exception as e:
             self.logger.critical("Model.store_contacts: Storing failed! {}".format(e))
             pub.sendMessage("update_statusbar", status="Storing results failed!")
@@ -244,7 +249,7 @@ class Model():
                                              session_id=self.session_id,
                                              measurement_id=measurement_id)
         # Get the rows from the table and their corresponding data
-        contact_data = contact_data_table.get_data()
+        contact_data = contact_data_table.get_contact_data()
         contacts = contacts_table.get_contacts()
         # Create Contact instances out of them
         for x, y in zip(contacts, contact_data):
@@ -448,8 +453,6 @@ class Model():
                     self.max_results["duration"] = max_duration
 
         pub.sendMessage("update_results", results=self.results, max_results=self.max_results)
-
-
 
 
     def clear_cached_values(self):
