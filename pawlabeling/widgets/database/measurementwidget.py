@@ -185,9 +185,12 @@ class MeasurementWidget(QtGui.QWidget):
                            "model":model,
                            "frequency":frequency
             }
-            pub.sendMessage("create_measurement", measurement=measurement)
-            # Update the tree after a measurement has been created
-            pub.sendMessage("get_measurements", measurement={})
+            try:
+                pub.sendMessage("create_measurement", measurement=measurement)
+                # Update the tree after a measurement has been created
+                pub.sendMessage("get_measurements", measurement={})
+            except configuration.MissingIdentifier:
+                pass
 
     def change_brand(self, index):
         brand = self.brand.itemText(index)

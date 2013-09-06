@@ -4,6 +4,9 @@ import yaml
 from PySide import QtGui, QtCore
 import logging
 
+class MissingIdentifier(Exception):
+    pass
+
 app_name = "Paw Labeling tool"
 
 settings_folder = os.path.dirname(__file__)

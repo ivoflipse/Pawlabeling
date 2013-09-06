@@ -54,9 +54,13 @@ class contactsWidget(QtGui.QWidget):
         pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.update_contacts, "updated_current_contact")
         pub.subscribe(self.update_average, "update_average")
+        pub.subscribe(self.update_shape, "update_shape")
 
     def update_average(self, average_data):
         self.average_data = average_data
+
+    def update_shape(self, shape):
+        self.mx, self.my, self.mz = shape
 
     def put_measurement(self, measurement):
         self.measurement_name = measurement["measurement_name"]
@@ -65,7 +69,6 @@ class contactsWidget(QtGui.QWidget):
         # Clear any previous results, which may be out of date
         self.clear_contacts()
 
-        average_contact = None
         # Update those for which we have a average measurement_data
         for contact_label, average_contact in self.average_data.items():
             widget = self.contacts_list[contact_label]
@@ -76,23 +79,13 @@ class contactsWidget(QtGui.QWidget):
         current_contact = contacts[self.measurement_name][current_contact_index]
 
         x, y, z = current_contact.data.shape
-        # This only works if we have an average_contact
-        if hasattr(average_contact, "shape"):
-            mx, my, mz = average_contact.shape
-            normalized_current_contact = np.zeros((mx, my, mz))
-            offset_x = int((mx - x) / 2)
-            offset_y = int((my - y) / 2)
-            normalized_current_contact[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = current_contact.data
-        else:
-            # Pad it with zero's
-            normalized_current_contact = np.zeros((x+4, y+4, z))
-            offset_x = 2
-            offset_y = 2
-            normalized_current_contact[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = current_contact.data
+        normalized_current_contact = np.zeros((self.mx, self.my, self.mz))
+        offset_x = int((self.mx - x) / 2)
+        offset_y = int((self.my - y) / 2)
+        normalized_current_contact[offset_x:offset_x + x, offset_y:offset_y + y, 0:z] = current_contact.data
 
         widget.update(normalized_current_contact)
 
-        self.predict_label()
         try:
             self.predict_label()
         except Exception as e:
@@ -156,7 +149,6 @@ class contactWidget(QtGui.QWidget):
         self.mx = 1
         self.my = 1
         self.data = np.zeros((self.mx, self.my))
-        self.sliced_data = self.data[:]
         self.data_list = []
         self.average_data = []
 
@@ -218,43 +210,20 @@ class contactWidget(QtGui.QWidget):
         self.mean_surface_label.setText("{:3.1f} pixels".format(self.mean_surface))
 
         # Make sure the contacts are facing upright
-        self.data = np.rot90(np.rot90(self.average_data.max(axis=2)))
-        #x, y = self.data.shape
-        # # Only display the non-zero part, regardless of its size
-        # nx, ny = np.nonzero(self.data)
-        # sliced_data = self.data
-        # if len(nx):  # This won't work for empty array's
-        #     min_x = int(np.min(nx) - 2)
-        #     if min_x < 0:
-        #         min_x = 0
-        #     max_x = int(np.max(nx) + 2)
-        #     if max_x > x:
-        #         max_x = x
-        #     min_y = int(np.min(ny) - 2)
-        #     if min_y < 0:
-        #         min_y = 0
-        #     max_y = int(np.max(ny) + 2)
-        #     if max_y > y:
-        #         max_y = y
-        #     sliced_data = self.data[min_x:max_x, min_y:max_y]
-
-        # Flip around the vertical axis (god knows why)
-        #self.sliced_data = sliced_data[:, ::-1]
-        self.sliced_data = self.data[:, ::-1]
-        self.pixmap = utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table,
+        self.data = np.rot90(np.rot90(self.average_data.max(axis=2)))[:, ::-1]
+        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table,
                                           interpolation="cubic")
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 
     def redraw(self):
-        self.pixmap = utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table,
+        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table,
                                           interpolation="cubic")
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 
     def clear_cached_values(self):
         self.data = np.zeros((self.mx, self.my))
-        self.sliced_data = self.data[:]
         self.average_data = []
         # Put the screen to black
         self.image.setPixmap(utility.get_QPixmap(np.zeros((15, 15)), self.degree, self.n_max, self.color_table))

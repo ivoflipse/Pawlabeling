@@ -47,8 +47,8 @@ class contactView(QtGui.QWidget):
         self.n_max = 0
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
-        self.mx = 15
-        self.my = 15
+        self.mx = 1
+        self.my = 1
         self.min_x = 0
         self.max_x = self.mx
         self.min_y = 0
@@ -61,7 +61,6 @@ class contactView(QtGui.QWidget):
         self.data = np.zeros((self.mx, self.my))
         self.average_data = np.zeros((self.mx, self.my, 1))
         self.max_of_max = self.data.copy()
-        self.sliced_data = self.data.copy()
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
@@ -89,15 +88,6 @@ class contactView(QtGui.QWidget):
         if self.contact_label in average_data:
             self.average_data = average_data[self.contact_label]
             self.max_of_max = self.average_data.max(axis=2)
-
-            x, y, z = np.nonzero(self.average_data)
-            # Pray this never goes out of bounds
-            # TODO I knew this would happen some day, but I'm going out of bounds here
-            self.min_x = np.min(x) - 2
-            self.max_x = np.max(x) + 2
-            self.min_y = np.min(y) - 2
-            self.max_y = np.max(y) + 2
-            self.max_z = np.max(z) + 1 # Added some padding here
             self.change_frame(frame=-1)
 
     def filter_outliers(self, toggle):
@@ -113,19 +103,19 @@ class contactView(QtGui.QWidget):
 
     def update_n_max(self, n_max):
         self.n_max = n_max
+        self.draw_frame()
 
     def draw_frame(self):
         if self.frame == -1:
-            self.sliced_data = self.max_of_max[self.min_x:self.max_x,self.min_y:self.max_y]
+            self.data = self.max_of_max
         else:
-            self.sliced_data = self.average_data[self.min_x:self.max_x,self.min_y:self.max_y, self.frame]
+            self.data = self.average_data[:, :, self.frame]
 
         # Make sure the contacts are facing upright
-        # TODO wait what? I rotate, rotate, then mirror?!?
-        self.sliced_data = np.rot90(np.rot90(self.sliced_data))
-        self.sliced_data = self.sliced_data[:, ::-1]
+        self.data = np.rot90(np.rot90(self.data))
+        self.data = self.data[:, ::-1]
         # Display the average measurement_data for the requested frame
-        self.image.setPixmap(utility.get_QPixmap(self.sliced_data, self.degree, self.n_max, self.color_table))
+        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table))
         self.resizeEvent()
 
     def change_frame(self, frame):
@@ -135,12 +125,11 @@ class contactView(QtGui.QWidget):
             self.draw_frame()
 
     def clear_cached_values(self):
-        self.sliced_data = np.zeros((self.mx, self.my))
+        self.data = np.zeros((self.mx, self.my))
         self.average_data = np.zeros((self.mx, self.my, 15))
-        self.max_of_max = self.sliced_data
-        self.min_x, self.max_x, self.min_y, self.max_y = 0, self.mx, 0, self.my
+        self.max_of_max = self.data[:]
         # Put the screen to black
-        self.image.setPixmap(utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.n_max, self.color_table))
+        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table))
 
     def resizeEvent(self, event=None):
         item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()

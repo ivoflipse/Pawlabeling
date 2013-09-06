@@ -77,7 +77,7 @@ class Model():
         if not self.subject_id:
             pub.sendMessage("update_statusbar", status="Model.create_session: Subject not selected")
             pub.sendMessage("message_box", message="Please select a subject")
-            return
+            raise configuration.MissingIdentifier("Subject missing")
 
         # Check if the session isn't already in the table
         if self.sessions_table.get_session_row(session_name=session["session_name"]).size:
@@ -277,11 +277,12 @@ class Model():
         return new_contacts
 
     def put_subject(self, subject):
-        #print "model.put_subject"
         # Whenever we switch subjects, clear the cache
         self.clear_cached_values()
+
         self.subject = subject
         self.subject_id = subject["subject_id"]
+
         self.logger.info("Subject ID set to {}".format(self.subject_id))
         # As soon as a subject is selected, we instantiate our sessions table
         self.sessions_table = table.SessionsTable(database_file=self.database_file,
@@ -291,7 +292,6 @@ class Model():
         self.get_sessions()
 
     def put_session(self, session):
-        #print "model.put_session"
         self.session = session
         self.session_id = session["session_id"]
         self.logger.info("Session ID set to {}".format(self.session_id))
@@ -437,6 +437,7 @@ class Model():
                         mz = z
 
         shape = (mx, my, mz)
+        pub.sendMessage("update_shape", shape=shape)
         # Then get the normalized measurement_data
         for contact_label, data in self.data_list.items():
             normalized_data = utility.calculate_average_data(data, shape)
@@ -493,7 +494,3 @@ class Model():
         self.max_results.clear()
         self.n_max = 0
         pub.sendMessage("clear_cached_values")
-
-
-class MissingIdentifier(Exception):
-    pass

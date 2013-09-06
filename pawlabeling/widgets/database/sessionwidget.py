@@ -68,9 +68,12 @@ class SessionWidget(QtGui.QWidget):
         session["session_date"] = self.session_date.date().toString(Qt.ISODate)
         session["session_time"] = self.session_time.time().toString(u"HH:mm")
 
-        pub.sendMessage("create_session", session=session)
-        # After creating a new session, get the updated table
-        pub.sendMessage("get_sessions", session={})
+        try:
+            pub.sendMessage("create_session", session=session)
+            # After creating a new session, get the updated table
+            pub.sendMessage("get_sessions", session={})
+        except configuration.MissingIdentifier:
+            pass
 
     def get_session_fields(self):
         session = {}

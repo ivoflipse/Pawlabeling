@@ -296,7 +296,7 @@ class ProcessingWidget(QtGui.QWidget):
             return
 
         # We can't go further so return
-        if self.current_contact_index == len(self.contacts[self.measurement_name]):
+        if self.current_contact_index == len(self.contacts[self.measurement_name]) - 1:
             return
 
         # If we haven't labeled the current contact yet, mark it as unselected
@@ -338,7 +338,6 @@ class ProcessingWidget(QtGui.QWidget):
 
     def clear_cached_values(self):
         self.contacts.clear()
-        self.subject.clear()
         self.session.clear()
 
     def create_toolbar_actions(self):
