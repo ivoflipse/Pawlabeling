@@ -32,7 +32,7 @@ class Model():
         # OLD
         pub.subscribe(self.load_contacts, "load_contacts")
         pub.subscribe(self.update_current_contact, "update_current_contact")
-        pub.subscribe(self.store_status, "store_status")
+        pub.subscribe(self.store_contacts, "store_contacts")
         pub.subscribe(self.repeat_track_contacts, "track_contacts")
         pub.subscribe(self.calculate_results, "calculate_results")
         # CREATE
@@ -72,15 +72,15 @@ class Model():
         measurement_name = measurement["measurement_name"]
         file_path = measurement["file_path"]
 
-        measurement["subject_id"] = self.subject_id
-        measurement["session_id"] = self.session_id
+        self.measurement["subject_id"] = self.subject_id
+        self.measurement["session_id"] = self.session_id
 
         # Check if the file is zipped or not and extract the raw measurement_data
         if measurement_name[-3:] == "zip":
             # Unzip the file
             input_file = io.open_zip_file(file_path)
             # Store the file_name without the .zip
-            measurement["measurement_name"] = measurement_name[:-4]  # Store without the zip part please
+            self.measurement["measurement_name"] = measurement_name[:-4]  # Store without the zip part please
         else:
             with open(file_path, "r") as infile:
                 input_file = infile.read()
@@ -90,25 +90,47 @@ class Model():
                 io.zip_file(configuration.measurement_folder, measurement_name)
 
         # Extract the measurement_data
-        data = io.load(input_file, brand=measurement["brand"])
+        data = io.load(input_file, brand=self.measurement["brand"])
         number_of_rows, number_of_cols, number_of_frames = data.shape
-        measurement["number_of_rows"] = number_of_rows
-        measurement["number_of_cols"] = number_of_cols
-        measurement["number_of_frames"] = number_of_frames
-        measurement["orientation"] = io.check_orientation(data)
-        measurement["maximum_value"] = data.max()  # Perhaps round this and store it as an int?
+        self.measurement["number_of_rows"] = number_of_rows
+        self.measurement["number_of_cols"] = number_of_cols
+        self.measurement["number_of_frames"] = number_of_frames
+        self.measurement["orientation"] = io.check_orientation(data)
+        self.measurement["maximum_value"] = data.max()  # Perhaps round this and store it as an int?
 
         # We're not going to store this, so we delete the key
-        del measurement["file_path"]
+        del self.measurement["file_path"]
 
         try:
-            self.measurement_group = self.measurements_table.create_measurement(**measurement)
+            self.measurement_group = self.measurements_table.create_measurement(**self.measurement)
             # Don't forget to store the measurement_data for the measurement as well!
             self.measurements_table.store_data(group=self.measurement_group,
-                                               item_id=measurement["measurement_name"],
+                                               item_id=self.measurement["measurement_name"],
                                                data=data)
         except MissingIdentifier:
             self.logger.warning("Model.create_measurement: Some of the required fields are missing")
+
+        # TODO Create the contacts, just leave some fields unassigned
+        contacts = self.track_contacts()
+        self.store_contacts()
+
+    def store_contacts(self):
+        for contact in self.contacts[self.measurement_name]:
+            contact = contact.to_dict()  # This takes care of some of the book keeping for us
+            contact["subject_id"] = self.subject_id
+            contact["session_id"] = self.session_id
+            contact["measurement_id"] = self.measurement_id
+            self.create_contact(contact)
+
+        try:
+            self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
+                self.measurement_name))
+            pub.sendMessage("update_statusbar", status="Results saved")
+            pub.sendMessage("stored_status", success=True)
+        except Exception as e:
+            self.logger.critical("Model.store_contacts: Storing failed! {}".format(e))
+            pub.sendMessage("update_statusbar", status="Storing results failed!")
+            pub.sendMessage("stored_status", success=False)
 
     def create_contact(self, contact):
         contact_data = contact["data"]
@@ -389,23 +411,7 @@ class Model():
 
         pub.sendMessage("update_results", results=self.results, max_results=self.max_results)
 
-    def store_status(self):
-        for contact in self.contacts[self.measurement_name]:
-            contact = contact.to_dict()  # This takes care of some of the book keeping for us
-            contact["subject_id"] = self.subject_id
-            contact["session_id"] = self.session_id
-            contact["measurement_id"] = self.measurement_id
-            self.create_contact(contact)
 
-        try:
-            self.logger.info("Model.store_status: Results for {} have been successfully saved".format(
-                self.measurement_name))
-            pub.sendMessage("update_statusbar", status="Results saved")
-            pub.sendMessage("stored_status", success=True)
-        except Exception as e:
-            self.logger.critical("Model.store_status: Storing failed! {}".format(e))
-            pub.sendMessage("update_statusbar", status="Storing results failed!")
-            pub.sendMessage("stored_status", success=False)
 
 
     def clear_cached_values(self):

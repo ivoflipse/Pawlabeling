@@ -325,7 +325,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.update_current_contact()
 
     def store_status(self, event=None):
-        pub.sendMessage("store_status")
+        pub.sendMessage("store_contacts")
 
     def stored_status(self, success):
         # If we were successful, change the color of the tree
