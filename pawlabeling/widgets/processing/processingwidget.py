@@ -280,6 +280,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.current_contact_index -= 1
         if self.current_contact_index < 0:
             self.current_contact_index = 0
+            return
 
         current_contact = self.get_current_contact()
         # If we encounter an invalid contact and its not the first contact, skip this one
@@ -302,6 +303,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.current_contact_index += 1
         if self.current_contact_index >= len(self.contacts[self.measurement_name]):
             self.current_contact_index = len(self.contacts[self.measurement_name]) - 1
+            return
 
         current_contact = self.get_current_contact()
         # If we encounter an invalid contact and its not the last contact, skip this one
