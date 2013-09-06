@@ -96,17 +96,17 @@ class MeasurementWidget(QtGui.QWidget):
         self.setLayout(self.measurement_layout)
 
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.subscribe(self.update_measurement_status, "update_contacts")
+        pub.subscribe(self.update_measurement_status, "update_measurement_status")
 
         self.update_files_tree()
 
-    def update_measurement_status(self, contacts):
+    def update_measurement_status(self, measurements):
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
         for index in range(self.measurement_tree.topLevelItemCount()):
             item = self.measurement_tree.topLevelItem(index)
             measurement_name = item.text(0)
-            if measurement_name in contacts:
+            if measurement_name in measurements:
                 item.setForeground(0, green_brush)
 
     def update_measurements_tree(self, measurements):

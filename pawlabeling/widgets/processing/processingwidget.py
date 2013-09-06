@@ -92,7 +92,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.subscribe(self.update_measurement_status, "update_contacts")
+        pub.subscribe(self.update_measurement_status, "update_measurement_status")
         pub.subscribe(self.update_contacts_tree, "update_contacts_tree")
         pub.subscribe(self.stored_status, "stored_status")
 
@@ -100,7 +100,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.unsubscribe(self.put_subject, "put_subject")
         pub.unsubscribe(self.put_session, "put_session")
         pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.unsubscribe(self.update_measurement_status, "update_contacts")
+        pub.unsubscribe(self.update_measurement_status, "update_measurement_status")
         pub.unsubscribe(self.update_contacts_tree, "update_contacts_tree")
         pub.unsubscribe(self.stored_status, "stored_status")
 
@@ -127,13 +127,13 @@ class ProcessingWidget(QtGui.QWidget):
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item, True)
 
-    def update_measurement_status(self, contacts):
+    def update_measurement_status(self, measurements):
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
         for index in range(self.measurement_tree.topLevelItemCount()):
             item = self.measurement_tree.topLevelItem(index)
             measurement_name = item.text(0)
-            if measurement_name in contacts:
+            if measurement_name in measurements:
                 item.setForeground(0, green_brush)
 
     def put_measurement(self):

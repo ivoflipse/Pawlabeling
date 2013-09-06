@@ -186,6 +186,10 @@ class Model():
         pub.sendMessage("update_statusbar", status="model.create_contact: Contact updated")
 
     def store_contacts(self):
+        if len(self.get_contact_data(self.measurement)) != len(self.contacts[self.measurement_name]):
+            # TODO Check whether the number of contacts is equal to the number of contacts in the table
+            raise Exception("Number of contacts doesn't match. Table needs to be dropped and newly inserted.")
+
         for contact in self.contacts[self.measurement_name]:
             contact = contact.to_dict()  # This takes care of some of the book keeping for us
             contact["subject_id"] = self.subject_id
@@ -332,12 +336,19 @@ class Model():
         # Make sure self.contacts is empty
         self.contacts.clear()
 
+        measurements = {}
+
         measurement_names = {}
-        for m in self.measurements_table.measurements_table:
-            measurement_names[m["measurement_id"]] = m["measurement_name"]
-            contacts = self.get_contact_data(m)
+        for measurement in self.measurements_table.measurements_table:
+            measurement_names[measurement["measurement_id"]] = measurement["measurement_name"]
+            contacts = self.get_contact_data(measurement)
             if contacts:
-                self.contacts[m["measurement_name"]] = contacts
+                self.contacts[measurement["measurement_name"]] = contacts
+
+            if not all([True if contact.contact_label < 0 else False for contact in contacts]):
+                measurements[measurement["measurement_name"]] = measurement
+
+        pub.sendMessage("update_measurement_status", measurements=measurements)
 
     def repeat_track_contacts(self):
         self.contacts[self.measurement_name] = self.track_contacts()
