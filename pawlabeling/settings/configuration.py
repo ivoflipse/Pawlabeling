@@ -159,15 +159,21 @@ zip_files = config["application"]["zip_files"]
 label_font = QtGui.QFont("Helvetica", 14, QtGui.QFont.Bold)
 date_format = QtCore.QLocale.system().dateFormat(QtCore.QLocale.ShortFormat)
 
-settings = {"folders": ["measurement_folder"],
-            "database": ["database_folder", "database_file"],
-            "plate": ["brand", "model", "frequency"],
-            "interpolation_degree": ["interpolation_entire_plate",
-                                     "interpolation_contact_widgets",
-                                     "interpolation_results"],
-            "thresholds": ["start_force_percentage", "end_force_percentage",
-                           "tracking_temporal", "tracking_spatial", "tracking_surface"],
-            "application": ["zip_files"],
+settings = {"folders": {"measurement_folder": measurement_folder},
+            "database": {"database_folder": database_folder,
+                         "database_file": database_file},
+            "plate": {"brand": brand,
+                      "model": model,
+                      "frequency": frequency},
+            "interpolation_degree": {"interpolation_entire_plate": interpolation_entire_plate,
+                                     "interpolation_contact_widgets": interpolation_contact_widgets,
+                                     "interpolation_results": interpolation_results},
+            "thresholds": {"start_force_percentage": start_force_percentage,
+                           "end_force_percentage": end_force_percentage,
+                           "tracking_temporal": tracking_temporal,
+                           "tracking_spatial": tracking_spatial,
+                           "tracking_surface": tracking_surface},
+            "application": {"zip_files": zip_files},
 }
 
 logging_levels = {
@@ -213,3 +219,12 @@ def setup_logging():
     logger.info("-----------------------------------")
 
     return logger
+
+
+def save_settings(config):
+    from pprint import pprint
+    pprint(config)
+
+    # Write any changes back to the config.yaml file
+    with open(config_file, "w") as output_file:
+        output_file.write(yaml.dump(config, default_flow_style=False))

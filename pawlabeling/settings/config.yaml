@@ -1,10 +1,10 @@
 application:
   zip_files: true
 database:
-  database_file: data.h5
+  database_file: C:\Dropbox\Development\Pawlabeling\pawlabeling\database\data.h5
   database_folder: .\database
 folders:
-  measurement_folder: .\samples\Measurements
+  measurement_folder: C:\Dropbox\Development\Pawlabeling\pawlabeling\samples\Measurements
   store_results_folder: .\samples\Labels
 interpolation_degree:
   interpolation_contact_widgets: 8

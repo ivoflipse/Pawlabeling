@@ -136,18 +136,20 @@ class SettingsWidget(QtGui.QWidget):
         Store the changes to the widgets to the config.yaml file
         This function should probably do some validation
         """
-        for key, values in configuration.settings.items():
-            print key
-            for value in values:
-                if hasattr(self, value):
-                    old_value = getattr(configuration, value)
-                    new_value = getattr(self, value).text()
+        config = configuration.config
+        for key, nested in configuration.settings.items():
+            for nested_key, value in nested.items():
+                if hasattr(self, nested_key):
+                    old_value = value
+                    new_value = getattr(self, nested_key).text()
                     if type(old_value) == int:
                         new_value = int(new_value)
                     if type(old_value) == float:
                         new_value = float(new_value)
                     if old_value != new_value:
-                        setattr(configuration, value, new_value)
+                        config[key][nested_key] = new_value
+
+        configuration.save_settings(config)
 
     def change_measurement_folder(self, evt=None):
         # Open a file dialog
