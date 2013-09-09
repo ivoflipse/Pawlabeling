@@ -82,29 +82,10 @@ shortcut_strings = {
     "invalid_contact": config["shortcuts"]["invalid_contact"]
 }
 
-# shortcut_strings = {
-#     "left_front": "7",
-#     "left_hind": "1",
-#     "right_front": "9",
-#     "right_hind": "3",
-#     "previous_contact": "4",
-#     "next_contact": "6",
-#     "remove_label": "5",
-#     "invalid_contact": "Delete"
-# }
-
 shortcuts = defaultdict()
 for function, shortcut in shortcut_strings.items():
     shortcuts[function] = QtGui.QKeySequence.fromString(shortcut)
 
-# left_front = QtGui.QKeySequence(QtCore.Qt.Key_7)
-# left_hind = QtGui.QKeySequence(QtCore.Qt.Key_1)
-# right_front = QtGui.QKeySequence(QtCore.Qt.Key_9)
-# right_hind = QtGui.QKeySequence(QtCore.Qt.Key_3)
-# previous_contact = QtGui.QKeySequence(QtCore.Qt.Key_4)
-# next_contact = QtGui.QKeySequence(QtCore.Qt.Key_6)
-# remove_label = QtGui.QKeySequence(QtCore.Qt.Key_5)
-# invalid_contact = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
 
 measurement_folder = config["folders"]["measurement_folder"]
 store_results_folder = config["folders"]["store_results_folder"]
@@ -175,6 +156,7 @@ show_maximized = config["application"]["show_maximized"]
 label_font = QtGui.QFont("Helvetica", 14, QtGui.QFont.Bold)
 date_format = QtCore.QLocale.system().dateFormat(QtCore.QLocale.ShortFormat)
 
+# Lookup table for all the different settings, I guess its basically just 'config'
 settings = {"folders": {"measurement_folder": measurement_folder},
             "database": {"database_folder": database_folder,
                          "database_file": database_file},
@@ -189,7 +171,8 @@ settings = {"folders": {"measurement_folder": measurement_folder},
                            "tracking_temporal": tracking_temporal,
                            "tracking_spatial": tracking_spatial,
                            "tracking_surface": tracking_surface},
-            "application": {"zip_files": zip_files},
+            "application": {"zip_files": zip_files,
+                            "show_maximized": show_maximized},
 }
 
 logging_levels = {

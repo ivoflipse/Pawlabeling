@@ -19,14 +19,10 @@ sensors:
   height: 1
   width: 1
 shortcuts:
-  invalid_contact: Delete
-  left_front: '7'
-  left_hind: '1'
-  next_contact: '6'
-  previous_contact: '4'
-  remove_label: '5'
-  right_front: '9'
-  right_hind: '3'
+  left_front: !!python/unicode '7'
+  left_hind: !!python/unicode '1'
+  right_front: !!python/unicode '9'
+  right_hind: !!python/unicode '3'
 thresholds:
   end_force_percentage: 0.25
   padding_factor: 1

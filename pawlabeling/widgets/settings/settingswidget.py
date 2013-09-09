@@ -129,8 +129,7 @@ class SettingsWidget(QtGui.QWidget):
         #pub.subscribe(self.change_status, "update_statusbar")
         #pub.subscribe(self.launch_message_box, "message_box")
 
-    # TODO: changes here should propagate to the rest of the application (like the database screen)
-    # So make sure things update if a relevant thing changes
+
     def save_settings(self, evt=None):
         """
         Store the changes to the widgets to the config.yaml file
@@ -141,17 +140,31 @@ class SettingsWidget(QtGui.QWidget):
             for nested_key, old_value in nested.items():
                 if hasattr(self, nested_key):
                     new_value = getattr(self, nested_key).text()
-                    print nested_key, new_value, type(old_value)
                     if type(old_value) == int:
                         new_value = int(new_value)
                     if type(old_value) == float:
                         new_value = float(new_value)
                     if old_value != new_value:
                         config[key][nested_key] = new_value
+                        # TODO This call doesn't really seem to work
+                        setattr(configuration, nested_key, new_value)
 
+        config["shortcuts"] = {}
+        for key, old_value in configuration.shortcut_strings.items():
+            if hasattr(self, key):
+                new_value = getattr(self, key).text()
+                config["shortcuts"][key] = new_value
+                key_sequence = QtGui.QKeySequence.fromString(new_value)
+                setattr(configuration, key, key_sequence)
 
+        # TODO A problem is that changing settings doesn't assign the attributes in configuration itself.
+        # Guess I should modify config and have everything read from that?
+        # I've added setattr calls for now to try and get it working anyway
 
         configuration.save_settings(config)
+        # Notify the rest of the application that the settings have changed
+        # TODO: changes here should propagate to the rest of the application (like the database screen)
+        pub.sendMessage("changed_settings")
 
     def change_measurement_folder(self, evt=None):
         # Open a file dialog
