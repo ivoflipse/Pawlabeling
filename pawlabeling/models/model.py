@@ -413,6 +413,7 @@ class Model():
         pub.sendMessage("updated_current_contact", contacts=self.contacts,
                         current_contact_index=self.current_contact_index)
 
+    # TODO see when this function is being called and make sure it doesn't happen unnecessarily
     def calculate_average(self):
         #print "model.calculate_average"
         # Empty average measurement_data
@@ -428,13 +429,14 @@ class Model():
                 contact_label = contact.contact_label
                 if contact_label >= 0:
                     self.data_list[contact_label].append(contact.data)
-                    x, y, z = contact.data.shape
-                    if x > mx:
-                        mx = x
-                    if y > my:
-                        my = y
-                    if z > mz:
-                        mz = z
+
+                x, y, z = contact.data.shape
+                if x > mx:
+                    mx = x
+                if y > my:
+                    my = y
+                if z > mz:
+                    mz = z
 
         shape = (mx, my, mz)
         pub.sendMessage("update_shape", shape=shape)

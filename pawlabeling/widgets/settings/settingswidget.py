@@ -67,6 +67,25 @@ class SettingsWidget(QtGui.QWidget):
         self.interpolation_results  = QtGui.QLineEdit()
         self.interpolation_results.setText(str(configuration.interpolation_results))
 
+        self.start_force_percentage_label = QtGui.QLabel("Start Force %")
+        self.start_force_percentage = QtGui.QLineEdit()
+        self.start_force_percentage.setText(str(configuration.start_force_percentage))
+
+        self.end_force_percentage_label = QtGui.QLabel("End Force %")
+        self.end_force_percentage = QtGui.QLineEdit()
+        self.end_force_percentage.setText(str(configuration.end_force_percentage))
+
+        self.tracking_temporal_label = QtGui.QLabel("Tracking Temporal Threshold")
+        self.tracking_temporal = QtGui.QLineEdit()
+        self.tracking_temporal.setText(str(configuration.tracking_temporal))
+
+        self.tracking_spatial_label = QtGui.QLabel("Tracking Spatial Threshold")
+        self.tracking_spatial = QtGui.QLineEdit()
+        self.tracking_spatial.setText(str(configuration.tracking_spatial))
+
+        self.tracking_surface_label = QtGui.QLabel("Tracking Surface Threshold")
+        self.tracking_surface = QtGui.QLineEdit()
+        self.tracking_surface.setText(str(configuration.tracking_surface))
 
         self.widgets = [["measurement_folder_label","measurement_folder", "measurement_folder_button"],
                         ["database_folder_label", "database_folder", "database_folder_button"],
@@ -75,7 +94,12 @@ class SettingsWidget(QtGui.QWidget):
                         ["left_hind_label", "left_hind", "", "right_hind_label", "right_hind"],
                         ["interpolation_entire_plate_label", "interpolation_entire_plate", "",
                         "interpolation_contact_widgets_label", "interpolation_contact_widgets", "",
-                        "interpolation_results_label", "interpolation_results"]
+                        "interpolation_results_label", "interpolation_results"],
+                        ["start_force_percentage_label", "start_force_percentage", "",
+                         "end_force_percentage_label", "end_force_percentage", ""],
+                        ["tracking_temporal_label", "tracking_temporal", "",
+                         "tracking_spatial_label", "tracking_spatial", "",
+                         "tracking_surface_label", "tracking_surface", ""]
         ]
 
         self.settings_layout = QtGui.QGridLayout()
@@ -96,8 +120,11 @@ class SettingsWidget(QtGui.QWidget):
         bar_1.setFrameShape(QtGui.QFrame.Shape.HLine)
         self.main_layout.addWidget(bar_1)
         self.main_layout.addLayout(self.settings_layout)
+        self.main_layout.addStretch(1)
 
         self.setLayout(self.main_layout)
+
+        self.create_toolbar_actions()
 
         #pub.subscribe(self.change_status, "update_statusbar")
         #pub.subscribe(self.launch_message_box, "message_box")
@@ -109,7 +136,18 @@ class SettingsWidget(QtGui.QWidget):
         Store the changes to the widgets to the config.yaml file
         This function should probably do some validation
         """
-        pass
+        for key, values in configuration.settings.items():
+            print key
+            for value in values:
+                if hasattr(self, value):
+                    old_value = getattr(configuration, value)
+                    new_value = getattr(self, value).text()
+                    if type(old_value) == int:
+                        new_value = int(new_value)
+                    if type(old_value) == float:
+                        new_value = float(new_value)
+                    if old_value != new_value:
+                        setattr(configuration, value, new_value)
 
     def change_measurement_folder(self, evt=None):
         # Open a file dialog

@@ -85,8 +85,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
-        self.create_toolbar_actions()
-
         self.subscribe()
 
         self.create_toolbar_actions()

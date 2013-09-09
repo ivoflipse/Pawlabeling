@@ -4,8 +4,10 @@ import yaml
 from PySide import QtGui, QtCore
 import logging
 
+
 class MissingIdentifier(Exception):
     pass
+
 
 app_name = "Paw Labeling tool"
 
@@ -17,7 +19,7 @@ config_example_file = os.path.join(settings_folder, "config_example.yaml")
 
 # Check if there's a config.yaml, else copy the example version and write it to config.yaml
 if not os.path.exists(config_file):
-    with open(config_example_file,"r") as input_file:
+    with open(config_example_file, "r") as input_file:
         output_string = ""
         for line in input_file:
             output_string += line
@@ -27,14 +29,14 @@ if not os.path.exists(config_file):
             output_file.write(line)
 
 # To use settings other than my default ones, change config.yaml
-with open(config_file,"r") as input_file:
+with open(config_file, "r") as input_file:
     config = yaml.load(input_file)
 
 # Check if the existing yaml file is complete
-with open(config_example_file,"r") as input_file:
+with open(config_example_file, "r") as input_file:
     config_example = yaml.load(input_file)
 
-# Go through all the keys, even the nested ones (only one level!)
+# Go through all the keys, even the nested ones (only one debug_level!)
 for key, value in config_example.items():
     if key not in config:
         config[key] = config_example[key]
@@ -45,7 +47,7 @@ for key, value in config_example.items():
 
 # Write any changes back to the config.yaml file
 with open(config_file, "w") as output_file:
-    output_file.write(yaml.dump(config,  default_flow_style=False))
+    output_file.write(yaml.dump(config, default_flow_style=False))
 
 # Lookup table for converting indices to labels
 contact_dict = {
@@ -148,14 +150,25 @@ contacts_widget_height = config["widgets"]["contacts_widget_height"]
 
 # This determines the amount of interpolation used to increase the size of the canvas of entire plate and contact
 # Decrease this value if you have a smaller screen
-interpolation_entire_plate = config["interpolation_degree"]["entire_plate"]
-interpolation_contact_widgets = config["interpolation_degree"]["contact_widgets"]
-interpolation_results = config["interpolation_degree"]["results"]
+interpolation_entire_plate = config["interpolation_degree"]["interpolation_entire_plate"]
+interpolation_contact_widgets = config["interpolation_degree"]["interpolation_contact_widgets"]
+interpolation_results = config["interpolation_degree"]["interpolation_results"]
 
 zip_files = config["application"]["zip_files"]
 
 label_font = QtGui.QFont("Helvetica", 14, QtGui.QFont.Bold)
 date_format = QtCore.QLocale.system().dateFormat(QtCore.QLocale.ShortFormat)
+
+settings = {"folders": ["measurement_folder"],
+            "database": ["database_folder", "database_file"],
+            "plate": ["brand", "model", "frequency"],
+            "interpolation_degree": ["interpolation_entire_plate",
+                                     "interpolation_contact_widgets",
+                                     "interpolation_results"],
+            "thresholds": ["start_force_percentage", "end_force_percentage",
+                           "tracking_temporal", "tracking_spatial", "tracking_surface"],
+            "application": ["zip_files"],
+}
 
 logging_levels = {
     "debug": logging.DEBUG,
@@ -165,8 +178,9 @@ logging_levels = {
     "critical": logging.CRITICAL
 }
 # Choose from: debug, info, warning, error, critical
-level = "debug"
-logging_level = logging_levels.get(level, "debug")
+debug_level = "debug"
+logging_level = logging_levels.get(debug_level, "debug")
+
 
 def setup_logging():
     # create logger with the application
@@ -180,7 +194,7 @@ def setup_logging():
     file_handler = logging.FileHandler(log_file_path)
     file_handler.setLevel(logging_level)
 
-    # create console handler with a higher log level
+    # create console handler with a higher log debug_level
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(logging.WARNING)
 
