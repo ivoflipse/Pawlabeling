@@ -6,7 +6,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 from pawlabeling.widgets.processing import contactswidget
 from pawlabeling.widgets.processing import entireplatewidget
 

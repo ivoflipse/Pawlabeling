@@ -4,7 +4,7 @@ import numpy as np
 import shutil
 import cPickle as pickle
 from pawlabeling.functions import io
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 
 class TestLoad(TestCase):
     def test_load_sample_subject1(self):

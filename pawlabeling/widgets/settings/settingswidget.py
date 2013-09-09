@@ -2,7 +2,7 @@ import sys
 import os
 from PySide import QtGui, QtCore
 from pubsub import pub
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 from pawlabeling.functions import gui
 
 
@@ -156,12 +156,12 @@ class SettingsWidget(QtGui.QWidget):
                 key_sequence = QtGui.QKeySequence.fromString(new_value)
                 setattr(configuration, key, key_sequence)
 
-        # TODO A problem is that changing settings doesn't assign the attributes in configuration itself.
+        # TODO A problem is that changing configuration doesn't assign the attributes in configuration itself.
         # Guess I should modify config and have everything read from that?
         # I've added setattr calls for now to try and get it working anyway
 
         configuration.save_settings(config)
-        # Notify the rest of the application that the settings have changed
+        # Notify the rest of the application that the configuration have changed
         # TODO: changes here should propagate to the rest of the application (like the database screen)
         pub.sendMessage("changed_settings")
 
@@ -211,7 +211,7 @@ class SettingsWidget(QtGui.QWidget):
                                                         icon=QtGui.QIcon(
                                                             os.path.join(os.path.dirname(__file__),
                                                                          "../images/save_icon.png")),
-                                                        tip="Save settings",
+                                                        tip="Save configuration",
                                                         checkable=True,
                                                         connection=self.save_settings
         )

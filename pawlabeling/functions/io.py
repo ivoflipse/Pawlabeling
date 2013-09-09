@@ -2,7 +2,7 @@ import os
 import logging
 import numpy as np
 from pubsub import pub
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 
 try:
     import cPickle as pickle

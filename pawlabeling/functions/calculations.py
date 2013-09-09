@@ -1,5 +1,5 @@
 import numpy as np
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 
 
 def interpolate_time_series(data, length=100):

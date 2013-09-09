@@ -3,7 +3,7 @@ import numpy as np
 from PySide import QtGui
 from pubsub import pub
 from pawlabeling.functions import utility
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 
 logger = logging.getLogger("logger")
 

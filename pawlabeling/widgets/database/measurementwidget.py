@@ -6,7 +6,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui, utility
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 
 
 class MeasurementWidget(QtGui.QWidget):
@@ -56,7 +56,7 @@ class MeasurementWidget(QtGui.QWidget):
 
         self.frequency.activated.connect(self.change_frequency)
 
-        # TODO Perhaps add a set to default or something? Though this can/should be done in the settings
+        # TODO Perhaps add a set to default or something? Though this can/should be done in the configuration
 
         self.brand_model_layout = QtGui.QHBoxLayout()
         self.brand_model_layout.addWidget(self.brand_label)

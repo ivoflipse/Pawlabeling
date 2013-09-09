@@ -9,7 +9,7 @@ import matplotlib
 matplotlib.use("Qt4Agg")
 matplotlib.rcParams["backend.qt4"] ="PySide"
 
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 from pawlabeling.functions.qsingleapplication import QtSingleApplication
 from pawlabeling.models import model
 from pawlabeling.widgets.analysis import analysiswidget
@@ -21,20 +21,23 @@ from pawlabeling.widgets.settings import settingswidget
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__()
+        self.configuration = configuration.Configuration()
+
         # Set the screen dimensions, useful for when its not being run full screen
-        self.setGeometry(configuration.main_window_size)
+        #self.setGeometry(configuration.main_window_size)
+        self.setGeometry(self.configuration.value("widgets/main_window_size"))
+
         # This will simply set the screen size to whatever is maximally possible,
         # while leaving the menubar + taskbar visible
-        if not configuration.show_maximized:
+        if not self.configuration.value("application/show_maximized"):
             self.showMaximized()
 
         self.setObjectName("MainWindow")
-
         self.setWindowTitle(parent.applicationName())
         # Y U NO WORK?
         self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images\pawlabeling.png")))
         # Set up the logger before anything else
-        self.logger = configuration.setup_logging()
+        self.logger = self.configuration.setup_logging()
 
         # Create the base model for the entire application
         # Make sure to do this first, in case anything relies on it

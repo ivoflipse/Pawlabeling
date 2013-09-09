@@ -4,7 +4,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import utility, gui
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 
 
 class EntirePlateWidget(QtGui.QWidget):

@@ -19,52 +19,22 @@ class Configuration(QtCore.QSettings):
         version = QtGui.qApp.applicationVersion()
         super(Configuration, self).__init__(organization, application_name)
 
-        # System-wide settings will not be searched as a fallback
+        # System-wide configuration will not be searched as a fallback
         self.setFallbacksEnabled(False)
 
         self.settings_folder = os.path.dirname(__file__)
         self.root_folder = os.path.dirname(self.settings_folder)
         # Get the file paths for the two config files
         self.config_file = os.path.join(self.settings_folder, "config.yaml")
-        self.config_example_file = os.path.join(self.settings_folder, "config_example.yaml")
-        # Check if the user config file isn't missing
-        self.copy_if_missing()
-        # Load the yaml files into dictionaries
-        self.load_configuration()
-        # Check if the user config file isn't missing any new keys
-        self.load_missing_keys()
 
-    def load_missing_keys(self):
-        # Go through all the keys, even the nested ones (only one debug_level!)
-        for key, value in self.config_example.items():
-            if key not in self.config:
-                self.config[key] = self.config_example[key]
-            if type(value) == dict:
-                for nested_key, nested_value in value.items():
-                    if nested_key not in self.config[key]:
-                        self.config[key][nested_key] = nested_value
-
-        self.save_config_file()
-
-    def copy_if_missing(self):
-        if not os.path.exists(self.config_file):
-            shutil.copyfile(self.config_example_file, self.config_file)
-
-    def save_config_file(self):
-        # Write any changes back to the config.yaml file
-        with open(self.config_file, "w") as output_file:
-            output_file.write(yaml.dump(self.config, default_flow_style=False))
+        self.read_configuration()
 
     def load_configuration(self):
-        # To use settings other than my default ones, change config.yaml
+        self.user_settings()
+        # To use configuration other than my default ones, change config.yaml
         with open(self.config_file, "r") as input_file:
             self.config = yaml.load(input_file)
 
-        # Check if the existing yaml file is complete
-        with open(self.config_example_file, "r") as input_file:
-            self.config_example = yaml.load(input_file)
-
-        self.user_settings()
 
     def keyboard_shortcuts(self):
         key = "keyboard_shortcuts"
@@ -230,6 +200,7 @@ class Configuration(QtCore.QSettings):
         default_value = {
             "zip_files": True,
             "show_maximized": True,
+            "application_font": QtGui.QFont("Helvetica", 10),
             "label_font": QtGui.QFont("Helvetica", 14, QtGui.QFont.Bold),
             "date_format": QtCore.QLocale.system().dateFormat(QtCore.QLocale.ShortFormat)
         }
@@ -314,8 +285,8 @@ class Configuration(QtCore.QSettings):
 
 
 # TODO Make sure that the model creates the required folders if they don't exist
-# # Lookup table for all the different settings, I guess its basically just 'config'
-# settings = {"folders": {"measurement_folder": measurement_folder},
+# # Lookup table for all the different configuration, I guess its basically just 'config'
+# configuration = {"folders": {"measurement_folder": measurement_folder},
 #             "database": {"database_folder": database_folder,
 #                          "database_file": database_file},
 #             "plate": {"brand": brand,

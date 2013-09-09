@@ -1,7 +1,7 @@
 from unittest import TestCase
 import os
 import numpy as np
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 from pawlabeling.functions import calculations, io
 
 class TestCalculateCOP(TestCase):

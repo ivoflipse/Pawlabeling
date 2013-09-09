@@ -8,7 +8,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 from pawlabeling.widgets.database import subjectwidget, sessionwidget, measurementwidget
 
 

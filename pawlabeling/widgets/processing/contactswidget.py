@@ -4,7 +4,7 @@ from PySide import QtGui
 import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, calculations
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 
 
 class ContactWidgets(QtGui.QWidget):

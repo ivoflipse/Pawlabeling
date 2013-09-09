@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from pawlabeling.functions.utility import update_bounding_box
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 
 def closest_contact(contact1, contact2, center1, euclidean_distance):
     """

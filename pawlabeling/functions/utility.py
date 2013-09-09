@@ -4,7 +4,7 @@ from PySide import QtGui, QtCore
 import numpy as np
 from pubsub import pub
 from pawlabeling.functions import calculations
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 
 
 logger = logging.getLogger("logger")

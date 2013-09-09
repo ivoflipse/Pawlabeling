@@ -4,7 +4,7 @@ import os
 import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
-from pawlabeling.settings import configuration
+from pawlabeling.configuration import configuration
 from pawlabeling.models import contactmodel, table
 #from memory_profiler import profile
 
