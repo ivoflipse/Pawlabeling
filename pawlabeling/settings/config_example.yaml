@@ -39,3 +39,14 @@ thresholds:
 
 application:
   zip_files: True
+  show_maximized: True
+
+shortcuts:
+  left_front: "7"
+  left_hind: "1"
+  right_front: "9"
+  right_hind: "3"
+  previous_contact: "4"
+  next_contact: "6"
+  remove_label: "5"
+  invalid_contact: "Delete"

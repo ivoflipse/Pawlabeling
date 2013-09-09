@@ -25,7 +25,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setGeometry(configuration.main_window_size)
         # This will simply set the screen size to whatever is maximally possible,
         # while leaving the menubar + taskbar visible
-        if not configuration.desktop:
+        if not configuration.show_maximized:
             self.showMaximized()
         self.setWindowTitle(configuration.app_name)
         # Y U NO WORK?

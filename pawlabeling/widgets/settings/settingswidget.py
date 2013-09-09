@@ -41,19 +41,19 @@ class SettingsWidget(QtGui.QWidget):
 
         self.left_front_label = QtGui.QLabel("Left Front Shortcut")
         self.left_front = QtGui.QLineEdit()
-        self.left_front.setText(configuration.left_front.toString())
+        self.left_front.setText(configuration.shortcut_strings["left_front"])
 
         self.left_hind_label = QtGui.QLabel("Left Hind Shortcut")
         self.left_hind = QtGui.QLineEdit()
-        self.left_hind.setText(configuration.left_hind.toString())
+        self.left_hind.setText(configuration.shortcut_strings["left_hind"])
 
         self.right_front_label = QtGui.QLabel("Right Front Shortcut")
         self.right_front = QtGui.QLineEdit()
-        self.right_front.setText(configuration.right_front.toString())
+        self.right_front.setText(configuration.shortcut_strings["right_front"])
 
         self.right_hind_label = QtGui.QLabel("Right Hind Shortcut")
         self.right_hind = QtGui.QLineEdit()
-        self.right_hind.setText(configuration.right_hind.toString())
+        self.right_hind.setText(configuration.shortcut_strings["right_hind"])
 
         self.interpolation_entire_plate_label = QtGui.QLabel("Interpolation: Entire Plate")
         self.interpolation_entire_plate = QtGui.QLineEdit()
@@ -138,16 +138,18 @@ class SettingsWidget(QtGui.QWidget):
         """
         config = configuration.config
         for key, nested in configuration.settings.items():
-            for nested_key, value in nested.items():
+            for nested_key, old_value in nested.items():
                 if hasattr(self, nested_key):
-                    old_value = value
                     new_value = getattr(self, nested_key).text()
+                    print nested_key, new_value, type(old_value)
                     if type(old_value) == int:
                         new_value = int(new_value)
                     if type(old_value) == float:
                         new_value = float(new_value)
                     if old_value != new_value:
                         config[key][nested_key] = new_value
+
+
 
         configuration.save_settings(config)
 

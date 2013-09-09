@@ -362,7 +362,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.left_front_action = gui.create_action(text="Select Left Front",
-                                                   shortcut=configuration.left_front,
+                                                   shortcut=configuration.shortcuts["left_front"],
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
                                                                     "../images/LF_icon.png")),
@@ -372,7 +372,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.left_hind_action = gui.create_action(text="Select Left Hind",
-                                                  shortcut=configuration.left_hind,
+                                                  shortcut=configuration.shortcuts["left_hind"],
                                                   icon=QtGui.QIcon(
                                                       os.path.join(os.path.dirname(__file__), "../images/LH_icon.png")),
                                                   tip="Select the Left Hind contact",
@@ -381,7 +381,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.right_front_action = gui.create_action(text="Select Right Front",
-                                                    shortcut=configuration.right_front,
+                                                    shortcut=configuration.shortcuts["right_front"],
                                                     icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                                   "../images/RF_icon.png")),
                                                     tip="Select the Right Front contact",
@@ -390,7 +390,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.right_hind_action = gui.create_action(text="Select Right Hind",
-                                                   shortcut=configuration.right_hind,
+                                                   shortcut=configuration.shortcuts["right_hind"],
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
                                                                     "../images/RH_icon.png")),
@@ -400,7 +400,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.previous_contact_action = gui.create_action(text="Select Previous contact",
-                                                         shortcut=[configuration.previous_contact,
+                                                         shortcut=[configuration.shortcuts["previous_contact"],
                                                                    QtGui.QKeySequence(QtCore.Qt.Key_Down)],
                                                          icon=QtGui.QIcon(
                                                              os.path.join(os.path.dirname(__file__),
@@ -411,7 +411,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.next_contact_action = gui.create_action(text="Select Next contact",
-                                                     shortcut=[configuration.next_contact,
+                                                     shortcut=[configuration.shortcuts["next_contact"],
                                                                QtGui.QKeySequence(QtCore.Qt.Key_Up)],
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
@@ -422,7 +422,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.remove_label_action = gui.create_action(text="Delete Label From contact",
-                                                     shortcut=configuration.remove_label,
+                                                     shortcut=configuration.shortcuts["remove_label"],
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
                                                                       "../images/cancel_icon.png")),
@@ -432,7 +432,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.invalid_contact_action = gui.create_action(text="Mark contact as Invalid",
-                                                        shortcut=configuration.invalid_contact,
+                                                        shortcut=configuration.shortcuts["invalid_contact"],
                                                         icon=QtGui.QIcon(
                                                             os.path.join(os.path.dirname(__file__),
                                                                          "../images/trash_icon.png")),

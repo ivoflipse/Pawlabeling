@@ -1,6 +1,7 @@
 import os
 import sys
 import yaml
+from collections import defaultdict
 from PySide import QtGui, QtCore
 import logging
 
@@ -70,26 +71,40 @@ colors = [
     QtGui.QColor(QtCore.Qt.yellow)
 ]
 
-# Keyboard_shortcuts
-desktop = True
-if desktop:
-    left_front = QtGui.QKeySequence(QtCore.Qt.Key_7)
-    left_hind = QtGui.QKeySequence(QtCore.Qt.Key_1)
-    right_front = QtGui.QKeySequence(QtCore.Qt.Key_9)
-    right_hind = QtGui.QKeySequence(QtCore.Qt.Key_3)
-    previous_contact = QtGui.QKeySequence(QtCore.Qt.Key_4)
-    next_contact = QtGui.QKeySequence(QtCore.Qt.Key_6)
-    remove_label = QtGui.QKeySequence(QtCore.Qt.Key_5)
-    invalid_contact = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
-else:
-    left_front = QtGui.QKeySequence(QtCore.Qt.Key_U)
-    left_hind = QtGui.QKeySequence(QtCore.Qt.Key_N)
-    right_front = QtGui.QKeySequence(QtCore.Qt.Key_O)
-    right_hind = QtGui.QKeySequence(QtCore.Qt.Key_Comma)
-    previous_contact = QtGui.QKeySequence(QtCore.Qt.Key_J)
-    next_contact = QtGui.QKeySequence(QtCore.Qt.Key_L)
-    remove_label = QtGui.QKeySequence(QtCore.Qt.Key_K)
-    invalid_contact = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
+shortcut_strings = {
+    "left_front": config["shortcuts"]["left_front"],
+    "left_hind": config["shortcuts"]["left_hind"],
+    "right_front": config["shortcuts"]["right_front"],
+    "right_hind": config["shortcuts"]["right_hind"],
+    "previous_contact": config["shortcuts"]["previous_contact"],
+    "next_contact": config["shortcuts"]["next_contact"],
+    "remove_label": config["shortcuts"]["remove_label"],
+    "invalid_contact": config["shortcuts"]["invalid_contact"]
+}
+
+# shortcut_strings = {
+#     "left_front": "7",
+#     "left_hind": "1",
+#     "right_front": "9",
+#     "right_hind": "3",
+#     "previous_contact": "4",
+#     "next_contact": "6",
+#     "remove_label": "5",
+#     "invalid_contact": "Delete"
+# }
+
+shortcuts = defaultdict()
+for function, shortcut in shortcut_strings.items():
+    shortcuts[function] = QtGui.QKeySequence.fromString(shortcut)
+
+# left_front = QtGui.QKeySequence(QtCore.Qt.Key_7)
+# left_hind = QtGui.QKeySequence(QtCore.Qt.Key_1)
+# right_front = QtGui.QKeySequence(QtCore.Qt.Key_9)
+# right_hind = QtGui.QKeySequence(QtCore.Qt.Key_3)
+# previous_contact = QtGui.QKeySequence(QtCore.Qt.Key_4)
+# next_contact = QtGui.QKeySequence(QtCore.Qt.Key_6)
+# remove_label = QtGui.QKeySequence(QtCore.Qt.Key_5)
+# invalid_contact = QtGui.QKeySequence(QtCore.Qt.Key_Delete)
 
 measurement_folder = config["folders"]["measurement_folder"]
 store_results_folder = config["folders"]["store_results_folder"]
@@ -155,6 +170,7 @@ interpolation_contact_widgets = config["interpolation_degree"]["interpolation_co
 interpolation_results = config["interpolation_degree"]["interpolation_results"]
 
 zip_files = config["application"]["zip_files"]
+show_maximized = config["application"]["show_maximized"]
 
 label_font = QtGui.QFont("Helvetica", 14, QtGui.QFont.Bold)
 date_format = QtCore.QLocale.system().dateFormat(QtCore.QLocale.ShortFormat)
@@ -223,6 +239,7 @@ def setup_logging():
 
 def save_settings(config):
     from pprint import pprint
+
     pprint(config)
 
     # Write any changes back to the config.yaml file

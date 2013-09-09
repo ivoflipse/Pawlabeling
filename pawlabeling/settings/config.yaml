@@ -1,4 +1,5 @@
 application:
+  show_maximized: true
   zip_files: true
 database:
   database_file: C:\Dropbox\Development\Pawlabeling\pawlabeling\database\data.h5
@@ -17,6 +18,15 @@ plate:
 sensors:
   height: 1
   width: 1
+shortcuts:
+  invalid_contact: Delete
+  left_front: '7'
+  left_hind: '1'
+  next_contact: '6'
+  previous_contact: '4'
+  remove_label: '5'
+  right_front: '9'
+  right_hind: '3'
 thresholds:
   end_force_percentage: 0.25
   padding_factor: 1
