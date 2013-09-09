@@ -9,6 +9,19 @@ from pawlabeling.settings import configuration
 
 logger = logging.getLogger("logger")
 
+def get_app():
+    """Get a reference to the `app` instance.
+
+    This is useful namely for plugins.
+    """
+
+    app = None
+    for widget in QtGui.qApp.topLevelWidgets():
+        if widget.objectName() == u'MainWindow':
+            app = widget.app
+            break
+
+    return vtapp
 
 def update_bounding_box(contact):
     """

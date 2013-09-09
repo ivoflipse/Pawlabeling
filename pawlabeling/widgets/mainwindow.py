@@ -20,14 +20,17 @@ from pawlabeling.widgets.settings import settingswidget
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
-        super(MainWindow, self).__init__(parent)
+        super(MainWindow, self).__init__()
         # Set the screen dimensions, useful for when its not being run full screen
         self.setGeometry(configuration.main_window_size)
         # This will simply set the screen size to whatever is maximally possible,
         # while leaving the menubar + taskbar visible
         if not configuration.show_maximized:
             self.showMaximized()
-        self.setWindowTitle(configuration.app_name)
+
+        self.setObjectName("MainWindow")
+
+        self.setWindowTitle(parent.applicationName())
         # Y U NO WORK?
         self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images\pawlabeling.png")))
         # Set up the logger before anything else
@@ -119,9 +122,11 @@ def main():
         print "Please close all other instances of the application before restarting"
         sys.exit(0)
 
-    app.setApplicationName(configuration.app_name)
+    app.setOrganizationName("Flipse R&D")
+    app.setOrganizationDomain("flipserd.com")
+    app.setApplicationName("Paw Labeling")
     app.setFont(QtGui.QFont("Helvetica", pointSize=10))
-    window = MainWindow()
+    window = MainWindow(app)
     window.show()
     window.raise_()
     app.exec_()

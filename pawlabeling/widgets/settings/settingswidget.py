@@ -149,11 +149,10 @@ class SettingsWidget(QtGui.QWidget):
                         # TODO This call doesn't really seem to work
                         setattr(configuration, nested_key, new_value)
 
-        config["shortcuts"] = {}
         for key, old_value in configuration.shortcut_strings.items():
             if hasattr(self, key):
                 new_value = getattr(self, key).text()
-                config["shortcuts"][key] = new_value
+                config["shortcuts"][key] = str(new_value)
                 key_sequence = QtGui.QKeySequence.fromString(new_value)
                 setattr(configuration, key, key_sequence)
 
