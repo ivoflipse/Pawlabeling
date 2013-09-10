@@ -21,7 +21,7 @@ from pawlabeling.widgets.settings import settingswidget
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__()
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         # Set up the logger before anything else
         self.logger = self.settings.setup_logging()
         # Set the screen dimensions, useful for when its not being run full screen

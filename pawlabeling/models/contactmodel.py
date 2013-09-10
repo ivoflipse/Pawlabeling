@@ -36,7 +36,7 @@ class Contact():
         self.contact_label = -2  # contacts are labeled as -2 by default
         self.orientation = False  # True means the contact is upside down
 
-        self.settings = settings.Settings()
+        self.settings = settings.settings
 
     def create_contact(self, contact, measurement_data, padding=0, orientation=False):
         """

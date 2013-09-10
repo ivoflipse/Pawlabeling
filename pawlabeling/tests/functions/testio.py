@@ -237,7 +237,7 @@ class TestGetFilePaths(TestCase):
         root = os.path.dirname(os.path.abspath(__file__))
         file_name = os.path.join(root, "files/zip_folder/Dog1")
 
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         # Cache the old location so we can reset it
         self.old_folder = self.settings.measurement_folder()
         # Change the settings folder
@@ -263,7 +263,7 @@ class TestGetFilePaths2(TestCase):
         root = os.path.dirname(os.path.abspath(__file__))
         file_name = os.path.join(root, "files/zip_folder")
 
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         # Cache the old location so we can reset it
         self.old_folder = self.settings.measurement_folder()
         # Change the settings folder

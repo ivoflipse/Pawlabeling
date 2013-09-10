@@ -12,7 +12,7 @@ from pawlabeling.models import contactmodel, table
 class Model():
     def __init__(self):
         self.file_paths = defaultdict(dict)
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         self.measurement_folder = self.settings.measurement_folder()
         self.database_file = self.settings.database_file()
 

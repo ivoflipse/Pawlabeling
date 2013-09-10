@@ -11,7 +11,7 @@ class SubjectWidget(QtGui.QWidget):
         super(SubjectWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         label_font = self.settings.label_font()
         date_format = self.settings.date_format()
 

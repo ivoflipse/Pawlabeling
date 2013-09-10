@@ -60,7 +60,7 @@ class ContactView(QtGui.QWidget):
         self.label = QtGui.QLabel(label)
         self.contact_label = contact_label
         self.parent = parent
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         self.degree = self.settings.interpolation_results()
         self.n_max = 0
         self.image_color_table = utility.ImageColorTable()

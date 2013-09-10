@@ -30,7 +30,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.gait_lines = []
         self.measurement_name = ""
 
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         self.colors = self.settings.colors()
         self.degree = self.settings.interpolation_entire_plate()
         self.image_color_table = utility.ImageColorTable()

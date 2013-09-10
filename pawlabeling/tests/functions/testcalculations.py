@@ -43,6 +43,12 @@ class TestCalculateCOP(TestCase):
         cop_x1, cop_y1 = calculations.calculate_cop(data, version="numpy")
         cop_x2, cop_y2 = calculations.calculate_cop(data, version="scipy")
 
+        equal_x = np.array_equal(cop_x1, cop_x2)
+        equal_y = np.array_equal(cop_y1, cop_y2)
+
+        self.assertTrue(equal_x)
+        self.assertTrue(equal_y)
+
     def test_calculate_cop_dummy(self):
         # Create a dummy measurement
         data = np.zeros((3, 3, 3))

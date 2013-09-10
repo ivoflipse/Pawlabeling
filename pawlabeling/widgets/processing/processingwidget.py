@@ -28,7 +28,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.label_layout.addWidget(self.measurement_name_label)
         self.label_layout.addStretch(1)
 
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         self.colors = self.settings.colors()
         self.contact_dict = self.settings.contact_dict()
 

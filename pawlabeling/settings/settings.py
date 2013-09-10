@@ -535,3 +535,6 @@ class MissingIdentifier(Exception):
 def getVersion():
     """The application version."""
     return __version__
+
+settings = Settings()
+settings.setup_logging()

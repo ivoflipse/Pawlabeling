@@ -101,7 +101,7 @@ def merging_contacts(contacts):
 
     # Get the important temporal spatial variables
     sides, centerList, surfaces, lengths = calculate_temporal_spatial_variables(contacts)
-    thresholds = settings.Settings().thresholds()
+    thresholds = settings.settings.thresholds()
     # Get their averages and adjust them when needed
     frame_threshold = np.mean(lengths) * thresholds["tracking_temporal"]
     euclidean_distance = np.mean(sides) * thresholds["tracking_spatial"]

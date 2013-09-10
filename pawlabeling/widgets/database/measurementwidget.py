@@ -14,7 +14,7 @@ class MeasurementWidget(QtGui.QWidget):
         super(MeasurementWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         label_font = self.settings.label_font()
 
         self.files_tree_label = QtGui.QLabel("Session folder")

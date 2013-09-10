@@ -420,7 +420,7 @@ def filter_outliers(data, contact_label, num_std=2):
             filtered.append(index)
 
     if filtered:
-        contact_dict = settings.Settings().contact_dict()
+        contact_dict = settings.settings.contact_dict()
         # Notify the system which contacts you deleted
         pub.sendMessage("updata_statusbar",
                         status="Removed {} contact(s) from {}".format(len(filtered), contact_dict[contact_label]))

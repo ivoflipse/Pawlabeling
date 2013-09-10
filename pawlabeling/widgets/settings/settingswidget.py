@@ -14,8 +14,7 @@ class SettingsWidget(QtGui.QWidget):
 
         # Set up the logger
         self.logger = logging.getLogger("logger")
-        # TODO provide a method that updates the line edits to the lastest values
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         label_font = self.settings.label_font()
 
         self.toolbar = gui.Toolbar(self)
@@ -126,7 +125,6 @@ class SettingsWidget(QtGui.QWidget):
         This function is called by __init__ and when the tab is switched to settings.
         That way it'll always display the current values of the settings
         """
-
         self.measurement_folder.setText(self.settings.measurement_folder())
         self.database_folder.setText(self.settings.database_folder())
         self.database_file.setText(self.settings.database_file())

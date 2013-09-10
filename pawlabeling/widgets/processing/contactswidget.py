@@ -29,7 +29,7 @@ class ContactWidgets(QtGui.QWidget):
         }
 
         self.logger = logging.getLogger("logger")
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         self.contact_dict = self.settings.contact_dict()
 
         self.left_contacts_layout = QtGui.QVBoxLayout()
@@ -141,7 +141,7 @@ class ContactWidget(QtGui.QWidget):
     def __init__(self, parent, label, contact_label):
         super(ContactWidget, self).__init__(parent)
         self.parent = parent
-        self.settings = settings.Settings()
+        self.settings = settings.settings
         self.degree = self.settings.interpolation_contact_widgets()
         self.n_max = 0
         self.label = label
