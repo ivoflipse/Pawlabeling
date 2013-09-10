@@ -189,7 +189,7 @@ class Settings(QtCore.QSettings):
         key = "folders/measurement_folder"
         default_value = os.path.join(self.root_folder, "samples\\Measurements")
         setting_value = self.value(key)
-        if isinstance(setting_value, str):
+        if isinstance(setting_value, str) or isinstance(setting_value, unicode):
             return setting_value
         else:
             return default_value
@@ -476,6 +476,7 @@ class Settings(QtCore.QSettings):
         """
         for key, value in settings.items():
             self.write_value(key, value)
+        self.sync()
 
     def user_settings(self, settings):
         pass
@@ -496,6 +497,7 @@ class Settings(QtCore.QSettings):
             self.setValue(key, value)
             if self.status():
                 raise Exception(u'{0}={1}'.format(key, value))
+            self.sync()
         except Exception, e:
             print(e)
 
@@ -554,4 +556,4 @@ def getVersion():
     return __version__
 
 
-
+settings = Settings()

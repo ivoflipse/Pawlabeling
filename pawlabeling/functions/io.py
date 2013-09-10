@@ -2,7 +2,6 @@ import os
 import logging
 import numpy as np
 from pubsub import pub
-from pawlabeling.settings import settings
 
 try:
     import cPickle as pickle
@@ -283,6 +282,8 @@ def zip_file(root, file_name):
 
 def get_file_paths():
     from collections import defaultdict
+    from pawlabeling.settings import settings
+
     # Clear any existing file names
     file_paths = defaultdict(list)
 

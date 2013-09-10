@@ -240,7 +240,7 @@ class TestGetFilePaths(TestCase):
         self.settings = settings.Settings()
         # Cache the old location so we can reset it
         self.old_folder = self.settings.measurement_folder()
-        # Change the settings's folder
+        # Change the settings folder
         self.settings.write_value("folders/measurement_folder", file_name)
 
     def test_get_file_paths(self):
@@ -251,7 +251,7 @@ class TestGetFilePaths(TestCase):
 
     def tearDown(self):
         # Restore it to the old folder
-        self.settings.write_value("folders", self.old_folder)
+        self.settings.write_value("folders/measurement_folder", self.old_folder)
 
 class TestGetFilePaths2(TestCase):
     """
@@ -266,7 +266,7 @@ class TestGetFilePaths2(TestCase):
         self.settings = settings.Settings()
         # Cache the old location so we can reset it
         self.old_folder = self.settings.measurement_folder()
-        # Change the settings's folder
+        # Change the settings folder
         self.settings.write_value("folders/measurement_folder", file_name)
 
     def test_get_file_paths(self):
@@ -275,4 +275,4 @@ class TestGetFilePaths2(TestCase):
 
     def tearDown(self):
         # Restore it to the old folder
-        self.settings.write_value("folders", self.old_folder)
+        self.settings.write_value("folders/measurement_folder", self.old_folder)
