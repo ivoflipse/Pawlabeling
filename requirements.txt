@@ -6,4 +6,3 @@ matplotlib
 pypubsub
 tables
 nose
-pyyaml

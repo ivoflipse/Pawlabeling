@@ -402,7 +402,7 @@ class Model():
         x = self.measurement["number_of_rows"]
         y = self.measurement["number_of_cols"]
         z = self.measurement["number_of_frames"]
-        padding = settings.padding_factor
+        padding = self.settings.application()["padding_factor"]
         data = np.zeros((x + 2 * padding, y + 2 * padding, z), np.float32)
         data[padding:-padding, padding:-padding, :] = self.measurement_data
         raw_contacts = tracking.track_contours_graph(data)

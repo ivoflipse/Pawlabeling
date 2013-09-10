@@ -6,19 +6,12 @@ virtualenv:
   system_site_packages: true
 
 before_install:
-  - SITE_PKG_DIR=$VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/site-packages
     # workaround for travis ignoring system_site_packages in travis.yml
+  - SITE_PKG_DIR=$VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/site-packages
   - rm -f $VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/no-global-site-packages.txt
   - sudo add-apt-repository ppa:pyside --yes
   - sudo apt-get update -qq
   # For PySide
-#  - sudo apt-get install qt-sdk
-#  - sudo apt-get install cmake
-#  - git clone https://github.com/PySide/pyside-setup.git pyside-setup
-#  - cd pyside-setup
-#  - python2.7 setup.py bdist_egg --version=1.2.1
-#  - sudo easy_install-2.7 dist/PySide-1.2.1-py2.7.egg
-#  - sudo python2.7 pyside_postinstall.py -install
   - sudo apt-get install python-pyside
   - sudo apt-get install python-qt4
   # For pytables
@@ -32,18 +25,15 @@ before_install:
   - sudo apt-get install -qq python-numpy
   - sudo apt-get install -qq python-scipy
   - sudo apt-get install -qq python-matplotlib
-   #For Opencv
-  #- sudo apt-get install opencv
+   #For OpenCV
   - sudo apt-get install python-opencv
   # For testing
   - sudo apt-get install python-nose
 
 install:
-  #- "pip install -r requirements.txt --use-mirrors"
   - "pip install -q pypubsub --use-mirrors"
   - "pip install -q numexpr==1.4.2 --use-mirrors"
   - "pip install -q cython --use-mirrors"
   - "pip install -q tables==2.4.0 --use-mirrors"
-  - "pip install -q pyyaml --use-mirrors"
 
 script: nosetests

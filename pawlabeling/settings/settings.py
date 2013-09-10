@@ -1,7 +1,5 @@
 import os
-import shutil
 import sys
-import yaml
 from collections import defaultdict
 from PySide import QtGui, QtCore
 import logging
