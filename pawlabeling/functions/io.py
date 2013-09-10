@@ -126,7 +126,7 @@ def load_rsscan(infile):
     return result
 
 
-def load(input_file, brand=configuration.brand):
+def load(input_file, brand):
     if brand == "rsscan":
         try:
             return load_rsscan(input_file)

@@ -24,8 +24,15 @@ class MainWindow(QtGui.QMainWindow):
         self.configuration = configuration.Configuration()
 
         # Set the screen dimensions, useful for when its not being run full screen
-        #self.setGeometry(configuration.main_window_size)
-        self.setGeometry(self.configuration.value("widgets/main_window_size"))
+        # self.setGeometry(configuration.main_window_size)
+        # self.setGeometry(self.configuration.value("widgets/main_window_size"))
+        # Apparently its better to do it like this
+        width = self.configuration.value("widgets/main_window_width")
+        height = self.configuration.value("widgets/main_window_height")
+        self.resize(width, height)
+        x = self.configuration.value("widgets/main_window_left")
+        y = self.configuration.value("widgets/main_window_top")
+        self.move(x, y)
 
         # This will simply set the screen size to whatever is maximally possible,
         # while leaving the menubar + taskbar visible
@@ -118,6 +125,20 @@ class MainWindow(QtGui.QMainWindow):
         else:
             return False
 
+    def closeEvent(self, evt):
+        # Write the current configurations to the configuration file
+        if self.configuration.value("restore_last_session"):
+            width, height = self.size()
+            self.configuration.setValue("widgets/main_window_width", width)
+            self.configuration.setValue("widgets/main_window_height", height)
+            x, y = self.pos()
+            self.configuration.setValue("widgets/main_window_left", x)
+            self.configuration.setValue("widgets/main_window_top", y)
+
+        self.logger = logging.getLogger("logger")
+        self.logger.info("Application Shutdown\n")
+
+
 def main():
     appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A2'
     app = QtSingleApplication(appGuid, sys.argv)
@@ -134,8 +155,7 @@ def main():
     window.raise_()
     app.exec_()
 
-    logger = logging.getLogger("logger")
-    logger.info("Application Shutdown\n")
+
 
 if __name__ == "__main__":
     main()

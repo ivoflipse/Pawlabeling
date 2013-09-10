@@ -5,27 +5,34 @@ import yaml
 from collections import defaultdict
 from PySide import QtGui, QtCore
 import logging
-from pawlabeling.functions import utility
 
+__version__ = '0.1'
 
 class MissingIdentifier(Exception):
     pass
 
+def getVersion():
+    """The application version."""
+    return __version__
 
 class Configuration(QtCore.QSettings):
     def __init__(self):
-        organization = QtGui.qApp.organizationname()
-        application_name = QtGui.qApp.applicationName()
-        version = QtGui.qApp.applicationVersion()
-        super(Configuration, self).__init__(organization, application_name)
-
-        # System-wide configuration will not be searched as a fallback
-        self.setFallbacksEnabled(False)
+        super(Configuration, self).__init__()  # organization, application_name
 
         self.settings_folder = os.path.dirname(__file__)
         self.root_folder = os.path.dirname(self.settings_folder)
         # Get the file paths for the two config files
-        self.config_file = os.path.join(self.settings_folder, "config.yaml")
+        # self.config_file = os.path.join(self.settings_folder, "config.yaml")
+        self.config_file = os.path.join(self.settings_folder, "settings.ini")
+
+        organization = QtGui.qApp.organizationName()
+        application_name = QtGui.qApp.applicationName()
+        version = QtGui.qApp.applicationVersion()
+        product_name = '-'.join((application_name, version))
+
+        self.configuration = QtCore.QSettings(self.config_file, QtCore.QSettings.IniFormat)
+        # System-wide configuration will not be searched as a fallback
+        self.setFallbacksEnabled(False)
 
         self.read_configuration()
 
@@ -35,6 +42,14 @@ class Configuration(QtCore.QSettings):
         with open(self.config_file, "r") as input_file:
             self.config = yaml.load(input_file)
 
+    def restore_last_session(self):
+        key = "restore_last_session"
+        default_value = True
+        setting_value = self.value(key)
+        if isinstance(setting_value, bool):
+            return setting_value
+        else:
+            return default_value
 
     def keyboard_shortcuts(self):
         key = "keyboard_shortcuts"
@@ -211,16 +226,20 @@ class Configuration(QtCore.QSettings):
             return default_value
 
     def read_configuration(self):
-        self.config["contact_dict"] = self.contact_dict()
-        self.config["colors"] = self.colors()
-        self.config["keyboard_shortcuts"] = self.keyboard_shortcuts()
-        self.config["folders"] = self.folders()
-        self.config["database"] = self.database()
-        self.config["brand"] = self.brand()
-        self.config["tresholds"] = self.thresholds()
-        self.config["widgets"] = self.widgets()
-        self.config["interpolation"] = self.interpolation()
-        self.config["application"] = self.application()
+        config = {}
+        config["contact_dict"] = self.contact_dict()
+        config["colors"] = self.colors()
+        config["restore_last_session"] = self.restore_last_session()
+        config["keyboard_shortcuts"] = self.keyboard_shortcuts()
+        config["folders"] = self.folders()
+        config["database"] = self.database()
+        config["brand"] = self.brand()
+        config["thresholds"] = self.thresholds()
+        config["widgets"] = self.widgets()
+        config["interpolation"] = self.interpolation()
+        config["application"] = self.application()
+
+        return config
 
     def write_configuration(self, config):
         """
