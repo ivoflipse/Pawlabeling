@@ -8,6 +8,7 @@ import logging
 
 __version__ = '0.1'
 
+
 class Settings(QtCore.QSettings):
     def __init__(self):
         self.settings_folder = os.path.dirname(__file__)
@@ -29,25 +30,20 @@ class Settings(QtCore.QSettings):
         self.logger = self.setup_logging()
 
         # Lookup table for all the different settings
-        self.lookup_table = {"folders": {"measurement_folder": "",
-                                         "database_file":"",
-                                         "database_folder":""},
-                             # "brands": [{"brand": "",
-                             #           "model": "",
-                             #           "frequency": "",
-                             #           "sensor_width":"",
-                             #           "sensor_height":"",
-                             #           "sensor_surface":""}],
-                             "interpolation_degree": {"interpolation_entire_plate": "",
-                                                      "interpolation_contact_widgets": "",
-                                                      "interpolation_results": ""},
-                             "thresholds": {"start_force_percentage": "",
-                                            "end_force_percentage": "",
-                                            "tracking_temporal": "",
-                                            "tracking_spatial": "",
-                                            "tracking_surface": ""},
-                             "application": {"zip_files": "",
-                                             "show_maximized": ""},
+        self.lookup_table = {
+            "folders": ["measurement_folder", "database_file", "database_folder"],
+            "keyboard_shortcuts": ["left_front", "left_hind", "right_front", "right_hind",
+                                   "previous_contact", "next_contact", "invalid_valid", "remove_label"],
+            "interpolation_degree": ["interpolation_entire_plate",
+                                     "interpolation_contact_widgets",
+                                     "interpolation_results"],
+            "thresholds": ["start_force_percentage",
+                           "end_force_percentage",
+                           "tracking_temporal",
+                           "tracking_spatial",
+                           "tracking_surface"],
+            "application": ["zip_files",
+                            "show_maximized"],
         }
 
     def restore_last_session(self):
@@ -62,20 +58,20 @@ class Settings(QtCore.QSettings):
     def keyboard_shortcuts(self):
         key = "keyboard_shortcuts"
         default_value = {
-            "left_front": "7",
-            "left_hind": "3",
-            "right_front": "9",
-            "right_hind": "1",
-            "previous_contact": "4",
-            "next_contact": "6",
-            "remove_label": "5",
-            "invalid_contact": "Delete"
+            "left_front": QtGui.QKeySequence.fromString("7"),
+            "left_hind": QtGui.QKeySequence.fromString("1"),
+            "right_front": QtGui.QKeySequence.fromString("9"),
+            "right_hind": QtGui.QKeySequence.fromString("3"),
+            "previous_contact": QtGui.QKeySequence.fromString("4"),
+            "next_contact": QtGui.QKeySequence.fromString("6"),
+            "remove_label": QtGui.QKeySequence.fromString("5"),
+            "invalid_contact": QtGui.QKeySequence.fromString("Delete")
         }
         setting_value = self.value(key)
-        if isinstance(setting_value, list):
-            return self.convert_shortcuts(setting_value)
+        if isinstance(setting_value, dict):
+            return setting_value
         else:
-            return self.convert_shortcuts(default_value)
+            return default_value
 
     def convert_shortcuts(self, shortcuts):
         new_shortcuts = {}
@@ -248,11 +244,12 @@ class Settings(QtCore.QSettings):
             self.write_value(key, value)
 
     def user_settings(self, settings):
-        key = 'restore_last_session'
-        if key in settings:
-            self.restore_last_session = settings[key]
-
-            # I'll have to add user loadable things here later
+        pass
+        # key = 'restore_last_session'
+        # if key in settings:
+        #     self.restore_last_session = settings[key]
+        #
+        #     # I'll have to add user loadable things here later
 
     def write_value(self, key, value):
         """
@@ -313,8 +310,10 @@ class Settings(QtCore.QSettings):
 
         return logger
 
+
 class MissingIdentifier(Exception):
     pass
+
 
 def getVersion():
     """The application version."""

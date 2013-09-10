@@ -144,23 +144,25 @@ class SettingsWidget(QtGui.QWidget):
         Store the changes to the widgets to the settings.ini file
         This function should probably do some validation
         """
-        settings_dict = defaultdict(dict)
-        for key, nested in self.settings.lookup_table.items():
+        settings_dict = self.settings.read_settings()
+        for key, nested in settings_dict.items():
+            if type(nested) == list:
+                break
+
             for nested_key, old_value in nested.items():
+                if type(nested_key) not in [str, unicode]:
+                    break
+
                 if hasattr(self, nested_key):
                     new_value = getattr(self, nested_key).text()
                     if type(old_value) == int:
                         new_value = int(new_value)
                     if type(old_value) == float:
                         new_value = float(new_value)
+                    if type(old_value) == QtGui.QKeySequence:
+                        new_value = QtGui.QKeySequence.fromString(new_value)
                     if old_value != new_value:
                         settings_dict[key][nested_key] = new_value
-
-        # for key, old_value in settings.shortcut_strings.items():
-        #     if hasattr(self, key):
-        #         new_value = getattr(self, key).text()
-        #         settings_dict["shortcuts"][key] = str(new_value)
-        #         key_sequence = QtGui.QKeySequence.fromString(new_value)
 
         self.settings.save_settings(settings_dict)
 

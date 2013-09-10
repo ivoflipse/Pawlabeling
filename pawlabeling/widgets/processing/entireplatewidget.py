@@ -231,7 +231,6 @@ class EntirePlateWidget(QtGui.QWidget):
         self.resizeEvent()
 
     def draw_gait_line(self):
-        print "draw_gait_line"
         self.gait_line_pen = QtGui.QPen(Qt.white)
         self.gait_line_pen.setWidth(2)
         self.gait_line_pen.setColor(Qt.white)

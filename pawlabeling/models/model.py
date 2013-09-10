@@ -55,6 +55,9 @@ class Model():
         pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.put_contact, "put_contact")
 
+        # Various
+        pub.subscribe(self.changed_settings, "changed_settings")
+
     def create_subject(self, subject):
         """
         This function takes a subject dictionary object and stores it in PyTables
@@ -529,3 +532,8 @@ class Model():
         self.max_results.clear()
         self.n_max = 0
         pub.sendMessage("clear_cached_values")
+
+    def changed_settings(self):
+        folders = self.settings.folders()
+        self.measurement_folder = folders["measurement_folder"]
+        self.database_file = folders["database_file"]

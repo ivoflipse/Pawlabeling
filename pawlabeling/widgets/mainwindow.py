@@ -125,19 +125,22 @@ class MainWindow(QtGui.QMainWindow):
         else:
             return False
 
-    def closeEvent(self, evt):
+    def closeEvent(self, event):
         # Write the current configurations to the settings file
         if self.settings.value("restore_last_session"):
-            width, height = self.size()
-            self.settings.widgets()["main_window_width"] = width
-            self.settings.widgets()["main_window_height"] = height
-            x, y = self.pos()
-            self.settings.widgets()["main_window_left"] = x
-            self.settings.widgets()["main_window_top"] = y
+            widgets = self.settings.widgets()
+            size = self.size()
+            widgets["main_window_width"] = size.width()
+            widgets["main_window_height"] = size.height()
+            pos = self.pos()
+            widgets["main_window_left"] = pos.x()
+            widgets["main_window_top"] = pos.y()
+            self.settings.write_value("widgets", widgets)
 
         self.logger = logging.getLogger("logger")
         self.logger.info("Application Shutdown\n")
 
+        event.accept()
 
 def main():
     appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A2'

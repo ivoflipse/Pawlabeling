@@ -84,6 +84,7 @@ class ProcessingWidget(QtGui.QWidget):
 
         self.subscribe()
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
+        pub.subscribe(self.changed_settings, "changed_settings")
 
     # I've added subscribe/unsubscribe, such that when we're in the analysis tab, we don't want to respond to
     # everything it sends/receives
@@ -319,7 +320,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.current_contact_index = int(item.text(0))
         self.update_current_contact()
 
-    # TODO I don't think this function will work right now, because I don't have a way to 'get' the result
     def track_contacts(self, event=None):
         # Make the model track new contacts
         pub.sendMessage("track_contacts")
@@ -339,6 +339,20 @@ class ProcessingWidget(QtGui.QWidget):
     def clear_cached_values(self):
         self.contacts.clear()
         self.session.clear()
+
+    def changed_settings(self):
+        self.colors = self.settings.colors()
+        self.contact_dict = self.settings.contact_dict()
+        keyboard_shortcuts = self.settings.keyboard_shortcuts()
+        # Update all the keyboard shortcuts
+        self.left_front_action.setShortcut(keyboard_shortcuts["left_front"])
+        self.left_hind_action.setShortcut(keyboard_shortcuts["left_hind"])
+        self.right_front_action.setShortcut(keyboard_shortcuts["right_front"])
+        self.right_hind_action.setShortcut(keyboard_shortcuts["right_hind"])
+        self.previous_contact_action.setShortcut(keyboard_shortcuts["previous_contact"])
+        self.next_contact_action.setShortcut(keyboard_shortcuts["next_contact"])
+        self.invalid_contact_action.setShortcut(keyboard_shortcuts["invalid_contact"])
+        self.remove_label_action.setShortcut(keyboard_shortcuts["remove_label"])
 
     def create_toolbar_actions(self):
         self.track_contacts_action = gui.create_action(text="&Track Contacts",
