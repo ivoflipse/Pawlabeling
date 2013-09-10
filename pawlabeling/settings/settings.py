@@ -6,7 +6,6 @@ import logging
 
 __version__ = '0.1'
 
-
 class Settings(QtCore.QSettings):
     def __init__(self):
         self.settings_folder = os.path.dirname(__file__)
@@ -20,6 +19,7 @@ class Settings(QtCore.QSettings):
         QtCore.QCoreApplication.setApplicationName("Paw Labeling")
         QtCore.QCoreApplication.setApplicationVersion(getVersion())
         # product_name = '-'.join((application_name, version))
+
         super(Settings, self).__init__(self.settings_file, QtCore.QSettings.IniFormat)
         # System-wide settings will not be searched as a fallback
         self.setFallbacksEnabled(False)
@@ -44,32 +44,41 @@ class Settings(QtCore.QSettings):
                             "show_maximized"],
         }
 
-    def restore_last_session(self):
-        key = "restore_last_session"
-        default_value = True
+    # TODO It would be nice if this had a key that mapped to each plate
+    # TODO Possibly I should store these in PyTables instead of this hacked up solution
+    def brands(self):
+        key = "brands"
+        default_value = [{"brand": "rsscan",
+                          "model": "2m 2nd gen",
+                          "frequency": 125,
+                          "sensor_width": 0.508,
+                          "sensor_height": 0.762,
+                          "sensor_surface": 0.387096
+                         },
+                         {"brand": "zebris",
+                          "model": "FDM 1m",
+                          "frequency": 200,
+                          "sensor_width": 0.846,
+                          "sensor_height": 0.846,
+                          "sensor_surface": 0.715716
+                         },
+                         {"brand": "novel",
+                          "model": "emed",
+                          "frequency": 100,
+                          "sensor_width": 0.5,
+                          "sensor_height": 0.5,
+                          "sensor_surface": 0.25
+                         }
+        ]
+
         setting_value = self.value(key)
-        if isinstance(setting_value, bool):
-            return setting_value
+        if isinstance(setting_value, dict):
+            # This merges both dictionaries. Replace if the user can define this from the GUI
+            return dict(default_value, **setting_value)
         else:
             return default_value
 
-    def keyboard_shortcuts(self):
-        key = "keyboard_shortcuts"
-        default_value = {
-            "left_front": QtGui.QKeySequence.fromString("7"),
-            "left_hind": QtGui.QKeySequence.fromString("1"),
-            "right_front": QtGui.QKeySequence.fromString("9"),
-            "right_hind": QtGui.QKeySequence.fromString("3"),
-            "previous_contact": QtGui.QKeySequence.fromString("4"),
-            "next_contact": QtGui.QKeySequence.fromString("6"),
-            "remove_label": QtGui.QKeySequence.fromString("5"),
-            "invalid_contact": QtGui.QKeySequence.fromString("Delete")
-        }
-        setting_value = self.value(key)
-        if isinstance(setting_value, dict):
-            return setting_value
-        else:
-            return default_value
+
 
     def convert_shortcuts(self, shortcuts):
         new_shortcuts = {}
@@ -105,114 +114,309 @@ class Settings(QtCore.QSettings):
         ]
         return default_value
 
-    def folders(self):
-        key = "folders"
-        default_value = {
-            "measurement_folder": os.path.join(self.root_folder, "samples\\Measurements"),
-            "database_folder": ".\\database",
-            "database_file": os.path.join(self.root_folder, "database\\data.h5")
-        }
+
+    def left_front(self):
+        key = "keyboard_shortcuts/left_front"
+        default_value = QtGui.QKeySequence.fromString("7")
         setting_value = self.value(key)
-        if isinstance(setting_value, dict):
+        if isinstance(setting_value, QtGui.QKeySequence):
             return setting_value
         else:
             return default_value
 
-    # TODO It would be nice if this had a key that mapped to each plate
-    def brands(self):
-        key = "brands"
-        default_value = [{"brand": "rsscan",
-                          "model": "2m 2nd gen",
-                          "frequency": 125,
-                          "sensor_width": 0.508,
-                          "sensor_height": 0.762,
-                          "sensor_surface": 0.387096
-                         },
-                         {"brand": "zebris",
-                          "model": "FDM 1m",
-                          "frequency": 200,
-                          "sensor_width": 0.846,
-                          "sensor_height": 0.846,
-                          "sensor_surface": 0.715716
-                         },
-                         {"brand": "novel",
-                          "model": "emed",
-                          "frequency": 100,
-                          "sensor_width": 0.5,
-                          "sensor_height": 0.5,
-                          "sensor_surface": 0.25
-                         }
-        ]
-
+    def left_hind(self):
+        key = "keyboard_shortcuts/left_hind"
+        default_value = QtGui.QKeySequence.fromString("1")
         setting_value = self.value(key)
-        if isinstance(setting_value, dict):
-            # This merges both dictionaries. Replace if the user can define this from the GUI
-            return dict(default_value, **setting_value)
-        else:
-            return default_value
-
-    def thresholds(self):
-        key = "thresholds"
-        default_value = {
-            "start_force_percentage": 0.25,
-            "end_force_percentage": 0.25,
-            "tracking_temporal": 0.5,
-            "tracking_spatial": 1.25,
-            "tracking_surface": 0.25,
-            "padding_factor": 1
-        }
-        setting_value = self.value(key)
-        if isinstance(setting_value, dict):
+        if isinstance(setting_value, QtGui.QKeySequence):
             return setting_value
         else:
             return default_value
 
-    def widgets(self):
-        key = "widgets"
-        default_value = {
-            "main_window_left": 0,
-            "main_window_top": 25,
-            "main_window_width": 1440,
-            "main_window_height": 830,
-            "main_window_size": QtCore.QRect(0, 25, 1440, 830), # How will I make this user definable?
-            "entire_plate_widget_width": 800,
-            "entire_plate_widget_height": 450,
-            "contacts_widget_height": 170,
-        }
+    def right_front(self):
+        key = "keyboard_shortcuts/right_front"
+        default_value = QtGui.QKeySequence.fromString("9")
         setting_value = self.value(key)
-        if isinstance(setting_value, dict):
+        if isinstance(setting_value, QtGui.QKeySequence):
             return setting_value
         else:
             return default_value
 
-    def interpolation(self):
-        """
-        This determines the amount of interpolation used to increase the size of the
-        canvas of entire plate and contact. Decrease this value if you have a smaller screen
-        """
-        key = "interpolation"
-        default_value = {
-            "interpolation_entire_plate": 4,
-            "interpolation_contact_widgets": 8,
-            "interpolation_results": 16
-        }
+    def right_hind(self):
+        key = "keyboard_shortcuts/right_hind"
+        default_value = QtGui.QKeySequence.fromString("3")
         setting_value = self.value(key)
-        if isinstance(setting_value, dict):
+        if isinstance(setting_value, QtGui.QKeySequence):
             return setting_value
         else:
             return default_value
 
-    def application(self):
-        key = "application"
-        default_value = {
-            "zip_files": True,
-            "show_maximized": True,
-            "application_font": QtGui.QFont("Helvetica", 10),
-            "label_font": QtGui.QFont("Helvetica", 14, QtGui.QFont.Bold),
-            "date_format": QtCore.QLocale.system().dateFormat(QtCore.QLocale.ShortFormat)
-        }
+    def previous_contact(self):
+        key = "keyboard_shortcuts/previous_contact"
+        default_value = QtGui.QKeySequence.fromString("4")
         setting_value = self.value(key)
-        if isinstance(setting_value, dict):
+        if isinstance(setting_value, QtGui.QKeySequence):
+            return setting_value
+        else:
+            return default_value
+
+    def next_contact(self):
+        key = "keyboard_shortcuts/next_contact"
+        default_value = QtGui.QKeySequence.fromString("6")
+        setting_value = self.value(key)
+        if isinstance(setting_value, QtGui.QKeySequence):
+            return setting_value
+        else:
+            return default_value
+
+    def invalid_contact(self):
+        key = "keyboard_shortcuts/invalid_contact"
+        default_value = QtGui.QKeySequence.fromString("Delete")
+        setting_value = self.value(key)
+        if isinstance(setting_value, QtGui.QKeySequence):
+            return setting_value
+        else:
+            return default_value
+
+    def remove_label(self):
+        key = "keyboard_shortcuts/remove_label"
+        default_value = QtGui.QKeySequence.fromString("5")
+        setting_value = self.value(key)
+        if isinstance(setting_value, QtGui.QKeySequence):
+            return setting_value
+        else:
+            return default_value
+
+    def measurement_folder(self):
+        key = "folders/measurement_folder"
+        default_value = os.path.join(self.root_folder, "samples\\Measurements")
+        setting_value = self.value(key)
+        if isinstance(setting_value, str):
+            return setting_value
+        else:
+            return default_value
+
+    def database_folder(self):
+        key = "folders/database_folder"
+        default_value = ".\\database"
+        setting_value = self.value(key)
+        if isinstance(setting_value, str):
+            return setting_value
+        else:
+            return default_value
+
+    def database_file(self):
+        key = "folders/database_file"
+        default_value = os.path.join(self.root_folder, "database\\data.h5")
+        setting_value = self.value(key)
+        if isinstance(setting_value, str):
+            return setting_value
+        else:
+            return default_value
+
+    def start_force_percentage(self):
+        key = "thresholds/start_force_percentage"
+        default_value = 0.25
+        setting_value = self.value(key)
+        if isinstance(setting_value, float):
+            return setting_value
+        else:
+            return default_value
+
+    def end_force_percentage(self):
+        key = "thresholds/end_force_percentage"
+        default_value = 0.25
+        setting_value = self.value(key)
+        if isinstance(setting_value, float):
+            return setting_value
+        else:
+            return default_value
+
+    def tracking_temporal(self):
+        key = "thresholds/tracking_temporal"
+        default_value = 0.5
+        setting_value = self.value(key)
+        if isinstance(setting_value, float):
+            return setting_value
+        else:
+            return default_value
+
+    def tracking_spatial(self):
+        key = "thresholds/tracking_spatial"
+        default_value = 1.25
+        setting_value = self.value(key)
+        if isinstance(setting_value, float):
+            return setting_value
+        else:
+            return default_value
+
+    def tracking_surface(self):
+        key = "thresholds/tracking_surface"
+        default_value = 0.25
+        setting_value = self.value(key)
+        if isinstance(setting_value, float):
+            return setting_value
+        else:
+            return default_value
+
+    def padding_factor(self):
+        key = "thresholds/padding_factor"
+        default_value = 1
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def main_window_left(self):
+        key = "thresholds/padding_factor"
+        default_value = 0
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def main_window_top(self):
+        key = "thresholds/main_window_top"
+        default_value = 25
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def main_window_width(self):
+        key = "thresholds/main_window_width"
+        default_value = 1440
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def main_window_height(self):
+        key = "thresholds/main_window_height"
+        default_value = 830
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def main_window_size(self):
+        key = "thresholds/main_window_size"
+        default_value = QtCore.QRect(0, 25, 1440, 830)
+        setting_value = self.value(key)
+        if isinstance(setting_value, QtCore.QRect):
+            return setting_value
+        else:
+            return default_value
+
+    def entire_plate_widget_width(self):
+        key = "thresholds/entire_plate_widget_width"
+        default_value = 800
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def entire_plate_widget_height(self):
+        key = "thresholds/entire_plate_widget_height"
+        default_value = 450
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def contacts_widget_height(self):
+        key = "thresholds/contacts_widget_height"
+        default_value = 170
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def interpolation_entire_plate(self):
+        key = "interpolation/interpolation_entire_plate"
+        default_value = 4
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def interpolation_contact_widgets(self):
+        key = "interpolation/interpolation_contact_widgets"
+        default_value = 8
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def interpolation_results(self):
+        key = "interpolation/interpolation_results"
+        default_value = 16
+        setting_value = self.value(key)
+        if isinstance(setting_value, int):
+            return setting_value
+        else:
+            return default_value
+
+    def zip_files(self):
+        key = "application/interpolation_results"
+        default_value = True
+        setting_value = self.value(key)
+        if isinstance(setting_value, bool):
+            return setting_value
+        else:
+            return default_value
+
+    def show_maximized(self):
+        key = "application/show_maximized"
+        default_value = True
+        setting_value = self.value(key)
+        if isinstance(setting_value, bool):
+            return setting_value
+        else:
+            return default_value
+
+    def zip_files(self):
+        key = "application/application_font"
+        default_value = QtGui.QFont("Helvetica", 10)
+        setting_value = self.value(key)
+        if isinstance(setting_value, QtGui.QFont):
+            return setting_value
+        else:
+            return default_value
+
+    def label_font(self):
+        key = "application/label_font"
+        default_value = QtGui.QFont("Helvetica", 14, QtGui.QFont.Bold)
+        setting_value = self.value(key)
+        if isinstance(setting_value, QtGui.QFont):
+            return setting_value
+        else:
+            return default_value
+
+    def date_format(self):
+        key = "application/date_format"
+        default_value = QtCore.QLocale.system().dateFormat(QtCore.QLocale.ShortFormat)
+        setting_value = self.value(key)
+        if isinstance(setting_value, QtCore.QLocale.dateFormat):
+            return setting_value
+        else:
+            return default_value
+
+    def restore_last_session(self):
+        key = "application/restore_last_session"
+        default_value = True
+        setting_value = self.value(key)
+        if isinstance(setting_value, bool):
             return setting_value
         else:
             return default_value
@@ -221,14 +425,48 @@ class Settings(QtCore.QSettings):
         settings = {}
         settings["contact_dict"] = self.contact_dict()
         settings["colors"] = self.colors()
-        settings["restore_last_session"] = self.restore_last_session()
-        settings["keyboard_shortcuts"] = self.keyboard_shortcuts()
-        settings["folders"] = self.folders()
         settings["brands"] = self.brands()
-        settings["thresholds"] = self.thresholds()
-        settings["widgets"] = self.widgets()
-        settings["interpolation"] = self.interpolation()
-        settings["application"] = self.application()
+
+        settings["keyboard_shortcuts/left_front"] = self.left_front()
+        settings["keyboard_shortcuts/left_hind"] = self.left_hind()
+        settings["keyboard_shortcuts/right_front"] = self.right_front()
+        settings["keyboard_shortcuts/right_hind"] = self.right_hind()
+        settings["keyboard_shortcuts/previous_contact"] = self.previous_contact()
+        settings["keyboard_shortcuts/next_contact"] = self.next_contact()
+        settings["keyboard_shortcuts/remove_label"] =self.remove_label()
+        settings["keyboard_shortcuts/invalid_contact"] = self.invalid_contact()
+
+        settings["folders/measurement_folder"] = self.measurement_folder()
+        settings["folders/database_folder"] = self.database_folder()
+        settings["folders/database_file"] = self.database_file()
+
+        settings["thresholds/start_force_percentage"] = self.start_force_percentage()
+        settings["thresholds/end_force_percentage"] = self.end_force_percentage()
+        settings["thresholds/tracking_temporal"] = self.tracking_temporal()
+        settings["thresholds/tracking_spatial"] = self.tracking_spatial()
+        settings["thresholds/tracking_surface"] = self.tracking_surface()
+        settings["thresholds/padding_factor"] = self.padding_factor()
+
+        settings["widgets/main_window_left"] = self.main_window_left()
+        settings["widgets/main_window_top"] = self.main_window_top()
+        settings["widgets/main_window_width"] = self.main_window_width()
+        settings["widgets/main_window_height"] = self.main_window_height()
+        settings["widgets/main_window_size"] = self.main_window_size()
+        settings["widgets/entire_plate_widget_width"] = self.entire_plate_widget_width()
+        settings["widgets/entire_plate_widget_height"] = self.entire_plate_widget_height()
+        settings["widgets/contacts_widget_height"] = self.contacts_widget_height()
+
+        settings["interpolation/interpolation_entire_plate"] = self.interpolation_entire_plate()
+        settings["interpolation/interpolation_contact_widgets"] = self.interpolation_contact_widgets()
+        settings["interpolation/interpolation_results"] = self.interpolation_results()
+
+        settings["application/zip_files"] = self.zip_files()
+        settings["application/show_maximized"] = self.show_maximized()
+        settings["application/application_font"] = self.application_font()
+        settings["application/label_font"] = self.label_font()
+        settings["application/date_format"] = self.date_format()
+        settings["application/restore_last_session"] = self.restore_last_session()
+
         return settings
 
     def load_settings(self, settings):

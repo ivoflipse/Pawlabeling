@@ -288,9 +288,9 @@ def get_file_paths():
 
     logger.info("io.get_file_paths: Searching for measurements...")
 
-    _settings = settings.Settings()
-    root = _settings.folders()["measurement_folder"]
-    # TODO check whether root is actually a valid folder
+    root = settings.Settings().measurement_folder()
+    assert os.path.exists(root) == True
+    assert os.path.isdir(root) == True
     file_names = [name for name in os.listdir(root)
                   if os.path.isfile(os.path.join(root, name))]
 

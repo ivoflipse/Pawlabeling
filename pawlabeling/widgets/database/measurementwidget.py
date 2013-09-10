@@ -17,14 +17,13 @@ class MeasurementWidget(QtGui.QWidget):
         self.settings = settings.Settings()
         application = self.settings.application()
         self.date_format = application["date_format"]
-        folders = self.settings.folders()
 
         self.files_tree_label = QtGui.QLabel("Session folder")
         self.files_tree_label.setFont(application["label_font"])
 
         self.measurement_folder_label = QtGui.QLabel("File path:")
         self.measurement_folder = QtGui.QLineEdit()
-        self.measurement_folder.setText(folders["measurement_folder"])
+        self.measurement_folder.setText(self.settings.measurement_folder())
         self.measurement_folder.textChanged.connect(self.check_measurement_folder)
 
         self.measurement_folder_button = QtGui.QToolButton()
@@ -129,24 +128,25 @@ class MeasurementWidget(QtGui.QWidget):
         pub.sendMessage("get_measurements", measurement={})
 
     def change_file_location(self, evt=None):
+        measurement_folder = self.settings.measurement_folder()
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your measurements",
-                                             settings.measurement_folder)
+                                             measurement_folder)
         self.file_dialog.setFileMode(QtGui.QFileDialog.Directory)
         #self.file_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly)
         self.file_dialog.setViewMode(QtGui.QFileDialog.Detail)
 
-        # Store the default in case we don't make a change
-        file_name = settings.measurement_folder
+        # TODO Not sure whether I really want to overwrite the default folder, since it might be nested
+        # Which makes it hard to use for other sessions, because you have to navigate back up
+
         # Change where settings.measurement_folder is pointing too
         if self.file_dialog.exec_():
-            file_name = self.file_dialog.selectedFiles()[0]
+            measurement_folder = self.file_dialog.selectedFiles()[0]
 
-        # TODO instead of overwriting measurement_folder, add a temp variable that's used by the IO module too
-        # Then change that, so we always keep our 'default' measurements_folder
-        settings.measurement_folder = file_name
-        self.measurement_folder.setText(file_name)
+        self.settings.write_value("folders/measurement_folder", measurement_folder)
+
+        self.measurement_folder.setText(measurement_folder)
         # Update the files tree
         self.update_files_tree()
 

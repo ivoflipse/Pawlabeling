@@ -2,9 +2,12 @@ from unittest import TestCase
 import os
 import numpy as np
 import shutil
-import cPickle as pickle
+import logging
 from pawlabeling.functions import io
 from pawlabeling.settings import settings
+
+logger = logging.getLogger("logger")
+logger.disabled = True
 
 class TestLoad(TestCase):
     def test_load_sample_subject1(self):
@@ -235,12 +238,10 @@ class TestGetFilePaths(TestCase):
         file_name = os.path.join(root, "files/zip_folder/Dog1")
 
         self.settings = settings.Settings()
-        self.folders = self.settings.folders()
         # Cache the old location so we can reset it
-        self.old_folder = self.folders["measurement_folder"]
+        self.old_folder = self.settings.measurement_folder()
         # Change the settings's folder
-        self.folders["measurement_folder"] = file_name
-        self.settings.write_value("folders", self.folders)
+        self.settings.write_value("folders/measurement_folder", file_name)
 
     def test_get_file_paths(self):
         # Get the file_paths
@@ -250,8 +251,7 @@ class TestGetFilePaths(TestCase):
 
     def tearDown(self):
         # Restore it to the old folder
-        self.folders["measurement_folder"] = self.old_folder
-        self.settings.write_value("folders", self.folders)
+        self.settings.write_value("folders", self.old_folder)
 
 class TestGetFilePaths2(TestCase):
     """
@@ -262,10 +262,12 @@ class TestGetFilePaths2(TestCase):
         # Let's try and change the measurement folder
         root = os.path.dirname(os.path.abspath(__file__))
         file_name = os.path.join(root, "files/zip_folder")
+
+        self.settings = settings.Settings()
         # Cache the old location so we can reset it
-        self.old_folder = settings.Settings().folders()["measurement_folder"]
+        self.old_folder = self.settings.measurement_folder()
         # Change the settings's folder
-        settings.Settings().folders()["measurement_folder"] = file_name
+        self.settings.write_value("folders/measurement_folder", file_name)
 
     def test_get_file_paths(self):
         file_paths = io.get_file_paths()
@@ -273,4 +275,4 @@ class TestGetFilePaths2(TestCase):
 
     def tearDown(self):
         # Restore it to the old folder
-        settings.Settings().folders()["measurement_folder"] = self.old_folder
+        self.settings.write_value("folders", self.old_folder)

@@ -87,16 +87,15 @@ class MainWindow(QtGui.QMainWindow):
         pub.sendMessage("update_statusbar", status="Changing tabs to the {} tab".format(self.tab_dict[current_index]))
         if self.tab_widget.currentIndex() == 0:
             self.processing_widget.subscribe()
-            pass  # Is there anything you'd like to run when you start the database_widget?
         elif self.tab_widget.currentIndex() == 1:
             self.processing_widget.subscribe()
             self.processing_widget.put_measurement()
         elif self.tab_widget.currentIndex() == 2:
             self.processing_widget.unsubscribe()
-            #self.analysis_widget.calculate_results()  # I think this is already done
             self.analysis_widget.put_measurement()
         elif self.tab_widget.currentIndex() == 3:
             self.processing_widget.unsubscribe()
+            self.settings_widget.update_fields()
 
     def change_status(self, status):
         self.logger.info(status)

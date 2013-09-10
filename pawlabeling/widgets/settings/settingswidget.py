@@ -1,5 +1,6 @@
 import sys
 import os
+import logging
 from collections import defaultdict
 from PySide import QtGui, QtCore
 from pubsub import pub
@@ -12,15 +13,10 @@ class SettingsWidget(QtGui.QWidget):
         super(SettingsWidget, self).__init__(parent)
 
         # Set up the logger
+        self.logger = logging.getLogger("logger")
+        # TODO provide a method that updates the line edits to the lastest values
         self.settings = settings.Settings()
-        # TODO Are you sure this should be called like this?
-        self.logger = self.settings.logger
-
-        folders = self.settings.folders()
         application = self.settings.application()
-        keyboard_shortcuts = self.settings.keyboard_shortcuts()
-        interpolation = self.settings.interpolation()
-        thresholds = self.settings.thresholds()
 
         self.toolbar = gui.Toolbar(self)
 
@@ -29,7 +25,6 @@ class SettingsWidget(QtGui.QWidget):
 
         self.measurement_folder_label = QtGui.QLabel("Measurements folder")
         self.measurement_folder = QtGui.QLineEdit()
-        self.measurement_folder.setText(folders["measurement_folder"])
         self.measurement_folder_button = QtGui.QToolButton()
         self.measurement_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                         "../images/folder_icon.png")))
@@ -37,7 +32,6 @@ class SettingsWidget(QtGui.QWidget):
 
         self.database_folder_label = QtGui.QLabel("Database folder")
         self.database_folder = QtGui.QLineEdit()
-        self.database_folder.setText(folders["database_folder"])
         self.database_folder_button = QtGui.QToolButton()
         self.database_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                         "../images/folder_icon.png")))
@@ -46,55 +40,44 @@ class SettingsWidget(QtGui.QWidget):
 
         self.database_file_label = QtGui.QLabel("Database file")
         self.database_file = QtGui.QLineEdit()
-        self.database_file.setText(folders["database_file"])
 
         self.left_front_label = QtGui.QLabel("Left Front Shortcut")
         self.left_front = QtGui.QLineEdit()
-        self.left_front.setText(keyboard_shortcuts["left_front"].toString())
 
         self.left_hind_label = QtGui.QLabel("Left Hind Shortcut")
         self.left_hind = QtGui.QLineEdit()
-        self.left_hind.setText(keyboard_shortcuts["left_hind"].toString())
 
         self.right_front_label = QtGui.QLabel("Right Front Shortcut")
         self.right_front = QtGui.QLineEdit()
-        self.right_front.setText(keyboard_shortcuts["right_front"].toString())
 
         self.right_hind_label = QtGui.QLabel("Right Hind Shortcut")
         self.right_hind = QtGui.QLineEdit()
-        self.right_hind.setText(keyboard_shortcuts["right_hind"].toString())
 
         self.interpolation_entire_plate_label = QtGui.QLabel("Interpolation: Entire Plate")
         self.interpolation_entire_plate = QtGui.QLineEdit()
-        self.interpolation_entire_plate.setText(str(interpolation["interpolation_entire_plate"]))
 
         self.interpolation_contact_widgets_label = QtGui.QLabel("Interpolation: Contact Widgets")
         self.interpolation_contact_widgets = QtGui.QLineEdit()
-        self.interpolation_contact_widgets.setText(str(interpolation["interpolation_contact_widgets"]))
 
         self.interpolation_results_label = QtGui.QLabel("Interpolation: Results")
         self.interpolation_results  = QtGui.QLineEdit()
-        self.interpolation_results.setText(str(interpolation["interpolation_results"]))
 
         self.start_force_percentage_label = QtGui.QLabel("Start Force %")
         self.start_force_percentage = QtGui.QLineEdit()
-        self.start_force_percentage.setText(str(thresholds["start_force_percentage"]))
 
         self.end_force_percentage_label = QtGui.QLabel("End Force %")
         self.end_force_percentage = QtGui.QLineEdit()
-        self.end_force_percentage.setText(str(thresholds["end_force_percentage"]))
 
         self.tracking_temporal_label = QtGui.QLabel("Tracking Temporal Threshold")
         self.tracking_temporal = QtGui.QLineEdit()
-        self.tracking_temporal.setText(str(thresholds["tracking_temporal"]))
 
         self.tracking_spatial_label = QtGui.QLabel("Tracking Spatial Threshold")
         self.tracking_spatial = QtGui.QLineEdit()
-        self.tracking_spatial.setText(str(thresholds["tracking_spatial"]))
 
         self.tracking_surface_label = QtGui.QLabel("Tracking Surface Threshold")
         self.tracking_surface = QtGui.QLineEdit()
-        self.tracking_surface.setText(str(thresholds["tracking_surface"]))
+
+        self.update_fields()
 
         self.widgets = [["measurement_folder_label","measurement_folder", "measurement_folder_button"],
                         ["database_folder_label", "database_folder", "database_folder_button"],
@@ -138,6 +121,33 @@ class SettingsWidget(QtGui.QWidget):
         #pub.subscribe(self.change_status, "update_statusbar")
         #pub.subscribe(self.launch_message_box, "message_box")
 
+    def update_fields(self):
+        """
+        This function is called by __init__ and when the tab is switched to settings.
+        That way it'll always display the current values of the settings
+        """
+        keyboard_shortcuts = self.settings.keyboard_shortcuts()
+        interpolation = self.settings.interpolation()
+        thresholds = self.settings.thresholds()
+
+        self.measurement_folder.setText(self.settings.measurement_folder())
+        self.database_folder.setText(self.settings.database_folder())
+        self.database_file.setText(self.settings.database_file())
+
+        self.left_front.setText(keyboard_shortcuts["left_front"].toString())
+        self.left_hind.setText(keyboard_shortcuts["left_hind"].toString())
+        self.right_front.setText(keyboard_shortcuts["right_front"].toString())
+        self.right_hind.setText(keyboard_shortcuts["right_hind"].toString())
+
+        self.interpolation_entire_plate.setText(str(interpolation["interpolation_entire_plate"]))
+        self.interpolation_contact_widgets.setText(str(interpolation["interpolation_contact_widgets"]))
+        self.interpolation_results.setText(str(interpolation["interpolation_results"]))
+        self.start_force_percentage.setText(str(thresholds["start_force_percentage"]))
+        self.end_force_percentage.setText(str(thresholds["end_force_percentage"]))
+        self.tracking_temporal.setText(str(thresholds["tracking_temporal"]))
+        self.tracking_spatial.setText(str(thresholds["tracking_spatial"]))
+        self.tracking_surface.setText(str(thresholds["tracking_surface"]))
+
 
     def save_settings(self, evt=None):
         """
@@ -146,7 +156,7 @@ class SettingsWidget(QtGui.QWidget):
         """
         settings_dict = self.settings.read_settings()
         for key, nested in settings_dict.items():
-            if type(nested) == list:
+            if type(nested) != dict:
                 break
 
             for nested_key, old_value in nested.items():
@@ -161,6 +171,9 @@ class SettingsWidget(QtGui.QWidget):
                         new_value = float(new_value)
                     if type(old_value) == QtGui.QKeySequence:
                         new_value = QtGui.QKeySequence.fromString(new_value)
+                    if type(old_value) == bool:
+                        new_value = bool(new_value)
+                        print new_value
                     if old_value != new_value:
                         settings_dict[key][nested_key] = new_value
 
@@ -181,16 +194,14 @@ class SettingsWidget(QtGui.QWidget):
         self.file_dialog.setViewMode(QtGui.QFileDialog.Detail)
 
         # Store the default in case we don't make a change
-        folder = self.measurement_folder.text()
+        measurement_folder = self.measurement_folder.text()
         # Change where settings.measurement_folder is pointing too
         if self.file_dialog.exec_():
-            folder = self.file_dialog.selectedFiles()[0]
+            measurement_folder = self.file_dialog.selectedFiles()[0]
 
         # Then change that, so we always keep our 'default' measurements_folder
-        folders = self.settings.folders()
-        folders["measurement_folder"] = folder
-        self.settings.write_value("folders", folders)
-        self.measurement_folder.setText(folder)
+        self.settings.write_value("folders/measurement_folder", measurement_folder)
+        self.measurement_folder.setText(measurement_folder)
 
     def change_database_folder(self, evt=None):
         # Open a file dialog

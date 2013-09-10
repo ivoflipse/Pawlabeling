@@ -13,9 +13,8 @@ class Model():
     def __init__(self):
         self.file_paths = defaultdict(dict)
         self.settings = settings.Settings()
-        folders = self.settings.folders()
-        self.measurement_folder = folders["measurement_folder"]
-        self.database_file = folders["database_file"]
+        self.measurement_folder = self.settings.measurement_folder()
+        self.database_file = self.settings.database_file()
 
         self.subjects_table = table.SubjectsTable(database_file=self.database_file)
 
@@ -128,8 +127,9 @@ class Model():
                 input_file = infile.read()
 
             # If the user wants us to zip it, zip it so they don't keep taking up so much space!
-            if settings.zip_files:
-                io.zip_file(settings.measurement_folder, measurement_name)
+            if self.settings.application()["zip_files"]:
+                measurement_folder = self.settings.measurement_folder()
+                io.zip_file(measurement_folder, measurement_name)
 
         # Extract the measurement_data
         self.measurement_data = io.load(input_file, brand=self.measurement["brand"])
@@ -382,11 +382,13 @@ class Model():
             if not all([True if contact.contact_label < 0 else False for contact in contacts]):
                 measurements[measurement["measurement_name"]] = measurement
 
-        if measurement.__getitem__("brand"):
+        # Check if the measurement isn't none, before trying to get an item
+        if measurement and measurement.__getitem__("brand"):
             brand = measurement["brand"]
             model = measurement["model"]
             self.get_brand_and_model(brand, model)
-        else:
+        # If there are measurements, but they lack a brand
+        elif len(self.measurements_table.measurements_table) > 0:
             self.logger.warning("model.load_contacts: Measurement(s) lack brand")
 
         pub.sendMessage("update_measurement_status", measurements=measurements)
@@ -534,6 +536,5 @@ class Model():
         pub.sendMessage("clear_cached_values")
 
     def changed_settings(self):
-        folders = self.settings.folders()
-        self.measurement_folder = folders["measurement_folder"]
-        self.database_file = folders["database_file"]
+        self.measurement_folder = self.settings.measurement_folder()
+        self.database_file = self.settings.database_file()
