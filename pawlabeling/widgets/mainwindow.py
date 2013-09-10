@@ -22,21 +22,22 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__()
         self.settings = settings.Settings()
+        # Initialize the logger for the whole application
+        self.settings.setup_logging()
         # Set the screen dimensions, useful for when its not being run full screen
         # self.setGeometry(settings.main_window_size)
         # self.setGeometry(self.settings.value("widgets/main_window_size"))
         # Apparently its better to do it like this
-        width = self.settings.widgets()["main_window_width"]
-        height = self.settings.widgets()["main_window_height"]
+        width = self.settings.main_window_width()
+        height = self.settings.main_window_height()
         self.resize(width, height)
-        x = self.settings.widgets()["main_window_left"]
-        y = self.settings.widgets()["main_window_top"]
-
+        x = self.settings.main_window_left()
+        y = self.settings.main_window_top()
         self.move(x, y)
 
         # This will simply set the screen size to whatever is maximally possible,
         # while leaving the menubar + taskbar visible
-        if not self.settings.application()["show_maximized"]:
+        if not self.settings.show_maximized():
             self.showMaximized()
 
         self.setObjectName("MainWindow")
@@ -126,15 +127,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         # Write the current configurations to the settings file
-        if self.settings.value("restore_last_session"):
-            widgets = self.settings.widgets()
+        if self.settings.restore_last_session():
             size = self.size()
-            widgets["main_window_width"] = size.width()
-            widgets["main_window_height"] = size.height()
             pos = self.pos()
-            widgets["main_window_left"] = pos.x()
-            widgets["main_window_top"] = pos.y()
-            self.settings.write_value("widgets", widgets)
+            self.settings.write_value("widgets/main_window_width", size.width())
+            self.settings.write_value("widgets/main_window_height", size.height())
+            self.settings.write_value("widgets/main_window_left", pos.x())
+            self.settings.write_value("widgets/main_window_top", pos.y())
 
         self.logger = logging.getLogger("logger")
         self.logger.info("Application Shutdown\n")

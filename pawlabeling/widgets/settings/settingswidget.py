@@ -16,12 +16,12 @@ class SettingsWidget(QtGui.QWidget):
         self.logger = logging.getLogger("logger")
         # TODO provide a method that updates the line edits to the lastest values
         self.settings = settings.Settings()
-        application = self.settings.application()
+        label_font = self.settings.label_font()
 
         self.toolbar = gui.Toolbar(self)
 
         self.settings_label = QtGui.QLabel("Settings")
-        self.settings_label.setFont(application["label_font"])
+        self.settings_label.setFont(label_font)
 
         self.measurement_folder_label = QtGui.QLabel("Measurements folder")
         self.measurement_folder = QtGui.QLineEdit()
@@ -126,28 +126,24 @@ class SettingsWidget(QtGui.QWidget):
         This function is called by __init__ and when the tab is switched to settings.
         That way it'll always display the current values of the settings
         """
-        keyboard_shortcuts = self.settings.keyboard_shortcuts()
-        interpolation = self.settings.interpolation()
-        thresholds = self.settings.thresholds()
 
         self.measurement_folder.setText(self.settings.measurement_folder())
         self.database_folder.setText(self.settings.database_folder())
         self.database_file.setText(self.settings.database_file())
 
-        self.left_front.setText(keyboard_shortcuts["left_front"].toString())
-        self.left_hind.setText(keyboard_shortcuts["left_hind"].toString())
-        self.right_front.setText(keyboard_shortcuts["right_front"].toString())
-        self.right_hind.setText(keyboard_shortcuts["right_hind"].toString())
+        self.left_front.setText(self.settings.left_front().toString())
+        self.left_hind.setText(self.settings.left_hind().toString())
+        self.right_front.setText(self.settings.right_front().toString())
+        self.right_hind.setText(self.settings.right_hind().toString())
 
-        self.interpolation_entire_plate.setText(str(interpolation["interpolation_entire_plate"]))
-        self.interpolation_contact_widgets.setText(str(interpolation["interpolation_contact_widgets"]))
-        self.interpolation_results.setText(str(interpolation["interpolation_results"]))
-        self.start_force_percentage.setText(str(thresholds["start_force_percentage"]))
-        self.end_force_percentage.setText(str(thresholds["end_force_percentage"]))
-        self.tracking_temporal.setText(str(thresholds["tracking_temporal"]))
-        self.tracking_spatial.setText(str(thresholds["tracking_spatial"]))
-        self.tracking_surface.setText(str(thresholds["tracking_surface"]))
-
+        self.interpolation_entire_plate.setText(str(self.settings.interpolation_entire_plate()))
+        self.interpolation_contact_widgets.setText(str(self.settings.interpolation_contact_widgets()))
+        self.interpolation_results.setText(str(self.settings.interpolation_results()))
+        self.start_force_percentage.setText(str(self.settings.start_force_percentage()))
+        self.end_force_percentage.setText(str(self.settings.end_force_percentage()))
+        self.tracking_temporal.setText(str(self.settings.tracking_temporal()))
+        self.tracking_spatial.setText(str(self.settings.tracking_spatial()))
+        self.tracking_surface.setText(str(self.settings.tracking_surface()))
 
     def save_settings(self, evt=None):
         """
@@ -184,45 +180,39 @@ class SettingsWidget(QtGui.QWidget):
         pub.sendMessage("changed_settings")
 
     def change_measurement_folder(self, evt=None):
+        measurement_folder = self.settings.measurement_folder()
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your measurements",
-                                             self.settings.folders()["measurement_folder"])
+                                             measurement_folder)
 
         self.file_dialog.setFileMode(QtGui.QFileDialog.Directory)
         #self.file_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly)
         self.file_dialog.setViewMode(QtGui.QFileDialog.Detail)
 
-        # Store the default in case we don't make a change
-        measurement_folder = self.measurement_folder.text()
         # Change where settings.measurement_folder is pointing too
         if self.file_dialog.exec_():
             measurement_folder = self.file_dialog.selectedFiles()[0]
 
-        # Then change that, so we always keep our 'default' measurements_folder
-        self.settings.write_value("folders/measurement_folder", measurement_folder)
+        #self.settings.write_value("folders/measurement_folder", measurement_folder)
         self.measurement_folder.setText(measurement_folder)
 
     def change_database_folder(self, evt=None):
+        database_folder = self.settings.database_folder()
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your database",
-                                             self.settings.folders()["database_folder"])
+                                             database_folder)
 
         self.file_dialog.setFileMode(QtGui.QFileDialog.Directory)
         self.file_dialog.setViewMode(QtGui.QFileDialog.Detail)
 
-        # Store the default in case we don't make a change
-        folder = self.database_folder.text()
         # Change where settings.measurement_folder is pointing too
         if self.file_dialog.exec_():
-            folder = self.file_dialog.selectedFiles()[0]
+            database_folder = self.file_dialog.selectedFiles()[0]
 
-        # Then change that, so we always keep our 'default' measurements_folder
-        folders = self.settings.folders()
-        folders["database_folder"] = folder
-        self.settings.write_value("folders", folders)
-        self.database_folder.setText(folder)
+        #self.settings.write_value("folders/database_folder", database_folder)
+        self.database_folder.setText(database_folder)
 
     def create_toolbar_actions(self):
         self.save_settings_action = gui.create_action(text="&Save Settings",

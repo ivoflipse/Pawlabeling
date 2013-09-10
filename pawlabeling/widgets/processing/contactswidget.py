@@ -142,7 +142,7 @@ class ContactWidget(QtGui.QWidget):
         super(ContactWidget, self).__init__(parent)
         self.parent = parent
         self.settings = settings.Settings()
-        self.degree = self.settings.interpolation()["interpolation_contact_widgets"]
+        self.degree = self.settings.interpolation_contact_widgets()
         self.n_max = 0
         self.label = label
         self.contact_label = contact_label
@@ -188,7 +188,7 @@ class ContactWidget(QtGui.QWidget):
         self.main_layout.addWidget(self.view)
         self.main_layout.addLayout(self.number_layout)
 
-        self.setMinimumHeight(self.settings.widgets()["contacts_widget_height"])
+        self.setMinimumHeight(self.settings.contacts_widget_height())
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.update_n_max, "update_n_max")

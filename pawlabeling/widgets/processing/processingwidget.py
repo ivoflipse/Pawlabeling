@@ -60,10 +60,9 @@ class ProcessingWidget(QtGui.QWidget):
             self.contacts_tree.setColumnWidth(column, 60)
         self.contacts_tree.itemActivated.connect(self.switch_contacts)
 
-        widgets = self.settings.widgets()
         self.entire_plate_widget = entireplatewidget.EntirePlateWidget(self)
-        self.entire_plate_widget.setMinimumWidth(widgets["entire_plate_widget_width"])
-        self.entire_plate_widget.setMaximumHeight(widgets["entire_plate_widget_height"])
+        self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
+        self.entire_plate_widget.setMaximumHeight(self.settings.entire_plate_widget_height())
 
         self.contacts_widget = contactswidget.ContactWidgets(self)
 
@@ -343,16 +342,15 @@ class ProcessingWidget(QtGui.QWidget):
     def changed_settings(self):
         self.colors = self.settings.colors()
         self.contact_dict = self.settings.contact_dict()
-        keyboard_shortcuts = self.settings.keyboard_shortcuts()
         # Update all the keyboard shortcuts
-        self.left_front_action.setShortcut(keyboard_shortcuts["left_front"])
-        self.left_hind_action.setShortcut(keyboard_shortcuts["left_hind"])
-        self.right_front_action.setShortcut(keyboard_shortcuts["right_front"])
-        self.right_hind_action.setShortcut(keyboard_shortcuts["right_hind"])
-        self.previous_contact_action.setShortcut(keyboard_shortcuts["previous_contact"])
-        self.next_contact_action.setShortcut(keyboard_shortcuts["next_contact"])
-        self.invalid_contact_action.setShortcut(keyboard_shortcuts["invalid_contact"])
-        self.remove_label_action.setShortcut(keyboard_shortcuts["remove_label"])
+        self.left_front_action.setShortcut(self.settings.left_front())
+        self.left_hind_action.setShortcut(self.settings.left_hind())
+        self.right_front_action.setShortcut(self.settings.right_front())
+        self.right_hind_action.setShortcut(self.settings.right_hind())
+        self.previous_contact_action.setShortcut(self.settings.previous_contact())
+        self.next_contact_action.setShortcut(self.settings.next_contact())
+        self.invalid_contact_action.setShortcut(self.settings.invalid_contact())
+        self.remove_label_action.setShortcut(self.settings.remove_label())
 
     def create_toolbar_actions(self):
         self.track_contacts_action = gui.create_action(text="&Track Contacts",
@@ -376,7 +374,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.left_front_action = gui.create_action(text="Select Left Front",
-                                                   shortcut=self.settings.keyboard_shortcuts()["left_front"],
+                                                   shortcut=self.settings.left_front(),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
                                                                     "../images/LF_icon.png")),
@@ -386,7 +384,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.left_hind_action = gui.create_action(text="Select Left Hind",
-                                                  shortcut=self.settings.keyboard_shortcuts()["left_hind"],
+                                                  shortcut=self.settings.left_hind(),
                                                   icon=QtGui.QIcon(
                                                       os.path.join(os.path.dirname(__file__), "../images/LH_icon.png")),
                                                   tip="Select the Left Hind contact",
@@ -395,7 +393,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.right_front_action = gui.create_action(text="Select Right Front",
-                                                    shortcut=self.settings.keyboard_shortcuts()["right_front"],
+                                                    shortcut=self.settings.right_front(),
                                                     icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                                   "../images/RF_icon.png")),
                                                     tip="Select the Right Front contact",
@@ -404,7 +402,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.right_hind_action = gui.create_action(text="Select Right Hind",
-                                                   shortcut=self.settings.keyboard_shortcuts()["right_hind"],
+                                                   shortcut=self.settings.right_hind(),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
                                                                     "../images/RH_icon.png")),
@@ -414,7 +412,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.previous_contact_action = gui.create_action(text="Select Previous contact",
-                                                         shortcut=[self.settings.keyboard_shortcuts()["previous_contact"],
+                                                         shortcut=[self.settings.previous_contact(),
                                                                    QtGui.QKeySequence(QtCore.Qt.Key_Down)],
                                                          icon=QtGui.QIcon(
                                                              os.path.join(os.path.dirname(__file__),
@@ -425,7 +423,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.next_contact_action = gui.create_action(text="Select Next contact",
-                                                     shortcut=[self.settings.keyboard_shortcuts()["next_contact"],
+                                                     shortcut=[self.settings.next_contact(),
                                                                QtGui.QKeySequence(QtCore.Qt.Key_Up)],
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
@@ -436,7 +434,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.remove_label_action = gui.create_action(text="Delete Label From contact",
-                                                     shortcut=self.settings.keyboard_shortcuts()["remove_label"],
+                                                     shortcut=self.settings.remove_label(),
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
                                                                       "../images/cancel_icon.png")),
@@ -446,7 +444,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.invalid_contact_action = gui.create_action(text="Mark contact as Invalid",
-                                                        shortcut=self.settings.keyboard_shortcuts()["invalid_contact"],
+                                                        shortcut=self.settings.invalid_contact(),
                                                         icon=QtGui.QIcon(
                                                             os.path.join(os.path.dirname(__file__),
                                                                          "../images/trash_icon.png")),
@@ -465,10 +463,11 @@ class ProcessingWidget(QtGui.QWidget):
                                                    connection=self.undo_label
         )
 
-        self.actions = [self.store_status_action, self.track_contacts_action, self.left_front_action,
-                        self.left_hind_action,
-                        self.right_front_action, self.right_hind_action, self.previous_contact_action,
-                        self.next_contact_action,
+        # TODO Not all actions are editable yet
+        self.actions = [self.store_status_action, self.track_contacts_action,
+                        self.left_front_action, self.left_hind_action,
+                        self.right_front_action, self.right_hind_action,
+                        self.previous_contact_action, self.next_contact_action,
                         self.remove_label_action, self.invalid_contact_action, self.undo_label_action]
 
         for action in self.actions:

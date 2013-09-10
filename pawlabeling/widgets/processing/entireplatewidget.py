@@ -32,7 +32,7 @@ class EntirePlateWidget(QtGui.QWidget):
 
         self.settings = settings.Settings()
         self.colors = self.settings.colors()
-        self.degree = self.settings.interpolation()["interpolation_entire_plate"]
+        self.degree = self.settings.interpolation_entire_plate()
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
 

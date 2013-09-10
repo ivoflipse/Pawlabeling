@@ -6,6 +6,7 @@ import logging
 
 __version__ = '0.1'
 
+
 class Settings(QtCore.QSettings):
     def __init__(self):
         self.settings_folder = os.path.dirname(__file__)
@@ -25,7 +26,6 @@ class Settings(QtCore.QSettings):
         self.setFallbacksEnabled(False)
         # Load everything we need
         self.load_settings(self.read_settings())
-        self.logger = self.setup_logging()
 
         # Lookup table for all the different settings
         self.lookup_table = {
@@ -79,7 +79,6 @@ class Settings(QtCore.QSettings):
             return default_value
 
 
-
     def convert_shortcuts(self, shortcuts):
         new_shortcuts = {}
         for key, shortcut in shortcuts.items():
@@ -113,7 +112,6 @@ class Settings(QtCore.QSettings):
             QtGui.QColor(QtCore.Qt.yellow)
         ]
         return default_value
-
 
     def left_front(self):
         key = "keyboard_shortcuts/left_front"
@@ -385,7 +383,7 @@ class Settings(QtCore.QSettings):
         else:
             return default_value
 
-    def zip_files(self):
+    def application_font(self):
         key = "application/application_font"
         default_value = QtGui.QFont("Helvetica", 10)
         setting_value = self.value(key)
@@ -407,7 +405,7 @@ class Settings(QtCore.QSettings):
         key = "application/date_format"
         default_value = QtCore.QLocale.system().dateFormat(QtCore.QLocale.ShortFormat)
         setting_value = self.value(key)
-        if isinstance(setting_value, QtCore.QLocale.dateFormat):
+        if isinstance(setting_value, QtCore.QLocale.FormatType):
             return setting_value
         else:
             return default_value
@@ -433,7 +431,7 @@ class Settings(QtCore.QSettings):
         settings["keyboard_shortcuts/right_hind"] = self.right_hind()
         settings["keyboard_shortcuts/previous_contact"] = self.previous_contact()
         settings["keyboard_shortcuts/next_contact"] = self.next_contact()
-        settings["keyboard_shortcuts/remove_label"] =self.remove_label()
+        settings["keyboard_shortcuts/remove_label"] = self.remove_label()
         settings["keyboard_shortcuts/invalid_contact"] = self.invalid_contact()
 
         settings["folders/measurement_folder"] = self.measurement_folder()

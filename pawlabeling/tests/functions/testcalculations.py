@@ -2,7 +2,6 @@ from unittest import TestCase
 import os
 import numpy as np
 import logging
-from pawlabeling.settings import settings
 from pawlabeling.functions import calculations, io
 
 logger = logging.getLogger("logger")

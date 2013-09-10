@@ -127,7 +127,7 @@ class Model():
                 input_file = infile.read()
 
             # If the user wants us to zip it, zip it so they don't keep taking up so much space!
-            if self.settings.application()["zip_files"]:
+            if self.settings.zip_files():
                 measurement_folder = self.settings.measurement_folder()
                 io.zip_file(measurement_folder, measurement_name)
 
@@ -404,9 +404,9 @@ class Model():
         x = self.measurement["number_of_rows"]
         y = self.measurement["number_of_cols"]
         z = self.measurement["number_of_frames"]
-        padding = self.settings.application()["padding_factor"]
-        data = np.zeros((x + 2 * padding, y + 2 * padding, z), np.float32)
-        data[padding:-padding, padding:-padding, :] = self.measurement_data
+        padding_factor = self.settings.padding_factor()
+        data = np.zeros((x + 2 * padding_factor, y + 2 * padding_factor, z), np.float32)
+        data[padding_factor:-padding_factor, padding_factor:-padding_factor, :] = self.measurement_data
         raw_contacts = tracking.track_contours_graph(data)
 
         contacts = []
@@ -415,7 +415,7 @@ class Model():
             contact = contactmodel.Contact()
             contact.create_contact(contact=raw_contact,
                                    measurement_data=self.measurement_data,
-                                   padding=padding,
+                                   padding=padding_factor,
                                    orientation=self.measurement["orientation"])
             contact.calculate_results(sensor_surface=self.sensor_surface)
             # Give each contact the same orientation as the measurement it originates from
