@@ -194,11 +194,8 @@ class ContactWidget(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.update_brand_and_model, "update_brand_and_model")
 
-    def update_brand_and_model(self, brand, model):
-        brands = self.settings.brands()
-        for b in brands:
-            if b["brand"] == brand and b["model"] == model:
-                self.brand = b
+    def update_brand_and_model(self, brand):
+        self.brand = brand
 
     def update_n_max(self, n_max):
         self.n_max = n_max

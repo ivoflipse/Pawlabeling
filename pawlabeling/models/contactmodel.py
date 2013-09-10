@@ -36,6 +36,8 @@ class Contact():
         self.contact_label = -2  # contacts are labeled as -2 by default
         self.orientation = False  # True means the contact is upside down
 
+        self.settings = settings.Settings()
+
     def create_contact(self, contact, measurement_data, padding=0, orientation=False):
         """
         This function expects a contact object, which is a dictionary of frames:list of contours and a padding value
@@ -76,8 +78,6 @@ class Contact():
         # If the contact is upside down, fix that
         if orientation:
             self.data = np.rot90(np.rot90(self.data))
-        # Calculate the results
-        self.calculate_results()
 
     #@profile
     def convert_contour_to_slice(self, measurement_data):
@@ -86,7 +86,6 @@ class Contact():
         """
         # Create an empty array that should fit the entire contact
         self.data = np.zeros((self.width, self.height, self.length))
-
 
         for index, (frame, contours) in enumerate(sorted(self.contour_list.items())):
             # Pass a single contour as if it were a contact
@@ -99,16 +98,16 @@ class Contact():
                     # Remember the coordinates are only for the slice, so we need to add padding
                     coordinate = (min_x + pixel[0], min_y + pixel[1])
                     if cv2.pointPolygonTest(contour, coordinate, 0) > -1.0:
-                        self.data[coordinate[0]-self.min_x, coordinate[1]-self.min_y, index] = measurement_data[
+                        self.data[coordinate[0] - self.min_x, coordinate[1] - self.min_y, index] = measurement_data[
                             coordinate[0], coordinate[1], frame]
 
-    def calculate_results(self):
+    def calculate_results(self, sensor_surface):
         """
         This function will calculate all the required results and store them in the contact object
         """
         self.force_over_time = calculations.force_over_time(self.data)
-        self.pressure_over_time = calculations.pressure_over_time(self.data)
-        self.surface_over_time = calculations.surface_over_time(self.data)
+        self.pressure_over_time = calculations.pressure_over_time(self.data, sensor_surface=sensor_surface)
+        self.surface_over_time = calculations.surface_over_time(self.data, sensor_surface=sensor_surface)
         self.cop_x, self.cop_y = calculations.calculate_cop(self.data)
         self.max_of_max = np.max(self.data, axis=2)
 
@@ -166,9 +165,10 @@ class Contact():
         """
         force_over_time = calculations.force_over_time(self.data)
         max_force = np.max(force_over_time)
+        thresholds = self.settings.thresholds()
         #print force_over_time[0], force_over_time[-1], max_force, settings.start_force_percentage
-        if (force_over_time[0] > (settings.start_force_percentage * max_force) or
-                    force_over_time[-1] > (settings.end_force_percentage * max_force)):
+        if (force_over_time[0] > (thresholds["start_force_percentage"] * max_force) or
+                    force_over_time[-1] > (thresholds["end_force_percentage"] * max_force)):
             return True
         return False
 

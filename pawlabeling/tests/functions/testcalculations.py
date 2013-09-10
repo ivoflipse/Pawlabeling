@@ -4,6 +4,7 @@ import numpy as np
 from pawlabeling.settings import settings
 from pawlabeling.functions import calculations, io
 
+
 class TestCalculateCOP(TestCase):
     def test_calculate_cop_scipy(self):
         # How do I verify the COP is correct?
@@ -41,7 +42,7 @@ class TestCalculateCOP(TestCase):
 
     def test_calculate_cop_dummy(self):
         # Create a dummy measurement
-        data = np.zeros((3,3,3))
+        data = np.zeros((3, 3, 3))
         data[1, 0, :] = 1
 
         cop_x, cop_y = calculations.calculate_cop(data, version="scipy")
@@ -54,7 +55,7 @@ class TestCalculateCOP(TestCase):
         self.assertTrue(equal_y)
 
     def test_calculate_cop_with_2d_array(self):
-        data = np.zeros((3,3))
+        data = np.zeros((3, 3))
         with self.assertRaises(Exception):
             calculations.calculate_cop(data)
 
@@ -62,10 +63,10 @@ class TestCalculateCOP(TestCase):
 class TestForceOverTime(TestCase):
     def test_force_over_time_naive_check(self):
         # Create an empty 3D array
-        data = np.zeros((3,3,3))
-        data[1,1,0] = 1.
-        data[1,1,1] = 2.
-        data[1,1,2] = 1.
+        data = np.zeros((3, 3, 3))
+        data[1, 1, 0] = 1.
+        data[1, 1, 1] = 2.
+        data[1, 1, 2] = 1.
 
         force_over_time = calculations.force_over_time(data)
 
@@ -74,7 +75,7 @@ class TestForceOverTime(TestCase):
         self.assertEqual(np.argmax(force_over_time), 1)
 
     def test_force_over_time_with_2d_array(self):
-        data = np.zeros((3,3))
+        data = np.zeros((3, 3))
         with self.assertRaises(Exception):
             calculations.force_over_time(data)
 
@@ -82,19 +83,20 @@ class TestForceOverTime(TestCase):
 class TestPressureOverTime(TestCase):
     def test_pressure_over_time_naive_check(self):
         # Create an empty 3D array
-        data = np.zeros((3,3,3))
-        data[1,1,0] = 1.
-        data[1,1,1] = 2.
-        data[1,1,2] = 1.
+        data = np.zeros((3, 3, 3))
+        data[1, 1, 0] = 1.
+        data[1, 1, 1] = 2.
+        data[1, 1, 2] = 1.
 
         pressure_over_time = calculations.pressure_over_time(data)
+        sensor_surface = 1.
 
         self.assertEqual(len(pressure_over_time), 3)
-        self.assertEqual(np.max(pressure_over_time), 2. / settings.sensor_surface)
+        self.assertEqual(np.max(pressure_over_time), 2. / sensor_surface)
         self.assertEqual(np.argmax(pressure_over_time), 1)
 
     def test_pressure_over_time_with_2d_array(self):
-        data = np.zeros((3,3))
+        data = np.zeros((3, 3))
         with self.assertRaises(Exception):
             calculations.pressure_over_time(data)
 
@@ -102,20 +104,20 @@ class TestPressureOverTime(TestCase):
 class TestSurfaceOverTime(TestCase):
     def test_surface_over_time_naive_check(self):
         # Create an empty 3D array
-        data = np.zeros((3,3,3))
-        data[1,1,0] = 1.
-        data[1,1,1] = 2.
-        data[2,1,1] = 2.
-        data[1,1,2] = 1.
+        data = np.zeros((3, 3, 3))
+        data[1, 1, 0] = 1.
+        data[1, 1, 1] = 2.
+        data[2, 1, 1] = 2.
+        data[1, 1, 2] = 1.
 
         surface_over_time = calculations.surface_over_time(data)
-
+        sensor_surface = 1.
         self.assertEqual(len(surface_over_time), 3)
-        self.assertEqual(np.max(surface_over_time), 2.*settings.sensor_surface)
+        self.assertEqual(np.max(surface_over_time), 2. * sensor_surface)
         self.assertEqual(np.argmax(surface_over_time), 1)
 
     def test_surface_over_time_with_2d_array(self):
-        data = np.zeros((3,3))
+        data = np.zeros((3, 3))
         with self.assertRaises(Exception):
             calculations.surface_over_time(data)
 
@@ -123,11 +125,11 @@ class TestSurfaceOverTime(TestCase):
 class TestPixelCountOverTime(TestCase):
     def test_pixel_count_over_time_naive_check(self):
         # Create an empty 3D array
-        data = np.zeros((3,3,3))
-        data[1,1,0] = 1.
-        data[1,1,1] = 2.
-        data[2,1,1] = 2.
-        data[1,1,2] = 1.
+        data = np.zeros((3, 3, 3))
+        data[1, 1, 0] = 1.
+        data[1, 1, 1] = 2.
+        data[2, 1, 1] = 2.
+        data[1, 1, 2] = 1.
 
         pixel_count_over_time = calculations.pixel_count_over_time(data)
 
@@ -136,7 +138,7 @@ class TestPixelCountOverTime(TestCase):
         self.assertEqual(np.argmax(pixel_count_over_time), 1)
 
     def test_pixel_count_over_time_with_2d_array(self):
-        data = np.zeros((3,3))
+        data = np.zeros((3, 3))
         with self.assertRaises(Exception):
             calculations.pixel_count_over_time(data)
 
@@ -156,6 +158,6 @@ class TestInterpolateTimeSeries(TestCase):
         self.assertEqual(len(new_data), length)
 
     def test_interpolate_time_series_with_2d_array(self):
-        data = np.zeros((3,3))
+        data = np.zeros((3, 3))
         with self.assertRaises(Exception):
             calculations.interpolate_time_series(data)

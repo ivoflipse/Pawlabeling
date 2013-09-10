@@ -179,8 +179,10 @@ class Model():
         results = {"data": contact_data,
                    "max_of_max": contact_data.max(axis=2),
                    "force_over_time": calculations.force_over_time(contact_data),
-                   "pressure_over_time": calculations.pressure_over_time(contact_data),
-                   "surface_over_time": calculations.surface_over_time(contact_data),
+                   "pressure_over_time": calculations.pressure_over_time(contact_data,
+                                                                         sensor_surface=self.sensor_surface),
+                   "surface_over_time": calculations.surface_over_time(contact_data,
+                                                                       sensor_surface=self.sensor_surface),
                    "cop_x": cop_x,
                    "cop_y": cop_y
         }
@@ -338,6 +340,17 @@ class Model():
                 self.n_max = n_max
         pub.sendMessage("update_n_max", n_max=self.n_max)
 
+    def get_brand_and_model(self, brand, model):
+        brands = self.settings.brands()
+        for b in brands:
+            if b["brand"] == brand and b["model"] == model:
+                self.brand = b
+                break
+
+        self.frequency = self.brand["frequency"]
+        self.sensor_surface = self.brand["sensor_surface"]
+        pub.sendMessage("update_brand_and_model", brand=brand)
+
     def load_contacts(self):
         """
         Check if there if any measurements for this subject have already been processed
@@ -369,7 +382,7 @@ class Model():
         if hasattr(measurement, "brand"):
             brand = measurement["brand"]
             model = measurement["model"]
-            pub.sendMessage("update_brand_and_model", brand=brand, model=model)
+            self.get_brand_and_model(brand, model)
         else:
             self.logger.warning("model.load_contacts: Measurement(s) lack brand")
 
@@ -399,7 +412,7 @@ class Model():
                                    measurement_data=self.measurement_data,
                                    padding=padding,
                                    orientation=self.measurement["orientation"])
-            contact.calculate_results()
+            contact.calculate_results(sensor_surface=self.sensor_surface)
             # Give each contact the same orientation as the measurement it originates from
             contact.set_orientation(self.measurement["orientation"])
             # Skip contacts that have only been around for one frame
@@ -460,6 +473,7 @@ class Model():
 
         pub.sendMessage("update_average", average_data=self.average_data)
 
+    # TODO Why are we calculating stuff? These things are already stored, so be lazy and load them!
     def calculate_results(self):
         # If we don't have any data, its no use to try and calculate something
         if len(self.data_list.keys()) == 0:
@@ -477,11 +491,17 @@ class Model():
                 if max_force > self.max_results.get("force", 0):
                     self.max_results["force"] = max_force
 
-                pressure = calculations.pressure_over_time(data)
+                pressure = calculations.pressure_over_time(data, sensor_surface=self.sensor_surface)
                 self.results[contact_label]["pressure"].append(pressure)
                 max_pressure = np.max(pressure)
                 if max_pressure > self.max_results.get("pressure", 0):
                     self.max_results["pressure"] = max_pressure
+
+                surface = calculations.surface_over_time(data, sensor_surface=self.sensor_surface)
+                self.results[contact_label]["surface"].append(surface)
+                max_surface = np.max(surface)
+                if max_surface > self.max_results.get("surface", 0):
+                    self.max_results["surface"] = max_surface
 
                 cop_x, cop_y = calculations.calculate_cop(data)
                 self.results[contact_label]["cop"].append((cop_x, cop_y))
@@ -499,6 +519,7 @@ class Model():
         self.session = {}
         self.measurement = {}
         self.contact = {}
+        self.brand = {}
         self.subject_name = ""
         self.measurement_name = ""
         self.session_id = ""
