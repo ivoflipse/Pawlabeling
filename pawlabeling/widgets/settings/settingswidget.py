@@ -152,7 +152,9 @@ class SettingsWidget(QtGui.QWidget):
         """
         settings_dict = self.settings.read_settings()
         for key, nested in settings_dict.items():
-            if type(nested) != dict:
+            # This will help skip settings we don't change anyway
+            if key not in self.settings.lookup_table:
+                del settings_dict[key]
                 break
 
             for nested_key, old_value in nested.items():

@@ -25,7 +25,7 @@ class Settings(QtCore.QSettings):
         # System-wide settings will not be searched as a fallback
         self.setFallbacksEnabled(False)
         # Load everything we need
-        self.load_settings(self.read_settings())
+        self.read_settings()
 
         # Lookup table for all the different settings
         self.lookup_table = {
@@ -70,20 +70,13 @@ class Settings(QtCore.QSettings):
                           "sensor_surface": 0.25
                          }
         ]
-
-        setting_value = self.value(key)
-        if isinstance(setting_value, dict):
-            # This merges both dictionaries. Replace if the user can define this from the GUI
-            return dict(default_value, **setting_value)
-        else:
-            return default_value
-
-
-    def convert_shortcuts(self, shortcuts):
-        new_shortcuts = {}
-        for key, shortcut in shortcuts.items():
-            new_shortcuts[key] = QtGui.QKeySequence.fromString(shortcut)
-        return new_shortcuts
+        return default_value
+        # setting_value = self.value(key)
+        # if isinstance(setting_value, dict):
+        #     # This merges both dictionaries. Replace if the user can define this from the GUI
+        #     return dict(default_value, **setting_value)
+        # else:
+        #     return default_value
 
     def contact_dict(self):
         # Lookup table for converting indices to labels
@@ -376,7 +369,7 @@ class Settings(QtCore.QSettings):
 
     def show_maximized(self):
         key = "application/show_maximized"
-        default_value = True
+        default_value = False
         setting_value = self.value(key)
         if isinstance(setting_value, bool):
             return setting_value
@@ -420,71 +413,59 @@ class Settings(QtCore.QSettings):
             return default_value
 
     def read_settings(self):
-        settings = {}
-        settings["contact_dict"] = self.contact_dict()
-        settings["colors"] = self.colors()
-        settings["brands"] = self.brands()
+        self.settings = {}
+        self.settings["contact_dict"] = self.contact_dict()
+        self.settings["colors"] = self.colors()
+        self.settings["brands"] = self.brands()
 
-        settings["keyboard_shortcuts/left_front"] = self.left_front()
-        settings["keyboard_shortcuts/left_hind"] = self.left_hind()
-        settings["keyboard_shortcuts/right_front"] = self.right_front()
-        settings["keyboard_shortcuts/right_hind"] = self.right_hind()
-        settings["keyboard_shortcuts/previous_contact"] = self.previous_contact()
-        settings["keyboard_shortcuts/next_contact"] = self.next_contact()
-        settings["keyboard_shortcuts/remove_label"] = self.remove_label()
-        settings["keyboard_shortcuts/invalid_contact"] = self.invalid_contact()
+        self.settings["keyboard_shortcuts/left_front"] = self.left_front()
+        self.settings["keyboard_shortcuts/left_hind"] = self.left_hind()
+        self.settings["keyboard_shortcuts/right_front"] = self.right_front()
+        self.settings["keyboard_shortcuts/right_hind"] = self.right_hind()
+        self.settings["keyboard_shortcuts/previous_contact"] = self.previous_contact()
+        self.settings["keyboard_shortcuts/next_contact"] = self.next_contact()
+        self.settings["keyboard_shortcuts/remove_label"] = self.remove_label()
+        self.settings["keyboard_shortcuts/invalid_contact"] = self.invalid_contact()
 
-        settings["folders/measurement_folder"] = self.measurement_folder()
-        settings["folders/database_folder"] = self.database_folder()
-        settings["folders/database_file"] = self.database_file()
+        self.settings["folders/measurement_folder"] = self.measurement_folder()
+        self.settings["folders/database_folder"] = self.database_folder()
+        self.settings["folders/database_file"] = self.database_file()
 
-        settings["thresholds/start_force_percentage"] = self.start_force_percentage()
-        settings["thresholds/end_force_percentage"] = self.end_force_percentage()
-        settings["thresholds/tracking_temporal"] = self.tracking_temporal()
-        settings["thresholds/tracking_spatial"] = self.tracking_spatial()
-        settings["thresholds/tracking_surface"] = self.tracking_surface()
-        settings["thresholds/padding_factor"] = self.padding_factor()
+        self.settings["thresholds/start_force_percentage"] = self.start_force_percentage()
+        self.settings["thresholds/end_force_percentage"] = self.end_force_percentage()
+        self.settings["thresholds/tracking_temporal"] = self.tracking_temporal()
+        self.settings["thresholds/tracking_spatial"] = self.tracking_spatial()
+        self.settings["thresholds/tracking_surface"] = self.tracking_surface()
+        self.settings["thresholds/padding_factor"] = self.padding_factor()
 
-        settings["widgets/main_window_left"] = self.main_window_left()
-        settings["widgets/main_window_top"] = self.main_window_top()
-        settings["widgets/main_window_width"] = self.main_window_width()
-        settings["widgets/main_window_height"] = self.main_window_height()
-        settings["widgets/main_window_size"] = self.main_window_size()
-        settings["widgets/entire_plate_widget_width"] = self.entire_plate_widget_width()
-        settings["widgets/entire_plate_widget_height"] = self.entire_plate_widget_height()
-        settings["widgets/contacts_widget_height"] = self.contacts_widget_height()
+        self.settings["widgets/main_window_left"] = self.main_window_left()
+        self.settings["widgets/main_window_top"] = self.main_window_top()
+        self.settings["widgets/main_window_width"] = self.main_window_width()
+        self.settings["widgets/main_window_height"] = self.main_window_height()
+        self.settings["widgets/main_window_size"] = self.main_window_size()
+        self.settings["widgets/entire_plate_widget_width"] = self.entire_plate_widget_width()
+        self.settings["widgets/entire_plate_widget_height"] = self.entire_plate_widget_height()
+        self.settings["widgets/contacts_widget_height"] = self.contacts_widget_height()
 
-        settings["interpolation/interpolation_entire_plate"] = self.interpolation_entire_plate()
-        settings["interpolation/interpolation_contact_widgets"] = self.interpolation_contact_widgets()
-        settings["interpolation/interpolation_results"] = self.interpolation_results()
+        self.settings["interpolation/interpolation_entire_plate"] = self.interpolation_entire_plate()
+        self.settings["interpolation/interpolation_contact_widgets"] = self.interpolation_contact_widgets()
+        self.settings["interpolation/interpolation_results"] = self.interpolation_results()
 
-        settings["application/zip_files"] = self.zip_files()
-        settings["application/show_maximized"] = self.show_maximized()
-        settings["application/application_font"] = self.application_font()
-        settings["application/label_font"] = self.label_font()
-        settings["application/date_format"] = self.date_format()
-        settings["application/restore_last_session"] = self.restore_last_session()
+        self.settings["application/zip_files"] = self.zip_files()
+        self.settings["application/show_maximized"] = self.show_maximized()
+        self.settings["application/application_font"] = self.application_font()
+        self.settings["application/label_font"] = self.label_font()
+        self.settings["application/date_format"] = self.date_format()
+        self.settings["application/restore_last_session"] = self.restore_last_session()
 
-        return settings
-
-    def load_settings(self, settings):
-        self.user_settings(settings)
-        # Here it seems I need to add a bunch more attributes too
+        return self.settings
 
     def save_settings(self, settings):
         """
         """
         for key, value in settings.items():
-            self.write_value(key, value)
-        self.sync()
-
-    def user_settings(self, settings):
-        pass
-        # key = 'restore_last_session'
-        # if key in settings:
-        #     self.restore_last_session = settings[key]
-        #
-        #     # I'll have to add user loadable things here later
+            if key not in ["brands", "colors", "contact_dict"]:  # I want to skip these
+                self.write_value(key, value)
 
     def write_value(self, key, value):
         """
@@ -554,6 +535,3 @@ class MissingIdentifier(Exception):
 def getVersion():
     """The application version."""
     return __version__
-
-
-settings = Settings()

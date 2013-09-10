@@ -22,8 +22,8 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__()
         self.settings = settings.Settings()
-        # Initialize the logger for the whole application
-        self.settings.setup_logging()
+        # Set up the logger before anything else
+        self.logger = self.settings.setup_logging()
         # Set the screen dimensions, useful for when its not being run full screen
         # self.setGeometry(settings.main_window_size)
         # self.setGeometry(self.settings.value("widgets/main_window_size"))
@@ -37,15 +37,13 @@ class MainWindow(QtGui.QMainWindow):
 
         # This will simply set the screen size to whatever is maximally possible,
         # while leaving the menubar + taskbar visible
-        if not self.settings.show_maximized():
+        if self.settings.show_maximized():
             self.showMaximized()
 
         self.setObjectName("MainWindow")
         self.setWindowTitle(parent.applicationName())
         # Y U NO WORK?
         self.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "images\pawlabeling.png")))
-        # Set up the logger before anything else
-        self.logger = self.settings.setup_logging()
 
         # Create the base model for the entire application
         # Make sure to do this first, in case anything relies on it
