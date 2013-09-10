@@ -7,7 +7,7 @@ database:
   database_file: "data.h5"
 
 plate:
-  brand: "rsscan"
+  brands: "rsscan"
   model: "2m 2nd gen"
   frequency: 125
 

@@ -4,7 +4,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from pubsub import pub
 from pawlabeling.functions import utility, calculations
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 
 class ForceViewWidget(QtGui.QWidget):
@@ -82,7 +82,7 @@ class ContactView(QtGui.QWidget):
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.canvas)
         self.main_layout.setStretchFactor(self.canvas, 3)
-        self.setMinimumHeight(configuration.contacts_widget_height)
+        self.setMinimumHeight(settings.contacts_widget_height)
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.update_n_max, "update_n_max")

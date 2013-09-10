@@ -1,7 +1,7 @@
 from unittest import TestCase
 import os
 import numpy as np
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 from pawlabeling.functions import calculations, io
 
 class TestCalculateCOP(TestCase):
@@ -90,7 +90,7 @@ class TestPressureOverTime(TestCase):
         pressure_over_time = calculations.pressure_over_time(data)
 
         self.assertEqual(len(pressure_over_time), 3)
-        self.assertEqual(np.max(pressure_over_time), 2. / configuration.sensor_surface)
+        self.assertEqual(np.max(pressure_over_time), 2. / settings.sensor_surface)
         self.assertEqual(np.argmax(pressure_over_time), 1)
 
     def test_pressure_over_time_with_2d_array(self):
@@ -111,7 +111,7 @@ class TestSurfaceOverTime(TestCase):
         surface_over_time = calculations.surface_over_time(data)
 
         self.assertEqual(len(surface_over_time), 3)
-        self.assertEqual(np.max(surface_over_time), 2.*configuration.sensor_surface)
+        self.assertEqual(np.max(surface_over_time), 2.*settings.sensor_surface)
         self.assertEqual(np.argmax(surface_over_time), 1)
 
     def test_surface_over_time_with_2d_array(self):

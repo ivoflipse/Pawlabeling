@@ -15,32 +15,25 @@ def getVersion():
     """The application version."""
     return __version__
 
-class Configuration(QtCore.QSettings):
+class Settings(QtCore.QSettings):
     def __init__(self):
-        super(Configuration, self).__init__()  # organization, application_name
-
         self.settings_folder = os.path.dirname(__file__)
         self.root_folder = os.path.dirname(self.settings_folder)
         # Get the file paths for the two config files
-        # self.config_file = os.path.join(self.settings_folder, "config.yaml")
-        self.config_file = os.path.join(self.settings_folder, "settings.ini")
+        # self.settings_file = os.path.join(self.settings_folder, "config.yaml")
+        self.settings_file = os.path.join(self.settings_folder, "settings.ini")
 
-        organization = QtGui.qApp.organizationName()
-        application_name = QtGui.qApp.applicationName()
-        version = QtGui.qApp.applicationVersion()
-        product_name = '-'.join((application_name, version))
-
-        self.configuration = QtCore.QSettings(self.config_file, QtCore.QSettings.IniFormat)
-        # System-wide configuration will not be searched as a fallback
+        QtCore.QCoreApplication.setOrganizationName("Flipse R&D")
+        QtGui.qApp.setOrganizationDomain("flipserd.com")
+        QtGui.qApp.setApplicationName("Paw Labeling")
+        # version = QtGui.qApp.applicationVersion()
+        # product_name = '-'.join((application_name, version))
+        super(Settings, self).__init__(self.settings_file, QtCore.QSettings.IniFormat)
+        # System-wide settings will not be searched as a fallback
         self.setFallbacksEnabled(False)
-
-        self.read_configuration()
-
-    def load_configuration(self):
-        self.user_settings()
-        # To use configuration other than my default ones, change config.yaml
-        with open(self.config_file, "r") as input_file:
-            self.config = yaml.load(input_file)
+        # Load everything we need
+        self.load_settings(self.read_settings())
+        self.logger = self.setup_logging()
 
     def restore_last_session(self):
         key = "restore_last_session"
@@ -107,19 +100,8 @@ class Configuration(QtCore.QSettings):
         key = "folders"
         default_value = {
             "measurement_folder": os.path.join(self.root_folder, "samples\\Measurements"),
-            "store_results_folder": os.path.join(self.root_folder, "samples\\Labels")
-        }
-        setting_value = self.value(key)
-        if isinstance(setting_value, dict):
-            return setting_value
-        else:
-            return default_value
-
-    def database(self):
-        key = "database"
-        default_value = {
             "database_folder": ".\\database",
-            "database_file ": os.path.join(self.root_folder, "database\\data.h5")
+            "database_file": os.path.join(self.root_folder, "database\\data.h5")
         }
         setting_value = self.value(key)
         if isinstance(setting_value, dict):
@@ -127,23 +109,24 @@ class Configuration(QtCore.QSettings):
         else:
             return default_value
 
-    def brand(self):
-        key = "brand"
-        default_value = [{"brand": "rsscan",
+    # TODO It would be nice if this had a key that mapped to each plate
+    def brands(self):
+        key = "brands"
+        default_value = [{"brands": "rsscan",
                           "model": "2m 2nd gen",
                           "frequency": 125,
                           "sensor_width": 0.508,
                           "sensor_height": 0.762,
                           "sensor_surface": 0.387096
                          },
-                         {"brand": "zebris",
+                         {"brands": "zebris",
                           "model": "FDM 1m",
                           "frequency": 200,
                           "sensor_width": 0.846,
                           "sensor_height": 0.846,
                           "sensor_surface": 0.715716
                          },
-                         {"brand": "novel",
+                         {"brands": "novel",
                           "model": "emed",
                           "frequency": 100,
                           "sensor_width": 0.5,
@@ -225,37 +208,42 @@ class Configuration(QtCore.QSettings):
         else:
             return default_value
 
-    def read_configuration(self):
-        config = {}
-        config["contact_dict"] = self.contact_dict()
-        config["colors"] = self.colors()
-        config["restore_last_session"] = self.restore_last_session()
-        config["keyboard_shortcuts"] = self.keyboard_shortcuts()
-        config["folders"] = self.folders()
-        config["database"] = self.database()
-        config["brand"] = self.brand()
-        config["thresholds"] = self.thresholds()
-        config["widgets"] = self.widgets()
-        config["interpolation"] = self.interpolation()
-        config["application"] = self.application()
+    def read_settings(self):
+        settings = {}
+        settings["contact_dict"] = self.contact_dict()
+        settings["colors"] = self.colors()
+        settings["restore_last_session"] = self.restore_last_session()
+        settings["keyboard_shortcuts"] = self.keyboard_shortcuts()
+        settings["folders"] = self.folders()
+        settings["brands"] = self.brands()
+        settings["thresholds"] = self.thresholds()
+        settings["widgets"] = self.widgets()
+        settings["interpolation"] = self.interpolation()
+        settings["application"] = self.application()
+        return settings
 
-        return config
+    def load_settings(self, settings):
+        self.user_settings(settings)
+        # Here it seems I need to add a bunch more attributes too
 
-    def write_configuration(self, config):
+    def write_settings(self, settings):
         """
-        Shouldn't this just write self.config to a file and all changes happen in place?
+        Shouldn't this just write self.settings to a file and all changes happen in place?
         """
         from pprint import pprint
-        pprint(config)
+        pprint(settings)
 
-        # Write any changes back to the config.yaml file
-        with open(self.config_file, "w") as output_file:
-            output_file.write(yaml.dump(config, default_flow_style=False))
+        # Write any changes back to the settings.yaml file
+        with open(self.settings_file, "w") as output_file:
+            output_file.write(yaml.dump(settings, default_flow_style=False))
 
-    def user_settings(self):
-        key = 'startup/restoreLastSession'
-        if key in self.config:
-            self.restore_last_session = self.config[key]
+    def user_settings(self, settings):
+        key = 'restore_last_session'
+        if key in settings:
+            self.restore_last_session = settings[key]
+
+        # I'll have to add user loadable things here later
+
 
     def setup_logging(self):
         logging_levels = {
@@ -304,11 +292,11 @@ class Configuration(QtCore.QSettings):
 
 
 # TODO Make sure that the model creates the required folders if they don't exist
-# # Lookup table for all the different configuration, I guess its basically just 'config'
-# configuration = {"folders": {"measurement_folder": measurement_folder},
+# # Lookup table for all the different settings, I guess its basically just 'config'
+# settings = {"folders": {"measurement_folder": measurement_folder},
 #             "database": {"database_folder": database_folder,
 #                          "database_file": database_file},
-#             "plate": {"brand": brand,
+#             "plate": {"brands": brands,
 #                       "model": model,
 #                       "frequency": frequency},
 #             "interpolation_degree": {"interpolation_entire_plate": interpolation_entire_plate,

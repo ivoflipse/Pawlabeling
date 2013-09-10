@@ -8,7 +8,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 from pawlabeling.widgets.database import subjectwidget, sessionwidget, measurementwidget
 
 
@@ -17,10 +17,6 @@ class DatabaseWidget(QtGui.QWidget):
         super(DatabaseWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
-
-        self.path = configuration.measurement_folder
-        self.store_path = configuration.store_results_folder
-
         self.toolbar = gui.Toolbar(self)
 
         self.subject_widget = subjectwidget.SubjectWidget(self)

@@ -3,7 +3,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 
 class SubjectWidget(QtGui.QWidget):
@@ -11,9 +11,11 @@ class SubjectWidget(QtGui.QWidget):
         super(SubjectWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
+        self.settings = settings.Settings()
+        application = self.settings.application()
 
         self.subject_tree_label = QtGui.QLabel("Subjects")
-        self.subject_tree_label.setFont(configuration.label_font)
+        self.subject_tree_label.setFont(application["label_font"])
         self.subject_tree = QtGui.QTreeWidget(self)
         #self.subject_tree.setMinimumWidth(300)
         #self.subject_tree.setMaximumWidth(400)
@@ -23,7 +25,7 @@ class SubjectWidget(QtGui.QWidget):
         self.subject_tree.itemActivated.connect(self.put_subject)
 
         self.subject_label = QtGui.QLabel("Subject")
-        self.subject_label.setFont(configuration.label_font)
+        self.subject_label.setFont(application["label_font"])
         self.birthday_label = QtGui.QLabel("Birthday")
         self.mass_label = QtGui.QLabel("Mass")
         self.first_name_label = QtGui.QLabel("First Name")
@@ -36,7 +38,7 @@ class SubjectWidget(QtGui.QWidget):
         self.birthday = QtGui.QDateTimeEdit(QtCore.QDate.currentDate())
         self.birthday.setMinimumDate(QtCore.QDate.currentDate().addYears(-100))
         self.birthday.setMaximumDate(QtCore.QDate.currentDate())
-        self.birthday.setDisplayFormat(configuration.date_format)
+        self.birthday.setDisplayFormat(application["date_format"])
         self.mass = QtGui.QLineEdit()
         self.first_name = QtGui.QLineEdit()
         self.last_name = QtGui.QLineEdit()

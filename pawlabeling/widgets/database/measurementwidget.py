@@ -6,7 +6,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui, utility
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 
 class MeasurementWidget(QtGui.QWidget):
@@ -14,14 +14,17 @@ class MeasurementWidget(QtGui.QWidget):
         super(MeasurementWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
-        self.date_format = configuration.date_format
+        self.settings = settings.Settings()
+        application = self.settings.application()
+        self.date_format = application["date_format"]
+        folders = self.settings.folders()
 
         self.files_tree_label = QtGui.QLabel("Session folder")
-        self.files_tree_label.setFont(configuration.label_font)
+        self.files_tree_label.setFont(application["label_font"])
 
         self.measurement_folder_label = QtGui.QLabel("File path:")
         self.measurement_folder = QtGui.QLineEdit()
-        self.measurement_folder.setText(configuration.measurement_folder)
+        self.measurement_folder.setText(folders["measurement_folder"])
         self.measurement_folder.textChanged.connect(self.check_measurement_folder)
 
         self.measurement_folder_button = QtGui.QToolButton()
@@ -56,7 +59,7 @@ class MeasurementWidget(QtGui.QWidget):
 
         self.frequency.activated.connect(self.change_frequency)
 
-        # TODO Perhaps add a set to default or something? Though this can/should be done in the configuration
+        # TODO Perhaps add a set to default or something? Though this can/should be done in the settings
 
         self.brand_model_layout = QtGui.QHBoxLayout()
         self.brand_model_layout.addWidget(self.brand_label)
@@ -73,7 +76,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.files_tree.header().resizeSection(0, 200)
 
         self.measurement_tree_label = QtGui.QLabel("Measurements")
-        self.measurement_tree_label.setFont(configuration.label_font)
+        self.measurement_tree_label.setFont(application["label_font"])
         self.measurement_tree = QtGui.QTreeWidget(self)
         #self.measurement_tree.setMinimumWidth(300)
         self.measurement_tree.setColumnCount(1)
@@ -129,20 +132,20 @@ class MeasurementWidget(QtGui.QWidget):
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your measurements",
-                                             configuration.measurement_folder)
+                                             settings.measurement_folder)
         self.file_dialog.setFileMode(QtGui.QFileDialog.Directory)
         #self.file_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly)
         self.file_dialog.setViewMode(QtGui.QFileDialog.Detail)
 
         # Store the default in case we don't make a change
-        file_name = configuration.measurement_folder
-        # Change where configuration.measurement_folder is pointing too
+        file_name = settings.measurement_folder
+        # Change where settings.measurement_folder is pointing too
         if self.file_dialog.exec_():
             file_name = self.file_dialog.selectedFiles()[0]
 
         # TODO instead of overwriting measurement_folder, add a temp variable that's used by the IO module too
         # Then change that, so we always keep our 'default' measurements_folder
-        configuration.measurement_folder = file_name
+        settings.measurement_folder = file_name
         self.measurement_folder.setText(file_name)
         # Update the files tree
         self.update_files_tree()
@@ -150,7 +153,7 @@ class MeasurementWidget(QtGui.QWidget):
     def check_measurement_folder(self, evt=None):
         measurement_folder = self.measurement_folder.text()
         if os.path.exists(measurement_folder) and os.path.isdir(measurement_folder):
-            configuration.measurement_folder = measurement_folder
+            settings.measurement_folder = measurement_folder
             self.update_files_tree()
 
     def update_files_tree(self):
@@ -170,13 +173,13 @@ class MeasurementWidget(QtGui.QWidget):
             root_item.setText(2, creation_date)
 
     def add_measurements(self, evt=None):
-        # All measurements from the same session must have the same brand/model/frequency
-        brand = configuration.brand
-        model = configuration.model
-        frequency = configuration.frequency
+        # All measurements from the same session must have the same brands/model/frequency
+        brand = settings.brand
+        model = settings.model
+        frequency = settings.frequency
         for file_name, file_path in self.file_paths.items():
             date_time = time.strftime("%Y-%m-%d %H:%M",time.gmtime(os.path.getctime(file_path))).split(" ")
-            # Check if the brand and model have been changed or not
+            # Check if the brands and model have been changed or not
             measurement = {"measurement_name":file_name,
                            "file_path":file_path,
                            "date":date_time[0],
@@ -189,25 +192,25 @@ class MeasurementWidget(QtGui.QWidget):
                 pub.sendMessage("create_measurement", measurement=measurement)
                 # Update the tree after a measurement has been created
                 pub.sendMessage("get_measurements", measurement={})
-            except configuration.MissingIdentifier:
+            except settings.MissingIdentifier:
                 pass
 
     def change_brand(self, index):
         brand = self.brand.itemText(index)
-        configuration.brand = brand
+        settings.brand = brand
         # Adjust the size in case the text is too big to fit
         self.brand.adjustSize()
         self.logger.info("measurementwidget.change_brand: Brand changed to {}".format(brand))
 
     def change_model(self, index):
         model = self.model.itemText(index)
-        configuration.model = model
+        settings.model = model
         self.model.adjustSize()
         self.logger.info("measurementwidget.change_model: Model changed to {}".format(model))
 
     def change_frequency(self, index):
         frequency = self.frequency.itemText(index)
         # The combobox stores text, so be sure to convert to int!
-        configuration.frequency = int(frequency)
+        settings.frequency = int(frequency)
         self.frequency.adjustSize()
         self.logger.info("measurmentwidget.change_frequency: Frequency changed to {}".format(frequency))

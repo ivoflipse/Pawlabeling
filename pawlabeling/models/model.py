@@ -4,7 +4,7 @@ import os
 import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 from pawlabeling.models import contactmodel, table
 #from memory_profiler import profile
 
@@ -12,9 +12,10 @@ from pawlabeling.models import contactmodel, table
 class Model():
     def __init__(self):
         self.file_paths = defaultdict(dict)
-        self.path = configuration.measurement_folder
-        self.store_path = configuration.store_results_folder
-        self.database_file = configuration.database_file
+        self.settings = settings.Settings()
+        folders = self.settings.folders()
+        self.measurement_folder = folders["measurement_folder"]
+        self.database_file = folders["database_file"]
 
         self.subjects_table = table.SubjectsTable(database_file=self.database_file)
 
@@ -77,7 +78,7 @@ class Model():
         if not self.subject_id:
             pub.sendMessage("update_statusbar", status="Model.create_session: Subject not selected")
             pub.sendMessage("message_box", message="Please select a subject")
-            raise configuration.MissingIdentifier("Subject missing")
+            raise settings.MissingIdentifier("Subject missing")
 
         # Check if the session isn't already in the table
         if self.sessions_table.get_session_row(session_name=session["session_name"]).size:
@@ -124,8 +125,8 @@ class Model():
                 input_file = infile.read()
 
             # If the user wants us to zip it, zip it so they don't keep taking up so much space!
-            if configuration.zip_files:
-                io.zip_file(configuration.measurement_folder, measurement_name)
+            if settings.zip_files:
+                io.zip_file(settings.measurement_folder, measurement_name)
 
         # Extract the measurement_data
         self.measurement_data = io.load(input_file, brand=self.measurement["brand"])
@@ -348,9 +349,14 @@ class Model():
         # Make sure self.contacts is empty
         self.contacts.clear()
 
+        # Retrieve the brands and model
+        brand = ""
+        model = ""
+
         measurements = {}
 
         measurement_names = {}
+        measurement = None
         for measurement in self.measurements_table.measurements_table:
             measurement_names[measurement["measurement_id"]] = measurement["measurement_name"]
             contacts = self.get_contact_data(measurement)
@@ -359,6 +365,13 @@ class Model():
 
             if not all([True if contact.contact_label < 0 else False for contact in contacts]):
                 measurements[measurement["measurement_name"]] = measurement
+
+        if hasattr(measurement, "brand"):
+            brand = measurement["brand"]
+            model = measurement["model"]
+            pub.sendMessage("update_brand_and_model", brand=brand, model=model)
+        else:
+            self.logger.warning("model.load_contacts: Measurement(s) lack brand")
 
         pub.sendMessage("update_measurement_status", measurements=measurements)
 
@@ -373,7 +386,7 @@ class Model():
         x = self.measurement["number_of_rows"]
         y = self.measurement["number_of_cols"]
         z = self.measurement["number_of_frames"]
-        padding = configuration.padding_factor
+        padding = settings.padding_factor
         data = np.zeros((x + 2 * padding, y + 2 * padding, z), np.float32)
         data[padding:-padding, padding:-padding, :] = self.measurement_data
         raw_contacts = tracking.track_contours_graph(data)

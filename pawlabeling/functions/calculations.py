@@ -1,5 +1,5 @@
 import numpy as np
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 
 def interpolate_time_series(data, length=100):
@@ -75,15 +75,15 @@ def pixel_count_over_time(data):
     return np.array([np.count_nonzero(data[:, :, frame]) for frame in range(z)])
 
 
-def surface_over_time(data):
+def surface_over_time(data, sensor_surface):
     assert len(data.shape) == 3
     pixel_counts = pixel_count_over_time(data)
-    return np.array([p_c * configuration.sensor_surface for p_c in pixel_counts])  # Can't this be rewritten?
+    return np.array([p_c * sensor_surface for p_c in pixel_counts])  # Can't this be rewritten?
 
 
-def pressure_over_time(data):
+def pressure_over_time(data, sensor_surface):
     assert len(data.shape) == 3
     force = force_over_time(data)
     pixel_counts = pixel_count_over_time(data)
-    surface = [p_c * configuration.sensor_surface for p_c in pixel_counts]
+    surface = [p_c * sensor_surface for p_c in pixel_counts]
     return np.divide(force, surface)

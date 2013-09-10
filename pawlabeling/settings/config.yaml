@@ -12,7 +12,7 @@ interpolation_degree:
   interpolation_entire_plate: 4
   interpolation_results: 16
 plate:
-  brand: rsscan
+  brands: rsscan
   frequency: 125
   model: 2m 2nd gen
 sensors:

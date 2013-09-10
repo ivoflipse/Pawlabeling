@@ -4,7 +4,7 @@ from PySide import QtGui
 import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, calculations
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 
 class ContactWidgets(QtGui.QWidget):
@@ -29,7 +29,7 @@ class ContactWidgets(QtGui.QWidget):
         }
 
         self.logger = logging.getLogger("logger")
-        self.contact_dict = configuration.contact_dict
+        self.contact_dict = settings.contact_dict
 
         self.left_contacts_layout = QtGui.QVBoxLayout()
         self.left_contacts_layout.addWidget(self.left_front)
@@ -140,7 +140,8 @@ class ContactWidget(QtGui.QWidget):
     def __init__(self, parent, label, contact_label):
         super(ContactWidget, self).__init__(parent)
         self.parent = parent
-        self.degree = configuration.interpolation_contact_widgets
+        self.settings = settings.Settings()
+        self.degree = self.settings.interpolation()["interpolation_contact_widgets"]
         self.n_max = 0
         self.label = label
         self.contact_label = contact_label
@@ -186,11 +187,18 @@ class ContactWidget(QtGui.QWidget):
         self.main_layout.addWidget(self.view)
         self.main_layout.addLayout(self.number_layout)
 
-        self.setMinimumHeight(configuration.contacts_widget_height)
+        self.setMinimumHeight(self.settings.widgets()["contacts_widget_height"])
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
+        pub.subscribe(self.update_brand_and_model, "update_brand_and_model")
+
+    def update_brand_and_model(self, brand, model):
+        brands = self.settings.brands()
+        for b in brands:
+            if b["brand"] == brand and b["model"] == model:
+                self.brand = b
 
     def update_n_max(self, n_max):
         self.n_max = n_max
@@ -203,7 +211,7 @@ class ContactWidget(QtGui.QWidget):
         self.max_pressure = np.max(calculations.force_over_time(self.average_data))
         x, y, z = np.nonzero(self.average_data)
         self.mean_duration = np.max(z)
-        self.mean_surface = np.max(calculations.pixel_count_over_time(self.average_data) * configuration.sensor_surface)
+        self.mean_surface = np.max(calculations.pixel_count_over_time(self.average_data) * self.brand["sensor_surface"])
 
         self.max_pressure_label.setText("{:3.1f} N".format(self.max_pressure))
         self.mean_duration_label.setText("{} frames".format(int(self.mean_duration)))

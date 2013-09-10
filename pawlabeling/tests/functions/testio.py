@@ -4,7 +4,7 @@ import numpy as np
 import shutil
 import cPickle as pickle
 from pawlabeling.functions import io
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 class TestLoad(TestCase):
     def test_load_sample_subject1(self):
@@ -46,23 +46,23 @@ class TestLoad(TestCase):
     #     measurement_data = io.load(file_name=file_name)
     #     self.assertEqual(measurement_data.shape, (128L, 56L, 1472L))
 
-
-class TestFindStoredFile(TestCase):
-    def setUp(self):
-        # Let's try and change the measurement folder
-        root = os.path.dirname(os.path.abspath(__file__))
-        file_name = os.path.join(root, "files/empty_folder")
-        # Cache the old location so we can reset it
-        self.old_folder = configuration.store_results_folder
-        # Change the configuration's folder
-        configuration.store_results_folder = file_name
-
-    def test_find_stored_file(self):
-        io.find_stored_file(subject_name="Dog1", file_name="fake_export_1")
-
-    def tearDown(self):
-        # Restore it to the old folder
-        configuration.store_results_folder = self.old_folder
+# This test is no longer necessary, since the files are in PyTables
+# class TestFindStoredFile(TestCase):
+#     def setUp(self):
+#         # Let's try and change the measurement folder
+#         root = os.path.dirname(os.path.abspath(__file__))
+#         file_name = os.path.join(root, "files/empty_folder")
+#         # Cache the old location so we can reset it
+#         self.old_folder = settings.store_results_folder
+#         # Change the settings's folder
+#         settings.store_results_folder = file_name
+#
+#     def test_find_stored_file(self):
+#         io.find_stored_file(subject_name="Dog1", file_name="fake_export_1")
+#
+#     def tearDown(self):
+#         # Restore it to the old folder
+#         settings.store_results_folder = self.old_folder
 
 
 class TestFixOrientation(TestCase):
@@ -129,7 +129,7 @@ class TestFixOrientation(TestCase):
 #     def setUp(self):
 #         # Use some name hopefully nobody will ever use
 #         self.subject_name = "Professor Xavier Test"
-#         store_path = configuration.store_results_folder
+#         store_path = settings.store_results_folder
 #         self.new_path = os.path.join(store_path, self.subject_name)
 #
 #         if os.path.exists(self.new_path):
@@ -234,9 +234,9 @@ class TestGetFilePaths(TestCase):
         root = os.path.dirname(os.path.abspath(__file__))
         file_name = os.path.join(root, "files/zip_folder/Dog1")
         # Cache the old location so we can reset it
-        self.old_folder = configuration.measurement_folder
-        # Change the configuration's folder
-        configuration.measurement_folder = file_name
+        self.old_folder = settings.measurement_folder
+        # Change the settings's folder
+        settings.measurement_folder = file_name
 
     def test_get_file_paths(self):
         # Get the file_paths
@@ -246,7 +246,7 @@ class TestGetFilePaths(TestCase):
 
     def tearDown(self):
         # Restore it to the old folder
-        configuration.measurement_folder = self.old_folder
+        settings.measurement_folder = self.old_folder
 
 class TestGetFilePaths2(TestCase):
     """
@@ -258,9 +258,9 @@ class TestGetFilePaths2(TestCase):
         root = os.path.dirname(os.path.abspath(__file__))
         file_name = os.path.join(root, "files/zip_folder")
         # Cache the old location so we can reset it
-        self.old_folder = configuration.measurement_folder
-        # Change the configuration's folder
-        configuration.measurement_folder = file_name
+        self.old_folder = settings.measurement_folder
+        # Change the settings's folder
+        settings.measurement_folder = file_name
 
     def test_get_file_paths(self):
         file_paths = io.get_file_paths()
@@ -268,4 +268,4 @@ class TestGetFilePaths2(TestCase):
 
     def tearDown(self):
         # Restore it to the old folder
-        configuration.measurement_folder = self.old_folder
+        settings.measurement_folder = self.old_folder

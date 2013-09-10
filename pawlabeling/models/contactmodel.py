@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import cv2
 from pawlabeling.functions import utility, calculations
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 #from memory_profiler import profile
 
 logger = logging.getLogger("logger")
@@ -166,9 +166,9 @@ class Contact():
         """
         force_over_time = calculations.force_over_time(self.data)
         max_force = np.max(force_over_time)
-        #print force_over_time[0], force_over_time[-1], max_force, configuration.start_force_percentage
-        if (force_over_time[0] > (configuration.start_force_percentage * max_force) or
-                    force_over_time[-1] > (configuration.end_force_percentage * max_force)):
+        #print force_over_time[0], force_over_time[-1], max_force, settings.start_force_percentage
+        if (force_over_time[0] > (settings.start_force_percentage * max_force) or
+                    force_over_time[-1] > (settings.end_force_percentage * max_force)):
             return True
         return False
 

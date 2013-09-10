@@ -4,14 +4,14 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import utility, gui
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 
 class EntirePlateWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(EntirePlateWidget, self).__init__(parent)
         self.parent = parent
-        #self.resize(configuration.entire_plate_widget_width, configuration.entire_plate_widget_height)
+        #self.resize(settings.entire_plate_widget_width, settings.entire_plate_widget_height)
         self.ratio = 1
         self.num_frames = 0
 
@@ -30,8 +30,9 @@ class EntirePlateWidget(QtGui.QWidget):
         self.gait_lines = []
         self.measurement_name = ""
 
-        self.colors = configuration.colors
-        self.degree = configuration.interpolation_entire_plate
+        self.settings = settings.Settings()
+        self.colors = self.settings.colors
+        self.degree = self.settings.interpolation()["interpolation_entire_plate"]
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
 

@@ -2,7 +2,7 @@ import sys
 import os
 from PySide import QtGui, QtCore
 from pubsub import pub
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 from pawlabeling.functions import gui
 
 
@@ -11,16 +11,24 @@ class SettingsWidget(QtGui.QWidget):
         super(SettingsWidget, self).__init__(parent)
 
         # Set up the logger
-        self.logger = configuration.setup_logging()
+        self.settings = settings.Settings()
+        # TODO Are you sure this should be called like this?
+        self.logger = self.settings.logger
+
+        folders = self.settings.folders()
+        application = self.settings.application()
+        keyboard_shortcuts = self.settings.keyboard_shortcuts()
+        interpolation = self.settings.interpolation()
+        thresholds = self.settings.thresholds()
 
         self.toolbar = gui.Toolbar(self)
 
         self.settings_label = QtGui.QLabel("Settings")
-        self.settings_label.setFont(configuration.label_font)
+        self.settings_label.setFont(application["label_font"])
 
         self.measurement_folder_label = QtGui.QLabel("Measurements folder")
         self.measurement_folder = QtGui.QLineEdit()
-        self.measurement_folder.setText(configuration.measurement_folder)
+        self.measurement_folder.setText(folders["measurement_folder"])
         self.measurement_folder_button = QtGui.QToolButton()
         self.measurement_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                         "../images/folder_icon.png")))
@@ -28,7 +36,7 @@ class SettingsWidget(QtGui.QWidget):
 
         self.database_folder_label = QtGui.QLabel("Database folder")
         self.database_folder = QtGui.QLineEdit()
-        self.database_folder.setText(configuration.database_folder)
+        self.database_folder.setText(application["label_font"])
         self.database_folder_button = QtGui.QToolButton()
         self.database_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                         "../images/folder_icon.png")))
@@ -37,55 +45,55 @@ class SettingsWidget(QtGui.QWidget):
 
         self.database_file_label = QtGui.QLabel("Database file")
         self.database_file = QtGui.QLineEdit()
-        self.database_file.setText(configuration.database_file)
+        self.database_file.setText(folders["database_file"])
 
         self.left_front_label = QtGui.QLabel("Left Front Shortcut")
         self.left_front = QtGui.QLineEdit()
-        self.left_front.setText(configuration.shortcut_strings["left_front"])
+        self.left_front.setText(keyboard_shortcuts["left_front"])
 
         self.left_hind_label = QtGui.QLabel("Left Hind Shortcut")
         self.left_hind = QtGui.QLineEdit()
-        self.left_hind.setText(configuration.shortcut_strings["left_hind"])
+        self.left_hind.setText(keyboard_shortcuts["left_hind"])
 
         self.right_front_label = QtGui.QLabel("Right Front Shortcut")
         self.right_front = QtGui.QLineEdit()
-        self.right_front.setText(configuration.shortcut_strings["right_front"])
+        self.right_front.setText(keyboard_shortcuts["right_front"])
 
         self.right_hind_label = QtGui.QLabel("Right Hind Shortcut")
         self.right_hind = QtGui.QLineEdit()
-        self.right_hind.setText(configuration.shortcut_strings["right_hind"])
+        self.right_hind.setText(keyboard_shortcuts["right_hind"])
 
         self.interpolation_entire_plate_label = QtGui.QLabel("Interpolation: Entire Plate")
         self.interpolation_entire_plate = QtGui.QLineEdit()
-        self.interpolation_entire_plate.setText(str(configuration.interpolation_entire_plate))
+        self.interpolation_entire_plate.setText(str(interpolation["interpolation_entire_plate"]))
 
         self.interpolation_contact_widgets_label = QtGui.QLabel("Interpolation: Contact Widgets")
         self.interpolation_contact_widgets = QtGui.QLineEdit()
-        self.interpolation_contact_widgets.setText(str(configuration.interpolation_contact_widgets))
+        self.interpolation_contact_widgets.setText(str(interpolation["interpolation_contact_widgets"]))
 
         self.interpolation_results_label = QtGui.QLabel("Interpolation: Results")
         self.interpolation_results  = QtGui.QLineEdit()
-        self.interpolation_results.setText(str(configuration.interpolation_results))
+        self.interpolation_results.setText(str(interpolation["interpolation_results"]))
 
         self.start_force_percentage_label = QtGui.QLabel("Start Force %")
         self.start_force_percentage = QtGui.QLineEdit()
-        self.start_force_percentage.setText(str(configuration.start_force_percentage))
+        self.start_force_percentage.setText(str(thresholds["start_force_percentage"]))
 
         self.end_force_percentage_label = QtGui.QLabel("End Force %")
         self.end_force_percentage = QtGui.QLineEdit()
-        self.end_force_percentage.setText(str(configuration.end_force_percentage))
+        self.end_force_percentage.setText(str(thresholds["end_force_percentage"]))
 
         self.tracking_temporal_label = QtGui.QLabel("Tracking Temporal Threshold")
         self.tracking_temporal = QtGui.QLineEdit()
-        self.tracking_temporal.setText(str(configuration.tracking_temporal))
+        self.tracking_temporal.setText(str(thresholds["tracking_temporal"]))
 
         self.tracking_spatial_label = QtGui.QLabel("Tracking Spatial Threshold")
         self.tracking_spatial = QtGui.QLineEdit()
-        self.tracking_spatial.setText(str(configuration.tracking_spatial))
+        self.tracking_spatial.setText(str(thresholds["tracking_spatial"]))
 
         self.tracking_surface_label = QtGui.QLabel("Tracking Surface Threshold")
         self.tracking_surface = QtGui.QLineEdit()
-        self.tracking_surface.setText(str(configuration.tracking_surface))
+        self.tracking_surface.setText(str(thresholds["tracking_surface"]))
 
         self.widgets = [["measurement_folder_label","measurement_folder", "measurement_folder_button"],
                         ["database_folder_label", "database_folder", "database_folder_button"],
@@ -135,8 +143,8 @@ class SettingsWidget(QtGui.QWidget):
         Store the changes to the widgets to the config.yaml file
         This function should probably do some validation
         """
-        config = configuration.config
-        for key, nested in configuration.settings.items():
+        config = settings.config
+        for key, nested in settings.settings.items():
             for nested_key, old_value in nested.items():
                 if hasattr(self, nested_key):
                     new_value = getattr(self, nested_key).text()
@@ -147,21 +155,21 @@ class SettingsWidget(QtGui.QWidget):
                     if old_value != new_value:
                         config[key][nested_key] = new_value
                         # TODO This call doesn't really seem to work
-                        setattr(configuration, nested_key, new_value)
+                        setattr(settings, nested_key, new_value)
 
-        for key, old_value in configuration.shortcut_strings.items():
+        for key, old_value in settings.shortcut_strings.items():
             if hasattr(self, key):
                 new_value = getattr(self, key).text()
                 config["shortcuts"][key] = str(new_value)
                 key_sequence = QtGui.QKeySequence.fromString(new_value)
-                setattr(configuration, key, key_sequence)
+                setattr(settings, key, key_sequence)
 
-        # TODO A problem is that changing configuration doesn't assign the attributes in configuration itself.
+        # TODO A problem is that changing settings doesn't assign the attributes in settings itself.
         # Guess I should modify config and have everything read from that?
         # I've added setattr calls for now to try and get it working anyway
 
-        configuration.save_settings(config)
-        # Notify the rest of the application that the configuration have changed
+        settings.save_settings(config)
+        # Notify the rest of the application that the settings have changed
         # TODO: changes here should propagate to the rest of the application (like the database screen)
         pub.sendMessage("changed_settings")
 
@@ -169,7 +177,7 @@ class SettingsWidget(QtGui.QWidget):
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your measurements",
-                                             configuration.measurement_folder)
+                                             settings.measurement_folder)
 
         self.file_dialog.setFileMode(QtGui.QFileDialog.Directory)
         #self.file_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly)
@@ -177,31 +185,31 @@ class SettingsWidget(QtGui.QWidget):
 
         # Store the default in case we don't make a change
         folder = self.measurement_folder.text()
-        # Change where configuration.measurement_folder is pointing too
+        # Change where settings.measurement_folder is pointing too
         if self.file_dialog.exec_():
             folder = self.file_dialog.selectedFiles()[0]
 
         # Then change that, so we always keep our 'default' measurements_folder
-        configuration.measurement_folder = folder
+        settings.measurement_folder = folder
         self.measurement_folder.setText(folder)
 
     def change_database_folder(self, evt=None):
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your database",
-                                             configuration.database_folder)
+                                             settings.database_folder)
 
         self.file_dialog.setFileMode(QtGui.QFileDialog.Directory)
         self.file_dialog.setViewMode(QtGui.QFileDialog.Detail)
 
         # Store the default in case we don't make a change
         folder = self.database_folder.text()
-        # Change where configuration.measurement_folder is pointing too
+        # Change where settings.measurement_folder is pointing too
         if self.file_dialog.exec_():
             folder = self.file_dialog.selectedFiles()[0]
 
         # Then change that, so we always keep our 'default' measurements_folder
-        configuration.database_folder = folder
+        settings.database_folder = folder
         self.database_folder.setText(folder)
 
 
@@ -211,7 +219,7 @@ class SettingsWidget(QtGui.QWidget):
                                                         icon=QtGui.QIcon(
                                                             os.path.join(os.path.dirname(__file__),
                                                                          "../images/save_icon.png")),
-                                                        tip="Save configuration",
+                                                        tip="Save settings",
                                                         checkable=True,
                                                         connection=self.save_settings
         )

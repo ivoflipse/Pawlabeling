@@ -99,7 +99,7 @@ def setup_package():
     else:
         from numpy.distutils.core import setup
 
-        metadata['configuration'] = configuration
+        metadata['settings'] = configuration
 
     setup(**metadata)
 

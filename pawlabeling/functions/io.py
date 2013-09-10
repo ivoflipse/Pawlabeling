@@ -2,7 +2,7 @@ import os
 import logging
 import numpy as np
 from pubsub import pub
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 try:
     import cPickle as pickle
@@ -163,22 +163,23 @@ def open_zip_file(file_name):
     return input_file
 
 
-def find_stored_file(subject_name, file_name):
-    # Note that the file_name might have a ZIP extension, so we'll ignore that for now
-    file_name = file_name.split(".")[0]
-    root_folder = configuration.store_results_folder
-    # For the current file_name, check if the results have been stored, if so load it
-    path = os.path.join(root_folder, subject_name)
-    # If the folder exists
-    if os.path.exists(path):
-        # Check if the current file's name is in that folder
-        for root, dirs, files in os.walk(path):
-            for f in files:
-                name = f.split('.')[0]  # This was giving problems because of .zip.json == 2 extensions
-                if name == file_name:
-                    input_file = f
-                    input_path = os.path.join(path, input_file)
-                    return input_path
+# def find_stored_file(subject_name, file_name):
+#     # Note that the file_name might have a ZIP extension, so we'll ignore that for now
+#     file_name = file_name.split(".")[0]
+#
+#     root_folder = settings.store_results_folder
+#     # For the current file_name, check if the results have been stored, if so load it
+#     path = os.path.join(root_folder, subject_name)
+#     # If the folder exists
+#     if os.path.exists(path):
+#         # Check if the current file's name is in that folder
+#         for root, dirs, files in os.walk(path):
+#             for f in files:
+#                 name = f.split('.')[0]  # This was giving problems because of .zip.json == 2 extensions
+#                 if name == file_name:
+#                     input_file = f
+#                     input_path = os.path.join(path, input_file)
+#                     return input_path
 
 
 def load_results(input_path):
@@ -208,21 +209,22 @@ def load_results(input_path):
         raise Exception("Results do not contain Contact's. You've used an incorrect file")
 
 
-def create_results_folder(subject_name):
-    """
-    This function takes a path and creates a folder called
-    Returns the path of the folder just created
-    """
-    if not subject_name:
-        raise Exception("You can't supply an empty name")
-
-    store_path = configuration.store_results_folder
-    # The name of the subject is the second last element in file_name
-    new_path = os.path.join(store_path, subject_name)
-    # Create a new folder in the base folder if it doesn't already exist
-    if not os.path.exists(new_path):
-        os.mkdir(new_path)
-    return new_path
+# def create_results_folder(subject_name):
+#     """
+#     This function takes a path and creates a folder called
+#     Returns the path of the folder just created
+#     """
+#     if not subject_name:
+#         raise Exception("You can't supply an empty name")
+#
+#     _settings = settings.Settings()
+#     store_path = _settings.folders()["store_results_folder"]
+#     # The name of the subject is the second last element in file_name
+#     new_path = os.path.join(store_path, subject_name)
+#     # Create a new folder in the base folder if it doesn't already exist
+#     if not os.path.exists(new_path):
+#         os.mkdir(new_path)
+#     return new_path
 
 
 def results_to_pickle(pickle_path, contacts):
@@ -286,7 +288,8 @@ def get_file_paths():
 
     logger.info("io.get_file_paths: Searching for measurements...")
 
-    root = configuration.measurement_folder
+    _settings = settings.Settings()
+    root = _settings.folders()["measurement_folder"]
     # TODO check whether root is actually a valid folder
     file_names = [name for name in os.listdir(root)
                   if os.path.isfile(os.path.join(root, name))]
@@ -295,5 +298,5 @@ def get_file_paths():
         file_paths[file_name] = os.path.join(root, file_name)
 
     if not file_paths:
-        logger.info("No files found, please check the measurement folder in your configuration file")
+        logger.info("No files found, please check the measurement folder in your settings file")
     return file_paths

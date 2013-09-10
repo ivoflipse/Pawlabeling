@@ -6,7 +6,7 @@ from PySide.QtCore import Qt
 import numpy as np
 from pubsub import pub
 from pawlabeling.functions import gui, io
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 from pawlabeling.widgets.analysis import resultswidget
 
 
@@ -30,10 +30,10 @@ class AnalysisWidget(QtGui.QTabWidget):
         # This contains all the file_names for each subject_name
         self.file_names = defaultdict(dict)
 
-        self.path = configuration.measurement_folder
-        self.store_path = configuration.store_results_folder
-        self.colors = configuration.colors
-        self.contact_dict = configuration.contact_dict
+        self.path = settings.measurement_folder
+        self.store_path = settings.store_results_folder
+        self.colors = settings.colors
+        self.contact_dict = settings.contact_dict
 
         self.toolbar = gui.Toolbar(self)
 

@@ -4,7 +4,7 @@ from PySide import QtGui, QtCore
 import numpy as np
 from pubsub import pub
 from pawlabeling.functions import calculations
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 
 logger = logging.getLogger("logger")
@@ -421,8 +421,8 @@ def filter_outliers(data, contact_label, num_std=2):
     if filtered:
         # Notify the system which contacts you deleted
         pub.sendMessage("updata_statusbar",
-                        status="Removed {} contact(s) from {}".format(len(filtered), configuration.contact_dict[contact_label]))
-        logger.info("Removed {} contact(s) from {}".format(len(filtered), configuration.contact_dict[contact_label]))
+                        status="Removed {} contact(s) from {}".format(len(filtered), settings.contact_dict[contact_label]))
+        logger.info("Removed {} contact(s) from {}".format(len(filtered), settings.contact_dict[contact_label]))
     # else:
     #     logger.info("No contacts removed")
     # Changed this function so now it returns the indices of filtered contacts

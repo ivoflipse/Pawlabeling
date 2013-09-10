@@ -3,7 +3,7 @@ import numpy as np
 from PySide import QtGui
 from pubsub import pub
 from pawlabeling.functions import utility
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 logger = logging.getLogger("logger")
 
@@ -60,7 +60,7 @@ class ContactView(QtGui.QWidget):
         self.label = QtGui.QLabel(label)
         self.contact_label = contact_label
         self.parent = parent
-        self.degree = configuration.interpolation_results
+        self.degree = settings.interpolation_results
         self.n_max = 0
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
@@ -89,7 +89,7 @@ class ContactView(QtGui.QWidget):
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.view)
-        self.setMinimumHeight(configuration.contacts_widget_height)
+        self.setMinimumHeight(settings.contacts_widget_height)
         self.setLayout(self.main_layout)
 
         # TODO I might want to (un)subscribe these

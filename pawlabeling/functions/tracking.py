@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from pawlabeling.functions.utility import update_bounding_box
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 def closest_contact(contact1, contact2, center1, euclidean_distance):
     """
@@ -102,9 +102,9 @@ def merging_contacts(contacts):
     # Get the important temporal spatial variables
     sides, centerList, surfaces, lengths = calculate_temporal_spatial_variables(contacts)
     # Get their averages and adjust them when needed
-    frame_threshold = np.mean(lengths) * configuration.tracking_temporal
-    euclidean_distance = np.mean(sides) * configuration.tracking_spatial
-    average_surface = np.mean(surfaces) * configuration.tracking_surface
+    frame_threshold = np.mean(lengths) * settings.tracking_temporal
+    euclidean_distance = np.mean(sides) * settings.tracking_spatial
+    average_surface = np.mean(surfaces) * settings.tracking_surface
     # Initialize two dictionaries for calculating the Minimal Spanning Tree
     leaders = {}
     clusters = {}

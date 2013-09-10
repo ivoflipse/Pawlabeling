@@ -3,7 +3,7 @@ from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
-from pawlabeling.configuration import configuration
+from pawlabeling.settings import settings
 
 
 class SessionWidget(QtGui.QWidget):
@@ -11,9 +11,11 @@ class SessionWidget(QtGui.QWidget):
         super(SessionWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
+        self.settings = settings.Settings()
+        application = self.settings.application()
 
         self.session_label = QtGui.QLabel("Session")
-        self.session_label.setFont(configuration.label_font)
+        self.session_label.setFont(application["label_font"])
         self.session_name_label = QtGui.QLabel("Session Name")
         self.session_date_label = QtGui.QLabel("Session Date")
         self.session_time_label = QtGui.QLabel("Session Time")
@@ -22,13 +24,13 @@ class SessionWidget(QtGui.QWidget):
         self.session_date = QtGui.QDateEdit(QtCore.QDate.currentDate())
         self.session_date.setMinimumDate(QtCore.QDate.currentDate().addYears(-100))
         self.session_date.setMaximumDate(QtCore.QDate.currentDate())
-        self.session_date.setDisplayFormat(configuration.date_format)
+        self.session_date.setDisplayFormat(application["date_format"])
         self.session_time = QtGui.QTimeEdit(QtCore.QTime.currentTime())
         #self.time_format = QtCore.QLocale.system().timeFormat(QtCore.QLocale.ShortFormat)
         self.session_time.setDisplayFormat(u"HH:mm")
 
         self.session_tree_label = QtGui.QLabel("Sessions")
-        self.session_tree_label.setFont(configuration.label_font)
+        self.session_tree_label.setFont(application["label_font"])
         self.session_tree = QtGui.QTreeWidget(self)
         #self.session_tree.setMinimumWidth(300)
         #self.session_tree.setMaximumWidth(400)
@@ -72,7 +74,7 @@ class SessionWidget(QtGui.QWidget):
             pub.sendMessage("create_session", session=session)
             # After creating a new session, get the updated table
             pub.sendMessage("get_sessions", session={})
-        except configuration.MissingIdentifier:
+        except settings.MissingIdentifier:
             pass
 
     def get_session_fields(self):
