@@ -12,11 +12,11 @@ class TestLoad(TestCase):
         file_location = "files/rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
-        data = io.load(input_file)
+        data = io.load(input_file, brand="rsscan")
         self.assertEqual(data.shape, (256L, 63L, 250L))
 
     def test_load_empty_string(self):
-        data = io.load("")
+        data = io.load("", brand="rsscan")
         self.assertEqual(data, None)
 
     def test_load_non_zip_file(self):
@@ -24,7 +24,7 @@ class TestLoad(TestCase):
         file_location = "files/rsscan_export.zip.pkl"
         file_name = os.path.join(parent_folder, file_location)
         with open(file_name, "r") as infile:
-            data = io.load(infile)
+            data = io.load(infile, brand="rsscan")
         self.assertEqual(data, None)
 
     def test_load_incorrect_file(self):
@@ -32,7 +32,7 @@ class TestLoad(TestCase):
         file_location = "files/fake_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
-        data = io.load(input_file)
+        data = io.load(input_file, brand="rsscan")
         self.assertEqual(data, None)
 
     # Disabled this one, because its rather slow
@@ -71,7 +71,7 @@ class TestFixOrientation(TestCase):
         file_location = "files/rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
-        data = io.load(input_file)
+        data = io.load(input_file, brand="rsscan")
         new_data = io.fix_orientation(data=data)
         equal = np.array_equal(data, new_data)
         self.assertEqual(equal, True)
@@ -81,7 +81,7 @@ class TestFixOrientation(TestCase):
         file_location = "files/rsscan_export.zip"
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
-        data = io.load(input_file)
+        data = io.load(input_file, brand="rsscan")
         # Reverse the plate around the longitudinal axis
         reversed_data = np.rot90(np.rot90(data))
         new_data = io.fix_orientation(data=reversed_data)
@@ -233,10 +233,14 @@ class TestGetFilePaths(TestCase):
         # Let's try and change the measurement folder
         root = os.path.dirname(os.path.abspath(__file__))
         file_name = os.path.join(root, "files/zip_folder/Dog1")
+
+        self.settings = settings.Settings()
+        self.folders = self.settings.folders()
         # Cache the old location so we can reset it
-        self.old_folder = settings.measurement_folder
+        self.old_folder = self.folders["measurement_folder"]
         # Change the settings's folder
-        settings.measurement_folder = file_name
+        self.folders["measurement_folder"] = file_name
+        self.settings.write_value("folders", self.folders)
 
     def test_get_file_paths(self):
         # Get the file_paths
@@ -246,7 +250,8 @@ class TestGetFilePaths(TestCase):
 
     def tearDown(self):
         # Restore it to the old folder
-        settings.measurement_folder = self.old_folder
+        self.folders["measurement_folder"] = self.old_folder
+        self.settings.write_value("folders", self.folders)
 
 class TestGetFilePaths2(TestCase):
     """
@@ -258,9 +263,9 @@ class TestGetFilePaths2(TestCase):
         root = os.path.dirname(os.path.abspath(__file__))
         file_name = os.path.join(root, "files/zip_folder")
         # Cache the old location so we can reset it
-        self.old_folder = settings.measurement_folder
+        self.old_folder = settings.Settings().folders()["measurement_folder"]
         # Change the settings's folder
-        settings.measurement_folder = file_name
+        settings.Settings().folders()["measurement_folder"] = file_name
 
     def test_get_file_paths(self):
         file_paths = io.get_file_paths()
@@ -268,4 +273,4 @@ class TestGetFilePaths2(TestCase):
 
     def tearDown(self):
         # Restore it to the old folder
-        settings.measurement_folder = self.old_folder
+        settings.Settings().folders()["measurement_folder"] = self.old_folder

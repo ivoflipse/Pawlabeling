@@ -9,19 +9,20 @@ from pawlabeling.settings import settings
 
 logger = logging.getLogger("logger")
 
+
 def get_app():
     """Get a reference to the `app` instance.
-
     This is useful namely for plugins.
+    From ViTables
     """
-
     app = None
     for widget in QtGui.qApp.topLevelWidgets():
         if widget.objectName() == u'MainWindow':
             app = widget.app
             break
 
-    return vtapp
+    return app
+
 
 def update_bounding_box(contact):
     """
@@ -67,7 +68,7 @@ def calculate_average_data(contact_data, shape):
         x, y, z = data.shape
         offset_x = int((mx - x) / 2)
         offset_y = int((my - y) / 2)
-        padded_data[offset_x:offset_x + x, offset_y:offset_y + y, 1:z+1] += data
+        padded_data[offset_x:offset_x + x, offset_y:offset_y + y, 1:z + 1] += data
     return np.multiply(padded_data, weight)
 
 
@@ -419,11 +420,12 @@ def filter_outliers(data, contact_label, num_std=2):
             filtered.append(index)
 
     if filtered:
+        contact_dict = settings.Settings().contact_dict()
         # Notify the system which contacts you deleted
         pub.sendMessage("updata_statusbar",
-                        status="Removed {} contact(s) from {}".format(len(filtered), settings.contact_dict[contact_label]))
-        logger.info("Removed {} contact(s) from {}".format(len(filtered), settings.contact_dict[contact_label]))
-    # else:
+                        status="Removed {} contact(s) from {}".format(len(filtered), contact_dict[contact_label]))
+        logger.info("Removed {} contact(s) from {}".format(len(filtered), contact_dict[contact_label]))
+        # else:
     #     logger.info("No contacts removed")
     # Changed this function so now it returns the indices of filtered contacts
     return filtered
@@ -717,11 +719,11 @@ def humanize_bytes(bytes, precision=1):
     '1.3 GB'
     """
     abbrevs = (
-        (1<<50L, 'PB'),
-        (1<<40L, 'TB'),
-        (1<<30L, 'GB'),
-        (1<<20L, 'MB'),
-        (1<<10L, 'kB'),
+        (1 << 50L, 'PB'),
+        (1 << 40L, 'TB'),
+        (1 << 30L, 'GB'),
+        (1 << 20L, 'MB'),
+        (1 << 10L, 'kB'),
         (1, 'bytes')
     )
     if bytes == 1:

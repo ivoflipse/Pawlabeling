@@ -30,10 +30,9 @@ class AnalysisWidget(QtGui.QTabWidget):
         # This contains all the file_names for each subject_name
         self.file_names = defaultdict(dict)
 
-        self.path = settings.measurement_folder
-        self.store_path = settings.store_results_folder
-        self.colors = settings.colors
-        self.contact_dict = settings.contact_dict
+        self.settings = settings.Settings()
+        self.colors = self.settings.colors()
+        self.contact_dict = self.settings.contact_dict()
 
         self.toolbar = gui.Toolbar(self)
 

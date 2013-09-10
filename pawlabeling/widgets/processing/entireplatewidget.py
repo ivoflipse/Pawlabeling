@@ -31,7 +31,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.measurement_name = ""
 
         self.settings = settings.Settings()
-        self.colors = self.settings.colors
+        self.colors = self.settings.colors()
         self.degree = self.settings.interpolation()["interpolation_entire_plate"]
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
@@ -105,10 +105,12 @@ class EntirePlateWidget(QtGui.QWidget):
         pub.subscribe(self.update_measurement, "put_measurement")
         pub.subscribe(self.update_measurement_data, "update_measurement_data")
         pub.subscribe(self.update_bounding_boxes, "updated_current_contact")
-        pub.subscribe(self.new_results, "processing_results")
+        pub.subscribe(self.update_contacts, "updated_current_contact")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
     def update_measurement(self, measurement):
+        self.clear_gait_line()
+
         self.n_max = measurement["maximum_value"]
         self.height = measurement["number_of_rows"]
         self.width = measurement["number_of_cols"]
@@ -154,9 +156,10 @@ class EntirePlateWidget(QtGui.QWidget):
         self.slider.setValue(-1)
         self.update_entire_plate()
 
-    def new_results(self, contacts, average_data):
+    def update_contacts(self, contacts, current_contact_index):
         self.contacts = contacts
-        self.draw_gait_line()
+        if not self.gait_lines:
+            self.draw_gait_line()
 
     def change_frame(self, frame):
         # Set the frame
@@ -228,11 +231,10 @@ class EntirePlateWidget(QtGui.QWidget):
         self.resizeEvent()
 
     def draw_gait_line(self):
+        print "draw_gait_line"
         self.gait_line_pen = QtGui.QPen(Qt.white)
         self.gait_line_pen.setWidth(2)
         self.gait_line_pen.setColor(Qt.white)
-
-        self.clear_gait_line()
 
         for index in range(1, len(self.contacts[self.measurement_name])):
             prev_contact = self.contacts[self.measurement_name][index - 1]

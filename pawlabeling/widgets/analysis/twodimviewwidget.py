@@ -60,7 +60,8 @@ class ContactView(QtGui.QWidget):
         self.label = QtGui.QLabel(label)
         self.contact_label = contact_label
         self.parent = parent
-        self.degree = settings.interpolation_results
+        self.settings = settings.Settings()
+        self.degree = self.settings.interpolation()["interpolation_results"]
         self.n_max = 0
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
@@ -89,7 +90,8 @@ class ContactView(QtGui.QWidget):
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.view)
-        self.setMinimumHeight(settings.contacts_widget_height)
+        height = self.settings.widgets()["contacts_widget_height"]
+        self.setMinimumHeight(height)
         self.setLayout(self.main_layout)
 
         # TODO I might want to (un)subscribe these

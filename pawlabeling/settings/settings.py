@@ -8,13 +8,6 @@ import logging
 
 __version__ = '0.1'
 
-class MissingIdentifier(Exception):
-    pass
-
-def getVersion():
-    """The application version."""
-    return __version__
-
 class Settings(QtCore.QSettings):
     def __init__(self):
         self.settings_folder = os.path.dirname(__file__)
@@ -24,9 +17,9 @@ class Settings(QtCore.QSettings):
         self.settings_file = os.path.join(self.settings_folder, "settings.ini")
 
         QtCore.QCoreApplication.setOrganizationName("Flipse R&D")
-        QtGui.qApp.setOrganizationDomain("flipserd.com")
-        QtGui.qApp.setApplicationName("Paw Labeling")
-        # version = QtGui.qApp.applicationVersion()
+        QtCore.QCoreApplication.setOrganizationDomain("flipserd.com")
+        QtCore.QCoreApplication.setApplicationName("Paw Labeling")
+        QtCore.QCoreApplication.setApplicationVersion(getVersion())
         # product_name = '-'.join((application_name, version))
         super(Settings, self).__init__(self.settings_file, QtCore.QSettings.IniFormat)
         # System-wide settings will not be searched as a fallback
@@ -34,6 +27,28 @@ class Settings(QtCore.QSettings):
         # Load everything we need
         self.load_settings(self.read_settings())
         self.logger = self.setup_logging()
+
+        # Lookup table for all the different settings
+        self.lookup_table = {"folders": {"measurement_folder": "",
+                                         "database_file":"",
+                                         "database_folder":""},
+                             # "brands": [{"brand": "",
+                             #           "model": "",
+                             #           "frequency": "",
+                             #           "sensor_width":"",
+                             #           "sensor_height":"",
+                             #           "sensor_surface":""}],
+                             "interpolation_degree": {"interpolation_entire_plate": "",
+                                                      "interpolation_contact_widgets": "",
+                                                      "interpolation_results": ""},
+                             "thresholds": {"start_force_percentage": "",
+                                            "end_force_percentage": "",
+                                            "tracking_temporal": "",
+                                            "tracking_spatial": "",
+                                            "tracking_surface": ""},
+                             "application": {"zip_files": "",
+                                             "show_maximized": ""},
+        }
 
     def restore_last_session(self):
         key = "restore_last_session"
@@ -112,21 +127,21 @@ class Settings(QtCore.QSettings):
     # TODO It would be nice if this had a key that mapped to each plate
     def brands(self):
         key = "brands"
-        default_value = [{"brands": "rsscan",
+        default_value = [{"brand": "rsscan",
                           "model": "2m 2nd gen",
                           "frequency": 125,
                           "sensor_width": 0.508,
                           "sensor_height": 0.762,
                           "sensor_surface": 0.387096
                          },
-                         {"brands": "zebris",
+                         {"brand": "zebris",
                           "model": "FDM 1m",
                           "frequency": 200,
                           "sensor_width": 0.846,
                           "sensor_height": 0.846,
                           "sensor_surface": 0.715716
                          },
-                         {"brands": "novel",
+                         {"brand": "novel",
                           "model": "emed",
                           "frequency": 100,
                           "sensor_width": 0.5,
@@ -135,7 +150,7 @@ class Settings(QtCore.QSettings):
                          }
         ]
 
-        setting_value = self.value("key")
+        setting_value = self.value(key)
         if isinstance(setting_value, dict):
             # This merges both dictionaries. Replace if the user can define this from the GUI
             return dict(default_value, **setting_value)
@@ -165,7 +180,7 @@ class Settings(QtCore.QSettings):
             "main_window_top": 25,
             "main_window_width": 1440,
             "main_window_height": 830,
-            "main_window_size": QtCore.QRect(0, 25, 1440, 830),  # How will I make this user definable?
+            "main_window_size": QtCore.QRect(0, 25, 1440, 830), # How will I make this user definable?
             "entire_plate_widget_width": 800,
             "entire_plate_widget_height": 450,
             "contacts_widget_height": 170,
@@ -226,24 +241,32 @@ class Settings(QtCore.QSettings):
         self.user_settings(settings)
         # Here it seems I need to add a bunch more attributes too
 
-    def write_settings(self, settings):
+    def save_settings(self, settings):
         """
-        Shouldn't this just write self.settings to a file and all changes happen in place?
         """
-        from pprint import pprint
-        pprint(settings)
-
-        # Write any changes back to the settings.yaml file
-        with open(self.settings_file, "w") as output_file:
-            output_file.write(yaml.dump(settings, default_flow_style=False))
+        for key, value in settings.items():
+            self.write_value(key, value)
 
     def user_settings(self, settings):
         key = 'restore_last_session'
         if key in settings:
             self.restore_last_session = settings[key]
 
-        # I'll have to add user loadable things here later
+            # I'll have to add user loadable things here later
 
+    def write_value(self, key, value):
+        """
+        Write an entry to the configuration file.
+        :Parameters:
+        - `key`: the name of the property we want to set.
+        - `value`: the value we want to assign to the property
+        """
+        try:
+            self.setValue(key, value)
+            if self.status():
+                raise Exception(u'{0}={1}'.format(key, value))
+        except Exception, e:
+            print(e)
 
     def setup_logging(self):
         logging_levels = {
@@ -290,28 +313,12 @@ class Settings(QtCore.QSettings):
 
         return logger
 
+class MissingIdentifier(Exception):
+    pass
 
-# TODO Make sure that the model creates the required folders if they don't exist
-# # Lookup table for all the different settings, I guess its basically just 'config'
-# settings = {"folders": {"measurement_folder": measurement_folder},
-#             "database": {"database_folder": database_folder,
-#                          "database_file": database_file},
-#             "plate": {"brands": brands,
-#                       "model": model,
-#                       "frequency": frequency},
-#             "interpolation_degree": {"interpolation_entire_plate": interpolation_entire_plate,
-#                                      "interpolation_contact_widgets": interpolation_contact_widgets,
-#                                      "interpolation_results": interpolation_results},
-#             "thresholds": {"start_force_percentage": start_force_percentage,
-#                            "end_force_percentage": end_force_percentage,
-#                            "tracking_temporal": tracking_temporal,
-#                            "tracking_spatial": tracking_spatial,
-#                            "tracking_surface": tracking_surface},
-#             "application": {"zip_files": zip_files,
-#                             "show_maximized": show_maximized},
-# }
-
-
+def getVersion():
+    """The application version."""
+    return __version__
 
 
 

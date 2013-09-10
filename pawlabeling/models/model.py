@@ -349,7 +349,7 @@ class Model():
 
         self.frequency = self.brand["frequency"]
         self.sensor_surface = self.brand["sensor_surface"]
-        pub.sendMessage("update_brand_and_model", brand=brand)
+        pub.sendMessage("update_brand_and_model", brand=self.brand)
 
     def load_contacts(self):
         """
@@ -379,7 +379,7 @@ class Model():
             if not all([True if contact.contact_label < 0 else False for contact in contacts]):
                 measurements[measurement["measurement_name"]] = measurement
 
-        if hasattr(measurement, "brand"):
+        if measurement.__getitem__("brand"):
             brand = measurement["brand"]
             model = measurement["model"]
             self.get_brand_and_model(brand, model)
@@ -441,7 +441,6 @@ class Model():
 
     # TODO see when this function is being called and make sure it doesn't happen unnecessarily
     def calculate_average(self):
-        #print "model.calculate_average"
         # Empty average measurement_data
         self.average_data.clear()
         self.data_list = defaultdict(list)

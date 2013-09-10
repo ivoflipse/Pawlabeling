@@ -1,5 +1,6 @@
 import sys
 import os
+from collections import defaultdict
 from PySide import QtGui, QtCore
 from pubsub import pub
 from pawlabeling.settings import settings
@@ -36,7 +37,7 @@ class SettingsWidget(QtGui.QWidget):
 
         self.database_folder_label = QtGui.QLabel("Database folder")
         self.database_folder = QtGui.QLineEdit()
-        self.database_folder.setText(application["label_font"])
+        self.database_folder.setText(folders["database_folder"])
         self.database_folder_button = QtGui.QToolButton()
         self.database_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                         "../images/folder_icon.png")))
@@ -49,19 +50,19 @@ class SettingsWidget(QtGui.QWidget):
 
         self.left_front_label = QtGui.QLabel("Left Front Shortcut")
         self.left_front = QtGui.QLineEdit()
-        self.left_front.setText(keyboard_shortcuts["left_front"])
+        self.left_front.setText(keyboard_shortcuts["left_front"].toString())
 
         self.left_hind_label = QtGui.QLabel("Left Hind Shortcut")
         self.left_hind = QtGui.QLineEdit()
-        self.left_hind.setText(keyboard_shortcuts["left_hind"])
+        self.left_hind.setText(keyboard_shortcuts["left_hind"].toString())
 
         self.right_front_label = QtGui.QLabel("Right Front Shortcut")
         self.right_front = QtGui.QLineEdit()
-        self.right_front.setText(keyboard_shortcuts["right_front"])
+        self.right_front.setText(keyboard_shortcuts["right_front"].toString())
 
         self.right_hind_label = QtGui.QLabel("Right Hind Shortcut")
         self.right_hind = QtGui.QLineEdit()
-        self.right_hind.setText(keyboard_shortcuts["right_hind"])
+        self.right_hind.setText(keyboard_shortcuts["right_hind"].toString())
 
         self.interpolation_entire_plate_label = QtGui.QLabel("Interpolation: Entire Plate")
         self.interpolation_entire_plate = QtGui.QLineEdit()
@@ -140,11 +141,11 @@ class SettingsWidget(QtGui.QWidget):
 
     def save_settings(self, evt=None):
         """
-        Store the changes to the widgets to the config.yaml file
+        Store the changes to the widgets to the settings.ini file
         This function should probably do some validation
         """
-        config = settings.config
-        for key, nested in settings.settings.items():
+        settings_dict = defaultdict(dict)
+        for key, nested in self.settings.lookup_table.items():
             for nested_key, old_value in nested.items():
                 if hasattr(self, nested_key):
                     new_value = getattr(self, nested_key).text()
@@ -153,22 +154,16 @@ class SettingsWidget(QtGui.QWidget):
                     if type(old_value) == float:
                         new_value = float(new_value)
                     if old_value != new_value:
-                        config[key][nested_key] = new_value
-                        # TODO This call doesn't really seem to work
-                        setattr(settings, nested_key, new_value)
+                        settings_dict[key][nested_key] = new_value
 
-        for key, old_value in settings.shortcut_strings.items():
-            if hasattr(self, key):
-                new_value = getattr(self, key).text()
-                config["shortcuts"][key] = str(new_value)
-                key_sequence = QtGui.QKeySequence.fromString(new_value)
-                setattr(settings, key, key_sequence)
+        # for key, old_value in settings.shortcut_strings.items():
+        #     if hasattr(self, key):
+        #         new_value = getattr(self, key).text()
+        #         settings_dict["shortcuts"][key] = str(new_value)
+        #         key_sequence = QtGui.QKeySequence.fromString(new_value)
 
-        # TODO A problem is that changing settings doesn't assign the attributes in settings itself.
-        # Guess I should modify config and have everything read from that?
-        # I've added setattr calls for now to try and get it working anyway
+        self.settings.save_settings(settings_dict)
 
-        settings.save_settings(config)
         # Notify the rest of the application that the settings have changed
         # TODO: changes here should propagate to the rest of the application (like the database screen)
         pub.sendMessage("changed_settings")
@@ -177,7 +172,7 @@ class SettingsWidget(QtGui.QWidget):
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your measurements",
-                                             settings.measurement_folder)
+                                             self.settings.folders()["measurement_folder"])
 
         self.file_dialog.setFileMode(QtGui.QFileDialog.Directory)
         #self.file_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly)
@@ -190,14 +185,16 @@ class SettingsWidget(QtGui.QWidget):
             folder = self.file_dialog.selectedFiles()[0]
 
         # Then change that, so we always keep our 'default' measurements_folder
-        settings.measurement_folder = folder
+        folders = self.settings.folders()
+        folders["measurement_folder"] = folder
+        self.settings.write_value("folders", folders)
         self.measurement_folder.setText(folder)
 
     def change_database_folder(self, evt=None):
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your database",
-                                             settings.database_folder)
+                                             self.settings.folders()["database_folder"])
 
         self.file_dialog.setFileMode(QtGui.QFileDialog.Directory)
         self.file_dialog.setViewMode(QtGui.QFileDialog.Detail)
@@ -209,9 +206,10 @@ class SettingsWidget(QtGui.QWidget):
             folder = self.file_dialog.selectedFiles()[0]
 
         # Then change that, so we always keep our 'default' measurements_folder
-        settings.database_folder = folder
+        folders = self.settings.folders()
+        folders["database_folder"] = folder
+        self.settings.write_value("folders", folders)
         self.database_folder.setText(folder)
-
 
     def create_toolbar_actions(self):
         self.save_settings_action = gui.create_action(text="&Save Settings",
@@ -220,7 +218,7 @@ class SettingsWidget(QtGui.QWidget):
                                                             os.path.join(os.path.dirname(__file__),
                                                                          "../images/save_icon.png")),
                                                         tip="Save settings",
-                                                        checkable=True,
+                                                        checkable=False,
                                                         connection=self.save_settings
         )
 

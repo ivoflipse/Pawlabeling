@@ -82,7 +82,8 @@ class ContactView(QtGui.QWidget):
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.canvas)
         self.main_layout.setStretchFactor(self.canvas, 3)
-        self.setMinimumHeight(settings.contacts_widget_height)
+        height = settings.Settings().widgets()["contacts_widget_height"]
+        self.setMinimumHeight(height)
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.update_n_max, "update_n_max")

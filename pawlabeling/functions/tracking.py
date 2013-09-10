@@ -101,10 +101,11 @@ def merging_contacts(contacts):
 
     # Get the important temporal spatial variables
     sides, centerList, surfaces, lengths = calculate_temporal_spatial_variables(contacts)
+    thresholds = settings.Settings().thresholds()
     # Get their averages and adjust them when needed
-    frame_threshold = np.mean(lengths) * settings.tracking_temporal
-    euclidean_distance = np.mean(sides) * settings.tracking_spatial
-    average_surface = np.mean(surfaces) * settings.tracking_surface
+    frame_threshold = np.mean(lengths) * thresholds["tracking_temporal"]
+    euclidean_distance = np.mean(sides) * thresholds["tracking_spatial"]
+    average_surface = np.mean(surfaces) * thresholds["tracking_surface"]
     # Initialize two dictionaries for calculating the Minimal Spanning Tree
     leaders = {}
     clusters = {}
