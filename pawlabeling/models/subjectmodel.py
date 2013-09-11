@@ -19,28 +19,23 @@ class SubjectModel(object):
         """
         # TODO Add some other validation to see if the input values are correct
         # Check if the subject is already in the table
-        if self.subjects_table.get_subject(plate=subject["first_name"], last_name=subject["last_name"],
-                                           birthday=subject["birthday"]).size:
-            pub.sendMessage("update_statusbar", status="Model.create_subject: Subject already exists")
-            return
+        result = self.subjects_table.get_subject(plate=subject["first_name"],
+                                                   last_name=subject["last_name"],
+                                                   birthday=subject["birthday"])
+        if result:
+            return result["subject_id"]
 
         # Create a subject id
         subject_id = self.subjects_table.get_new_id()
         subject["subject_id"] = subject_id
-
         self.subject_group = self.subjects_table.create_subject(**subject)
-        pub.sendMessage("update_statusbar", status="Model.create_subject: Subject created")
+        return subject_id
 
-
-    def get_subjects(self, subject={}):
-        self.subjects = self.subjects_table.get_subjects(**subject)
-        pub.sendMessage("update_subjects_tree", subjects=self.subjects)
-
+    def get_subjects(self):
+        subjects = self.subjects_table.get_subjects()
+        return subjects
 
     def put_subject(self, subject):
-        # Whenever we switch subjects, clear the cache
-        self.clear_cached_values()
-
         self.subject = subject
         self.subject_id = subject["subject_id"]
 
@@ -48,6 +43,6 @@ class SubjectModel(object):
         # As soon as a subject is selected, we instantiate our sessions table
         self.sessions_table = table.SessionsTable(database_file=self.database_file,
                                                   subject_id=self.subject_id)
-        pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject["first_name"],
-                                                                           self.subject["last_name"]))
+        #pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject["first_name"],
+        #                                                                   self.subject["last_name"]))
         self.get_sessions()

@@ -1,9 +1,10 @@
 import logging
 from collections import defaultdict
+import numpy as np
 from pubsub import pub
 from pawlabeling.models import table
 from pawlabeling.settings import settings
-from pawlabeling.functions import calculations
+from pawlabeling.functions import calculations, utility
 
 
 class SessionModel(object):
@@ -16,26 +17,19 @@ class SessionModel(object):
         pub.subscribe(self.create_session, "create_session")
 
     def create_session(self, session):
-        if not self.subject_id:
-            pub.sendMessage("update_statusbar", status="Model.create_session: Subject not selected")
-            pub.sendMessage("message_box", message="Please select a subject")
-            raise settings.MissingIdentifier("Subject missing")
-
         # Check if the session isn't already in the table
-        if self.sessions_table.get_session_row(session_name=session["session_name"]).size:
-            pub.sendMessage("update_statusbar", status="Model.create_session: Session already exists")
-            return
+        result = self.sessions_table.get_session(session_name=session["session_name"])
+        if result:
+            return result["session_id"]
 
-        # How many sessions do we already have?
         session_id = self.sessions_table.get_new_id()
         session["session_id"] = session_id
-
         self.session_group = self.sessions_table.create_session(**session)
-        pub.sendMessage("update_statusbar", status="Model.create_session: Session created")
+        return session_id
 
-    def get_sessions(self, session={}):
-        self.sessions = self.sessions_table.get_sessions(**session)
-        pub.sendMessage("update_sessions_tree", sessions=self.sessions)
+    def get_sessions(self):
+        sessions = self.sessions_table.get_sessions()
+        return sessions
 
     def put_session(self, session):
         self.session = session

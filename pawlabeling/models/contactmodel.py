@@ -14,26 +14,38 @@ logger = logging.getLogger("logger")
 class ContactModel(object):
     def __init__(self, subject_id, session_id, measurement_id):
         self.subject_id = subject_id
+        self.session_id = session_id
+        self.measurement_id = measurement_id
         self.settings = settings.settings
         self.database_file = self.settings.database_file()
-        self.contacts_table = table.SessionsTable(database_file=self.database_file, subject_id=subject_id)
+        self.contacts_table = table.ContactsTable(database_file=self.database_file,
+                                                  subject_id=self.subject_id,
+                                                  session_id=self.session_id,
+                                                  measurement_id=self.measurement_id)
         self.logger = logging.getLogger("logger")
-        pub.subscribe(self.create_session, "create_session")
 
+    def create_contacts(self):
+        contacts = self.track_contacts()
+        for contact in contacts:
+            contact = contact.to_dict()  # This takes care of some of the book keeping for us
+            contact["subject_id"] = self.subject_id
+            contact["session_id"] = self.session_id
+            contact["measurement_id"] = self.measurement_id
+            self.create_contact(contact)
 
     def create_contact(self, contact):
         contact_data = contact["data"]
         # Remove the key
         del contact["data"]
 
-        if self.contacts_table.get_contact_row(contact_id=contact["contact_id"]).size:
+        result = self.contacts_table.get_contact(contact_id=contact["contact_id"])
+        if result:
             contact_group = self.contacts_table.update_contact(**contact)
-            pub.sendMessage("update_statusbar", status="model.create_contact: Contact updated")
-            return
+            return result["contact_id"]
 
         # If it doesn't already exist, we create the contact and store the data
         contact_group = self.contacts_table.create_contact(**contact)
-        pub.sendMessage("update_statusbar", status="model.create_contact: Contact created")
+        #pub.sendMessage("update_statusbar", status="model.create_contact: Contact created")
 
         # These are all the results (for now) I want to add to the contact
         cop_x, cop_y = calculations.calculate_cop(contact_data)
@@ -53,20 +65,11 @@ class ContactModel(object):
                 self.contacts_table.store_data(group=contact_group,
                                                item_id=item_id,
                                                data=data)
-        pub.sendMessage("update_statusbar", status="model.create_contact: Contact data created")
+        #pub.sendMessage("update_statusbar", status="model.create_contact: Contact data created")
 
-    def get_contacts(self, contact={}):
-        #contacts = self.contacts_table.get_contacts(**contact)
-        if not self.contacts.get(self.measurement_name):
-            contacts = self.get_contact_data(self.measurement)
-            if not contacts:
-                self.contacts[self.measurement_name] = self.track_contacts()
-            else:
-                self.contacts[self.measurement_name] = contacts
-
-        pub.sendMessage("update_contacts_tree", contacts=self.contacts)
-        # Check if we should update n_max everywhere
-        self.update_n_max()
+    def get_contacts(self, measurement_name):
+        contacts = self.contacts_table.get_contacts()
+        return contacts
 
     def repeat_track_contacts(self):
         self.contacts[self.measurement_name] = self.track_contacts()

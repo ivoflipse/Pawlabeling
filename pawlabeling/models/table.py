@@ -26,13 +26,20 @@ class Table(object):
         self.table.flush()
         return group
 
-    # Though in practice this should NOT be possible
     def search_table(self, table, **kwargs):
         # Create a query out of the kwargs
         query = " & ".join(
             ["({} == '{}')".format(key, value) for key, value in kwargs.items() if value != ""])
         rows = table.readWhere(query)
-        return rows
+
+        results = []
+        for row in rows:
+            result = {}
+            for key, value in zip(table.column_names, row):
+                result[key] = value
+            results.append(result)
+        # Return a singular value if there's only one row
+        return results if len(results) > 1 else results[0]
 
     # This function can be used for measurement_data, contact_data and normalized_contact_data
     # Actually also for all the different results (at least the time series)
@@ -102,12 +109,8 @@ class SubjectsTable(Table):
         return self.search_table(self.subjects_table, first_name=plate,
                                  last_name=last_name, birthday=birthday)
 
-    def get_subjects(self, **kwargs):
-        if kwargs.get("first_name", None) or kwargs.get("last_name", None):
-            subject_list = self.search_table(self.subjects_table, **kwargs)
-        else:
-            subject_list = self.subjects_table.read()
-
+    def get_subjects(self):
+        subject_list = self.subjects_table.read()
         subjects = []
         for s in subject_list:
             subject = {}
@@ -155,15 +158,11 @@ class SessionsTable(Table):
     def get_new_id(self):
         return "{}_{}".format(self.table_name, len(self.sessions_table))
 
-    def get_session_row(self, session_name=""):
+    def get_session(self, session_name=""):
         return self.search_table(self.sessions_table, session_name=session_name)
 
-    def get_sessions(self, **kwargs):
-        if kwargs.get("session_name", None):
-            session_list = self.search_table(self.sessions_table, **kwargs)
-        else:
-            session_list = self.sessions_table.read()
-
+    def get_sessions(self):
+        session_list = self.sessions_table.read()
         sessions = []
         for s in session_list:
             session = {}
@@ -216,15 +215,11 @@ class MeasurementsTable(Table):
     def get_new_id(self):
         return "{}_{}".format(self.table_name, len(self.measurements_table))
 
-    def get_measurement_row(self, measurement_name=""):
+    def get_measurement(self, measurement_name=""):
         return self.search_table(self.measurements_table, measurement_name=measurement_name)
 
-    def get_measurements(self, **kwargs):
-        if kwargs.get("measurement_name", None):
-            measurement_list = self.search_table(self.measurements_table, **kwargs)
-        else:
-            measurement_list = self.measurements_table.read()
-
+    def get_measurements(self):
+        measurement_list = self.measurements_table.read()
         measurements = []
         for m in measurement_list:
             measurement = {}
@@ -292,10 +287,10 @@ class ContactsTable(Table):
                         row.update()
         self.table.flush()
 
-    def get_contact_row(self, contact_id=""):
+    def get_contact(self, contact_id=""):
         return self.search_table(self.contacts_table, contact_id=contact_id)
 
-    def get_contacts(self, **kwargs):
+    def get_contacts(self):
         contact_list = self.contacts_table.read()
         contacts = []
         for c in contact_list:
@@ -364,12 +359,8 @@ class PlatesTable(Table):
     def get_plate(self, brand="", model=""):
         return self.search_table(self.plates_table, brand=brand, model=model)
 
-    def get_plates(self, **kwargs):
-        if kwargs.get("plate", None) or kwargs.get("model", None):
-            plates_list = self.search_table(self.plates_table, **kwargs)
-        else:
-            plates_list = self.plates_table.read()
-
+    def get_plates(self):
+        plates_list = self.plates_table.read()
         plates = []
         for s in plates_list:
             plate = {}
