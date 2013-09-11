@@ -31,7 +31,6 @@ class Table(object):
         # Create a query out of the kwargs
         query = " & ".join(
             ["({} == '{}')".format(key, value) for key, value in kwargs.items() if value != ""])
-        print query
         rows = table.readWhere(query)
         return rows
 
@@ -72,7 +71,7 @@ class SubjectsTable(Table):
         phone = tables.StringCol(32)
         email = tables.StringCol(32)
         birthday = tables.StringCol(32)
-        mass = tables.Float32Col()
+        mass = tables.FloatCol()
 
     def __init__(self, database_file):
         super(SubjectsTable, self).__init__(database_file=database_file)
@@ -186,7 +185,7 @@ class MeasurementsTable(Table):
         number_of_columns = tables.UInt32Col()
         frequency = tables.UInt32Col()
         orientation = tables.BoolCol()
-        maximum_value = tables.Float32Col()
+        maximum_value = tables.FloatCol()
         date = tables.StringCol(32)
         time = tables.StringCol(32)
 
@@ -330,22 +329,15 @@ class ContactDataTable(Table):
         return contacts
 
 class PlatesTable(Table):
-    """
-    "plate": "rsscan",
-     "model": "2m 2nd gen",
-     "sensor_width": 0.508,
-     "sensor_height": 0.762,
-     "sensor_surface": 0.387096
-    """
     class Plates(tables.IsDescription):
         plate_id = tables.StringCol(64)
         brand = tables.StringCol(32)
         model = tables.StringCol(32)
         number_of_rows = tables.Int16Col()
         number_of_columns = tables.Int16Col()
-        sensor_width = tables.Float16Col()
-        sensor_height = tables.Float16Col()
-        sensor_surface = tables.Float16Col()
+        sensor_width = tables.FloatCol()
+        sensor_height = tables.FloatCol()
+        sensor_surface = tables.FloatCol()
 
     def __init__(self, database_file):
         super(PlatesTable, self).__init__(database_file=database_file)
@@ -360,21 +352,20 @@ class PlatesTable(Table):
         self.column_names = self.plates_table.colnames
 
     def create_plate(self, **kwargs):
-        # I need at least a plate, model and frequency
-        if "plate" not in kwargs and "model" not in kwargs and "frequency" not in kwargs:
+        # I need at least a plate and model
+        if "plate" not in kwargs and "model" not in kwargs:
             raise MissingIdentifier("I need at least a first name, last name and birthday")
 
         self.create_row(self.plates_table, **kwargs)
-        print "Created plate", kwargs
 
     def get_new_id(self):
         return "{}_{}".format(self.table_name, len(self.plates_table))
 
-    def get_plate(self, brand="", model="", frequency=""):
-        return self.search_table(self.plates_table, brand=brand, model=model, frequency=frequency)
+    def get_plate(self, brand="", model=""):
+        return self.search_table(self.plates_table, brand=brand, model=model)
 
     def get_plates(self, **kwargs):
-        if kwargs.get("plate", None) or kwargs.get("model", None) or kwargs.get("frequency", None):
+        if kwargs.get("plate", None) or kwargs.get("model", None):
             plates_list = self.search_table(self.plates_table, **kwargs)
         else:
             plates_list = self.plates_table.read()

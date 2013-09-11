@@ -18,11 +18,16 @@ class Model():
 
         self.subjects_table = table.SubjectsTable(database_file=self.database_file)
         self.plates_table = table.PlatesTable(database_file=self.database_file)
-        # If there's nothing in plates_table, set it up
-        if len(self.plates_table.plates_table) == 0:
-            plates = self.settings.setup_plates()
+        plates = self.settings.setup_plates()
+        # If not all plates are in the plates table, add them
+        if len(self.plates_table.plates_table) != len(plates):
             for plate in plates:
                 self.create_plate(plate)
+
+        # Keep a dictionary with all the plates with their id as the key
+        self.plates = {}
+        for plate in self.plates_table.get_plates(plate={}):
+            self.plates[plate["plate_id"]] = plate
 
         self.subject_name = ""
         self.measurement_name = ""
@@ -139,8 +144,12 @@ class Model():
                 measurement_folder = self.settings.measurement_folder()
                 io.zip_file(measurement_folder, measurement_name)
 
+        # Get the plate info, so we can get the brand
+        plate = self.plates[self.measurement["plate_id"]]
+        self.put_plate(plate)
+
         # Extract the measurement_data
-        self.measurement_data = io.load(input_file, brand=self.measurement["plate"])
+        self.measurement_data = io.load(input_file, brand=self.plate["brand"])
         number_of_rows, number_of_columns, number_of_frames = self.measurement_data.shape
         self.measurement["number_of_rows"] = number_of_rows
         self.measurement["number_of_columns"] = number_of_columns
@@ -210,7 +219,7 @@ class Model():
         This function takes a plate dictionary object and stores it in PyTables
         """
         # Check if the plate is already in the table
-        if self.plates_table.get_plate(brand=plate["brand"], model=plate["model"], frequency=plate["frequency"]).size:
+        if self.plates_table.get_plate(brand=plate["brand"], model=plate["model"]).size:
             pub.sendMessage("update_statusbar", status="Model.create_plate: Plate already exists")
             return
 
@@ -352,6 +361,9 @@ class Model():
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
+        # Update the plate information
+        plate = self.plates[self.measurement["plate_id"]]
+        self.put_plate(plate)
 
     def put_contact(self, contact):
         self.contact = contact
@@ -361,8 +373,6 @@ class Model():
     def put_plate(self, plate):
         self.plate = plate
         self.plate_id = plate["plate_id"]
-        # These two variables are needed for several calculations
-        self.frequency = self.plate["frequency"]
         self.sensor_surface = self.plate["sensor_surface"]
         self.logger.info("Plate ID set to {}".format(self.plate_id))
         pub.sendMessage("update_plate", plate=self.plate)

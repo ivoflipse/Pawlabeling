@@ -44,12 +44,12 @@ class MeasurementWidget(QtGui.QWidget):
             self.frequency.addItem(frequency)
         self.frequency.activated.connect(self.change_frequency)
 
-        self.brand_model_layout = QtGui.QHBoxLayout()
-        self.brand_model_layout.addWidget(self.plate_label)
-        self.brand_model_layout.addWidget(self.plate)
-        self.brand_model_layout.addWidget(self.frequency_label)
-        self.brand_model_layout.addWidget(self.frequency)
-        self.brand_model_layout.addStretch(1)
+        self.plate_layout = QtGui.QHBoxLayout()
+        self.plate_layout.addWidget(self.plate_label)
+        self.plate_layout.addWidget(self.plate)
+        self.plate_layout.addWidget(self.frequency_label)
+        self.plate_layout.addWidget(self.frequency)
+        self.plate_layout.addStretch(1)
 
         self.files_tree = QtGui.QTreeWidget(self)
         self.files_tree.setColumnCount(3)
@@ -63,13 +63,13 @@ class MeasurementWidget(QtGui.QWidget):
         self.measurement_tree.setColumnCount(1)
         self.measurement_tree.setHeaderLabels(["Name"])
 
-        self.measurement_layout = QtGui.QBoxLayout()
+        self.measurement_layout = QtGui.QVBoxLayout()
         self.measurement_layout.addWidget(self.files_tree_label)
         bar_6 = QtGui.QFrame(self)
         bar_6.setFrameShape(QtGui.QFrame.Shape.HLine)
         self.measurement_layout.addWidget(bar_6)
         self.measurement_layout.addLayout(self.measurement_folder_layout)
-        self.measurement_layout.addLayout(self.brand_model_layout)
+        self.measurement_layout.addLayout(self.plate_layout)
         self.measurement_layout.addWidget(self.files_tree)
         self.measurement_layout.addWidget(self.measurement_tree_label)
         bar_5 = QtGui.QFrame(self)
@@ -81,10 +81,16 @@ class MeasurementWidget(QtGui.QWidget):
 
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.subscribe(self.update_measurement_status, "update_measurement_status")
+        pub.subscribe(self.update_plates, "update_plates")
 
         self.update_files_tree()
+        self.get_plates()
+
+    def get_plates(self):
+        pub.sendMessage("get_plates", plate={})
 
     def update_plates(self, plates):
+        self.plates = plates
         for plate in plates:
             self.plate.addItem("{} {}".format(plate["brand"], plate["model"]))
 
@@ -160,17 +166,22 @@ class MeasurementWidget(QtGui.QWidget):
 
     def add_measurements(self, evt=None):
         # All measurements from the same session must have the same brands/model/frequency
-        plate_id = ""
-        plate = self.settings.plate()
+        plate_text = self.plate.itemText(self.plate.currentIndex())
+        index = plate_text.find(" ")
+        brand = plate_text[:index]
+        model = plate_text[index+1:]
+        plate = self.find_plate(brand=brand, model=model)
+        plate_id = plate["plate_id"]
         frequency = int(self.frequency.itemText(self.frequency.currentIndex()))
         for file_name, file_path in self.file_paths.items():
-            date_time = time.strftime("%Y-%m-%d %H:%M",time.gmtime(os.path.getctime(file_path))).split(" ")
+            date_time = time.strftime("%Y-%m-%d %H:%M", time.gmtime(os.path.getctime(file_path))).split(" ")
             # Check if the brands and model have been changed or not
-            measurement = {"measurement_name":file_name,
-                           "file_path":file_path,
-                           "date":date_time[0],
-                           "time":date_time[1],
-                           "plate_id":plate_id,
+            measurement = {"measurement_name": file_name,
+                           "file_path": file_path,
+                           "date": date_time[0],
+                           "time": date_time[1],
+                           "plate_id": plate_id,
+                           "frequency": frequency
             }
             try:
                 pub.sendMessage("create_measurement", measurement=measurement)
@@ -179,8 +190,14 @@ class MeasurementWidget(QtGui.QWidget):
             except settings.MissingIdentifier:
                 pass
 
+    def find_plate(self, brand, model):
+        for plate in self.plates:
+            if plate['brand'] == brand and plate["model"] == model:
+                return plate
+
     def change_plate(self, index):
         plate = self.plate.itemText(index)
+        # Write the currently select plate to the settings
         self.settings.write_value("plate", plate)
         # Adjust the size in case the text is too big to fit
         self.plate.adjustSize()
@@ -188,7 +205,5 @@ class MeasurementWidget(QtGui.QWidget):
 
     def change_frequency(self, index):
         frequency = self.frequency.itemText(index)
-        # The combobox stores text, so be sure to convert to int!
-        settings.frequency = int(frequency)
         self.frequency.adjustSize()
         self.logger.info("measurmentwidget.change_frequency: Frequency changed to {}".format(frequency))

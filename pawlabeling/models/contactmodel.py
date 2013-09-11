@@ -165,10 +165,9 @@ class Contact():
         """
         force_over_time = calculations.force_over_time(self.data)
         max_force = np.max(force_over_time)
-        thresholds = self.settings.thresholds()
         #print force_over_time[0], force_over_time[-1], max_force, settings.start_force_percentage
-        if (force_over_time[0] > (thresholds["start_force_percentage"] * max_force) or
-                    force_over_time[-1] > (thresholds["end_force_percentage"] * max_force)):
+        if (force_over_time[0] > (self.settings.start_force_percentage() * max_force) or
+                    force_over_time[-1] > (self.settings.end_force_percentage() * max_force)):
             return True
         return False
 

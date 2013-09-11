@@ -195,21 +195,22 @@ class ContactWidget(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.update_plate, "update_plate")
 
-    def update_plate(self, brand):
-        self.brand = brand
+    def update_plate(self, plate):
+        self.plate = plate
 
     def update_n_max(self, n_max):
         self.n_max = n_max
         # Redraw, just in case
         self.redraw()
 
+    # TODO Don't do any calculations you don't have to!
     def update(self, average_data):
         # Calculate an average contact from the list of arrays
         self.average_data = average_data
         self.max_pressure = np.max(calculations.force_over_time(self.average_data))
         x, y, z = np.nonzero(self.average_data)
         self.mean_duration = np.max(z)
-        self.mean_surface = np.max(calculations.pixel_count_over_time(self.average_data) * self.brand["sensor_surface"])
+        self.mean_surface = np.max(calculations.pixel_count_over_time(self.average_data) * self.plate["sensor_surface"])
 
         self.max_pressure_label.setText("{:3.1f} N".format(self.max_pressure))
         self.mean_duration_label.setText("{} frames".format(int(self.mean_duration)))
