@@ -22,14 +22,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.logger = logging.getLogger("logger")
 
         # Initialize our variables that will cache results
-        self.average_data = defaultdict(list)
-        self.contact_data = defaultdict(list)
-        self.contact_labels = defaultdict(dict)
         self.contacts = defaultdict(list)
-
-        # This contains all the file_names for each subject_name
-        self.file_names = defaultdict(dict)
-
         self.settings = settings.settings
         self.colors = self.settings.colors()
         self.contact_dict = self.settings.contact_dict()
@@ -107,10 +100,8 @@ class AnalysisWidget(QtGui.QTabWidget):
 
     def update_measurements_tree(self, measurements):
         self.measurement_tree.clear()
-        self.measurements = {}
 
         for measurement in measurements:
-            self.measurements[measurement["measurement_name"]] = measurement
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
             measurement_item.setText(0, measurement["measurement_name"])
 
@@ -168,9 +159,10 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Check if the tree aint empty!
         if not self.measurement_tree.topLevelItemCount():
             return
-            # Notify the model to update the subject_name + measurement_name if necessary
+
+        # Notify the model to update the subject_name + measurement_name if necessary
         self.measurement_name = self.measurement_tree.currentItem().text(0)
-        measurement = self.measurements[self.measurement_name]
+        measurement = {"measurement_name":self.measurement_name}
         pub.sendMessage("put_measurement", measurement=measurement)
 
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
@@ -178,6 +170,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         #pub.sendMessage("load_contacts")
         pub.sendMessage("get_contacts")
 
+    # TODO Add a way to switch between looking at individual contacts to an average result
     def show_average_results(self, evt=None):
         pass
 

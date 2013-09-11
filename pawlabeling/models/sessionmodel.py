@@ -14,9 +14,6 @@ class SessionModel():
         self.logger = logging.getLogger("logger")
         pub.subscribe(self.create_session, "create_session")
 
-    def set_parent_id(self, subject_id):
-        self.sessions_table.set_parent_id(subject_id=subject_id)
-
     def create_session(self, session=None):
         try:
             self.sessions_table.create_session(**session)

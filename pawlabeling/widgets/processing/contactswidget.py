@@ -52,7 +52,7 @@ class ContactWidgets(QtGui.QWidget):
         self.setLayout(self.main_layout)
 
         # TODO I might have to unsubscribe these as well...
-        pub.subscribe(self.put_measurement, "put_measurement")
+        pub.subscribe(self.update_measurement, "update_measurement")
         pub.subscribe(self.update_contacts, "updated_current_contact")
         pub.subscribe(self.update_average, "update_average")
         pub.subscribe(self.update_shape, "update_shape")
@@ -63,7 +63,7 @@ class ContactWidgets(QtGui.QWidget):
     def update_shape(self, shape):
         self.mx, self.my, self.mz = shape
 
-    def put_measurement(self, measurement):
+    def update_measurement(self, measurement):
         self.measurement_name = measurement["measurement_name"]
 
     def update_contacts(self, contacts, current_contact_index):

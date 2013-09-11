@@ -33,9 +33,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.contact_dict = self.settings.contact_dict()
 
         self.contacts = defaultdict(list)
-        self.subject = {}
-        self.session = {}
-
         self.current_contact_index = 0
 
         self.toolbar = gui.Toolbar(self)
@@ -105,24 +102,17 @@ class ProcessingWidget(QtGui.QWidget):
         pub.unsubscribe(self.stored_status, "stored_status")
 
     def put_subject(self, subject):
-        self.subject = subject
-        subject_name = "{} {}".format(self.subject["first_name"], self.subject["last_name"])
+        subject_name = "{} {}".format(subject["first_name"], subject["last_name"])
         self.subject_name_label.setText("Subject: {}\t".format(subject_name))
 
     def put_session(self, session):
-        self.session = session
-        self.session_name_label.setText("Session: {}\t".format(self.session["session_name"]))
+        self.session_name_label.setText("Session: {}\t".format(session["session_name"]))
 
     def update_measurements_tree(self, measurements):
         self.measurement_tree.clear()
-        self.measurements = {}
-
         for measurement in measurements:
-            self.measurements[measurement["measurement_name"]] = measurement
-            measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
+            measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree)
             measurement_item.setText(0, measurement["measurement_name"])
-            # How would I be able to check if this measurement has any contacts?
-            #child_item.setForeground(0, green_brush)
 
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item, True)
@@ -142,16 +132,14 @@ class ProcessingWidget(QtGui.QWidget):
             return
         # Notify the model to update the subject_name + measurement_name if necessary
         self.measurement_name = self.measurement_tree.currentItem().text(0)
-        measurement = self.measurements[self.measurement_name]
-        self.measurement_name_label.setText("Measurement name: {}".format(measurement["measurement_name"]))
+        self.measurement_name_label.setText("Measurement name: {}".format(self.measurement_name))
 
+        measurement = {"measurement_name":self.measurement_name}
         pub.sendMessage("put_measurement", measurement=measurement)
-
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
         pub.sendMessage("get_measurement_data")
         #pub.sendMessage("load_contacts")
         pub.sendMessage("get_contacts")
-
 
     def update_contacts_tree(self, contacts):
         self.contacts = contacts
@@ -337,7 +325,6 @@ class ProcessingWidget(QtGui.QWidget):
 
     def clear_cached_values(self):
         self.contacts.clear()
-        self.session.clear()
 
     def changed_settings(self):
         self.colors = self.settings.colors()

@@ -261,20 +261,20 @@ class Model():
             pub.sendMessage("stored_status", success=False)
 
     def get_subjects(self, subject={}):
-        subjects = self.subjects_table.get_subjects(**subject)
-        pub.sendMessage("update_subjects_tree", subjects=subjects)
+        self.subjects = self.subjects_table.get_subjects(**subject)
+        pub.sendMessage("update_subjects_tree", subjects=self.subjects)
 
     def get_sessions(self, session={}):
-        sessions = self.sessions_table.get_sessions(**session)
-        pub.sendMessage("update_sessions_tree", sessions=sessions)
+        self.sessions = self.sessions_table.get_sessions(**session)
+        pub.sendMessage("update_sessions_tree", sessions=self.sessions)
 
     def get_measurements(self, measurement={}):
-        measurements = self.measurements_table.get_measurements(**measurement)
-        pub.sendMessage("update_measurements_tree", measurements=measurements)
+        self.measurements = self.measurements_table.get_measurements(**measurement)
+        pub.sendMessage("update_measurements_tree", measurements=self.measurements)
         # From one of the measurements, get its plate_id and call put_plate
-        if measurements:
+        if self.measurements:
             # Update the plate information
-            plate = self.plates[measurements[0]["plate_id"]]
+            plate = self.plates[self.measurements[0]["plate_id"]]
             self.put_plate(plate)
 
     def get_contacts(self, contact={}):
@@ -357,6 +357,10 @@ class Model():
         self.calculate_results()
 
     def put_measurement(self, measurement):
+        for m in self.measurements:
+            if m["measurement_name"] == measurement["measurement_name"]:
+                measurement = m
+
         self.measurement = measurement
         self.measurement_id = measurement["measurement_id"]
         self.measurement_name = measurement["measurement_name"]
@@ -366,6 +370,7 @@ class Model():
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
+        pub.sendMessage("update_measurement", measurement=self.measurement)
 
     def put_contact(self, contact):
         self.contact = contact
@@ -403,29 +408,14 @@ class Model():
         # Make sure self.contacts is empty
         self.contacts.clear()
 
-        # Retrieve the brands and model
-        plate = {}
-
         measurements = {}
-
-        measurement_names = {}
-        measurement = None
         for measurement in self.measurements_table.measurements_table:
-            measurement_names[measurement["measurement_id"]] = measurement["measurement_name"]
             contacts = self.get_contact_data(measurement)
             if contacts:
                 self.contacts[measurement["measurement_name"]] = contacts
 
             if not all([True if contact.contact_label < 0 else False for contact in contacts]):
                 measurements[measurement["measurement_name"]] = measurement
-
-        # # Check if the measurement isn't none, before trying to get an item
-        # if measurement and measurement.__getitem__("plate_id"):
-        #     plate["frequency"] = measurement["frequency"]
-        #     self.put_plate(plate)
-        # # If there are measurements, but they lack a plate
-        # elif len(self.measurements_table.measurements_table) > 0:
-        #     self.logger.warning("model.load_contacts: Measurement(s) lack plate")
 
         pub.sendMessage("update_measurement_status", measurements=measurements)
 
