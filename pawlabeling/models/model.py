@@ -271,6 +271,11 @@ class Model():
     def get_measurements(self, measurement={}):
         measurements = self.measurements_table.get_measurements(**measurement)
         pub.sendMessage("update_measurements_tree", measurements=measurements)
+        # From one of the measurements, get its plate_id and call put_plate
+        if measurements:
+            # Update the plate information
+            plate = self.plates[measurements[0]["plate_id"]]
+            self.put_plate(plate)
 
     def get_contacts(self, contact={}):
         #contacts = self.contacts_table.get_contacts(**contact)
@@ -361,9 +366,6 @@ class Model():
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
-        # Update the plate information
-        plate = self.plates[self.measurement["plate_id"]]
-        self.put_plate(plate)
 
     def put_contact(self, contact):
         self.contact = contact

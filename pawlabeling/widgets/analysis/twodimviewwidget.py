@@ -73,6 +73,7 @@ class ContactView(QtGui.QWidget):
         self.max_y = self.my
         self.max_z = 0
         self.frame = -1
+        self.length = 0
         self.filtered = []
         self.outlier_toggle = False
         self.data = np.zeros((self.mx, self.my))
@@ -105,6 +106,7 @@ class ContactView(QtGui.QWidget):
             self.average_data = average_data[self.contact_label]
             self.max_of_max = self.average_data.max(axis=2)
             self.change_frame(frame=-1)
+            self.length = self.average_data.shape[2]
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
@@ -129,7 +131,7 @@ class ContactView(QtGui.QWidget):
     def change_frame(self, frame):
         self.frame = frame
         # If we're not displaying the empty array
-        if self.max_of_max.shape != (self.mx, self.my):
+        if self.frame < self.length:
             self.draw()
 
     def clear_cached_values(self):

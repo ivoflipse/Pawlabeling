@@ -73,6 +73,7 @@ class ContactView(QtGui.QWidget):
         self.max_y = self.my
         self.max_z = 0
         self.frame = -1
+        self.length = 0
         self.outlier_toggle = False
         self.ratio = 1
         self.cop_x = np.zeros(15)
@@ -116,6 +117,7 @@ class ContactView(QtGui.QWidget):
             self.average_data = average_data[self.contact_label]
             self.max_of_max = self.average_data.max(axis=2)
             self.change_frame(frame=-1)
+            self.length = self.average_data.shape[2]
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
@@ -138,11 +140,14 @@ class ContactView(QtGui.QWidget):
         # This value determines how many points of the COP are being plotted.
         self.x = 15
 
+        x, y, z = np.nonzero(self.average_data)
         # Just calculate the COP over the average measurement_data
-        average_data = np.rot90(np.rot90(self.average_data))
+        average_data = np.rot90(np.rot90(self.average_data[:]))
         # For some reason I can't do the slicing in the above call
         average_data = average_data[:,::-1,:]
-        self.cop_x, self.cop_y = calculations.calculate_cop(average_data)
+
+        # Only calculate the COP until we still have data in the frame
+        self.cop_x, self.cop_y = calculations.calculate_cop(average_data[:,:, :np.max(z)])
 
         # Create a strided index
         z = average_data.shape[2]
@@ -204,8 +209,8 @@ class ContactView(QtGui.QWidget):
 
     def change_frame(self, frame):
         self.frame = frame
-        # If we're not displaying the empty array
-        if self.max_of_max.shape != (self.mx, self.my):
+        # See that we stay within bounds
+        if self.frame < self.length:
             self.draw()
 
     def clear_cached_values(self):

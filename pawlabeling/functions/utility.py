@@ -56,10 +56,9 @@ def update_bounding_box(contact):
 
 def calculate_average_data(contact_data, shape):
     mx, my, mz = shape
-    # Pad the x and y the dimensions with a 4 pixel margin for visualization, z with 2
+    # Pad the x and y the dimensions with a 4 pixel margin for visualization
     mx += 4
     my += 4
-    mz += 2
 
     num_contacts = len(contact_data)
     weight = 1. / num_contacts
@@ -68,7 +67,7 @@ def calculate_average_data(contact_data, shape):
         x, y, z = data.shape
         offset_x = int((mx - x) / 2)
         offset_y = int((my - y) / 2)
-        padded_data[offset_x:offset_x + x, offset_y:offset_y + y, 1:z + 1] += data
+        padded_data[offset_x:offset_x + x, offset_y:offset_y + y, :z] += data
     return np.multiply(padded_data, weight)
 
 
