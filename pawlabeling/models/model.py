@@ -1,6 +1,5 @@
 from collections import defaultdict
 import logging
-import os
 import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
@@ -29,16 +28,22 @@ class Model():
         for plate in self.plates_table.get_plates(plate={}):
             self.plates[plate["plate_id"]] = plate
 
-        self.subject_name = ""
-        self.measurement_name = ""
-        self.session_id = ""
-        self.subject_id = ""
-
         # Initialize our variables that will cache results
+        self.subject_id = ""
+        self.subject_name = ""
+        self.session_id = ""
+        self.session = {}
+        self.sessions = []
+        self.measurement_name = ""
+        self.measurement = {}
+        self.measurements = []
+        self.contact = {}
+        self.contacts = {}
         self.average_data = defaultdict()
         self.contacts = defaultdict(list)
         self.results = defaultdict(lambda: defaultdict(list))
         self.max_results = defaultdict()
+        self.n_max = 0
 
         self.logger = logging.getLogger("logger")
 
@@ -545,20 +550,22 @@ class Model():
 
 
     def clear_cached_values(self):
-        self.logger.info("Model.clear_cached_values")
-        self.session = {}
-        self.measurement = {}
-        self.contact = {}
-        self.brand = {}
-        self.subject_name = ""
-        self.measurement_name = ""
-        self.session_id = ""
         self.subject_id = ""
-        self.average_data.clear()
+        self.subject_name = ""
+        self.session_id = ""
+        self.session.clear()
+        self.sessions = []
+        self.measurement_name = ""
+        self.measurement.clear()
+        self.measurements = []
+        self.contact.clear()
         self.contacts.clear()
+        self.average_data.clear()
         self.results.clear()
         self.max_results.clear()
         self.n_max = 0
+
+        self.logger.info("Model.clear_cached_values")
         pub.sendMessage("clear_cached_values")
 
     def changed_settings(self):
