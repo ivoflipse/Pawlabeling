@@ -2,6 +2,7 @@ import os
 import sys
 from collections import defaultdict
 from PySide import QtGui, QtCore
+from pubsub import pub
 import logging
 
 __version__ = '0.1'
@@ -19,7 +20,6 @@ class Settings(QtCore.QSettings):
         QtCore.QCoreApplication.setOrganizationDomain("flipserd.com")
         QtCore.QCoreApplication.setApplicationName("Paw Labeling")
         QtCore.QCoreApplication.setApplicationVersion(getVersion())
-        # product_name = '-'.join((application_name, version))
 
         super(Settings, self).__init__(self.settings_file, QtCore.QSettings.IniFormat)
         # System-wide settings will not be searched as a fallback
@@ -29,6 +29,7 @@ class Settings(QtCore.QSettings):
 
         # Lookup table for all the different settings
         self.lookup_table = {
+            "plate": ["plate"],
             "folders": ["measurement_folder", "database_file", "database_folder"],
             "keyboard_shortcuts": ["left_front", "left_hind", "right_front", "right_hind",
                                    "previous_contact", "next_contact", "invalid_valid", "remove_label"],
@@ -40,43 +41,8 @@ class Settings(QtCore.QSettings):
                            "tracking_temporal",
                            "tracking_spatial",
                            "tracking_surface"],
-            "application": ["zip_files",
-                            "show_maximized"],
+            "application": ["zip_files", "show_maximized", "restore_last_session"],
         }
-
-    # TODO It would be nice if this had a key that mapped to each plate
-    # TODO Possibly I should store these in PyTables instead of this hacked up solution
-    def brands(self):
-        key = "brands"
-        default_value = [{"plate": "rsscan",
-                          "model": "2m 2nd gen",
-                          "frequency": 125,
-                          "sensor_width": 0.508,
-                          "sensor_height": 0.762,
-                          "sensor_surface": 0.387096
-                         },
-                         {"plate": "zebris",
-                          "model": "FDM 1m",
-                          "frequency": 200,
-                          "sensor_width": 0.846,
-                          "sensor_height": 0.846,
-                          "sensor_surface": 0.715716
-                         },
-                         {"plate": "novel",
-                          "model": "emed",
-                          "frequency": 100,
-                          "sensor_width": 0.5,
-                          "sensor_height": 0.5,
-                          "sensor_surface": 0.25
-                         }
-        ]
-        return default_value
-        # setting_value = self.value(key)
-        # if isinstance(setting_value, dict):
-        #     # This merges both dictionaries. Replace if the user can define this from the GUI
-        #     return dict(default_value, **setting_value)
-        # else:
-        #     return default_value
 
     def contact_dict(self):
         # Lookup table for converting indices to labels
@@ -105,6 +71,15 @@ class Settings(QtCore.QSettings):
             QtGui.QColor(QtCore.Qt.yellow)
         ]
         return default_value
+
+    def plate(self):
+        key = "plate/plate"
+        default_value = ""
+        setting_value = self.value(key)
+        if isinstance(setting_value, str):
+            return setting_value
+        else:
+            return default_value
 
     def left_front(self):
         key = "keyboard_shortcuts/left_front"
@@ -359,7 +334,7 @@ class Settings(QtCore.QSettings):
             return default_value
 
     def zip_files(self):
-        key = "application/interpolation_results"
+        key = "interpolation/zip_files"
         default_value = True
         setting_value = self.value(key)
         if isinstance(setting_value, bool):
@@ -416,7 +391,8 @@ class Settings(QtCore.QSettings):
         self.settings = {}
         self.settings["contact_dict"] = self.contact_dict()
         self.settings["colors"] = self.colors()
-        self.settings["brands"] = self.brands()
+
+        self.settings["plate/plate"] = self.plate()
 
         self.settings["keyboard_shortcuts/left_front"] = self.left_front()
         self.settings["keyboard_shortcuts/left_hind"] = self.left_hind()
@@ -527,6 +503,146 @@ class Settings(QtCore.QSettings):
 
         return logger
 
+    def setup_plates(self):
+        plates = [
+            {"brand": "rsscan",
+             "model": "0.5m 2nd gen",
+             "frequency": 500,
+             "number_of_rows": 64,
+             "number_of_columns": 63,
+             "sensor_width": 0.508,
+             "sensor_height": 0.762,
+             "sensor_surface": 0.387096
+            },
+            {"brand": "rsscan",
+             "model": "1m 2nd gen",
+             "frequency": 250,
+             "number_of_rows": 128,
+             "number_of_columns": 63,
+             "sensor_width": 0.508,
+             "sensor_height": 0.762,
+             "sensor_surface": 0.387096
+            },
+            {"brand": "rsscan",
+             "model": "2m 2nd gen",
+             "frequency": 125,
+             "number_of_rows": 256,
+             "number_of_columns": 63,
+             "sensor_width": 0.508,
+             "sensor_height": 0.762,
+             "sensor_surface": 0.387096
+            },
+            {"brand": "rsscan",
+             "model": "0.5m USB",
+             "frequency": 300,
+             "number_of_rows": 64,
+             "number_of_columns": 63,
+             "sensor_width": 0.508,
+             "sensor_height": 0.762,
+             "sensor_surface": 0.387096
+            },
+            {"brand": "rsscan",
+             "model": "1m USB",
+             "frequency": 200,
+             "number_of_rows": 128,
+             "number_of_columns": 63,
+             "sensor_width": 0.508,
+             "sensor_height": 0.762,
+             "sensor_surface": 0.387096
+            },
+            {"brand": "rsscan",
+             "model": "1.5m USB",
+             "frequency": 200,
+             "number_of_rows": 192,
+             "number_of_columns": 63,
+             "sensor_width": 0.508,
+             "sensor_height": 0.762,
+             "sensor_surface": 0.387096
+            },
+            {"brand": "zebris",
+             "model": "FDM 1m",
+             "frequency": 100,
+             "number_of_rows": 176,
+             "number_of_columns": 64,
+             "sensor_width": 0.846,
+             "sensor_height": 0.846,
+             "sensor_surface": 0.715716
+            },
+            {"brand": "zebris",
+             "model": "FDM 1.5m",
+             "frequency": 100,
+             "number_of_rows": 240,
+             "number_of_columns": 64,
+             "sensor_width": 0.846,
+             "sensor_height": 0.846,
+             "sensor_surface": 0.715716
+            },
+            {"brand": "zebris",
+             "model": "FDM 2m",
+             "frequency": 100,
+             "number_of_rows": 352,
+             "number_of_columns": 64,
+             "sensor_width": 0.846,
+             "sensor_height": 0.846,
+             "sensor_surface": 0.715716
+            },
+            {"brand": "novel",
+             "model": "emed",
+             "frequency": 100,
+             "number_of_rows": 256,
+             "number_of_columns": 256,
+             "sensor_width": 0.5,
+             "sensor_height": 0.5,
+             "sensor_surface": 0.25
+            },
+            {"brand": "novel",
+             "model": "emed-a50",
+             "frequency": 50,
+             "number_of_rows": 55,
+             "number_of_columns": 32,
+             "sensor_width": 0.7,
+             "sensor_height": 0.7,
+             "sensor_surface": 0.49
+            },
+            {"brand": "novel",
+             "model": "emed-c50",
+             "frequency": 100,
+             "number_of_rows": 79,
+             "number_of_columns": 48,
+             "sensor_width": 0.5,
+             "sensor_height": 0.5,
+             "sensor_surface": 0.25
+            },
+            {"brand": "novel",
+             "model": "emed-n50",
+             "frequency": 100,
+             "number_of_rows": 95,
+             "number_of_columns": 64,
+             "sensor_width": 0.5,
+             "sensor_height": 0.5,
+             "sensor_surface": 0.25
+            },
+            {"brand": "novel",
+             "model": "emed-q100",
+             "frequency": 100,
+             "number_of_rows": 95,
+             "number_of_columns": 64,
+             "sensor_width": 0.5,
+             "sensor_height": 0.5,
+             "sensor_surface": 0.25
+            },
+            {"brand": "novel",
+             "model": "emed-x400",
+             "frequency": 400,
+             "number_of_rows": 95,
+             "number_of_columns": 64,
+             "sensor_width": 0.5,
+             "sensor_height": 0.5,
+             "sensor_surface": 0.25
+            }
+        ]
+        return plates
+
 
 class MissingIdentifier(Exception):
     pass
@@ -535,6 +651,7 @@ class MissingIdentifier(Exception):
 def getVersion():
     """The application version."""
     return __version__
+
 
 settings = Settings()
 settings.setup_logging()

@@ -31,6 +31,7 @@ class Table(object):
         # Create a query out of the kwargs
         query = " & ".join(
             ["({} == '{}')".format(key, value) for key, value in kwargs.items() if value != ""])
+        print query
         rows = table.readWhere(query)
         return rows
 
@@ -178,15 +179,14 @@ class MeasurementsTable(Table):
         measurement_id = tables.StringCol(64)
         session_id = tables.StringCol(64)
         subject_id = tables.StringCol(64)
+        plate_id = tables.StringCol(64)
         measurement_name = tables.StringCol(64)
         number_of_frames = tables.UInt32Col()
         number_of_rows = tables.UInt32Col()
-        number_of_cols = tables.UInt32Col()  # Shouldn't this be number_of_columns?
+        number_of_columns = tables.UInt32Col()
         frequency = tables.UInt32Col()
         orientation = tables.BoolCol()
         maximum_value = tables.Float32Col()
-        brand = tables.StringCol(32)
-        model = tables.StringCol(32)
         date = tables.StringCol(32)
         time = tables.StringCol(32)
 
@@ -333,7 +333,6 @@ class PlatesTable(Table):
     """
     "plate": "rsscan",
      "model": "2m 2nd gen",
-     "frequency": 125,
      "sensor_width": 0.508,
      "sensor_height": 0.762,
      "sensor_surface": 0.387096
@@ -342,9 +341,8 @@ class PlatesTable(Table):
         plate_id = tables.StringCol(64)
         brand = tables.StringCol(32)
         model = tables.StringCol(32)
-        frequency = tables.Int16Col()
-        width = tables.Int16Col()
-        height = tables.Int16Col()
+        number_of_rows = tables.Int16Col()
+        number_of_columns = tables.Int16Col()
         sensor_width = tables.Float16Col()
         sensor_height = tables.Float16Col()
         sensor_surface = tables.Float16Col()
@@ -367,6 +365,7 @@ class PlatesTable(Table):
             raise MissingIdentifier("I need at least a first name, last name and birthday")
 
         self.create_row(self.plates_table, **kwargs)
+        print "Created plate", kwargs
 
     def get_new_id(self):
         return "{}_{}".format(self.table_name, len(self.plates_table))

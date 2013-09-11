@@ -113,7 +113,7 @@ class EntirePlateWidget(QtGui.QWidget):
 
         self.n_max = measurement["maximum_value"]
         self.height = measurement["number_of_rows"]
-        self.width = measurement["number_of_cols"]
+        self.width = measurement["number_of_columns"]
         self.num_frames = measurement["number_of_frames"]
         self.measurement_name = measurement["measurement_name"]
 

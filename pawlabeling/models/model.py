@@ -18,6 +18,11 @@ class Model():
 
         self.subjects_table = table.SubjectsTable(database_file=self.database_file)
         self.plates_table = table.PlatesTable(database_file=self.database_file)
+        # If there's nothing in plates_table, set it up
+        if len(self.plates_table.plates_table) == 0:
+            plates = self.settings.setup_plates()
+            for plate in plates:
+                self.create_plate(plate)
 
         self.subject_name = ""
         self.measurement_name = ""
@@ -43,18 +48,20 @@ class Model():
         pub.subscribe(self.create_session, "create_session")
         pub.subscribe(self.create_measurement, "create_measurement")
         pub.subscribe(self.create_contact, "create_contact")
+        pub.subscribe(self.create_plate, "create_plate")
         # GET
         pub.subscribe(self.get_subjects, "get_subjects")
         pub.subscribe(self.get_sessions, "get_sessions")
         pub.subscribe(self.get_measurements, "get_measurements")
         pub.subscribe(self.get_contacts, "get_contacts")
         pub.subscribe(self.get_measurement_data, "get_measurement_data")
+        pub.subscribe(self.get_plates, "get_plates")
         # PUT
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.put_contact, "put_contact")
-
+        pub.subscribe(self.put_plate, "put_plate")
         # Various
         pub.subscribe(self.changed_settings, "changed_settings")
 
@@ -134,9 +141,9 @@ class Model():
 
         # Extract the measurement_data
         self.measurement_data = io.load(input_file, brand=self.measurement["plate"])
-        number_of_rows, number_of_cols, number_of_frames = self.measurement_data.shape
+        number_of_rows, number_of_columns, number_of_frames = self.measurement_data.shape
         self.measurement["number_of_rows"] = number_of_rows
-        self.measurement["number_of_cols"] = number_of_cols
+        self.measurement["number_of_columns"] = number_of_columns
         self.measurement["number_of_frames"] = number_of_frames
         self.measurement["orientation"] = io.check_orientation(self.measurement_data)
         self.measurement["maximum_value"] = self.measurement_data.max()  # Perhaps round this and store it as an int?
@@ -203,8 +210,7 @@ class Model():
         This function takes a plate dictionary object and stores it in PyTables
         """
         # Check if the plate is already in the table
-        if self.plates_table.get_subject(brand=plate["plate"], model=plate["model"],
-                                           frequency=plate["frequency"]).size:
+        if self.plates_table.get_plate(brand=plate["brand"], model=plate["model"], frequency=plate["frequency"]).size:
             pub.sendMessage("update_statusbar", status="Model.create_plate: Plate already exists")
             return
 
@@ -302,7 +308,7 @@ class Model():
 
     def get_plates(self, plate={}):
         plates = self.plates_table.get_plates(**plate)
-        pub.sendMessage("update_measurements_tree", plates=plates)
+        pub.sendMessage("update_plates", plates=plates)
 
     def put_subject(self, subject):
         # Whenever we switch subjects, clear the cache
@@ -374,17 +380,6 @@ class Model():
                 self.n_max = n_max
         pub.sendMessage("update_n_max", n_max=self.n_max)
 
-    def get_brand_and_model(self, brand, model):
-        brands = self.settings.brands()
-        for b in brands:
-            if b["plate"] == brand and b["model"] == model:
-                self.brand = b
-                break
-
-        self.frequency = self.brand["frequency"]
-        self.sensor_surface = self.brand["sensor_surface"]
-        pub.sendMessage("update_brand_and_model", brand=self.brand)
-
     def load_contacts(self):
         """
         Check if there if any measurements for this subject have already been processed
@@ -397,8 +392,7 @@ class Model():
         self.contacts.clear()
 
         # Retrieve the brands and model
-        brand = ""
-        model = ""
+        plate = {}
 
         measurements = {}
 
@@ -413,14 +407,13 @@ class Model():
             if not all([True if contact.contact_label < 0 else False for contact in contacts]):
                 measurements[measurement["measurement_name"]] = measurement
 
-        # Check if the measurement isn't none, before trying to get an item
-        if measurement and measurement.__getitem__("plate"):
-            brand = measurement["plate"]
-            model = measurement["model"]
-            self.get_brand_and_model(brand, model)
-        # If there are measurements, but they lack a plate
-        elif len(self.measurements_table.measurements_table) > 0:
-            self.logger.warning("model.load_contacts: Measurement(s) lack plate")
+        # # Check if the measurement isn't none, before trying to get an item
+        # if measurement and measurement.__getitem__("plate_id"):
+        #     plate["frequency"] = measurement["frequency"]
+        #     self.put_plate(plate)
+        # # If there are measurements, but they lack a plate
+        # elif len(self.measurements_table.measurements_table) > 0:
+        #     self.logger.warning("model.load_contacts: Measurement(s) lack plate")
 
         pub.sendMessage("update_measurement_status", measurements=measurements)
 
@@ -433,7 +426,7 @@ class Model():
         pub.sendMessage("update_statusbar", status="Starting tracking")
         # Add padding to the measurement
         x = self.measurement["number_of_rows"]
-        y = self.measurement["number_of_cols"]
+        y = self.measurement["number_of_columns"]
         z = self.measurement["number_of_frames"]
         padding_factor = self.settings.padding_factor()
         data = np.zeros((x + 2 * padding_factor, y + 2 * padding_factor, z), np.float32)
