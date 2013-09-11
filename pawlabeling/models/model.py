@@ -17,6 +17,7 @@ class Model():
         self.database_file = self.settings.database_file()
 
         self.subjects_table = table.SubjectsTable(database_file=self.database_file)
+        self.plates_table = table.PlatesTable(database_file=self.database_file)
 
         self.subject_name = ""
         self.measurement_name = ""
@@ -63,7 +64,7 @@ class Model():
         """
         # TODO Add some other validation to see if the input values are correct
         # Check if the subject is already in the table
-        if self.subjects_table.get_subject(first_name=subject["first_name"], last_name=subject["last_name"],
+        if self.subjects_table.get_subject(plate=subject["first_name"], last_name=subject["last_name"],
                                            birthday=subject["birthday"]).size:
             pub.sendMessage("update_statusbar", status="Model.create_subject: Subject already exists")
             return
@@ -132,7 +133,7 @@ class Model():
                 io.zip_file(measurement_folder, measurement_name)
 
         # Extract the measurement_data
-        self.measurement_data = io.load(input_file, brand=self.measurement["brand"])
+        self.measurement_data = io.load(input_file, brand=self.measurement["plate"])
         number_of_rows, number_of_cols, number_of_frames = self.measurement_data.shape
         self.measurement["number_of_rows"] = number_of_rows
         self.measurement["number_of_cols"] = number_of_cols
@@ -196,6 +197,23 @@ class Model():
                                                item_id=item_id,
                                                data=data)
         pub.sendMessage("update_statusbar", status="model.create_contact: Contact data created")
+
+    def create_plate(self, plate):
+        """
+        This function takes a plate dictionary object and stores it in PyTables
+        """
+        # Check if the plate is already in the table
+        if self.plates_table.get_subject(brand=plate["plate"], model=plate["model"],
+                                           frequency=plate["frequency"]).size:
+            pub.sendMessage("update_statusbar", status="Model.create_plate: Plate already exists")
+            return
+
+        # Create a subject id
+        plate_id = self.plates_table.get_new_id()
+        plate["plate_id"] = plate_id
+
+        self.plates_table.create_plate(**plate)
+        pub.sendMessage("update_statusbar", status="Model.create_plate: Plate created")
 
     def update_contact(self, contact):
         # Remove the key
@@ -282,6 +300,10 @@ class Model():
             new_contacts.append(contact)
         return new_contacts
 
+    def get_plates(self, plate={}):
+        plates = self.plates_table.get_plates(**plate)
+        pub.sendMessage("update_measurements_tree", plates=plates)
+
     def put_subject(self, subject):
         # Whenever we switch subjects, clear the cache
         self.clear_cached_values()
@@ -330,6 +352,15 @@ class Model():
         self.contact_id = contact["contact_id"]
         self.logger.info("Contact ID set to {}".format(self.contact_id))
 
+    def put_plate(self, plate):
+        self.plate = plate
+        self.plate_id = plate["plate_id"]
+        # These two variables are needed for several calculations
+        self.frequency = self.plate["frequency"]
+        self.sensor_surface = self.plate["sensor_surface"]
+        self.logger.info("Plate ID set to {}".format(self.plate_id))
+        pub.sendMessage("update_plate", plate=self.plate)
+
     def load_file_paths(self):
         self.logger.info("Model.load_file_paths: Loading file paths")
         self.file_paths = io.get_file_paths()
@@ -346,7 +377,7 @@ class Model():
     def get_brand_and_model(self, brand, model):
         brands = self.settings.brands()
         for b in brands:
-            if b["brand"] == brand and b["model"] == model:
+            if b["plate"] == brand and b["model"] == model:
                 self.brand = b
                 break
 
@@ -383,13 +414,13 @@ class Model():
                 measurements[measurement["measurement_name"]] = measurement
 
         # Check if the measurement isn't none, before trying to get an item
-        if measurement and measurement.__getitem__("brand"):
-            brand = measurement["brand"]
+        if measurement and measurement.__getitem__("plate"):
+            brand = measurement["plate"]
             model = measurement["model"]
             self.get_brand_and_model(brand, model)
-        # If there are measurements, but they lack a brand
+        # If there are measurements, but they lack a plate
         elif len(self.measurements_table.measurements_table) > 0:
-            self.logger.warning("model.load_contacts: Measurement(s) lack brand")
+            self.logger.warning("model.load_contacts: Measurement(s) lack plate")
 
         pub.sendMessage("update_measurement_status", measurements=measurements)
 

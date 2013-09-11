@@ -183,7 +183,7 @@ class MeasurementWidget(QtGui.QWidget):
                            "file_path":file_path,
                            "date":date_time[0],
                            "time":date_time[1],
-                           "brand":brand,
+                           "plate":brand,
                            "model":model,
                            "frequency":frequency
             }

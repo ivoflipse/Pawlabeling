@@ -48,21 +48,21 @@ class Settings(QtCore.QSettings):
     # TODO Possibly I should store these in PyTables instead of this hacked up solution
     def brands(self):
         key = "brands"
-        default_value = [{"brand": "rsscan",
+        default_value = [{"plate": "rsscan",
                           "model": "2m 2nd gen",
                           "frequency": 125,
                           "sensor_width": 0.508,
                           "sensor_height": 0.762,
                           "sensor_surface": 0.387096
                          },
-                         {"brand": "zebris",
+                         {"plate": "zebris",
                           "model": "FDM 1m",
                           "frequency": 200,
                           "sensor_width": 0.846,
                           "sensor_height": 0.846,
                           "sensor_surface": 0.715716
                          },
-                         {"brand": "novel",
+                         {"plate": "novel",
                           "model": "emed",
                           "frequency": 100,
                           "sensor_width": 0.5,

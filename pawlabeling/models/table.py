@@ -98,8 +98,8 @@ class SubjectsTable(Table):
     def get_new_id(self):
         return "{}_{}".format(self.table_name, len(self.subjects_table))
 
-    def get_subject(self, first_name="", last_name="", birthday=""):
-        return self.search_table(self.subjects_table, first_name=first_name,
+    def get_subject(self, plate="", last_name="", birthday=""):
+        return self.search_table(self.subjects_table, first_name=plate,
                                  last_name=last_name, birthday=birthday)
 
     def get_subjects(self, **kwargs):
@@ -309,7 +309,7 @@ class ContactsTable(Table):
 class ContactDataTable(Table):
     def __init__(self, database_file, subject_id, session_id, measurement_id):
         super(ContactDataTable, self).__init__(database_file=database_file)
-        self.table_name = "contact"
+        self.table_name = "contact_data"
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
@@ -328,3 +328,62 @@ class ContactDataTable(Table):
                 contact_data[item_id] = group.__getattr__(item_id).read()
             contacts.append(contact_data)
         return contacts
+
+class PlatesTable(Table):
+    """
+    "plate": "rsscan",
+     "model": "2m 2nd gen",
+     "frequency": 125,
+     "sensor_width": 0.508,
+     "sensor_height": 0.762,
+     "sensor_surface": 0.387096
+    """
+    class Plates(tables.IsDescription):
+        plate_id = tables.StringCol(64)
+        brand = tables.StringCol(32)
+        model = tables.StringCol(32)
+        frequency = tables.Int16Col()
+        width = tables.Int16Col()
+        height = tables.Int16Col()
+        sensor_width = tables.Float16Col()
+        sensor_height = tables.Float16Col()
+        sensor_surface = tables.Float16Col()
+
+    def __init__(self, database_file):
+        super(PlatesTable, self).__init__(database_file=database_file)
+        self.table_name = "plate"
+
+        if 'plates' not in self.table.root:
+            self.plates_table = self.table.createTable(where="/", name="plates", description=PlatesTable.Plates,
+                                                         title="Plates")
+        else:
+            self.plates_table = self.table.root.plates
+
+        self.column_names = self.plates_table.colnames
+
+    def create_plate(self, **kwargs):
+        # I need at least a plate, model and frequency
+        if "plate" not in kwargs and "model" not in kwargs and "frequency" not in kwargs:
+            raise MissingIdentifier("I need at least a first name, last name and birthday")
+
+        self.create_row(self.plates_table, **kwargs)
+
+    def get_new_id(self):
+        return "{}_{}".format(self.table_name, len(self.plates_table))
+
+    def get_plate(self, brand="", model="", frequency=""):
+        return self.search_table(self.plates_table, brand=brand, model=model, frequency=frequency)
+
+    def get_plates(self, **kwargs):
+        if kwargs.get("plate", None) or kwargs.get("model", None) or kwargs.get("frequency", None):
+            plates_list = self.search_table(self.plates_table, **kwargs)
+        else:
+            plates_list = self.plates_table.read()
+
+        plates = []
+        for s in plates_list:
+            plate = {}
+            for key, value in zip(self.column_names, s):
+                plate[key] = value
+            plates.append(plate)
+        return plates
