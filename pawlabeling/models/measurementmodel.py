@@ -20,7 +20,6 @@ class MeasurementModel(object):
         self.logger = logging.getLogger("logger")
         pub.subscribe(self.create_measurement, "create_measurement")
 
-    # TODO consider moving this to a Measurement class or at least refactoring it
     def create_measurement(self, measurement, plates):
         measurement_name = measurement["measurement_name"]
         file_path = measurement["file_path"]
@@ -70,7 +69,7 @@ class MeasurementModel(object):
         self.measurement_group = self.measurements_table.create_measurement(**self.measurement)
         return measurement_id
 
-    def create_measurement_data(self):
+    def create_measurement_data(self, measurement_group, measurement, measurement_data):
         # Don't forget to store the measurement_data for the measurement as well!
         self.measurements_table.store_data(group=self.measurement_group,
                                            item_id=self.measurement["measurement_name"],
@@ -81,29 +80,12 @@ class MeasurementModel(object):
         measurements = self.measurements_table.get_measurements()
         return measurements
 
-    def put_measurement(self, measurement):
-        for m in self.measurements:
-            if m["measurement_name"] == measurement["measurement_name"]:
-                measurement = m
-
-        self.measurement = measurement
-        self.measurement_id = measurement["measurement_id"]
-        self.measurement_name = measurement["measurement_name"]
-        self.logger.info("Measurement ID set to {}".format(self.measurement_id))
-        self.contacts_table = table.ContactsTable(database_file=self.database_file,
-                                                  subject_id=self.subject_id,
-                                                  session_id=self.session_id,
-                                                  measurement_id=self.measurement_id)
-        pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
-        pub.sendMessage("update_measurement", measurement=self.measurement)
-
     def get_measurement_data(self):
         group = self.measurements_table.get_group(self.measurements_table.session_group,
                                                   self.measurement["measurement_id"])
-        item_id = self.measurement_name
+        item_id = self.measurement["measurement_name"]
         measurement_data = self.measurements_table.get_data(group=group, item_id=item_id)
         return measurement_data
-
 
     def update_n_max(self):
         n_max = 0

@@ -74,7 +74,7 @@ class SessionWidget(QtGui.QWidget):
         try:
             pub.sendMessage("create_session", session=session)
             # After creating a new session, get the updated table
-            pub.sendMessage("get_sessions", session={})
+            pub.sendMessage("get_sessions")
         except settings.MissingIdentifier:
             pass
 
@@ -84,12 +84,6 @@ class SessionWidget(QtGui.QWidget):
         session["session_date"] = self.session_date.date().toString(Qt.ISODate)
         session["session_time"] = self.session_time.time().toString(u"HH:mm")  # Qt.ISODate
         return session
-
-    # If we ever get around adding search functionality, this is the one you should use
-    # def get_sessions(self):
-    #     print "sessionwidget.get_sessions"
-    #     session = self.get_session_fields()
-    #     pub.sendMessage("get_sessions", session=session)
 
     def put_session(self, evt=None):
         #print "sessionwidget.put_session"

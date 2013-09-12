@@ -31,60 +31,19 @@ class SessionModel(object):
         sessions = self.sessions_table.get_sessions()
         return sessions
 
-    def put_session(self, session):
-        self.session = session
-        self.session_id = session["session_id"]
-        self.logger.info("Session ID set to {}".format(self.session_id))
-        self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
-                                                          subject_id=self.subject_id,
-                                                          session_id=self.session_id)
-        pub.sendMessage("update_statusbar", status="Session: {}".format(self.session["session_name"]))
-
-        self.get_measurements()
-        # Load the contacts, but have it not send out anything
-        self.load_contacts()
-        # Next calculate the average based on the contacts
-        self.calculate_average()
-        # This needs to come after calculate average, perhaps refactor calculate_average into 2 functions?
-        self.calculate_results()
-
-    def load_contacts(self):
-        """
-        Check if there if any measurements for this subject have already been processed
-        If so, retrieve the measurement_data and convert them to a usable format
-        """
-        self.logger.info("Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
-            self.subject_name, self.session["session_name"]))
-
-        # Make sure self.contacts is empty
-        self.contacts.clear()
-
-        measurements = {}
-        for measurement in self.measurements_table.measurements_table:
-            contacts = self.get_contact_data(measurement)
-            if contacts:
-                self.contacts[measurement["measurement_name"]] = contacts
-
-            if not all([True if contact.contact_label < 0 else False for contact in contacts]):
-                measurements[measurement["measurement_name"]] = measurement
-
-        pub.sendMessage("update_measurement_status", measurements=measurements)
-
     # TODO see when this function is being called and make sure it doesn't happen unnecessarily
-    def calculate_average(self):
-        # Empty average measurement_data
-        self.average_data.clear()
-        self.data_list = defaultdict(list)
+    def calculate_data_list(self, contacts):
+        data_list = defaultdict(list)
 
         mx = 0
         my = 0
         mz = 0
         # Group all the measurement_data per contact
-        for measurement_name, contacts in self.contacts.items():
+        for measurement_name, contacts in contacts.items():
             for contact in contacts:
                 contact_label = contact.contact_label
                 if contact_label >= 0:
-                    self.data_list[contact_label].append(contact.data)
+                    data_list[contact_label].append(contact.data)
 
                 x, y, z = contact.data.shape
                 if x > mx:
@@ -95,50 +54,53 @@ class SessionModel(object):
                     mz = z
 
         shape = (mx, my, mz)
-        pub.sendMessage("update_shape", shape=shape)
+        return data_list, shape
+
+    def calculate_average(self, data_list, shape):
+        average_data = {}
         # Then get the normalized measurement_data
-        for contact_label, data in self.data_list.items():
+        for contact_label, data in data_list.items():
             normalized_data = utility.calculate_average_data(data, shape)
-            self.average_data[contact_label] = normalized_data
+            average_data[contact_label] = normalized_data
 
-        pub.sendMessage("update_average", average_data=self.average_data)
+        return average_data
 
-        # TODO Why are we calculating stuff? These things are already stored, so be lazy and load them!
-    def calculate_results(self):
+    # TODO Why are we calculating stuff? These things are already stored, so be lazy and load them!
+    def calculate_results(self, data_list, plate):
         # If we don't have any data, its no use to try and calculate something
-        if len(self.data_list.keys()) == 0:
+        if len(data_list.keys()) == 0:
             return
 
-        self.results.clear()
-        self.max_results.clear()
+        results = defaultdict(dict)
+        max_results = {}
 
-        for contact_label, data_list in self.data_list.items():
-            self.results[contact_label]["filtered"] = utility.filter_outliers(data_list, contact_label)
-            for data in data_list:
+        for contact_label, data in data_list.items():
+            results[contact_label]["filtered"] = utility.filter_outliers(data, contact_label)
+            for data in data:
                 force = calculations.force_over_time(data)
-                self.results[contact_label]["force"].append(force)
+                results[contact_label]["force"].append(force)
                 max_force = np.max(force)
-                if max_force > self.max_results.get("force", 0):
-                    self.max_results["force"] = max_force
+                if max_force > max_results.get("force", 0):
+                    max_results["force"] = max_force
 
-                pressure = calculations.pressure_over_time(data, sensor_surface=self.sensor_surface)
-                self.results[contact_label]["pressure"].append(pressure)
+                pressure = calculations.pressure_over_time(data, sensor_surface=plate["sensor_surface"])
+                results[contact_label]["pressure"].append(pressure)
                 max_pressure = np.max(pressure)
-                if max_pressure > self.max_results.get("pressure", 0):
-                    self.max_results["pressure"] = max_pressure
+                if max_pressure > max_results.get("pressure", 0):
+                    max_results["pressure"] = max_pressure
 
-                surface = calculations.surface_over_time(data, sensor_surface=self.sensor_surface)
-                self.results[contact_label]["surface"].append(surface)
+                surface = calculations.surface_over_time(data, sensor_surface=plate["sensor_surface"])
+                results[contact_label]["surface"].append(surface)
                 max_surface = np.max(surface)
-                if max_surface > self.max_results.get("surface", 0):
-                    self.max_results["surface"] = max_surface
+                if max_surface > max_results.get("surface", 0):
+                    max_results["surface"] = max_surface
 
                 cop_x, cop_y = calculations.calculate_cop(data)
-                self.results[contact_label]["cop"].append((cop_x, cop_y))
+                results[contact_label]["cop"].append((cop_x, cop_y))
 
                 x, y, z = np.nonzero(data)
                 max_duration = np.max(z)
-                if max_duration > self.max_results.get("duration", 0):
-                    self.max_results["duration"] = max_duration
+                if max_duration > max_results.get("duration", 0):
+                    max_results["duration"] = max_duration
 
-        pub.sendMessage("update_results", results=self.results, max_results=self.max_results)
+        return results, max_results

@@ -34,15 +34,3 @@ class SubjectModel(object):
     def get_subjects(self):
         subjects = self.subjects_table.get_subjects()
         return subjects
-
-    def put_subject(self, subject):
-        self.subject = subject
-        self.subject_id = subject["subject_id"]
-
-        self.logger.info("Subject ID set to {}".format(self.subject_id))
-        # As soon as a subject is selected, we instantiate our sessions table
-        self.sessions_table = table.SessionsTable(database_file=self.database_file,
-                                                  subject_id=self.subject_id)
-        #pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject["first_name"],
-        #                                                                   self.subject["last_name"]))
-        self.get_sessions()

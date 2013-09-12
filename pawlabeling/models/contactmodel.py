@@ -24,16 +24,16 @@ class ContactModel(object):
                                                   measurement_id=self.measurement_id)
         self.logger = logging.getLogger("logger")
 
-    def create_contacts(self):
-        contacts = self.track_contacts()
+    def create_contacts(self, measurement, measurement_data, plate):
+        contacts = self.track_contacts(measurement, measurement_data, plate)
         for contact in contacts:
             contact = contact.to_dict()  # This takes care of some of the book keeping for us
             contact["subject_id"] = self.subject_id
             contact["session_id"] = self.session_id
             contact["measurement_id"] = self.measurement_id
-            self.create_contact(contact)
+            self.create_contact(contact, plate)
 
-    def create_contact(self, contact):
+    def create_contact(self, contact, plate):
         contact_data = contact["data"]
         # Remove the key
         del contact["data"]
@@ -53,9 +53,9 @@ class ContactModel(object):
                    "max_of_max": contact_data.max(axis=2),
                    "force_over_time": calculations.force_over_time(contact_data),
                    "pressure_over_time": calculations.pressure_over_time(contact_data,
-                                                                         sensor_surface=self.sensor_surface),
+                                                                         sensor_surface=plate["sensor_surface"]),
                    "surface_over_time": calculations.surface_over_time(contact_data,
-                                                                       sensor_surface=self.sensor_surface),
+                                                                       sensor_surface=plate["sensor_surface"]),
                    "cop_x": cop_x,
                    "cop_y": cop_y
         }
@@ -65,26 +65,25 @@ class ContactModel(object):
                 self.contacts_table.store_data(group=contact_group,
                                                item_id=item_id,
                                                data=data)
-        #pub.sendMessage("update_statusbar", status="model.create_contact: Contact data created")
+                #pub.sendMessage("update_statusbar", status="model.create_contact: Contact data created")
 
     def get_contacts(self, measurement_name):
         contacts = self.contacts_table.get_contacts()
         return contacts
 
-    def repeat_track_contacts(self):
-        self.contacts[self.measurement_name] = self.track_contacts()
-        pub.sendMessage("update_contacts_tree", contacts=self.contacts)
+    def repeat_track_contacts(self, measurement, measurement_data, plate):
+        return self.track_contacts(measurement, measurement_data, plate)
 
     #@profile
-    def track_contacts(self):
+    def track_contacts(self, measurement, measurement_data, plate):
         pub.sendMessage("update_statusbar", status="Starting tracking")
         # Add padding to the measurement
-        x = self.measurement["number_of_rows"]
-        y = self.measurement["number_of_columns"]
-        z = self.measurement["number_of_frames"]
+        x = measurement["number_of_rows"]
+        y = measurement["number_of_columns"]
+        z = measurement["number_of_frames"]
         padding_factor = self.settings.padding_factor()
         data = np.zeros((x + 2 * padding_factor, y + 2 * padding_factor, z), np.float32)
-        data[padding_factor:-padding_factor, padding_factor:-padding_factor, :] = self.measurement_data
+        data[padding_factor:-padding_factor, padding_factor:-padding_factor, :] = measurement_data
         raw_contacts = tracking.track_contours_graph(data)
 
         contacts = []
@@ -92,12 +91,12 @@ class ContactModel(object):
         for index, raw_contact in enumerate(raw_contacts):
             contact = Contact()
             contact.create_contact(contact=raw_contact,
-                                   measurement_data=self.measurement_data,
+                                   measurement_data=measurement_data,
                                    padding=padding_factor,
-                                   orientation=self.measurement["orientation"])
-            contact.calculate_results(sensor_surface=self.sensor_surface)
+                                   orientation=measurement["orientation"])
+            contact.calculate_results(sensor_surface=plate["sensor_surface"])
             # Give each contact the same orientation as the measurement it originates from
-            contact.set_orientation(self.measurement["orientation"])
+            contact.set_orientation(measurement["orientation"])
             # Skip contacts that have only been around for one frame
             if len(contact.frames) > 1:
                 contacts.append(contact)
@@ -108,8 +107,6 @@ class ContactModel(object):
         for contact_id, contact in enumerate(contacts):
             contact.set_contact_id(contact_id)
 
-        status = "Number of contacts found: {}".format(len(contacts))
-        pub.sendMessage("update_statusbar", status=status)
         return contacts
 
     def update_contact(self, contact):
@@ -118,39 +115,13 @@ class ContactModel(object):
         contact_group = self.contacts_table.update_contact(**contact)
         pub.sendMessage("update_statusbar", status="model.create_contact: Contact updated")
 
-    def update_current_contact(self, current_contact_index, contacts):
-        # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
-        self.contacts = contacts
-        self.current_contact_index = current_contact_index
-
-        self.calculate_average()
-
-        pub.sendMessage("updated_current_contact", contacts=self.contacts,
-                        current_contact_index=self.current_contact_index)
-
-    def store_contacts(self):
-        if len(self.get_contact_data(self.measurement)) != len(self.contacts[self.measurement_name]):
-            # TODO Check whether the number of contacts is equal to the number of contacts in the table
-            raise Exception("Number of contacts doesn't match. Table needs to be dropped and newly inserted.")
-
-        for contact in self.contacts[self.measurement_name]:
+    def store_contacts(self, contacts, measurement_name):
+        for contact in contacts[measurement_name]:
             contact = contact.to_dict()  # This takes care of some of the book keeping for us
             contact["subject_id"] = self.subject_id
             contact["session_id"] = self.session_id
             contact["measurement_id"] = self.measurement_id
             self.update_contact(contact)
-
-        self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
-            self.measurement_name))
-        pub.sendMessage("update_statusbar", status="Results saved")
-        pub.sendMessage("stored_status", success=True)
-
-        try:
-            pass
-        except Exception as e:
-            self.logger.critical("Model.store_contacts: Storing failed! {}".format(e))
-            pub.sendMessage("update_statusbar", status="Storing results failed!")
-            pub.sendMessage("stored_status", success=False)
 
     def get_contact_data(self, measurement):
         new_contacts = []
@@ -175,10 +146,6 @@ class ContactModel(object):
             new_contacts.append(contact)
         return new_contacts
 
-    def put_contact(self, contact):
-        self.contact = contact
-        self.contact_id = contact["contact_id"]
-        self.logger.info("Contact ID set to {}".format(self.contact_id))
 
 class Contact(object):
     """

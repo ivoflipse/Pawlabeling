@@ -87,7 +87,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.get_plates()
 
     def get_plates(self):
-        pub.sendMessage("get_plates", plate={})
+        pub.sendMessage("get_plates")
 
     def update_plates(self, plates):
         self.plates = plates
@@ -117,7 +117,7 @@ class MeasurementWidget(QtGui.QWidget):
     def get_measurements(self, session=None):
         # If we have a different session, clear the tree
         self.measurement_tree.clear()
-        pub.sendMessage("get_measurements", measurement={})
+        pub.sendMessage("get_measurements")
 
     def change_file_location(self, evt=None):
         measurement_folder = self.settings.measurement_folder()
@@ -186,7 +186,7 @@ class MeasurementWidget(QtGui.QWidget):
             try:
                 pub.sendMessage("create_measurement", measurement=measurement)
                 # Update the tree after a measurement has been created
-                pub.sendMessage("get_measurements", measurement={})
+                pub.sendMessage("get_measurements")
             except settings.MissingIdentifier:
                 pass
 

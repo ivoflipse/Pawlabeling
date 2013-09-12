@@ -6,6 +6,7 @@ Paw Labeling
 Overview
 --------
 
+[![Build Status](https://travis-ci.org/ivoflipse/Pawlabeling.png)](https://travis-ci.org/ivoflipse/Pawlabeling)
 Paw Labeling is a tool to process veterinary pressure measurements.
 It can currently import RSscan and Zebris entire plate export-files.
 

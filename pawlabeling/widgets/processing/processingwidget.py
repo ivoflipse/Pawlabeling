@@ -138,7 +138,6 @@ class ProcessingWidget(QtGui.QWidget):
         pub.sendMessage("put_measurement", measurement=measurement)
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
         pub.sendMessage("get_measurement_data")
-        #pub.sendMessage("load_contacts")
         pub.sendMessage("get_contacts")
 
     def update_contacts_tree(self, contacts):

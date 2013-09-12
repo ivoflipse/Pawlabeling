@@ -92,7 +92,7 @@ class SubjectWidget(QtGui.QWidget):
     def create_subject(self):
         subject = self.get_subject_fields()
         pub.sendMessage("create_subject", subject=subject)
-        pub.sendMessage("get_subjects", subject={})
+        pub.sendMessage("get_subjects")
         # TODO figure out how to select the subject we just created
 
 
@@ -151,7 +151,7 @@ class SubjectWidget(QtGui.QWidget):
     def get_subjects(self):
         # Get the text from the first_name, last_name, birthday fields
         subject = self.get_subject_fields()
-        pub.sendMessage("get_subjects", subject=subject)
+        pub.sendMessage("get_subjects")
 
     def clear_subject_fields(self):
         for field in self.subject_fields:

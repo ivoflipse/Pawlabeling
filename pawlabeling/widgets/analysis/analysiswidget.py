@@ -167,7 +167,6 @@ class AnalysisWidget(QtGui.QTabWidget):
 
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
         pub.sendMessage("get_measurement_data")
-        #pub.sendMessage("load_contacts")
         pub.sendMessage("get_contacts")
 
     # TODO Add a way to switch between looking at individual contacts to an average result
