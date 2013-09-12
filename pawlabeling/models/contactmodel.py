@@ -8,8 +8,6 @@ from pawlabeling.settings import settings
 from pawlabeling.models import table
 #from memory_profiler import profile
 
-logger = logging.getLogger("logger")
-
 
 class ContactModel(object):
     def __init__(self, subject_id, session_id, measurement_id):
@@ -22,7 +20,6 @@ class ContactModel(object):
                                                   subject_id=self.subject_id,
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
-        self.logger = logging.getLogger("logger")
 
     def create_contacts(self, measurement, measurement_data, plate):
         contacts = self.track_contacts(measurement, measurement_data, plate)

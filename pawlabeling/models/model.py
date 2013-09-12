@@ -17,7 +17,8 @@ class Model():
         self.database_file = self.settings.database_file()
 
         self.plate_model = platemodel.PlateModel()
-        self.plates = self.plate_model.get_plates()
+        self.plate_model.get_plates()
+        self.plates = self.plate_model.plates
         pub.sendMessage("update_plates", plates=self.plates)
 
         self.subject_model = subjectmodel.SubjectModel()
@@ -127,6 +128,7 @@ class Model():
         self.sessions = self.session_model.get_sessions()
         pub.sendMessage("update_sessions_tree", sessions=self.sessions)
 
+    # TODO I dislike how put_plate has to piggy back on this function
     def get_measurements(self):
         self.measurements = self.measurement_model.get_measurements()
         pub.sendMessage("update_measurements_tree", measurements=self.measurements)
@@ -138,22 +140,14 @@ class Model():
             self.put_plate(plate)
 
     def get_contacts(self):
-        self.contacts = self.contact_model.get_contacts(self.measurement_name)
-
-        # TODO Why did I need this part again?
-        # if not self.contacts.get(measurement_name):
-        #     contacts = self.get_contact_data(self.measurement)
-        #     if not contacts:
-        #         self.contacts[self.measurement_name] = self.track_contacts()
-        #     else:
-        #         self.contacts[self.measurement_name] = contacts
-
+        # self.contacts gets initialized when the session is loaded
+        # if you want to track again, call repeat_track_contacts
         pub.sendMessage("update_contacts_tree", contacts=self.contacts)
         # Check if we should update n_max everywhere
         self.update_n_max()
 
     def get_measurement_data(self):
-        self.measurement_data = self.measurement_model.get_measurement_data()
+        self.measurement_data = self.measurement_model.get_measurement_data(self.measurement)
         pub.sendMessage("update_measurement_data", measurement_data=self.measurement_data)
 
     def put_subject(self, subject):
@@ -180,14 +174,21 @@ class Model():
         self.measurement_model = measurementmodel.MeasurementModel(subject_id=self.subject_id,
                                                                    session_id=self.session_id)
 
-        # TODO Interesting challenge, now I need multiple contact models...
-        self.contact_model = contactmodel.ContactModel(subject_id=self.subject_id,
-                                                       session_id=self.session_id,
-                                                       measurement_id=self.measurement_id)
+        # Load all the measurements for this session
         self.get_measurements()
+        # Create ContactModel instances for each measurement
+        self.contact_models = {}
+        for measurement in self.measurements:
+            contact_model = contactmodel.ContactModel(subject_id=self.subject_id,
+                                                      session_id=self.session_id,
+                                                      measurement_id=measurement["measurement_id"])
+            self.contact_models[measurement["measurement_id"]] = contact_model
+
         # TODO perhaps I should roll these below functions into one, then call get_blabla on the results later
         # Load the contacts, but have it not send out anything
         self.load_contacts()
+        # Calculate the data_list
+        self.calculate_data_list()
         # Next calculate the average based on the contacts
         self.calculate_average()
         # This needs to come after calculate average, perhaps refactor calculate_average into 2 functions?
@@ -206,6 +207,7 @@ class Model():
                                                   subject_id=self.subject_id,
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
+        self.contact_model = self.contact_models[self.measurement["measurement_id"]]
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
         pub.sendMessage("update_measurement", measurement=self.measurement)
 
@@ -225,7 +227,7 @@ class Model():
         # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
         self.contacts = contacts
         self.current_contact_index = current_contact_index
-        self.session_model.calculate_average()
+        self.calculate_average()
         pub.sendMessage("updated_current_contact", contacts=self.contacts,
                         current_contact_index=self.current_contact_index)
 
@@ -255,7 +257,8 @@ class Model():
 
         measurements = {}
         for measurement in self.measurements:
-            contacts = self.contact_model.get_contact_data(measurement)
+            contact_model = self.contact_models[measurement["measurement_id"]]
+            contacts = contact_model.get_contact_data(measurement)
             if contacts:
                 self.contacts[measurement["measurement_name"]] = contacts
 

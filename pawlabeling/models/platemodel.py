@@ -3,6 +3,7 @@ from pubsub import pub
 from pawlabeling.models import table
 from pawlabeling.settings import settings
 
+
 class PlateModel(object):
     def __init__(self):
         self.settings = settings.settings

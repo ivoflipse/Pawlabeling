@@ -71,7 +71,7 @@ class SessionModel(object):
         if len(data_list.keys()) == 0:
             return
 
-        results = defaultdict(dict)
+        results = defaultdict(lambda: defaultdict(list))
         max_results = {}
 
         for contact_label, data in data_list.items():

@@ -17,8 +17,6 @@ class MeasurementModel(object):
         self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)
-        self.logger = logging.getLogger("logger")
-        pub.subscribe(self.create_measurement, "create_measurement")
 
     def create_measurement(self, measurement, plates):
         measurement_name = measurement["measurement_name"]
@@ -71,19 +69,19 @@ class MeasurementModel(object):
 
     def create_measurement_data(self, measurement_group, measurement, measurement_data):
         # Don't forget to store the measurement_data for the measurement as well!
-        self.measurements_table.store_data(group=self.measurement_group,
-                                           item_id=self.measurement["measurement_name"],
-                                           data=self.measurement_data)
+        self.measurements_table.store_data(group=measurement_group,
+                                           item_id=measurement["measurement_name"],
+                                           data=measurement_data)
 
 
     def get_measurements(self):
         measurements = self.measurements_table.get_measurements()
         return measurements
 
-    def get_measurement_data(self):
+    def get_measurement_data(self, measurement):
         group = self.measurements_table.get_group(self.measurements_table.session_group,
-                                                  self.measurement["measurement_id"])
-        item_id = self.measurement["measurement_name"]
+                                                  measurement["measurement_id"])
+        item_id = measurement["measurement_name"]
         measurement_data = self.measurements_table.get_data(group=group, item_id=item_id)
         return measurement_data
 
