@@ -41,7 +41,7 @@ class ContactModel(object):
             return result["contact_id"]
 
         # If it doesn't already exist, we create the contact and store the data
-        contact_group = self.contacts_table.create_contact(**contact)
+        self.contact_group = self.contacts_table.create_contact(**contact)
         #pub.sendMessage("update_statusbar", status="model.create_contact: Contact created")
 
         # These are all the results (for now) I want to add to the contact
@@ -57,9 +57,10 @@ class ContactModel(object):
                    "cop_y": cop_y
         }
 
+        # TODO Check if the results are the same, if not update
         for item_id, data in results.items():
-            if not self.contacts_table.get_data(group=contact_group, item_id=item_id):
-                self.contacts_table.store_data(group=contact_group,
+            if not self.contacts_table.get_data(group=self.contact_group, item_id=item_id):
+                self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
                 #pub.sendMessage("update_statusbar", status="model.create_contact: Contact data created")
@@ -109,7 +110,7 @@ class ContactModel(object):
     def update_contact(self, contact):
         # Remove the key
         del contact["data"]
-        contact_group = self.contacts_table.update_contact(**contact)
+        self.contact_group = self.contacts_table.update_contact(**contact)
         pub.sendMessage("update_statusbar", status="model.create_contact: Contact updated")
 
     def store_contacts(self, contacts, measurement_name):

@@ -27,9 +27,9 @@ class PlateModel(object):
         This function takes a plate dictionary object and stores it in PyTables
         """
         # Check if the plate is already in the table
-        if self.plates_table.get_plate(brand=plate["brand"], model=plate["model"]).size:
-            #pub.sendMessage("update_statusbar", status="Model.create_plate: Plate already exists")
-            return
+        p = self.plates_table.get_plate(brand=plate["brand"], model=plate["model"])
+        if p:
+            return p["plate_id"]
 
         # Create a subject id
         plate_id = self.plates_table.get_new_id()

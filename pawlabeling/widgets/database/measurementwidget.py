@@ -91,7 +91,10 @@ class MeasurementWidget(QtGui.QWidget):
 
     def update_plates(self, plates):
         self.plates = plates
-        for plate in plates:
+        plate_strings = []
+        # This sorts the plates by the number in their plate_id
+        for plate_id in sorted(self.plates, key=lambda x: int(x.split("_")[1])):
+            plate = self.plates[plate_id]
             self.plate.addItem("{} {}".format(plate["brand"], plate["model"]))
 
     def update_measurement_status(self, measurements):
@@ -169,8 +172,9 @@ class MeasurementWidget(QtGui.QWidget):
         plate_text = self.plate.itemText(self.plate.currentIndex())
         index = plate_text.find(" ")
         brand = plate_text[:index]
-        model = plate_text[index+1:]
+        model = plate_text[index + 1:]
         plate = self.find_plate(brand=brand, model=model)
+        print plate
         plate_id = plate["plate_id"]
         frequency = int(self.frequency.itemText(self.frequency.currentIndex()))
         for file_name, file_path in self.file_paths.items():
@@ -191,7 +195,7 @@ class MeasurementWidget(QtGui.QWidget):
                 pass
 
     def find_plate(self, brand, model):
-        for plate in self.plates:
+        for plate_id, plate in self.plates.items():
             if plate['brand'] == brand and plate["model"] == model:
                 return plate
 

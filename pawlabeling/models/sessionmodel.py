@@ -14,7 +14,6 @@ class SessionModel(object):
         self.database_file = self.settings.database_file()
         self.sessions_table = table.SessionsTable(database_file=self.database_file, subject_id=subject_id)
         self.logger = logging.getLogger("logger")
-        pub.subscribe(self.create_session, "create_session")
 
     def create_session(self, session):
         # Check if the session isn't already in the table

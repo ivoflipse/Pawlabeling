@@ -53,7 +53,7 @@ class MeasurementModel(object):
         plate = plates[self.measurement["plate_id"]]
 
         # Extract the measurement_data
-        self.measurement_data = io.load(input_file, brand=self.plate["brand"])
+        self.measurement_data = io.load(input_file, brand=plate["brand"])
         number_of_rows, number_of_columns, number_of_frames = self.measurement_data.shape
         self.measurement["number_of_rows"] = number_of_rows
         self.measurement["number_of_columns"] = number_of_columns
@@ -67,10 +67,10 @@ class MeasurementModel(object):
         self.measurement_group = self.measurements_table.create_measurement(**self.measurement)
         return measurement_id
 
-    def create_measurement_data(self, measurement_group, measurement, measurement_data):
+    def create_measurement_data(self, measurement, measurement_data):
         # Don't forget to store the measurement_data for the measurement as well!
-        self.measurements_table.store_data(group=measurement_group,
-                                           item_id=measurement["measurement_name"],
+        self.measurements_table.store_data(group=self.measurement_group,
+                                           item_id=measurement["measurement_id"],
                                            data=measurement_data)
 
 

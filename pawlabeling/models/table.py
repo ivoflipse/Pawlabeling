@@ -38,8 +38,14 @@ class Table(object):
             for key, value in zip(table.column_names, row):
                 result[key] = value
             results.append(result)
+
+        # It can happen that there's nothing to return
+        if not results:
+            return results  # This returns the empty list
+
         # Return a singular value if there's only one row
         return results if len(results) > 1 else results[0]
+
 
     # This function can be used for measurement_data, contact_data and normalized_contact_data
     # Actually also for all the different results (at least the time series)

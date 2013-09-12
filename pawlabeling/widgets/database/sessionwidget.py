@@ -66,6 +66,10 @@ class SessionWidget(QtGui.QWidget):
         pub.subscribe(self.update_sessions_tree, "update_sessions_tree")
 
     def create_session(self):
+        # If we don't have a session_name, don't bother
+        if not self.session_name.text():
+            return
+
         session = {}
         session["session_name"] = self.session_name.text()
         session["session_date"] = self.session_date.date().toString(Qt.ISODate)

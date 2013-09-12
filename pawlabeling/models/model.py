@@ -19,7 +19,6 @@ class Model():
         self.plate_model = platemodel.PlateModel()
         self.plate_model.get_plates()
         self.plates = self.plate_model.plates
-        pub.sendMessage("update_plates", plates=self.plates)
 
         self.subject_model = subjectmodel.SubjectModel()
 
@@ -60,7 +59,7 @@ class Model():
         pub.subscribe(self.get_measurements, "get_measurements")
         pub.subscribe(self.get_contacts, "get_contacts")
         pub.subscribe(self.get_measurement_data, "get_measurement_data")
-        #pub.subscribe(self.get_plates, "get_plates")
+        pub.subscribe(self.get_plates, "get_plates")
         # # PUT
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
@@ -96,17 +95,15 @@ class Model():
         pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement created")
 
         # TODO Get all this stuff from the table or make sure we already have it in memory
-        measurement_group = ""
         measurement = {}
         measurement_data = []
         plate = {}
 
-        self.create_measurement_data(measurement_group, measurement, measurement_data)
+        self.create_measurement_data(measurement, measurement_data)
         self.create_contacts(measurement, measurement_data, plate)
 
-    def create_measurement_data(self, measurement_group, measurement, measurement_data):
-        self.measurement_model.create_measurement_data(measurement_group=measurement_group,
-                                                       measurement=measurement,
+    def create_measurement_data(self, measurement_data):
+        self.measurement_model.create_measurement_data(measurement_id=measurement_id,
                                                        measurement_data=measurement_data)
         pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement data created")
 
@@ -128,16 +125,9 @@ class Model():
         self.sessions = self.session_model.get_sessions()
         pub.sendMessage("update_sessions_tree", sessions=self.sessions)
 
-    # TODO I dislike how put_plate has to piggy back on this function
     def get_measurements(self):
         self.measurements = self.measurement_model.get_measurements()
         pub.sendMessage("update_measurements_tree", measurements=self.measurements)
-
-        # From one of the measurements, get its plate_id and call put_plate
-        if self.measurements:
-            # Update the plate information
-            plate = self.plates[self.measurements[0]["plate_id"]]
-            self.put_plate(plate)
 
     def get_contacts(self):
         # self.contacts gets initialized when the session is loaded
@@ -149,6 +139,17 @@ class Model():
     def get_measurement_data(self):
         self.measurement_data = self.measurement_model.get_measurement_data(self.measurement)
         pub.sendMessage("update_measurement_data", measurement_data=self.measurement_data)
+
+    def get_plates(self):
+        pub.sendMessage("update_plates", plates=self.plates)
+
+    def get_plate(self):
+        # From one of the measurements, get its plate_id and call put_plate
+        if self.measurements:
+            # Update the plate information
+            plate = self.plates[self.measurements[0]["plate_id"]]
+            self.put_plate(plate)
+            return plate
 
     def put_subject(self, subject):
         self.subject = subject
@@ -176,6 +177,10 @@ class Model():
 
         # Load all the measurements for this session
         self.get_measurements()
+        # If there are no measurements yet, stop right here
+        if not self.measurements:
+            return
+
         # Create ContactModel instances for each measurement
         self.contact_models = {}
         for measurement in self.measurements:
@@ -183,6 +188,8 @@ class Model():
                                                       session_id=self.session_id,
                                                       measurement_id=measurement["measurement_id"])
             self.contact_models[measurement["measurement_id"]] = contact_model
+
+        self.get_plate()
 
         # TODO perhaps I should roll these below functions into one, then call get_blabla on the results later
         # Load the contacts, but have it not send out anything
