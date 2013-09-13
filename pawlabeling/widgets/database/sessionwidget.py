@@ -62,7 +62,6 @@ class SessionWidget(QtGui.QWidget):
         self.session_tree_layout.addWidget(self.session_tree)
 
         self.setLayout(self.session_tree_layout)
-
         pub.subscribe(self.update_sessions_tree, "update_sessions_tree")
 
     def create_session(self):
@@ -100,7 +99,7 @@ class SessionWidget(QtGui.QWidget):
     def update_sessions_tree(self, sessions):
         self.session_tree.clear()
         self.sessions = {}
-        for index, session in enumerate(sessions):
+        for index, session in enumerate(sessions.values()):
             self.sessions[index] = session
             rootItem = QtGui.QTreeWidgetItem(self.session_tree)
             rootItem.setText(0, session.session_name)

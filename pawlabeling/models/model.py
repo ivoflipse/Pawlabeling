@@ -26,10 +26,10 @@ class Model():
         self.subject_name = ""
         self.session_id = ""
         self.session = {}
-        self.sessions = []
+        self.sessions = {}
         self.measurement_name = ""
         self.measurement = {}
-        self.measurements = []
+        self.measurements = {}
         self.contact = {}
         self.contacts = {}
         self.average_data = defaultdict()
@@ -62,7 +62,7 @@ class Model():
         # Various
         pub.subscribe(self.load_contacts, "load_contacts")
         pub.subscribe(self.update_current_contact, "update_current_contact")
-        pub.subscribe(self.store_contacts, "store_contacts")
+        pub.subscribe(self.store_contacts, "update_contacts")
         pub.subscribe(self.repeat_track_contacts, "track_contacts")
         pub.subscribe(self.calculate_results, "calculate_results")
         pub.subscribe(self.changed_settings, "changed_settings")
@@ -90,8 +90,10 @@ class Model():
         self.measurement_model = measurementmodel.Measurements(subject_id=self.subject_id,
                                                                    session_id=self.session_id)
         measurement = self.measurement_model.create_measurement(measurement=measurement, plates=self.plates)
-        pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement created")
+        if not measurement:
+            return
 
+        pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement created")
         measurement_data = measurement.measurement_data
         plate = measurement.plate
 
@@ -99,14 +101,14 @@ class Model():
         self.create_contacts(measurement, measurement_data, plate)
 
     def create_measurement_data(self, measurement, measurement_data):
-        self.measurement_model.create_measurement_data(measurement=measurement.measurement_id,
+        self.measurement_model.create_measurement_data(measurement=measurement,
                                                        measurement_data=measurement_data)
         pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement data created")
 
     def create_contacts(self, measurement, measurement_data, plate):
         self.contact_model = contactmodel.Contacts(subject_id=self.subject_id,
                                                        session_id=self.session_id,
-                                                       measurement_id=self.measurement_id)
+                                                       measurement_id=measurement.measurement_id)
         self.contacts = self.contact_model.create_contacts(measurement=measurement,
                                                            measurement_data=measurement_data,
                                                            plate=plate)
@@ -173,14 +175,14 @@ class Model():
                                                                    session_id=self.session_id)
 
         # Load all the measurements for this session
-        self.get_measurements()
+        self.measurements = self.get_measurements()
         # If there are no measurements yet, stop right here
         if not self.measurements:
             return
 
         # Create Contacts instances for each measurement
         self.contact_models = {}
-        for measurement in self.measurements:
+        for measurement in self.measurements.values():
             contact_model = contactmodel.Contacts(subject_id=self.subject_id,
                                                       session_id=self.session_id,
                                                       measurement_id=measurement.measurement_id)
@@ -199,7 +201,7 @@ class Model():
         self.calculate_results()
 
     def put_measurement(self, measurement):
-        for m in self.measurements:
+        for m in self.measurements.values():
             if m.measurement_name == measurement.measurement_name:
                 measurement = m
 
@@ -236,8 +238,8 @@ class Model():
                         current_contact_index=self.current_contact_index)
 
     def store_contacts(self):
-        self.contact_model.store_contacts(contacts=self.contacts, measurement_name=self.measurement_name)
-        self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
+        self.contact_model.update_contacts(contacts=self.contacts, measurement_name=self.measurement_name)
+        self.logger.info("Model.update_contacts: Results for {} have been successfully saved".format(
             self.measurement_name))
         pub.sendMessage("update_statusbar", status="Results saved")
         pub.sendMessage("stored_status", success=True)
@@ -304,10 +306,10 @@ class Model():
         self.subject_name = ""
         self.session_id = ""
         self.session.clear()
-        self.sessions = []
+        self.sessions = {}
         self.measurement_name = ""
         self.measurement.clear()
-        self.measurements = []
+        self.measurements = {}
         self.contact.clear()
         self.contacts.clear()
         self.average_data.clear()

@@ -106,13 +106,13 @@ class ProcessingWidget(QtGui.QWidget):
         self.subject_name_label.setText("Subject: {}\t".format(subject_name))
 
     def put_session(self, session):
-        self.session_name_label.setText("Session: {}\t".format(session["session_name"]))
+        self.session_name_label.setText("Session: {}\t".format(session.session_name))
 
     def update_measurements_tree(self, measurements):
         self.measurement_tree.clear()
-        for measurement in measurements:
+        for measurement in measurements.values():
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree)
-            measurement_item.setText(0, measurement["measurement_name"])
+            measurement_item.setText(0, measurement.measurement_name)
 
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item, True)
@@ -313,7 +313,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.update_current_contact()
 
     def store_status(self, event=None):
-        pub.sendMessage("store_contacts")
+        pub.sendMessage("update_contacts")
 
     def stored_status(self, success):
         # If we were successful, change the color of the tree

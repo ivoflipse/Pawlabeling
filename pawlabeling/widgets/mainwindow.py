@@ -75,6 +75,9 @@ class MainWindow(QtGui.QMainWindow):
         pub.subscribe(self.change_status, "update_statusbar")
         pub.subscribe(self.launch_message_box, "message_box")
 
+        # TODO Now you can call whatever you want
+        pub.sendMessage("get_subjects")
+
     def center(self):
         qr = self.frameGeometry()
         cp = QtGui.QDesktopWidget().availableGeometry().center()

@@ -38,14 +38,6 @@ class Contacts(object):
         if self.contacts_table.get_contact(contact_id=contact.contact_id):
             update = True
 
-        # Convert the contact to a dict, like the table expects
-        contact = contact.to_dict()
-        if update:
-            contact_group = self.contacts_table.update_contact(**contact)
-        else:
-            # If it doesn't already exist, we create the contact and store the data
-            self.contact_group = self.contacts_table.create_contact(**contact)
-
         # We store the results separately
         results = {"data": contact.data,
                    "max_of_max": contact.max_of_max,
@@ -56,6 +48,15 @@ class Contacts(object):
                    "cop_y": contact.cop_y
         }
 
+        # Convert the contact to a dict, like the table expects
+        contact = contact.to_dict()
+        if update:
+            self.contact_group = self.contacts_table.update_contact(**contact)
+        else:
+            # If it doesn't already exist, we create the contact and store the data
+            self.contact_group = self.contacts_table.create_contact(**contact)
+
+
         for item_id, data in results.items():
             result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
             if not result:
@@ -63,7 +64,7 @@ class Contacts(object):
                                                item_id=item_id,
                                                data=data)
                 # If the arrays are not equal, drop the old one and write the new data
-            if not np.array_equal(result, data):
+            elif not np.array_equal(result, data):
                 # TODO I can't really test this this without changing my tracking
                 print "Item: {} is not equal to the stored version".format(item_id)
                 # Let's hope this will simply replace the old values
@@ -86,9 +87,9 @@ class Contacts(object):
     def track_contacts(self, measurement, measurement_data, plate):
         pub.sendMessage("update_statusbar", status="Starting tracking")
         # Add padding to the measurement
-        x = measurement["number_of_rows"]
-        y = measurement["number_of_columns"]
-        z = measurement["number_of_frames"]
+        x = measurement.number_of_rows
+        y = measurement.number_of_columns
+        z = measurement.number_of_frames
         padding_factor = self.settings.padding_factor()
         data = np.zeros((x + 2 * padding_factor, y + 2 * padding_factor, z), np.float32)
         data[padding_factor:-padding_factor, padding_factor:-padding_factor, :] = measurement_data
@@ -102,8 +103,8 @@ class Contacts(object):
                               measurement_id=self.measurement_id)
             contact.create_contact(contact=raw_contact,
                                    measurement_data=measurement_data,
-                                   orientation=measurement["orientation"])
-            contact.calculate_results(sensor_surface=plate["sensor_surface"])
+                                   orientation=measurement.orientation)
+            contact.calculate_results(sensor_surface=plate.sensor_surface)
             # Skip contacts that have only been around for one frame
             if len(contact.frames) > 1:
                 contacts.append(contact)
@@ -116,22 +117,17 @@ class Contacts(object):
         return contacts
 
     def update_contact(self, contact):
-        # Remove the key
-        del contact["data"]
         self.contact_group = self.contacts_table.update_contact(**contact)
         pub.sendMessage("update_statusbar", status="model.create_contact: Contact updated")
 
-    def store_contacts(self, contacts, measurement_name):
+    def update_contacts(self, contacts, measurement_name):
         for contact in contacts[measurement_name]:
             contact = contact.to_dict()  # This takes care of some of the book keeping for us
-            contact["subject_id"] = self.subject_id
-            contact["session_id"] = self.session_id
-            contact["measurement_id"] = self.measurement_id
             self.update_contact(contact)
 
     def get_contact_data(self, measurement):
         new_contacts = []
-        measurement_id = measurement["measurement_id"]
+        measurement_id = measurement.measurement_id
         contact_data_table = table.ContactDataTable(database_file=self.database_file,
                                                     subject_id=self.subject_id,
                                                     session_id=self.session_id,

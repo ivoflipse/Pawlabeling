@@ -355,8 +355,8 @@ class PlatesTable(Table):
 
     def create_plate(self, **kwargs):
         # I need at least a plate and model
-        if "plate" not in kwargs and "model" not in kwargs:
-            raise MissingIdentifier("I need at least a first name, last name and birthday")
+        if "brand" not in kwargs and "model" not in kwargs:
+            raise MissingIdentifier("I need at least a brand and a model")
 
         self.create_row(self.plates_table, **kwargs)
 

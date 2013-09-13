@@ -91,7 +91,6 @@ class MeasurementWidget(QtGui.QWidget):
 
     def update_plates(self, plates):
         self.plates = plates
-        plate_strings = []
         # This sorts the plates by the number in their plate_id
         for plate_id in sorted(self.plates, key=lambda x: int(x.split("_")[1])):
             plate = self.plates[plate_id]
@@ -114,10 +113,10 @@ class MeasurementWidget(QtGui.QWidget):
     def update_measurements_tree(self, measurements):
         self.measurement_tree.clear()
         self.measurements = {}
-        for index, measurement in enumerate(measurements):
+        for index, measurement in enumerate(measurements.values()):
             self.measurements[index] = measurement
             root_item = QtGui.QTreeWidgetItem(self.measurement_tree)
-            root_item.setText(0, measurement["measurement_name"])
+            root_item.setText(0, measurement.measurement_name)
 
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item)
@@ -179,7 +178,7 @@ class MeasurementWidget(QtGui.QWidget):
         brand = plate_text[:index]
         model = plate_text[index + 1:]
         plate = self.find_plate(brand=brand, model=model)
-        plate_id = plate["plate_id"]
+        plate_id = plate.plate_id
         frequency = int(self.frequency.itemText(self.frequency.currentIndex()))
         for file_name, file_path in self.file_paths.items():
             date_time = time.strftime("%Y-%m-%d %H:%M", time.gmtime(os.path.getctime(file_path))).split(" ")
@@ -200,7 +199,7 @@ class MeasurementWidget(QtGui.QWidget):
 
     def find_plate(self, brand, model):
         for plate_id, plate in self.plates.items():
-            if plate['brand'] == brand and plate["model"] == model:
+            if plate.brand == brand and plate.model == model:
                 return plate
 
     def change_plate(self, index):

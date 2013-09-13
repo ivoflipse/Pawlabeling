@@ -86,15 +86,10 @@ class SubjectWidget(QtGui.QWidget):
 
         pub.subscribe(self.update_subjects_tree, "update_subjects_tree")
 
-        # Call an empty search so it loads all subjects
-        self.get_subjects()
-
     def create_subject(self):
         subject = self.get_subject_fields()
         pub.sendMessage("create_subject", subject=subject)
         pub.sendMessage("get_subjects")
-        # TODO figure out how to select the subject we just created
-
 
     def get_subject_fields(self):
         # TODO Check here if the required fields have been entered
@@ -111,6 +106,9 @@ class SubjectWidget(QtGui.QWidget):
                 mass = getattr(self, field).text()
                 if mass:
                     subject[field] = float(mass)
+                else:
+                    # If there's no mass, we'll use 1 (never divide by zero!)
+                    subject[field] = 1.
             else:
                 subject[field] = getattr(self, field).text()
         return subject
@@ -150,8 +148,6 @@ class SubjectWidget(QtGui.QWidget):
         pub.sendMessage("put_subject", subject=subject)
 
     def get_subjects(self):
-        # Get the text from the first_name, last_name, birthday fields
-        subject = self.get_subject_fields()
         pub.sendMessage("get_subjects")
 
     def clear_subject_fields(self):

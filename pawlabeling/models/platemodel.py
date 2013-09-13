@@ -34,7 +34,7 @@ class Plates(object):
         # Create a subject id
         plate_id = self.plates_table.get_new_id()
         plate_object.create_plate(plate_id=plate_id, plate=plate)
-        plate_object.to_dict()
+        plate = plate_object.to_dict()
         self.plates_table.create_plate(**plate)
         return plate_object
 

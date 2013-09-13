@@ -96,14 +96,14 @@ class AnalysisWidget(QtGui.QTabWidget):
         pub.sendMessage("calculate_results")
 
     def update_measurement(self, measurement):
-        self.measurement_name = measurement["measurement_name"]
+        self.measurement_name = measurement.measurement_name
 
     def update_measurements_tree(self, measurements):
         self.measurement_tree.clear()
 
-        for measurement in measurements:
+        for measurement in measurements.values():
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
-            measurement_item.setText(0, measurement["measurement_name"])
+            measurement_item.setText(0, measurement.measurement_name)
 
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item, True)

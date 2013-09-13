@@ -22,10 +22,14 @@ class Measurements(object):
     def create_measurement(self, measurement, plates):
         measurement_object = Measurement(subject_id=self.subject_id, session_id=self.session_id)
 
-        # If it already exists, restore the Measurement object and return that
-        result = self.measurements_table.get_measurement(measurement_name=measurement["measurement_name"])
+        # Be sure to strip the zip of if its there
+        measurement_name = measurement["measurement_name"]
+        if measurement_name[-3:] == "zip":
+            measurement_name = measurement_name[:-4]
+            # If it already exists, restore the Measurement object and return that
+        result = self.measurements_table.get_measurement(measurement_name=measurement_name)
         if result:
-            measurement_object = measurement_object.restore(result)
+            measurement_object.restore(result)
             return measurement_object
 
         measurement_id = self.measurements_table.get_new_id()
@@ -99,7 +103,7 @@ class Measurement(object):
         self.time = measurement["time"]
 
         # Extract the measurement_data
-        self.measurement_data = io.load(input_file, brand=self.plate["brand"])
+        self.measurement_data = io.load(input_file, brand=self.plate.brand)
         self.number_of_rows, self.number_of_columns, self.number_of_frames = self.measurement_data.shape
         self.orientation = io.check_orientation(self.measurement_data)
         self.maximum_value = self.measurement_data.max()  # Perhaps round this and store it as an int?
@@ -121,7 +125,6 @@ class Measurement(object):
 
         return input_file
 
-
     def restore(self, measurement):
         self.measurement_id = measurement["measurement_id"]
         self.session_id = measurement["session_id"]
@@ -129,7 +132,7 @@ class Measurement(object):
         self.plate_id = measurement["plate_id"]
         self.measurement_name = measurement["measurement_name"]
         self.number_of_frames = measurement["number_of_frames"]
-        self.number_of_rows = measurement[""]
+        self.number_of_rows = measurement["number_of_rows"]
         self.number_of_columns = measurement["number_of_rows"]
         self.frequency = measurement["frequency"]
         self.orientation = measurement["orientation"]

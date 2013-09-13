@@ -29,10 +29,11 @@ class Sessions(object):
         return session_object
 
     def get_sessions(self):
-        sessions = []
+        sessions = {}
         for session in self.sessions_table.get_sessions():
             session_object = Session(self.subject_id)
             session_object.restore(session)
+            sessions[session_object.session_id] = session_object
         return sessions
 
     # TODO see when this function is being called and make sure it doesn't happen unnecessarily
