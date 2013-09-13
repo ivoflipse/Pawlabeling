@@ -14,11 +14,15 @@ class Plates(object):
     def get_plates(self):
         # Keep a dictionary with all the plates with their id as the key
         self.plates = {}
-        for plate in self.settings.setup_plates():
-            plate = self.create_plate(plate)
-            self.plates[plate.plate_id] = plate
-
+        for plate in self.plates_table.get_plates():
+            plate_object = Plate()
+            plate_object.restore(plate=plate)
+            self.plates[plate_object.plate_id] = plate_object
         return self.plates
+
+    def create_plates(self):
+        for plate in self.settings.setup_plates():
+            self.create_plate(plate)
 
     def create_plate(self, plate):
         """
@@ -26,10 +30,8 @@ class Plates(object):
         """
         plate_object = Plate()
         # Check if the plate is already in the table
-        p = self.plates_table.get_plate(brand=plate["brand"], model=plate["model"])
-        if p:
-            plate_object.restore(p)
-            return plate_object
+        if self.plates_table.get_plate(brand=plate["brand"], model=plate["model"]):
+            return
 
         # Create a subject id
         plate_id = self.plates_table.get_new_id()

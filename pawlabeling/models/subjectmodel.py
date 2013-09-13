@@ -3,8 +3,10 @@ from pubsub import pub
 from pawlabeling.models import table
 from pawlabeling.settings import settings
 
+
 class MissingIdentifier(Exception):
     pass
+
 
 class Subjects(object):
     def __init__(self):
@@ -20,12 +22,10 @@ class Subjects(object):
         subject_object = Subject()
         # TODO Add some other validation to see if the input values are correct
         # Check if the subject is already in the table
-        result = self.subjects_table.get_subject(plate=subject["first_name"],
-                                                   last_name=subject["last_name"],
-                                                   birthday=subject["birthday"])
-        if result:
-            subject_object.restore(result)
-            return subject_object
+        if self.subjects_table.get_subject(plate=subject["first_name"],
+                                           last_name=subject["last_name"],
+                                           birthday=subject["birthday"]):
+            return
 
         subject_id = self.subjects_table.get_new_id()
         subject_object.create_subject(subject_id=subject_id, subject=subject)
@@ -42,6 +42,7 @@ class Subjects(object):
             subjects[subject_object.subject_id] = subject_object
         return subjects
 
+
 class Subject(object):
     """
         subject_id = tables.StringCol(64)
@@ -54,6 +55,7 @@ class Subject(object):
         birthday = tables.StringCol(32)
         mass = tables.FloatCol()
     """
+
     def __init__(self):
         pass
 
@@ -70,15 +72,15 @@ class Subject(object):
 
     def to_dict(self):
         subject = {
-            "subject_id":self.subject_id,
-            "first_name":self.first_name,
-            "last_name":self.last_name,
-            "address":self.address,
-            "city":self.city,
-            "phone":self.phone,
-            "email":self.email,
-            "birthday":self.birthday,
-            "mass":self.mass
+            "subject_id": self.subject_id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "address": self.address,
+            "city": self.city,
+            "phone": self.phone,
+            "email": self.email,
+            "birthday": self.birthday,
+            "mass": self.mass
         }
         return subject
 

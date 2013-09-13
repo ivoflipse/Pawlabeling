@@ -17,7 +17,8 @@ class Model():
         self.database_file = self.settings.database_file()
 
         self.plate_model = platemodel.Plates()
-        #self.get_plates()
+        # Create the plates if they do not yet exists
+        self.plate_model.create_plates()
 
         self.subject_model = subjectmodel.Subjects()
 
@@ -145,8 +146,10 @@ class Model():
     def get_plate(self):
         # From one of the measurements, get its plate_id and call put_plate
         if self.measurements:
-            # Update the plate information
-            plate = self.plates[self.measurements[0].plate_id]
+            for measurement_id, measurement in self.measurements.items():
+                # Update the plate information
+                plate = self.plates[measurement.plate_id]
+
             self.put_plate(plate)
             return plate
 
@@ -175,7 +178,7 @@ class Model():
                                                                    session_id=self.session_id)
 
         # Load all the measurements for this session
-        self.measurements = self.get_measurements()
+        self.get_measurements()
         # If there are no measurements yet, stop right here
         if not self.measurements:
             return
@@ -195,6 +198,9 @@ class Model():
         self.load_contacts()
         # Calculate the data_list
         self.calculate_data_list()
+        # Check if there's any data in the data_list, then we don't have any labeled contacts yet
+        if not self.data_list:
+            return
         # Next calculate the average based on the contacts
         self.calculate_average()
         # This needs to come after calculate average, perhaps refactor calculate_average into 2 functions?
@@ -202,8 +208,9 @@ class Model():
 
     def put_measurement(self, measurement):
         for m in self.measurements.values():
-            if m.measurement_name == measurement.measurement_name:
+            if m.measurement_name == measurement["measurement_name"]:
                 measurement = m
+                break
 
         self.measurement = measurement
         self.measurement_id = measurement.measurement_id
@@ -263,18 +270,18 @@ class Model():
         If so, retrieve the measurement_data and convert them to a usable format
         """
         self.logger.info("Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
-            self.subject_name, self.session["session_name"]))
+            self.subject_name, self.session.session_name))
         self.contacts.clear()
 
         measurements = {}
-        for measurement in self.measurements:
-            contact_model = self.contact_models[measurement["measurement_id"]]
+        for measurement_id, measurement in self.measurements.items():
+            contact_model = self.contact_models[measurement_id]
             contacts = contact_model.get_contact_data(measurement)
             if contacts:
-                self.contacts[measurement["measurement_name"]] = contacts
+                self.contacts[measurement.measurement_name] = contacts
 
             if not all([True if contact.contact_label < 0 else False for contact in contacts]):
-                measurements[measurement["measurement_name"]] = measurement
+                measurements[measurement.measurement_name] = measurement
 
         # This notifies the measurement_trees which measurements have contacts assigned to them
         pub.sendMessage("update_measurement_status", measurements=measurements)
@@ -302,6 +309,7 @@ class Model():
         self.database_file = self.settings.database_file()
 
     def clear_cached_values(self):
+        print "model.clear_cached_values"
         self.subject_id = ""
         self.subject_name = ""
         self.session_id = ""

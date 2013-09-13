@@ -29,8 +29,7 @@ class Measurements(object):
             # If it already exists, restore the Measurement object and return that
         result = self.measurements_table.get_measurement(measurement_name=measurement_name)
         if result:
-            measurement_object.restore(result)
-            return measurement_object
+            return
 
         measurement_id = self.measurements_table.get_new_id()
         # Else we create a copy of our own

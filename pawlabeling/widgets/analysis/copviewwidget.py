@@ -125,7 +125,9 @@ class ContactView(QtGui.QWidget):
 
     def update_n_max(self, n_max):
         self.n_max = n_max
-        self.draw()
+        # Only draw if we actually have any data
+        if self.average_data.sum():
+            self.draw()
 
     def draw_cop(self):
         # If we still have the default shape, don't bother

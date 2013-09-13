@@ -64,7 +64,7 @@ class ContactWidgets(QtGui.QWidget):
         self.mx, self.my, self.mz = shape
 
     def update_measurement(self, measurement):
-        self.measurement_name = measurement["measurement_name"]
+        self.measurement_name = measurement.measurement_name
 
     def update_contacts(self, contacts, current_contact_index):
         # Clear any previous results, which may be out of date
@@ -210,7 +210,7 @@ class ContactWidget(QtGui.QWidget):
         self.max_pressure = np.max(calculations.force_over_time(self.average_data))
         x, y, z = np.nonzero(self.average_data)
         self.mean_duration = np.max(z)
-        self.mean_surface = np.max(calculations.pixel_count_over_time(self.average_data) * self.plate["sensor_surface"])
+        self.mean_surface = np.max(calculations.pixel_count_over_time(self.average_data) * self.plate.sensor_surface)
 
         self.max_pressure_label.setText("{:3.1f} N".format(self.max_pressure))
         self.mean_duration_label.setText("{} frames".format(int(self.mean_duration)))

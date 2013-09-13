@@ -111,11 +111,11 @@ class EntirePlateWidget(QtGui.QWidget):
     def update_measurement(self, measurement):
         self.clear_gait_line()
 
-        self.n_max = measurement["maximum_value"]
-        self.height = measurement["number_of_rows"]
-        self.width = measurement["number_of_columns"]
-        self.num_frames = measurement["number_of_frames"]
-        self.measurement_name = measurement["measurement_name"]
+        self.n_max = measurement.maximum_value
+        self.height = measurement.number_of_rows
+        self.width = measurement.number_of_columns
+        self.num_frames = measurement.number_of_frames
+        self.measurement_name = measurement.measurement_name
 
     def fast_backward(self):
         self.change_slider(-1, fast=True)

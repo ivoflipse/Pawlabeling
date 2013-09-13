@@ -82,7 +82,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.create_toolbar_actions()
 
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        pub.subscribe(self.update_measurement, "put_measurement")
+        pub.subscribe(self.update_measurement, "update_measurement")
 
     def subscribe(self):
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")

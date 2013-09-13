@@ -18,9 +18,8 @@ class Sessions(object):
     def create_session(self, session):
         session_object = Session(self.subject_id)
         # Check if the session isn't already in the table
-        result = self.sessions_table.get_session(session_name=session["session_name"])
-        if result:
-            return result["session_id"]
+        if self.sessions_table.get_session(session_name=session["session_name"]):
+            return
 
         session_id = self.sessions_table.get_new_id()
         session_object.create_session(session_id=session_id, session=session)

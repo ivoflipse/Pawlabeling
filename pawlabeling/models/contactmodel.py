@@ -32,6 +32,7 @@ class Contacts(object):
             self.create_contact(contact)
         return contacts
 
+    # TODO Really it actually should never happen that I have to call create_contact when it already exists!
     def create_contact(self, contact):
         # If the contact is already present, we update instead and return its ID
         update = False
