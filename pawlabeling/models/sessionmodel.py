@@ -87,13 +87,13 @@ class Sessions(object):
                 if max_force > max_results.get("force", 0):
                     max_results["force"] = max_force
 
-                pressure = calculations.pressure_over_time(data, sensor_surface=plate["sensor_surface"])
+                pressure = calculations.pressure_over_time(data, sensor_surface=plate.sensor_surface)
                 results[contact_label]["pressure"].append(pressure)
                 max_pressure = np.max(pressure)
                 if max_pressure > max_results.get("pressure", 0):
                     max_results["pressure"] = max_pressure
 
-                surface = calculations.surface_over_time(data, sensor_surface=plate["sensor_surface"])
+                surface = calculations.surface_over_time(data, sensor_surface=plate.sensor_surface)
                 results[contact_label]["surface"].append(surface)
                 max_surface = np.max(surface)
                 if max_surface > max_results.get("surface", 0):

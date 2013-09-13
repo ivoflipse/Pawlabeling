@@ -16,8 +16,8 @@ class Model():
         self.measurement_folder = self.settings.measurement_folder()
         self.database_file = self.settings.database_file()
 
-        self.plate_model = platemodel.PlateModel()
-        self.plates = self.plate_model.plates
+        self.plate_model = platemodel.Plates()
+        #self.get_plates()
 
         self.subject_model = subjectmodel.Subjects()
 
@@ -89,12 +89,9 @@ class Model():
 
         self.measurement_model = measurementmodel.Measurements(subject_id=self.subject_id,
                                                                    session_id=self.session_id)
-        self.measurement_id = self.measurement_model.create_measurement(measurement=measurement, plates=self.plates)
+        measurement = self.measurement_model.create_measurement(measurement=measurement, plates=self.plates)
         pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement created")
 
-        # Retrieve the measurement we just made
-        # TODO I fear this dictionary could become VERY big when you have multiple long measurements
-        measurement = self.measurement_model.measurements[self.measurement_id]
         measurement_data = measurement.measurement_data
         plate = measurement.plate
 
@@ -140,33 +137,34 @@ class Model():
         pub.sendMessage("update_measurement_data", measurement_data=self.measurement_data)
 
     def get_plates(self):
+        self.plates = self.plate_model.get_plates()
         pub.sendMessage("update_plates", plates=self.plates)
 
     def get_plate(self):
         # From one of the measurements, get its plate_id and call put_plate
         if self.measurements:
             # Update the plate information
-            plate = self.plates[self.measurements[0]["plate_id"]]
+            plate = self.plates[self.measurements[0].plate_id]
             self.put_plate(plate)
             return plate
 
     def put_subject(self, subject):
         self.subject = subject
-        self.subject_id = subject["subject_id"]
+        self.subject_id = subject.subject_id
         self.logger.info("Subject ID set to {}".format(self.subject_id))
         # As soon as a subject is selected, we instantiate our sessions table
         self.sessions_table = table.SessionsTable(database_file=self.database_file,
                                                   subject_id=self.subject_id)
         self.session_model = sessionmodel.Sessions(subject_id=self.subject_id)
-        pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject["first_name"],
-                                                                           self.subject["last_name"]))
+        pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject.first_name,
+                                                                           self.subject.last_name))
         self.get_sessions()
 
     def put_session(self, session):
         self.session = session
-        self.session_id = session["session_id"]
+        self.session_id = session.session_id
         self.logger.info("Session ID set to {}".format(self.session_id))
-        pub.sendMessage("update_statusbar", status="Session: {}".format(self.session["session_name"]))
+        pub.sendMessage("update_statusbar", status="Session: {}".format(self.session.session_name))
 
         self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
                                                           subject_id=self.subject_id,
@@ -185,8 +183,8 @@ class Model():
         for measurement in self.measurements:
             contact_model = contactmodel.Contacts(subject_id=self.subject_id,
                                                       session_id=self.session_id,
-                                                      measurement_id=measurement["measurement_id"])
-            self.contact_models[measurement["measurement_id"]] = contact_model
+                                                      measurement_id=measurement.measurement_id)
+            self.contact_models[measurement.measurement_id] = contact_model
 
         self.get_plate()
 
@@ -202,18 +200,18 @@ class Model():
 
     def put_measurement(self, measurement):
         for m in self.measurements:
-            if m["measurement_name"] == measurement["measurement_name"]:
+            if m.measurement_name == measurement.measurement_name:
                 measurement = m
 
         self.measurement = measurement
-        self.measurement_id = measurement["measurement_id"]
-        self.measurement_name = measurement["measurement_name"]
+        self.measurement_id = measurement.measurement_id
+        self.measurement_name = measurement.measurement_name
         self.logger.info("Measurement ID set to {}".format(self.measurement_id))
         self.contacts_table = table.ContactsTable(database_file=self.database_file,
                                                   subject_id=self.subject_id,
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
-        self.contact_model = self.contact_models[self.measurement["measurement_id"]]
+        self.contact_model = self.contact_models[self.measurement.measurement_id]
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
         pub.sendMessage("update_measurement", measurement=self.measurement)
 
@@ -224,8 +222,8 @@ class Model():
 
     def put_plate(self, plate):
         self.plate = plate
-        self.plate_id = plate["plate_id"]
-        self.sensor_surface = self.plate["sensor_surface"]
+        self.plate_id = plate.plate_id
+        self.sensor_surface = self.plate.sensor_surface
         self.logger.info("Plate ID set to {}".format(self.plate_id))
         pub.sendMessage("update_plate", plate=self.plate)
 

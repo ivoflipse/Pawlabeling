@@ -39,12 +39,6 @@ class Measurements(object):
         self.measurement_group = self.measurements_table.create_measurement(**measurement)
         return measurement_object
 
-    def create_measurement_data(self, measurement, measurement_data):
-        # Don't forget to store the measurement_data for the measurement as well!
-        self.measurements_table.store_data(group=self.measurement_group,
-                                           item_id=measurement["measurement_id"],
-                                           data=measurement_data)
-
     def get_measurements(self):
         measurements = {}
         for measurement in self.measurements_table.get_measurements():
@@ -54,10 +48,15 @@ class Measurements(object):
             measurements[measurement_object.measurement_id] = measurement_object
         return measurements
 
+    def create_measurement_data(self, measurement, measurement_data):
+        self.measurements_table.store_data(group=self.measurement_group,
+                                           item_id=measurement.measurement_id,
+                                           data=measurement_data)
+
     def get_measurement_data(self, measurement):
         group = self.measurements_table.get_group(self.measurements_table.session_group,
-                                                  measurement["measurement_id"])
-        item_id = measurement["measurement_name"]
+                                                  measurement.measurement_id)
+        item_id = measurement.measurement_id
         measurement_data = self.measurements_table.get_data(group=group, item_id=item_id)
         return measurement_data
 

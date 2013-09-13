@@ -103,9 +103,9 @@ class SessionWidget(QtGui.QWidget):
         for index, session in enumerate(sessions):
             self.sessions[index] = session
             rootItem = QtGui.QTreeWidgetItem(self.session_tree)
-            rootItem.setText(0, session["session_name"])
-            rootItem.setText(1, session["session_date"])
-            rootItem.setText(2, session["session_time"])
+            rootItem.setText(0, session.session_name)
+            rootItem.setText(1, session.session_date)
+            rootItem.setText(2, session.session_time)
 
         # We select the last session, assuming this is the one we just created
         count = self.session_tree.topLevelItemCount()

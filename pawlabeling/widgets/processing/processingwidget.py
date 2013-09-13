@@ -102,7 +102,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.unsubscribe(self.stored_status, "stored_status")
 
     def put_subject(self, subject):
-        subject_name = "{} {}".format(subject["first_name"], subject["last_name"])
+        subject_name = "{} {}".format(subject.first_name, subject.last_name)
         self.subject_name_label.setText("Subject: {}\t".format(subject_name))
 
     def put_session(self, session):

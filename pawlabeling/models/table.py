@@ -36,7 +36,7 @@ class Table(object):
         results = []
         for row in rows:
             result = {}
-            for key, value in zip(table.column_names, row):
+            for key, value in zip(table.colnames, row):
                 result[key] = value
             results.append(result)
 

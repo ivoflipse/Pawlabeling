@@ -22,9 +22,15 @@ class Contacts(object):
                                                   measurement_id=self.measurement_id)
 
     def create_contacts(self, measurement, measurement_data, plate):
+        """
+        Create contacts works slightly different than the other models.
+        track_contacts returns a list of list of Contact instances
+        create_contact only takes care of the storing of the results in PyTables
+        """
         contacts = self.track_contacts(measurement, measurement_data, plate)
         for contact in contacts:
             self.create_contact(contact)
+        return contacts
 
     def create_contact(self, contact):
         # If the contact is already present, we update instead and return its ID
@@ -58,9 +64,9 @@ class Contacts(object):
                                                data=data)
                 # If the arrays are not equal, drop the old one and write the new data
             if not np.array_equal(result, data):
+                # TODO I can't really test this this without changing my tracking
                 print "Item: {} is not equal to the stored version".format(item_id)
                 # Let's hope this will simply replace the old values
-                # TODO I can't really test this this without changing my tracking
                 # http://hdf-forum.184993.n3.nabble.com/hdf-forum-Reset-data-in-pytables-array-td193311.html
                 # Supposedly I should use arr.__set__item(key, value)
                 # But I reckon that assumes the shapes stay the same

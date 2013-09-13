@@ -95,7 +95,7 @@ class MeasurementWidget(QtGui.QWidget):
         # This sorts the plates by the number in their plate_id
         for plate_id in sorted(self.plates, key=lambda x: int(x.split("_")[1])):
             plate = self.plates[plate_id]
-            self.plate.addItem("{} {}".format(plate["brand"], plate["model"]))
+            self.plate.addItem("{} {}".format(plate.brand, plate.model))
 
         # Check the settings for which plate to set as default
         plate = self.settings.plate()

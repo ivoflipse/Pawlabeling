@@ -120,12 +120,13 @@ class SubjectWidget(QtGui.QWidget):
         self.subject_tree.clear()
         self.subjects = {}
         # Add the subjects to the subject_tree
-        for index, subject in enumerate(subjects):
+        # TODO This won't be sorted!
+        for index, subject in enumerate(subjects.values()):
             self.subjects[index] = subject
             rootItem = QtGui.QTreeWidgetItem(self.subject_tree)
-            rootItem.setText(0, subject["first_name"])
-            rootItem.setText(1, subject["last_name"])
-            rootItem.setText(2, subject["birthday"])
+            rootItem.setText(0, subject.first_name)
+            rootItem.setText(1, subject.last_name)
+            rootItem.setText(2, subject.birthday)
 
         # This only works if the tree aint empty
         subject_count = self.subject_tree.topLevelItemCount()
