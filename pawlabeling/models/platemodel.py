@@ -36,10 +36,10 @@ class PlateModel(object):
         plate["plate_id"] = plate_id
 
         self.plates_table.create_plate(**plate)
-        #pub.sendMessage("update_statusbar", status="Model.create_plate: Plate created")
 
     def get_plates(self):
         plates = self.plates_table.get_plates()
+        return plates
 
     # I'm not sure I want to put such information
     def put_plate(self, plate):

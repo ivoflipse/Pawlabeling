@@ -23,7 +23,7 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).__init__()
         self.settings = settings.settings
         # Set up the logger before anything else
-        self.logger = self.settings.setup_logging()
+        self.logger = self.settings.logger
         # Set the screen dimensions, useful for when its not being run full screen
         # self.setGeometry(settings.main_window_size)
         # self.setGeometry(self.settings.value("widgets/main_window_size"))

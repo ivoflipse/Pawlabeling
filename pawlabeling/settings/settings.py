@@ -44,6 +44,9 @@ class Settings(QtCore.QSettings):
             "application": ["zip_files", "show_maximized", "restore_last_session"],
         }
 
+        # Set up the logger
+        self.setup_logging()
+
     def contact_dict(self):
         # Lookup table for converting indices to labels
         key = "contact_dict"
@@ -76,7 +79,7 @@ class Settings(QtCore.QSettings):
         key = "plate/plate"
         default_value = ""
         setting_value = self.value(key)
-        if isinstance(setting_value, str):
+        if isinstance(setting_value, str) or isinstance(setting_value, unicode):
             return setting_value
         else:
             return default_value
@@ -166,7 +169,7 @@ class Settings(QtCore.QSettings):
         key = "folders/database_folder"
         default_value = ".\\database"
         setting_value = self.value(key)
-        if isinstance(setting_value, str):
+        if isinstance(setting_value, str) or isinstance(setting_value, unicode):
             return setting_value
         else:
             return default_value
@@ -175,7 +178,7 @@ class Settings(QtCore.QSettings):
         key = "folders/database_file"
         default_value = os.path.join(self.root_folder, "database\\data.h5")
         setting_value = self.value(key)
-        if isinstance(setting_value, str):
+        if isinstance(setting_value, str) or isinstance(setting_value, unicode):
             return setting_value
         else:
             return default_value
@@ -473,10 +476,10 @@ class Settings(QtCore.QSettings):
         logging_level = logging_levels.get(debug_level, "debug")
 
         # create logger with the application
-        logger = logging.getLogger("logger")
+        self.logger = logging.getLogger("logger")
 
         # Add the lower check just in case
-        logger.setLevel(logging_level)
+        self.logger.setLevel(logging_level)
         # create file handler which logs even debug messages
         log_folder = os.path.join(self.root_folder, "log")
         log_file_path = os.path.join(log_folder, "pawlabeling_log.log")
@@ -494,14 +497,12 @@ class Settings(QtCore.QSettings):
         file_handler.setFormatter(file_formatter)
 
         # add the handlers to the logger
-        logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
+        self.logger.addHandler(file_handler)
+        self.logger.addHandler(console_handler)
 
-        logger.info("-----------------------------------")
-        logger.info("Log system successfully initialised")
-        logger.info("-----------------------------------")
-
-        return logger
+        self.logger.info("-----------------------------------")
+        self.logger.info("Log system successfully initialised")
+        self.logger.info("-----------------------------------")
 
     def setup_plates(self):
         plates = [
@@ -639,4 +640,3 @@ def getVersion():
 
 
 settings = Settings()
-settings.setup_logging()

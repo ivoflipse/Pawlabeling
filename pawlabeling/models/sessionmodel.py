@@ -7,7 +7,7 @@ from pawlabeling.settings import settings
 from pawlabeling.functions import calculations, utility
 
 
-class SessionModel(object):
+class Sessions(object):
     def __init__(self, subject_id):
         self.subject_id = subject_id
         self.settings = settings.settings
@@ -16,18 +16,23 @@ class SessionModel(object):
         self.logger = logging.getLogger("logger")
 
     def create_session(self, session):
+        session_object = Session(self.subject_id)
         # Check if the session isn't already in the table
         result = self.sessions_table.get_session(session_name=session["session_name"])
         if result:
             return result["session_id"]
 
         session_id = self.sessions_table.get_new_id()
-        session["session_id"] = session_id
+        session_object.create_session(session_id=session_id, session=session)
+        session = session_object.to_dict()
         self.session_group = self.sessions_table.create_session(**session)
-        return session_id
+        return session_object
 
     def get_sessions(self):
-        sessions = self.sessions_table.get_sessions()
+        sessions = []
+        for session in self.sessions_table.get_sessions():
+            session_object = Session(self.subject_id)
+            session_object.restore(session)
         return sessions
 
     # TODO see when this function is being called and make sure it doesn't happen unnecessarily
@@ -103,3 +108,37 @@ class SessionModel(object):
                     max_results["duration"] = max_duration
 
         return results, max_results
+
+class Session(object):
+    """
+        session_id = tables.StringCol(64)
+        subject_id = tables.StringCol(64)
+        session_name = tables.StringCol(32)
+        session_date = tables.StringCol(32)
+        session_time = tables.StringCol(32)
+    """
+    def __init__(self, subject_id):
+        self.subject_id = subject_id
+
+    def create_session(self, session_id, session):
+        self.session_id = session_id
+        self.session_name = session["session_name"]
+        self.session_date = session["session_date"]
+        self.session_time = session["session_time"]
+
+    def to_dict(self):
+        session = {
+            "subject_id":self.subject_id,
+            "session_name":self.session_name,
+            "session_id":self.session_id,
+            "session_date":self.session_date,
+            "session_time":self.session_time
+        }
+        return session
+
+    def restore(self, session):
+        self.subject_id = session["subject_id"]
+        self.session_id = session["session_id"]
+        self.session_name = session["session_name"]
+        self.session_date = session["session_date"]
+        self.session_time = session["session_time"]

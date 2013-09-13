@@ -97,6 +97,11 @@ class MeasurementWidget(QtGui.QWidget):
             plate = self.plates[plate_id]
             self.plate.addItem("{} {}".format(plate["brand"], plate["model"]))
 
+        # Check the settings for which plate to set as default
+        plate = self.settings.plate()
+        index = self.plate.findText(plate)
+        self.plate.setCurrentIndex(index)
+
     def update_measurement_status(self, measurements):
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
@@ -174,7 +179,6 @@ class MeasurementWidget(QtGui.QWidget):
         brand = plate_text[:index]
         model = plate_text[index + 1:]
         plate = self.find_plate(brand=brand, model=model)
-        print plate
         plate_id = plate["plate_id"]
         frequency = int(self.frequency.itemText(self.frequency.currentIndex()))
         for file_name, file_path in self.file_paths.items():
@@ -202,7 +206,7 @@ class MeasurementWidget(QtGui.QWidget):
     def change_plate(self, index):
         plate = self.plate.itemText(index)
         # Write the currently select plate to the settings
-        self.settings.write_value("plate", plate)
+        self.settings.write_value("plate/plate", plate)
         # Adjust the size in case the text is too big to fit
         self.plate.adjustSize()
         self.logger.info("measurementwidget.change_plate: Plate changed to {}".format(plate))

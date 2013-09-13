@@ -17,10 +17,9 @@ class Model():
         self.database_file = self.settings.database_file()
 
         self.plate_model = platemodel.PlateModel()
-        self.plate_model.get_plates()
         self.plates = self.plate_model.plates
 
-        self.subject_model = subjectmodel.SubjectModel()
+        self.subject_model = subjectmodel.Subjects()
 
         # Initialize our variables that will cache results
         self.subject_id = ""
@@ -64,7 +63,7 @@ class Model():
         pub.subscribe(self.load_contacts, "load_contacts")
         pub.subscribe(self.update_current_contact, "update_current_contact")
         pub.subscribe(self.store_contacts, "store_contacts")
-        pub.subscribe(self.repeat_track_contact, "track_contacts")
+        pub.subscribe(self.repeat_track_contacts, "track_contacts")
         pub.subscribe(self.calculate_results, "calculate_results")
         pub.subscribe(self.changed_settings, "changed_settings")
 
@@ -78,7 +77,7 @@ class Model():
             pub.sendMessage("message_box", message="Please select a subject")
             raise settings.MissingIdentifier("Subject missing")
 
-        self.session_model = sessionmodel.SessionModel(subject_id=self.subject_id)
+        self.session_model = sessionmodel.Sessions(subject_id=self.subject_id)
         self.session_id = self.session_model.create_session(session=session)
         pub.sendMessage("update_statusbar", status="Model.create_session: Session created")
 
@@ -88,26 +87,27 @@ class Model():
             pub.sendMessage("message_box", message="Please select a session")
             return
 
-        self.measurement_model = measurementmodel.MeasurementModel(subject_id=self.subject_id,
+        self.measurement_model = measurementmodel.Measurements(subject_id=self.subject_id,
                                                                    session_id=self.session_id)
         self.measurement_id = self.measurement_model.create_measurement(measurement=measurement, plates=self.plates)
         pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement created")
 
-        # TODO Get all this stuff from the table or make sure we already have it in memory
-        measurement = {}
-        measurement_data = []
-        plate = {}
+        # Retrieve the measurement we just made
+        # TODO I fear this dictionary could become VERY big when you have multiple long measurements
+        measurement = self.measurement_model.measurements[self.measurement_id]
+        measurement_data = measurement.measurement_data
+        plate = measurement.plate
 
         self.create_measurement_data(measurement, measurement_data)
         self.create_contacts(measurement, measurement_data, plate)
 
-    def create_measurement_data(self, measurement_data):
-        self.measurement_model.create_measurement_data(measurement_id=measurement_id,
+    def create_measurement_data(self, measurement, measurement_data):
+        self.measurement_model.create_measurement_data(measurement=measurement.measurement_id,
                                                        measurement_data=measurement_data)
         pub.sendMessage("update_statusbar", status="Model.create_measurement: Measurement data created")
 
     def create_contacts(self, measurement, measurement_data, plate):
-        self.contact_model = contactmodel.ContactModel(subject_id=self.subject_id,
+        self.contact_model = contactmodel.Contacts(subject_id=self.subject_id,
                                                        session_id=self.session_id,
                                                        measurement_id=self.measurement_id)
         self.contacts = self.contact_model.create_contacts(measurement=measurement,
@@ -157,7 +157,7 @@ class Model():
         # As soon as a subject is selected, we instantiate our sessions table
         self.sessions_table = table.SessionsTable(database_file=self.database_file,
                                                   subject_id=self.subject_id)
-        self.session_model = sessionmodel.SessionModel(subject_id=self.subject_id)
+        self.session_model = sessionmodel.Sessions(subject_id=self.subject_id)
         pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject["first_name"],
                                                                            self.subject["last_name"]))
         self.get_sessions()
@@ -171,7 +171,7 @@ class Model():
         self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)
-        self.measurement_model = measurementmodel.MeasurementModel(subject_id=self.subject_id,
+        self.measurement_model = measurementmodel.Measurements(subject_id=self.subject_id,
                                                                    session_id=self.session_id)
 
         # Load all the measurements for this session
@@ -180,10 +180,10 @@ class Model():
         if not self.measurements:
             return
 
-        # Create ContactModel instances for each measurement
+        # Create Contacts instances for each measurement
         self.contact_models = {}
         for measurement in self.measurements:
-            contact_model = contactmodel.ContactModel(subject_id=self.subject_id,
+            contact_model = contactmodel.Contacts(subject_id=self.subject_id,
                                                       session_id=self.session_id,
                                                       measurement_id=measurement["measurement_id"])
             self.contact_models[measurement["measurement_id"]] = contact_model
@@ -238,7 +238,6 @@ class Model():
                         current_contact_index=self.current_contact_index)
 
     def store_contacts(self):
-        # TODO Check if we need to update the contacts or delete them
         self.contact_model.store_contacts(contacts=self.contacts, measurement_name=self.measurement_name)
         self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
             self.measurement_name))

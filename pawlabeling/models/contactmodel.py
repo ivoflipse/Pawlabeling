@@ -9,7 +9,7 @@ from pawlabeling.models import table
 #from memory_profiler import profile
 
 
-class ContactModel(object):
+class Contacts(object):
     def __init__(self, subject_id, session_id, measurement_id):
         self.subject_id = subject_id
         self.session_id = session_id
@@ -58,8 +58,12 @@ class ContactModel(object):
                                                data=data)
                 # If the arrays are not equal, drop the old one and write the new data
             if not np.array_equal(result, data):
+                print "Item: {} is not equal to the stored version".format(item_id)
                 # Let's hope this will simply replace the old values
                 # TODO I can't really test this this without changing my tracking
+                # http://hdf-forum.184993.n3.nabble.com/hdf-forum-Reset-data-in-pytables-array-td193311.html
+                # Supposedly I should use arr.__set__item(key, value)
+                # But I reckon that assumes the shapes stay the same
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
