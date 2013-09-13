@@ -56,7 +56,7 @@ class ContactModel(object):
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
-            # If the arrays are not equal, drop the old one and write the new data
+                # If the arrays are not equal, drop the old one and write the new data
             if not np.array_equal(result, data):
                 # Let's hope this will simply replace the old values
                 # TODO I can't really test this this without changing my tracking
@@ -89,13 +89,11 @@ class ContactModel(object):
         for index, raw_contact in enumerate(raw_contacts):
             contact = Contact(subject_id=self.subject_id,
                               session_id=self.session_id,
-                              measurement_id=self.measurement_id,
-                              contact=raw_contact,
-                              measurement_data=measurement_data,
-                              orientation=measurement["orientation"])
+                              measurement_id=self.measurement_id)
+            contact.create_contact(contact=raw_contact,
+                                   measurement_data=measurement_data,
+                                   orientation=measurement["orientation"])
             contact.calculate_results(sensor_surface=plate["sensor_surface"])
-            # Give each contact the same orientation as the measurement it originates from
-            contact.set_orientation(measurement["orientation"])
             # Skip contacts that have only been around for one frame
             if len(contact.frames) > 1:
                 contacts.append(contact)
@@ -105,7 +103,6 @@ class ContactModel(object):
         # Update their index
         for contact_id, contact in enumerate(contacts):
             contact.set_contact_id(contact_id)
-
         return contacts
 
     def update_contact(self, contact):
@@ -138,7 +135,9 @@ class ContactModel(object):
         contacts = contacts_table.get_contacts()
         # Create Contact instances out of them
         for x, y in zip(contacts, contact_data):
-            contact = Contact()
+            contact = Contact(subject_id=self.subject_id,
+                              session_id=self.session_id,
+                              measurement_id=self.measurement_id)
             # Restore it from the dictionary object
             # http://stackoverflow.com/questions/38987/how-can-i-merge-union-two-python-dictionaries-in-a-single-expression
             contact.restore(dict(x, **y))  # This basically merges the two dicts into one
@@ -153,15 +152,16 @@ class Contact(object):
     and the dimensions + center of the bounding box of the entire contact
     """
 
-    def __init__(self, subject_id, session_id, measurement_id, contact, measurement_data, orientation=False):
+    def __init__(self, subject_id, session_id, measurement_id, ):
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
         self.invalid = False
         self.filtered = False  # This can be used to check if the contact should be filtered or not
         self.contact_label = -2  # Contacts are labeled as -2 by default, this means unlabeled
-        self.orientation = orientation  # True means the contact is upside down
 
+    def create_contact(self, contact, measurement_data, orientation):
+        self.orientation = orientation  # True means the contact is upside down
         self.settings = settings.settings
         self.padding = self.settings.padding_factor()
 
@@ -331,7 +331,6 @@ class Contact(object):
             "measurement_id": self.measurement_id,
             "contact_id": "contact_{}".format(self.contact_id),
             "contact_label": self.contact_label,
-            "data": self.data,
             "min_x": self.min_x,
             "max_x": self.max_x,
             "min_y": self.min_y,

@@ -247,7 +247,7 @@ class Model():
 
     def reset_contact_labels(self):
         for contact in self.contacts[self.measurement_name]:
-            contact["contact_label"] = -2
+            contact.contact_label = -2
 
         pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
