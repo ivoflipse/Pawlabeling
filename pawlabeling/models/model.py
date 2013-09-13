@@ -115,6 +115,7 @@ class Model():
                                                            plate=plate)
         status = "Number of contacts found: {}".format(len(self.contacts))
         pub.sendMessage("update_statusbar", status=status)
+        self.logger.info("model.create_contact: {}".format(status))
 
     def get_subjects(self):
         self.subjects = self.subject_model.get_subjects()

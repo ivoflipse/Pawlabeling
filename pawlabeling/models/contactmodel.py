@@ -119,7 +119,6 @@ class Contacts(object):
 
     def update_contact(self, contact):
         self.contact_group = self.contacts_table.update_contact(**contact)
-        pub.sendMessage("update_statusbar", status="model.create_contact: Contact updated")
 
     def update_contacts(self, contacts, measurement_name):
         for contact in contacts[measurement_name]:
