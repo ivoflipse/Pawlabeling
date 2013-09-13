@@ -41,12 +41,6 @@ class Model():
 
         self.logger = logging.getLogger("logger")
 
-        # OLD
-        pub.subscribe(self.load_contacts, "load_contacts")
-        pub.subscribe(self.update_current_contact, "update_current_contact")
-        pub.subscribe(self.store_contacts, "store_contacts")
-        pub.subscribe(self.repeat_track_contacts, "track_contacts")
-        pub.subscribe(self.calculate_results, "calculate_results")
         # CREATE
         pub.subscribe(self.create_subject, "create_subject")
         pub.subscribe(self.create_session, "create_session")
@@ -67,6 +61,11 @@ class Model():
         pub.subscribe(self.put_contact, "put_contact")
         pub.subscribe(self.put_plate, "put_plate")
         # Various
+        pub.subscribe(self.load_contacts, "load_contacts")
+        pub.subscribe(self.update_current_contact, "update_current_contact")
+        pub.subscribe(self.store_contacts, "store_contacts")
+        pub.subscribe(self.repeat_track_contact, "track_contacts")
+        pub.subscribe(self.calculate_results, "calculate_results")
         pub.subscribe(self.changed_settings, "changed_settings")
 
     def create_subject(self, subject):
@@ -245,6 +244,12 @@ class Model():
             self.measurement_name))
         pub.sendMessage("update_statusbar", status="Results saved")
         pub.sendMessage("stored_status", success=True)
+
+    def reset_contact_labels(self):
+        for contact in self.contacts[self.measurement_name]:
+            contact["contact_label"] = -2
+
+        pub.sendMessage("update_contacts_tree", contacts=self.contacts)
 
     def repeat_track_contacts(self):
         contacts = self.contact_model.repeat_track_contacts(measurement=self.measurement,

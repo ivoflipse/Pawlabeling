@@ -1,5 +1,6 @@
 import tables
 
+
 class MissingIdentifier(Exception):
     pass
 
@@ -46,15 +47,13 @@ class Table(object):
         # Return a singular value if there's only one row
         return results if len(results) > 1 else results[0]
 
-
     # This function can be used for measurement_data, contact_data and normalized_contact_data
     # Actually also for all the different results (at least the time series)
-    # TODO: check if I'm not creating duplicate measurement_data, so check if the item_id already exists in the group
     def store_data(self, group, item_id, data):
         atom = tables.Atom.from_dtype(data.dtype)
         filters = tables.Filters(complib="blosc", complevel=9)
         data_array = self.table.createCArray(where=group, name=item_id,
-                                        atom=atom, shape=data.shape, filters=filters)
+                                             atom=atom, shape=data.shape, filters=filters)
         data_array[:] = data
         self.table.flush()
 
@@ -306,6 +305,7 @@ class ContactsTable(Table):
             contacts.append(contact)
         return contacts
 
+
 class ContactDataTable(Table):
     def __init__(self, database_file, subject_id, session_id, measurement_id):
         super(ContactDataTable, self).__init__(database_file=database_file)
@@ -316,7 +316,7 @@ class ContactDataTable(Table):
         self.session_group = self.table.root.__getattr__(self.subject_id).__getattr__(self.session_id)
         self.measurement_group = self.session_group.__getattr__(measurement_id)
         self.item_ids = ["data", "max_of_max", "pressure_over_time", "force_over_time", "surface_over_time",
-                         "cop_x","cop_y"]
+                         "cop_x", "cop_y"]
 
     def get_contact_data(self):
         contacts = []
@@ -328,6 +328,7 @@ class ContactDataTable(Table):
                 contact_data[item_id] = group.__getattr__(item_id).read()
             contacts.append(contact_data)
         return contacts
+
 
 class PlatesTable(Table):
     class Plates(tables.IsDescription):
@@ -346,7 +347,7 @@ class PlatesTable(Table):
 
         if 'plates' not in self.table.root:
             self.plates_table = self.table.createTable(where="/", name="plates", description=PlatesTable.Plates,
-                                                         title="Plates")
+                                                       title="Plates")
         else:
             self.plates_table = self.table.root.plates
 

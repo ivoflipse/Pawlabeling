@@ -24,51 +24,51 @@ class ContactModel(object):
     def create_contacts(self, measurement, measurement_data, plate):
         contacts = self.track_contacts(measurement, measurement_data, plate)
         for contact in contacts:
-            contact = contact.to_dict()  # This takes care of some of the book keeping for us
-            contact["subject_id"] = self.subject_id
-            contact["session_id"] = self.session_id
-            contact["measurement_id"] = self.measurement_id
-            self.create_contact(contact, plate)
+            self.create_contact(contact)
 
-    def create_contact(self, contact, plate):
-        contact_data = contact["data"]
-        # Remove the key
-        del contact["data"]
+    def create_contact(self, contact):
+        # If the contact is already present, we update instead and return its ID
+        update = False
+        if self.contacts_table.get_contact(contact_id=contact.contact_id):
+            update = True
 
-        result = self.contacts_table.get_contact(contact_id=contact["contact_id"])
-        if result:
+        # Convert the contact to a dict, like the table expects
+        contact = contact.to_dict()
+        if update:
             contact_group = self.contacts_table.update_contact(**contact)
-            return result["contact_id"]
+        else:
+            # If it doesn't already exist, we create the contact and store the data
+            self.contact_group = self.contacts_table.create_contact(**contact)
 
-        # If it doesn't already exist, we create the contact and store the data
-        self.contact_group = self.contacts_table.create_contact(**contact)
-        #pub.sendMessage("update_statusbar", status="model.create_contact: Contact created")
-
-        # These are all the results (for now) I want to add to the contact
-        cop_x, cop_y = calculations.calculate_cop(contact_data)
-        results = {"data": contact_data,
-                   "max_of_max": contact_data.max(axis=2),
-                   "force_over_time": calculations.force_over_time(contact_data),
-                   "pressure_over_time": calculations.pressure_over_time(contact_data,
-                                                                         sensor_surface=plate["sensor_surface"]),
-                   "surface_over_time": calculations.surface_over_time(contact_data,
-                                                                       sensor_surface=plate["sensor_surface"]),
-                   "cop_x": cop_x,
-                   "cop_y": cop_y
+        # We store the results separately
+        results = {"data": contact.data,
+                   "max_of_max": contact.max_of_max,
+                   "force_over_time": contact.force_over_time,
+                   "pressure_over_time": contact.pressure_over_time,
+                   "surface_over_time": contact.surface_over_time,
+                   "cop_x": contact.cop_x,
+                   "cop_y": contact.cop_y
         }
 
-        # TODO Check if the results are the same, if not update
         for item_id, data in results.items():
-            if not self.contacts_table.get_data(group=self.contact_group, item_id=item_id):
+            result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
+            if not result:
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
-                #pub.sendMessage("update_statusbar", status="model.create_contact: Contact data created")
+            # If the arrays are not equal, drop the old one and write the new data
+            if not np.array_equal(result, data):
+                # Let's hope this will simply replace the old values
+                # TODO I can't really test this this without changing my tracking
+                self.contacts_table.store_data(group=self.contact_group,
+                                               item_id=item_id,
+                                               data=data)
 
     def get_contacts(self, measurement_name):
         contacts = self.contacts_table.get_contacts()
         return contacts
 
+    # TODO This should only be used when you've changed tracking thresholds
     def repeat_track_contacts(self, measurement, measurement_data, plate):
         return self.track_contacts(measurement, measurement_data, plate)
 
@@ -87,11 +87,12 @@ class ContactModel(object):
         contacts = []
         # Convert them to class objects
         for index, raw_contact in enumerate(raw_contacts):
-            contact = Contact()
-            contact.create_contact(contact=raw_contact,
-                                   measurement_data=measurement_data,
-                                   padding=padding_factor,
-                                   orientation=measurement["orientation"])
+            contact = Contact(subject_id=self.subject_id,
+                              session_id=self.session_id,
+                              measurement_id=self.measurement_id,
+                              contact=raw_contact,
+                              measurement_data=measurement_data,
+                              orientation=measurement["orientation"])
             contact.calculate_results(sensor_surface=plate["sensor_surface"])
             # Give each contact the same orientation as the measurement it originates from
             contact.set_orientation(measurement["orientation"])
@@ -152,33 +153,18 @@ class Contact(object):
     and the dimensions + center of the bounding box of the entire contact
     """
 
-    def __init__(self):
-        # I hope this won't get me into trouble if for whatever reason its not updated
-        self.min_x = 0
-        self.max_x = 1
-        self.min_y = 0
-        self.max_y = 1
-        self.min_z = 0
-        self.max_z = 1
-        self.width = 1
-        self.height = 1
-        self.length = 1
-        self.contour_list = defaultdict(list)
-        self.frames = []
-        self.data = np.zeros((self.max_x, self.max_y, self.max_z))
-        self.max_of_max = np.zeros((self.max_x, self.max_y))
+    def __init__(self, subject_id, session_id, measurement_id, contact, measurement_data, orientation=False):
+        self.subject_id = subject_id
+        self.session_id = session_id
+        self.measurement_id = measurement_id
         self.invalid = False
         self.filtered = False  # This can be used to check if the contact should be filtered or not
-        self.contact_label = -2  # contacts are labeled as -2 by default
-        self.orientation = False  # True means the contact is upside down
+        self.contact_label = -2  # Contacts are labeled as -2 by default, this means unlabeled
+        self.orientation = orientation  # True means the contact is upside down
 
         self.settings = settings.settings
+        self.padding = self.settings.padding_factor()
 
-    def create_contact(self, contact, measurement_data, padding=0, orientation=False):
-        """
-        This function expects a contact object, which is a dictionary of frames:list of contours and a padding value
-        It will remove the padding from the contours and calculate the dimensions of a bounding box
-        """
         self.frames = sorted(contact.keys())
         self.contour_list = {}
         for frame in self.frames:
@@ -186,20 +172,20 @@ class Contact(object):
             contours = contact[frame]
             self.contour_list[frame] = []
             for contour in contours:
-                if padding:
+                if self.padding:
                     new_contour = []
                     for p in contour:
-                        new_contour.append([[p[0][0] - padding, p[0][1] - padding]])
+                        new_contour.append([[p[0][0] - self.padding, p[0][1] - self.padding]])
                     contour = np.array(new_contour)
                 self.contour_list[frame].append(contour)
 
         _, min_x, max_x, min_y, max_y = utility.update_bounding_box(contact)
         # Subtract the amount of padding everywhere
-        if padding:
-            min_x -= padding
-            max_x -= padding
-            min_y -= padding
-            max_y -= padding
+        if self.padding:
+            min_x -= self.padding
+            max_x -= self.padding
+            min_y -= self.padding
+            max_y -= self.padding
         self.width = int(abs(max_x - min_x))
         self.height = int(abs(max_y - min_y))
         self.length = len(self.frames)
@@ -312,6 +298,9 @@ class Contact(object):
         This function takes a dictionary of the stored_results (the result of contact_to_dict) and recreates all the
         attributes.
         """
+        self.subject_id = contact["subject_id"]
+        self.session_id = contact["session_id"]
+        self.measurement_id = contact["measurement_id"]
         self.contact_id = int(contact["contact_id"].split("_")[1])  # Convert it back
         self.contact_label = contact["contact_label"]
         self.frames = [x for x in range(contact["min_z"], contact["max_z"] + 1)]
@@ -337,6 +326,9 @@ class Contact(object):
 
     def to_dict(self):
         return {
+            "subject_id": self.subject_id,
+            "session_id": self.session_id,
+            "measurement_id": self.measurement_id,
             "contact_id": "contact_{}".format(self.contact_id),
             "contact_label": self.contact_label,
             "data": self.data,
