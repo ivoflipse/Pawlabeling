@@ -222,6 +222,12 @@ class MeasurementsTable(Table):
                                                              description=MeasurementsTable.Measurements,
                                                              title="Measurements")
 
+        if 'contacts' not in self.session_group:
+            self.contacts_table = self.table.createTable(where=self.session_group, name="contacts",
+                                                         description=SessionDataTable.Contacts,
+                                                         title="Contacts")
+
+        self.contacts_table = self.session_group.contacts
         self.measurements_table = self.session_group.measurements
         self.column_names = self.measurements_table.colnames
 
@@ -345,6 +351,44 @@ class ContactDataTable(Table):
             contacts.append(contact_data)
         return contacts
 
+class SessionDataTable(Table):
+    class Contacts(tables.IsDescription):
+        session_id = tables.StringCol(64)
+        subject_id = tables.StringCol(64)
+        contact_id = tables.StringCol(16)
+        contact_label = tables.Int16Col()
+        orientation = tables.BoolCol()
+        min_x = tables.UInt16Col()
+        max_x = tables.UInt16Col()
+        min_y = tables.UInt16Col()
+        max_y = tables.UInt16Col()
+        min_z = tables.UInt16Col()
+        max_z = tables.UInt16Col()
+        width = tables.UInt16Col()
+        height = tables.UInt16Col()
+        length = tables.UInt16Col()
+        invalid = tables.BoolCol()
+        filtered = tables.BoolCol()
+
+    def __init__(self, database_file, subject_id, session_id):
+        super(SessionDataTable, self).__init__(database_file=database_file)
+        self.table_name = "session_data"
+        self.subject_id = subject_id
+        self.session_id = session_id
+        self.session_group = self.table.root.__getattr__(self.subject_id).__getattr__(self.session_id)
+        self.item_ids = ["data", "max_of_max", "pressure_over_time", "force_over_time", "surface_over_time",
+                         "cop_x", "cop_y"]
+
+    def get_contact_data(self):
+        contacts = []
+        for contact in self.session_group.contacts:
+            contact_id = contact["contact_id"]
+            group = self.session_group.__getattr__(contact_id)
+            contact_data = {}
+            for item_id in self.item_ids:
+                contact_data[item_id] = group.__getattr__(item_id).read()
+            contacts.append(contact_data)
+        return contacts
 
 class PlatesTable(Table):
     class Plates(tables.IsDescription):

@@ -109,7 +109,8 @@ class ContactView(QtGui.QWidget):
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
-        pub.subscribe(self.update_average, "update_average")
+        # TODO Note that I turned this stuff off
+        #pub.subscribe(self.update_average, "update_average")
 
     # TODO I have no idea how to filter this
     def update_average(self, average_data):

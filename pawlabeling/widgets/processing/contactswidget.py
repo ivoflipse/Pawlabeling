@@ -92,7 +92,7 @@ class ContactWidgets(QtGui.QWidget):
         except Exception as e:
             self.logger.info("Couldn't predict the labels. Exception: {}".format(e))
 
-
+    # TODO predict label should receive the average data and compute on that
     def predict_label(self):
         current_contact = self.contacts_list[-1]
         # If there's no measurement_data, we can quit

@@ -90,7 +90,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.subscribe(self.update_measurement_status, "update_measurement_status")
-        pub.subscribe(self.update_contacts_tree, "update_contacts_tree")
+        pub.subscribe(self.update_contacts_tree, "update_contacts")
         pub.subscribe(self.stored_status, "stored_status")
 
     def unsubscribe(self):
@@ -98,7 +98,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.unsubscribe(self.put_session, "put_session")
         pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.unsubscribe(self.update_measurement_status, "update_measurement_status")
-        pub.unsubscribe(self.update_contacts_tree, "update_contacts_tree")
+        pub.unsubscribe(self.update_contacts_tree, "update_contacts")
         pub.unsubscribe(self.stored_status, "stored_status")
 
     def put_subject(self, subject):
@@ -313,7 +313,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.update_current_contact()
 
     def store_status(self, event=None):
-        pub.sendMessage("update_contacts")
+        pub.sendMessage("store_contacts")
 
     def stored_status(self, success):
         # If we were successful, change the color of the tree

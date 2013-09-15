@@ -43,20 +43,18 @@ class Sessions(object):
             sessions[session_object.session_id] = session_object
         return sessions
 
-    # TODO see when this function is being called and make sure it doesn't happen unnecessarily
-    def calculate_data_list(self, contacts):
-        data_list = defaultdict(list)
+    def update_average(self, contacts, shape):
+        average_data = self.calculate_average_data(contacts=contacts, shape=shape)
+        return average_data
 
+    def calculate_shape(self, contacts):
         mx = 0
         my = 0
         mz = 0
-        # Group all the measurement_data per contact
+
+        # Iterate over the contacts and retrieve the overall size
         for measurement_name, contacts in contacts.items():
             for contact in contacts:
-                contact_label = contact.contact_label
-                if contact_label >= 0:
-                    data_list[contact_label].append(contact.data)
-
                 x, y, z = contact.data.shape
                 if x > mx:
                     mx = x
@@ -65,28 +63,47 @@ class Sessions(object):
                 if z > mz:
                     mz = z
 
-        shape = (mx, my, mz)
-        return data_list, shape
+        # We need to add some padding for the interpolation of the views
+        mx += 4
+        my += 4
+        return mx, my, mz
 
-    def calculate_average(self, data_list, shape):
-        average_data = {}
-        # Then get the normalized measurement_data
-        for contact_label, data in data_list.items():
-            normalized_data = utility.calculate_average_data(data, shape)
-            average_data[contact_label] = normalized_data
+    # TODO see when this function is being called and make sure it doesn't happen unnecessarily
+    # TODO perhaps I should even include -1, so I automatically get the correctly shaped current_contact
+    def calculate_average_data(self, contacts, shape):
+        num_contacts = defaultdict(int)
+        mx, my, mz = shape
+        empty_array = np.zeros(shape)
+        average_data = {0: empty_array[:],
+                        1: empty_array[:],
+                        2: empty_array[:],
+                        3: empty_array[:]
+        }
+        for measurement_name, contacts in contacts.items():
+            for contact in contacts:
+                if contact.contact_label > 0:
+                    num_contacts[contact.contact_label] += 1
+                    x, y, z = contact.data.shape
+                    offset_x = int((mx - x) / 2)
+                    offset_y = int((my - y) / 2)
+                    data = average_data[contact.contact_label]
+                    data[offset_x:offset_x + x, offset_y:offset_y + y, :z] += contact.data
+
+        for contact_label, data in average_data.items():
+            if num_contacts[contact_label] > 0:
+                weight = 1. / num_contacts[contact_label]
+                # Overwrite the temporary value
+                average_data[contact_label] = np.multiply(data, weight)
 
         return average_data
 
     # TODO Why are we calculating stuff? These things are already stored, so be lazy and load them!
-    def calculate_results(self, data_list, plate):
-        # If we don't have any data, its no use to try and calculate something
-        if len(data_list.keys()) == 0:
-            return
-
+    def calculate_results(self, contacts, plate):
         results = defaultdict(lambda: defaultdict(list))
         max_results = {}
 
-        for contact_label, data in data_list.items():
+        for contact_label, contact in contacts.items():
+            data = contact.data
             results[contact_label]["filtered"] = utility.filter_outliers(data, contact_label)
             for data in data:
                 force = calculations.force_over_time(data)
@@ -117,6 +134,38 @@ class Sessions(object):
 
         return results, max_results
 
+    def create_session_data(self, average_contact):
+        # Get the label we're dealing with
+        contact_label = average_contact.contact_label
+
+        results = {"data": average_contact.data,
+                   "max_of_max": average_contact.max_of_max,
+                   "force_over_time": average_contact.force_over_time,
+                   "pressure_over_time": average_contact.pressure_over_time,
+                   "surface_over_time": average_contact.surface_over_time,
+                   "cop_x": average_contact.cop_x,
+                   "cop_y": average_contact.cop_y
+        }
+
+        # Check if the group for this contact_label exists, else create it
+        if hasattr(self.session_group.contacts, contact_label):
+            self.contact_group = self.session_group.contacts.__getattr__(contact_label)
+        else:
+            self.contact_group = self.sessions_table.create_group(parent=self.session_group, item_id=contact_label)
+
+        for item_id, data in results.items():
+            result = self.sessions_table.get_data(group=self.contact_group, item_id=item_id)
+            if not result:
+                self.sessions_table.store_data(group=self.contact_group,
+                                               item_id=item_id,
+                                               data=data)
+            elif not np.array_equal(result, data):
+                print "Stored session data is not equal to new data"
+                self.sessions_table.store_data(group=self.contact_group,
+                                               item_id=item_id,
+                                               data=data)
+
+
 class Session(object):
     """
         session_id = tables.StringCol(64)
@@ -125,6 +174,7 @@ class Session(object):
         session_date = tables.StringCol(32)
         session_time = tables.StringCol(32)
     """
+
     def __init__(self, subject_id):
         self.subject_id = subject_id
 
@@ -136,11 +186,11 @@ class Session(object):
 
     def to_dict(self):
         session = {
-            "subject_id":self.subject_id,
-            "session_name":self.session_name,
-            "session_id":self.session_id,
-            "session_date":self.session_date,
-            "session_time":self.session_time
+            "subject_id": self.subject_id,
+            "session_name": self.session_name,
+            "session_id": self.session_id,
+            "session_date": self.session_date,
+            "session_time": self.session_time
         }
         return session
 

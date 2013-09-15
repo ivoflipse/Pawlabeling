@@ -95,10 +95,6 @@ class MainWindow(QtGui.QMainWindow):
         elif self.tab_widget.currentIndex() == 2:
             self.processing_widget.unsubscribe()
             self.analysis_widget.put_measurement()
-            # TODO See I told you these had to be more abstract
-            self.model.calculate_data_list()
-            self.model.calculate_average()
-            self.model.calculate_results()
         elif self.tab_widget.currentIndex() == 3:
             self.processing_widget.unsubscribe()
             self.settings_widget.update_fields()

@@ -86,11 +86,11 @@ class AnalysisWidget(QtGui.QTabWidget):
 
     def subscribe(self):
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.subscribe(self.update_contacts_tree, "update_contacts_tree")
+        pub.subscribe(self.update_contacts_tree, "update_contacts")
 
     def unsubscribe(self):
         pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.unsubscribe(self.update_contacts_tree, "update_contacts_tree")
+        pub.unsubscribe(self.update_contacts_tree, "update_contacts")
 
     def calculate_results(self):
         pub.sendMessage("calculate_results")

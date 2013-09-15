@@ -66,9 +66,9 @@ class Model():
         # Various
         pub.subscribe(self.load_contacts, "load_contacts")
         pub.subscribe(self.update_current_contact, "update_current_contact")
-        pub.subscribe(self.store_contacts, "update_contacts")
+        pub.subscribe(self.store_contacts, "store_contacts")
         pub.subscribe(self.repeat_track_contacts, "track_contacts")
-        pub.subscribe(self.calculate_results, "calculate_results")
+        #pub.subscribe(self.calculate_results, "calculate_results")
         pub.subscribe(self.changed_settings, "changed_settings")
 
     def create_subject(self, subject):
@@ -136,8 +136,9 @@ class Model():
     def get_contacts(self):
         # self.contacts gets initialized when the session is loaded
         # if you want to track again, call repeat_track_contacts
-        pub.sendMessage("update_contacts_tree", contacts=self.contacts)
+        pub.sendMessage("update_contacts", contacts=self.contacts)
         # Check if we should update n_max everywhere
+        # TODO This should already be up to date, I don't think it'll be needed any more
         self.update_n_max()
 
     def get_measurement_data(self):
@@ -202,14 +203,17 @@ class Model():
         # Load the contacts, but have it not send out anything
         self.load_contacts()
         # Calculate the data_list
-        self.calculate_data_list()
-        # Check if there's any data in the data_list, then we don't have any labeled contacts yet
-        if not self.data_list:
-            return
-            # Next calculate the average based on the contacts
-        self.calculate_average()
+        # self.calculate_data_list()
+        # # Check if there's any data in the data_list, then we don't have any labeled contacts yet
+        # if not self.data_list:
+        #     return
+        #    # Next calculate the average based on the contacts
+        #self.calculate_average()
         # This needs to come after calculate average, perhaps refactor calculate_average into 2 functions?
-        self.calculate_results()
+        #self.calculate_results()
+        #self.average_data = self.session_model.update_average(contacts=self.contacts)
+        self.calculate_shape()
+        self.update_average()
 
     def put_measurement(self, measurement):
         for m in self.measurements.values():
@@ -259,7 +263,8 @@ class Model():
         # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
         self.contacts = contacts
         self.current_contact_index = current_contact_index
-        self.calculate_average()
+        self.calculate_shape()
+        self.update_average()
         pub.sendMessage("updated_current_contact", contacts=self.contacts,
                         current_contact_index=self.current_contact_index)
 
@@ -305,19 +310,36 @@ class Model():
         # This notifies the measurement_trees which measurements have contacts assigned to them
         pub.sendMessage("update_measurement_status", measurements=measurements)
 
-    def calculate_data_list(self):
-        self.data_list, self.shape = self.session_model.calculate_data_list(contacts=self.contacts)
-        pub.sendMessage("update_shape", shape=self.shape)
 
-    def calculate_average(self):
-        self.average_data = self.session_model.calculate_average(data_list=self.data_list,
-                                                                 shape=self.shape)
+
+    def update_average(self):
+        self.average_data = self.session_model.update_average(contacts=self.contacts,
+                                                              shape=self.shape)
         pub.sendMessage("update_average", average_data=self.average_data)
 
-    def calculate_results(self):
-        self.results, self.max_results = self.session_model.calculate_results(data_list=self.data_list,
-                                                                              plate=self.plate)
-        pub.sendMessage("update_results", results=self.results, max_results=self.max_results)
+    def calculate_shape(self):
+        self.shape = self.session_model.calculate_shape(contacts=self.contacts)
+        pub.sendMessage("update_shape", shape=self.shape)
+
+
+    # # These functions are no longer up to date!
+    # def calculate_data_list(self):
+    #     self.data_list, self.shape = self.session_model.calculate_data_list(contacts=self.contacts)
+    #     pub.sendMessage("update_shape", shape=self.shape)
+    #
+    # def calculate_average(self):
+    #     self.average_data = self.session_model.calculate_average(data_list=self.data_list,
+    #                                                              shape=self.shape)
+    #     pub.sendMessage("update_average", average_data=self.average_data)
+    #
+    # def calculate_results(self):
+    #     self.results, self.max_results = self.session_model.calculate_results(data_list=self.data_list,
+    #                                                                           plate=self.plate)
+    #     pub.sendMessage("update_results", results=self.results, max_results=self.max_results)
+
+
+
+
 
     def update_n_max(self):
         self.n_max = self.measurement_model.update_n_max()

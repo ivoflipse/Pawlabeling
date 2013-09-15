@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 from PySide import QtGui
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -24,6 +25,8 @@ class ForceViewWidget(QtGui.QWidget):
             2: self.right_front,
             3: self.right_hind,
         }
+
+        self.contacts = defaultdict(list)
 
         self.left_contacts_layout = QtGui.QVBoxLayout()
         self.left_contacts_layout.addWidget(self.left_front)
@@ -90,6 +93,10 @@ class ContactView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.update_results, "update_results")
         pub.subscribe(self.filter_outliers, "filter_outliers")
+        pub.subscribe(self.update_contacts, "update_contacts")
+
+    def update_contacts(self, contacts):
+        self.contacts = contacts
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
@@ -106,29 +113,34 @@ class ContactView(QtGui.QWidget):
         self.draw()
 
     def draw(self):
-        if not self.forces:
+        if not self.contacts:
             return
 
         self.clear_axes()
         interpolate_length = 100
         lengths = []
 
-        if self.outlier_toggle:
-            filtered = self.filtered
-        else:
-            filtered = []
+        force_over_time = []
+        self.max_duration = 0
+        self.max_force = 0
 
-        # The zero padding of leaving elements out is 'painful'
-        force_over_time = np.zeros((len(self.forces)-len(filtered), interpolate_length))
-        forces = [f for index, f in enumerate(self.forces) if index not in filtered]
+        for measurement_name, contacts in self.contacts.items():
+            for contact in contacts:
+                if contact.contact_label == self.contact_label:
+                    force = np.pad(contact.force_over_time, 1, mode="constant", constant_values=0)
+                    if len(force) > self.max_duration:
+                        self.max_duration = len(force)
+                    if np.max(force) > self.max_force:
+                        self.max_force = np.max(force)
 
-        for index, force in enumerate(forces):
-            force = np.pad(force, 1, mode="constant", constant_values=0)
-            lengths.append(len(force))
-            force_over_time[index, :] = calculations.interpolate_time_series(force, interpolate_length)
-            time_line = calculations.interpolate_time_series(np.arange(np.max(len(force))), interpolate_length)
-            self.axes.plot(time_line, force_over_time[index, :], alpha=0.5)
+                    lengths.append(len(force))
+                    interpolated_force = calculations.interpolate_time_series(force, interpolate_length)
+                    force_over_time.append(interpolated_force)
+                    time_line = calculations.interpolate_time_series(np.arange(np.max(len(force))),
+                                                                     interpolate_length)
+                    self.axes.plot(time_line, interpolated_force, alpha=0.5)
 
+        force_over_time = np.array(force_over_time)
         mean_length = np.mean(lengths)
         interpolated_time_line = calculations.interpolate_time_series(np.arange(int(mean_length)), interpolate_length)
         mean_force = np.mean(force_over_time, axis=0)
@@ -143,6 +155,45 @@ class ContactView(QtGui.QWidget):
         self.axes.set_xlim([0, self.max_duration + 2])  # +2 because we padded the array
         self.axes.set_ylim([0, self.max_force * 1.2])
         self.canvas.draw()
+
+    # def draw(self):
+    #     if not self.forces:
+    #         return
+    #
+    #     self.clear_axes()
+    #     interpolate_length = 100
+    #     lengths = []
+    #
+    #     if self.outlier_toggle:
+    #         filtered = self.filtered
+    #     else:
+    #         filtered = []
+    #
+    #     # The zero padding of leaving elements out is 'painful'
+    #     force_over_time = np.zeros((len(self.forces)-len(filtered), interpolate_length))
+    #     forces = [f for index, f in enumerate(self.forces) if index not in filtered]
+    #
+    #     for index, force in enumerate(forces):
+    #         force = np.pad(force, 1, mode="constant", constant_values=0)
+    #         lengths.append(len(force))
+    #         force_over_time[index, :] = calculations.interpolate_time_series(force, interpolate_length)
+    #         time_line = calculations.interpolate_time_series(np.arange(np.max(len(force))), interpolate_length)
+    #         self.axes.plot(time_line, force_over_time[index, :], alpha=0.5)
+    #
+    #     mean_length = np.mean(lengths)
+    #     interpolated_time_line = calculations.interpolate_time_series(np.arange(int(mean_length)), interpolate_length)
+    #     mean_force = np.mean(force_over_time, axis=0)
+    #     std_force = np.std(force_over_time, axis=0)
+    #     self.axes.plot(interpolated_time_line, mean_force, color="r", linewidth=3)
+    #     self.axes.plot(interpolated_time_line, mean_force + std_force, color="r", linewidth=1)
+    #     self.axes.fill_between(interpolated_time_line, mean_force - std_force, mean_force + std_force, facecolor="r",
+    #                            alpha=0.5)
+    #     self.axes.plot(interpolated_time_line, mean_force - std_force, color="r", linewidth=1)
+    #     self.vertical_line = self.axes.axvline(linewidth=4, color='r')
+    #     self.vertical_line.set_xdata(self.frame)
+    #     self.axes.set_xlim([0, self.max_duration + 2])  # +2 because we padded the array
+    #     self.axes.set_ylim([0, self.max_force * 1.2])
+    #     self.canvas.draw()
 
     def change_frame(self, frame):
         self.frame = frame
@@ -160,3 +211,4 @@ class ContactView(QtGui.QWidget):
         self.max_duration = None
         self.max_force = None
         self.filtered = None
+        self.contacts.clear()
