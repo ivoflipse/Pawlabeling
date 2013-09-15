@@ -71,6 +71,36 @@ class DatabaseWidget(QtGui.QWidget):
                                                              connection=self.subject_widget.clear_subject_fields
         )
 
+        self.delete_subject_action = gui.create_action(text="&Delete Subject",
+                                                       shortcut=None,
+                                                       icon=QtGui.QIcon(
+                                                           os.path.join(os.path.dirname(__file__),
+                                                                        "../images/delete_subject.png")),
+                                                       tip="Delete Subject",
+                                                       checkable=False,
+                                                       connection=self.subject_widget.delete_subject
+        )
+
+        self.delete_session_action = gui.create_action(text="&Delete Session",
+                                                       shortcut=None,
+                                                       icon=QtGui.QIcon(
+                                                           os.path.join(os.path.dirname(__file__),
+                                                                        "../images/delete_session.png")),
+                                                       tip="Delete Session",
+                                                       checkable=False,
+                                                       connection=self.session_widget.delete_session
+        )
+
+        self.delete_measurement_action = gui.create_action(text="&Delete Measurement",
+                                                       shortcut=None,
+                                                       icon=QtGui.QIcon(
+                                                           os.path.join(os.path.dirname(__file__),
+                                                                        "../images/delete_measurement.png")),
+                                                       tip="Delete Measurement",
+                                                       checkable=False,
+                                                       connection=self.measurement_widget.delete_measurement
+        )
+
         self.add_measurements_action = gui.create_action(text="&Add Measurements",
                                                          shortcut=QtGui.QKeySequence("CTRL+V"),
                                                          icon=QtGui.QIcon(
@@ -82,8 +112,8 @@ class DatabaseWidget(QtGui.QWidget):
         )
 
         self.actions = [self.something_action, self.clear_subject_fields_action,
-                        self.create_subject_action, self.create_session_action,
-                        self.add_measurements_action]
+                        self.create_subject_action, self.create_session_action, self.add_measurements_action,
+                        self.delete_subject_action, self.delete_session_action, self.delete_measurement_action]
 
         for action in self.actions:
             #action.setShortcutContext(Qt.WindowShortcut)

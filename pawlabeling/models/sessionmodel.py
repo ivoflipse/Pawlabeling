@@ -27,6 +27,14 @@ class Sessions(object):
         self.session_group = self.sessions_table.create_session(**session)
         return session_object
 
+    def delete_session(self, session):
+        # Delete both the row and the group
+        self.sessions_table.remove_row(table=self.sessions_table.sessions_table,
+                                       name_id="session_id",
+                                       item_id=session.session_id)
+        self.sessions_table.remove_group(where="/{}".format(self.subject_id),
+                                         name=session.session_id)
+
     def get_sessions(self):
         sessions = {}
         for session in self.sessions_table.get_sessions():

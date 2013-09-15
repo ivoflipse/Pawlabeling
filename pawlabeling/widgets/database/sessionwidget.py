@@ -81,6 +81,12 @@ class SessionWidget(QtGui.QWidget):
         except settings.MissingIdentifier:
             pass
 
+    def delete_session(self):
+        current_item = self.session_tree.currentItem()
+        index = self.session_tree.indexFromItem(current_item).row()
+        session = self.sessions[index]
+        pub.sendMessage("delete_session", session=session)
+
     def get_session_fields(self):
         session = {}
         session["session_name"] = self.session_name.text()

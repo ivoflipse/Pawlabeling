@@ -32,7 +32,6 @@ class Model():
         self.measurement = {}
         self.measurements = {}
         self.contact = {}
-        self.contacts = {}
         self.average_data = defaultdict()
         self.contacts = defaultdict(list)
         self.results = defaultdict(lambda: defaultdict(list))
@@ -54,12 +53,16 @@ class Model():
         pub.subscribe(self.get_contacts, "get_contacts")
         pub.subscribe(self.get_measurement_data, "get_measurement_data")
         pub.subscribe(self.get_plates, "get_plates")
-        # # PUT
+        # PUT
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.put_contact, "put_contact")
         pub.subscribe(self.put_plate, "put_plate")
+        # DELETE
+        pub.subscribe(self.delete_subject, "delete_subject")
+        pub.subscribe(self.delete_session, "delete_session")
+        pub.subscribe(self.delete_measurement, "delete_measurement")
         # Various
         pub.subscribe(self.load_contacts, "load_contacts")
         pub.subscribe(self.update_current_contact, "update_current_contact")
@@ -89,7 +92,7 @@ class Model():
             return
 
         self.measurement_model = measurementmodel.Measurements(subject_id=self.subject_id,
-                                                                   session_id=self.session_id)
+                                                               session_id=self.session_id)
         measurement = self.measurement_model.create_measurement(measurement=measurement, plates=self.plates)
         if not measurement:
             return
@@ -108,12 +111,13 @@ class Model():
 
     def create_contacts(self, measurement, measurement_data, plate):
         self.contact_model = contactmodel.Contacts(subject_id=self.subject_id,
-                                                       session_id=self.session_id,
-                                                       measurement_id=measurement.measurement_id)
-        self.contacts = self.contact_model.create_contacts(measurement=measurement,
-                                                           measurement_data=measurement_data,
-                                                           plate=plate)
-        status = "Number of contacts found: {}".format(len(self.contacts))
+                                                   session_id=self.session_id,
+                                                   measurement_id=measurement.measurement_id)
+
+        self.contacts[measurement.measurement_name] = self.contact_model.create_contacts(measurement=measurement,
+                                                                                         measurement_data=measurement_data,
+                                                                                         plate=plate)
+        status = "Number of contacts found: {}".format(len(self.contacts[measurement.measurement_name]))
         pub.sendMessage("update_statusbar", status=status)
         self.logger.info("model.create_contact: {}".format(status))
 
@@ -176,7 +180,7 @@ class Model():
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)
         self.measurement_model = measurementmodel.Measurements(subject_id=self.subject_id,
-                                                                   session_id=self.session_id)
+                                                               session_id=self.session_id)
 
         # Load all the measurements for this session
         self.get_measurements()
@@ -188,8 +192,8 @@ class Model():
         self.contact_models = {}
         for measurement in self.measurements.values():
             contact_model = contactmodel.Contacts(subject_id=self.subject_id,
-                                                      session_id=self.session_id,
-                                                      measurement_id=measurement.measurement_id)
+                                                  session_id=self.session_id,
+                                                  measurement_id=measurement.measurement_id)
             self.contact_models[measurement.measurement_id] = contact_model
 
         self.get_plate()
@@ -202,7 +206,7 @@ class Model():
         # Check if there's any data in the data_list, then we don't have any labeled contacts yet
         if not self.data_list:
             return
-        # Next calculate the average based on the contacts
+            # Next calculate the average based on the contacts
         self.calculate_average()
         # This needs to come after calculate average, perhaps refactor calculate_average into 2 functions?
         self.calculate_results()
@@ -236,6 +240,20 @@ class Model():
         self.sensor_surface = self.plate.sensor_surface
         self.logger.info("Plate ID set to {}".format(self.plate_id))
         pub.sendMessage("update_plate", plate=self.plate)
+
+    def delete_subject(self, subject):
+        self.subject_model.delete_subject(subject)
+        # Have all widgets refresh their view of the subjects by calling get_subjects
+        self.get_subjects()
+
+    def delete_session(self, session):
+        self.session_model.delete_session(session)
+        # Have all widgets refresh their view of the subjects by calling get_sessions
+        self.get_sessions()
+
+    def delete_measurement(self, measurement):
+        self.measurement_model.delete_measurement(measurement)
+        self.get_measurements()
 
     def update_current_contact(self, current_contact_index, contacts):
         # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
@@ -277,7 +295,7 @@ class Model():
         measurements = {}
         for measurement_id, measurement in self.measurements.items():
             contact_model = self.contact_models[measurement_id]
-            contacts = contact_model.get_contact_data(measurement)
+            contacts = contact_model.get_contacts(measurement)
             if contacts:
                 self.contacts[measurement.measurement_name] = contacts
 

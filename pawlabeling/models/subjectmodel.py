@@ -34,6 +34,13 @@ class Subjects(object):
         self.subject_group = self.subjects_table.create_subject(**subject)
         return subject_object
 
+    def delete_subject(self, subject):
+        # Delete both the row and the group
+        self.subjects_table.remove_row(table=self.subjects_table.subjects_table,
+                                       name_id="subject_id",
+                                       item_id=subject.subject_id)
+        self.subjects_table.remove_group(where="/", name=subject.subject_id)
+
     def get_subjects(self):
         subjects = {}
         for subject in self.subjects_table.get_subjects():

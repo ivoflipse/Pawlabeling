@@ -91,6 +91,12 @@ class SubjectWidget(QtGui.QWidget):
         pub.sendMessage("create_subject", subject=subject)
         pub.sendMessage("get_subjects")
 
+    def delete_subject(self):
+        current_item = self.subject_tree.currentItem()
+        index = self.subject_tree.indexFromItem(current_item).row()
+        subject = self.subjects[index]
+        pub.sendMessage("delete_subject", subject=subject)
+
     def get_subject_fields(self):
         # TODO Check here if the required fields have been entered
         # Also add some validation, to check if they're acceptable

@@ -42,6 +42,14 @@ class Measurements(object):
         self.measurement_group = self.measurements_table.create_measurement(**measurement)
         return measurement_object
 
+    def delete_measurement(self, measurement):
+        # Delete both the row and the group
+        self.measurements_table.remove_row(table=self.measurements_table.measurements_table,
+                                       name_id="measurement_id",
+                                       item_id=measurement.measurement_id)
+        self.measurements_table.remove_group(where="/{}/{}".format(self.subject_id, self.session_id),
+                                         name=measurement.measurement_id)
+
     def get_measurements(self):
         measurements = {}
         for measurement in self.measurements_table.get_measurements():
@@ -138,6 +146,7 @@ class Measurement(object):
         self.maximum_value = measurement["maximum_value"]
         self.date = measurement["date"]
         self.time = measurement["time"]
+        # TODO Tag the data on here as well
 
     def to_dict(self):
         return {

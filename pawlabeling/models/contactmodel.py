@@ -76,9 +76,30 @@ class Contacts(object):
                                                item_id=item_id,
                                                data=data)
 
-    def get_contacts(self, measurement_name):
-        contacts = self.contacts_table.get_contacts()
-        return contacts
+    def get_contacts(self, measurement):
+        new_contacts = []
+        measurement_id = measurement.measurement_id
+        contact_data_table = table.ContactDataTable(database_file=self.database_file,
+                                                    subject_id=self.subject_id,
+                                                    session_id=self.session_id,
+                                                    measurement_id=measurement_id)
+        contacts_table = table.ContactsTable(database_file=self.database_file,
+                                             subject_id=self.subject_id,
+                                             session_id=self.session_id,
+                                             measurement_id=measurement_id)
+        # Get the rows from the table and their corresponding data
+        contact_data = contact_data_table.get_contact_data()
+        contacts = contacts_table.get_contacts()
+        # Create Contact instances out of them
+        for x, y in zip(contacts, contact_data):
+            contact = Contact(subject_id=self.subject_id,
+                              session_id=self.session_id,
+                              measurement_id=self.measurement_id)
+            # Restore it from the dictionary object
+            # http://stackoverflow.com/questions/38987/how-can-i-merge-union-two-python-dictionaries-in-a-single-expression
+            contact.restore(dict(x, **y))  # This basically merges the two dicts into one
+            new_contacts.append(contact)
+        return new_contacts
 
     # TODO This should only be used when you've changed tracking thresholds
     def repeat_track_contacts(self, measurement, measurement_data, plate):
@@ -126,30 +147,14 @@ class Contacts(object):
             self.update_contact(contact)
 
     def get_contact_data(self, measurement):
-        new_contacts = []
         measurement_id = measurement.measurement_id
         contact_data_table = table.ContactDataTable(database_file=self.database_file,
                                                     subject_id=self.subject_id,
                                                     session_id=self.session_id,
                                                     measurement_id=measurement_id)
-        contacts_table = table.ContactsTable(database_file=self.database_file,
-                                             subject_id=self.subject_id,
-                                             session_id=self.session_id,
-                                             measurement_id=measurement_id)
-        # Get the rows from the table and their corresponding data
-        contact_data = contact_data_table.get_contact_data()
-        contacts = contacts_table.get_contacts()
-        # Create Contact instances out of them
-        for x, y in zip(contacts, contact_data):
-            contact = Contact(subject_id=self.subject_id,
-                              session_id=self.session_id,
-                              measurement_id=self.measurement_id)
-            # Restore it from the dictionary object
-            # http://stackoverflow.com/questions/38987/how-can-i-merge-union-two-python-dictionaries-in-a-single-expression
-            contact.restore(dict(x, **y))  # This basically merges the two dicts into one
-            new_contacts.append(contact)
-        return new_contacts
 
+        # Get the rows from the table and their corresponding data
+        return contact_data_table.get_contact_data()
 
 class Contact(object):
     """

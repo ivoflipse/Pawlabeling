@@ -65,6 +65,22 @@ class Table(object):
         if hasattr(group, item_id):
             return group.__getattr__(item_id).read()
 
+    def remove_group(self, where, name, recursive=True):
+        # Recursive remove is on by default
+        self.table.removeNode(where=where, name=name, recursive=recursive)
+        self.table.flush()
+
+    def remove_row(self, table, name_id, item_id):
+        """
+        # Table.remove_rows(start=None, stop=None, step=None)
+        # Note removing a single row can be done using the specific remove_row() method.
+        This should receive the index of the row to remove
+        """
+        condition = "({} == '{}')".format(name_id, item_id)
+        index = table.getWhereList(condition)[0]
+        table.removeRows(start=index, stop=index+1)
+        self.table.flush()
+
     def close_table(self):
         """
         Make sure we clean up after ourselves

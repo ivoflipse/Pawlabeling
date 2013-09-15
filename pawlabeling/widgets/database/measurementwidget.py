@@ -89,6 +89,12 @@ class MeasurementWidget(QtGui.QWidget):
     def get_plates(self):
         pub.sendMessage("get_plates")
 
+    def delete_measurement(self):
+        current_item = self.measurement_tree.currentItem()
+        index = self.measurement_tree.indexFromItem(current_item).row()
+        measurement = self.measurements[index]
+        pub.sendMessage("delete_measurement", measurement=measurement)
+
     def update_plates(self, plates):
         self.plates = plates
         # This sorts the plates by the number in their plate_id
