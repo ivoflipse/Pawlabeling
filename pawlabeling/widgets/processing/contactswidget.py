@@ -186,7 +186,7 @@ class ContactWidget(QtGui.QWidget):
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
-    def update_n_max(self, n_max):
+    def update_n_max(self):
         # Redraw, just in case
         self.redraw()
 

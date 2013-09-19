@@ -144,9 +144,9 @@ class EntirePlateWidget(QtGui.QWidget):
         self.frame = frame
         self.change_frame(self.frame)
 
-    def update_measurement_data(self, measurement_data):
+    def update_measurement_data(self):
         # Update the measurement
-        self.measurement_data = measurement_data
+        self.measurement_data = self.model.measurement_data
         # Update the slider, in case the shape of the file changes
         self.slider.setMaximum(self.num_frames - 1)
         # Reset the frame slider

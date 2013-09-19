@@ -121,13 +121,14 @@ class SubjectWidget(QtGui.QWidget):
                 subject[field] = getattr(self, field).text()
         return subject
 
-    def update_subjects_tree(self, subjects):
+    def update_subjects_tree(self):
         # Clear any existing contacts
         self.subject_tree.clear()
+        # TODO Should I store self.model.subjects differently, so you can use the index?
         self.subjects = {}
         # Add the subjects to the subject_tree
         # TODO This won't be sorted!
-        for index, subject in enumerate(subjects.values()):
+        for index, subject in enumerate(self.model.subjects.values()):
             self.subjects[index] = subject
             rootItem = QtGui.QTreeWidgetItem(self.subject_tree)
             rootItem.setText(0, subject.first_name)

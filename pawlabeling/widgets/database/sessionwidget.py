@@ -104,10 +104,10 @@ class SessionWidget(QtGui.QWidget):
         session = self.sessions[index]
         self.model.put_session(session=session)
 
-    def update_sessions_tree(self, sessions):
+    def update_sessions_tree(self):
         self.session_tree.clear()
         self.sessions = {}
-        for index, session in enumerate(sessions.values()):
+        for index, session in enumerate(self.model.sessions.values()):
             self.sessions[index] = session
             rootItem = QtGui.QTreeWidgetItem(self.session_tree)
             rootItem.setText(0, session.session_name)

@@ -96,11 +96,10 @@ class MeasurementWidget(QtGui.QWidget):
         measurement = self.measurements[index]
         self.model.delete_measurement(measurement=measurement)
 
-    def update_plates(self, plates):
-        self.plates = plates
+    def update_plates(self):
         # This sorts the plates by the number in their plate_id
-        for plate_id in sorted(self.plates, key=lambda x: int(x.split("_")[1])):
-            plate = self.plates[plate_id]
+        for plate_id in sorted(self.model.plates, key=lambda x: int(x.split("_")[1])):
+            plate = self.model.plates[plate_id]
             self.plate.addItem("{} {}".format(plate.brand, plate.model))
 
         # Check the settings for which plate to set as default
@@ -117,10 +116,10 @@ class MeasurementWidget(QtGui.QWidget):
             if measurement_name in measurements:
                 item.setForeground(0, green_brush)
 
-    def update_measurements_tree(self, measurements):
+    def update_measurements_tree(self):
         self.measurement_tree.clear()
         self.measurements = {}
-        for index, measurement in enumerate(measurements.values()):
+        for index, measurement in enumerate(self.model.measurements.values()):
             self.measurements[index] = measurement
             root_item = QtGui.QTreeWidgetItem(self.measurement_tree)
             root_item.setText(0, measurement.measurement_name)
@@ -205,7 +204,7 @@ class MeasurementWidget(QtGui.QWidget):
                 pass
 
     def find_plate(self, brand, model):
-        for plate_id, plate in self.plates.items():
+        for plate_id, plate in self.model.plates.items():
             if plate.brand == brand and plate.model == model:
                 return plate
 

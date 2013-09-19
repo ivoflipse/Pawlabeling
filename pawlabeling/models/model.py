@@ -123,31 +123,30 @@ class Model():
 
     def get_subjects(self):
         self.subjects = self.subject_model.get_subjects()
-        pub.sendMessage("update_subjects_tree", subjects=self.subjects)
+        pub.sendMessage("update_subjects_tree")
 
     def get_sessions(self):
         self.sessions = self.session_model.get_sessions()
-        pub.sendMessage("update_sessions_tree", sessions=self.sessions)
+        pub.sendMessage("update_sessions_tree")
 
     def get_measurements(self):
         self.measurements = self.measurement_model.get_measurements()
-        pub.sendMessage("update_measurements_tree", measurements=self.measurements)
+        pub.sendMessage("update_measurements_tree")
 
     def get_contacts(self):
         # self.contacts gets initialized when the session is loaded
         # if you want to track again, call repeat_track_contacts
-        pub.sendMessage("update_contacts")
-        # Check if we should update n_max everywhere
-        # TODO This should already be up to date, I don't think it'll be needed any more
+        self.current_contact_index = 0
         self.update_n_max()
+        pub.sendMessage("update_contacts")
 
     def get_measurement_data(self):
         self.measurement_data = self.measurement_model.get_measurement_data(self.measurement)
-        pub.sendMessage("update_measurement_data", measurement_data=self.measurement_data)
+        pub.sendMessage("update_measurement_data")
 
     def get_plates(self):
         self.plates = self.plate_model.get_plates()
-        pub.sendMessage("update_plates", plates=self.plates)
+        pub.sendMessage("update_plates")
 
     def get_plate(self):
         # From one of the measurements, get its plate_id and call put_plate
@@ -172,6 +171,7 @@ class Model():
         self.get_sessions()
 
     def put_session(self, session):
+        self.clear_cached_values()
         self.session = session
         self.session_id = session.session_id
         self.logger.info("Session ID set to {}".format(self.session_id))
@@ -231,11 +231,14 @@ class Model():
                                                   measurement_id=self.measurement_id)
         self.contact_model = self.contact_models[self.measurement.measurement_id]
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
-        pub.sendMessage("update_measurement", measurement=self.measurement)
+        pub.sendMessage("update_measurement")
 
         # TODO Have this load the contacts and measurement data
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
         self.get_measurement_data()
+        # Check that its not empty
+        assert self.contacts[self.measurement_name]
+        # TODO get_contacts doesn't really do anything, but send a message, can't this be done differently
         self.get_contacts()
 
     def put_contact(self, contact):
@@ -248,7 +251,8 @@ class Model():
         self.plate_id = plate.plate_id
         self.sensor_surface = self.plate.sensor_surface
         self.logger.info("Plate ID set to {}".format(self.plate_id))
-        pub.sendMessage("update_plate", plate=self.plate)
+        # TODO I doubt anyone even cares about this message any more
+        pub.sendMessage("update_plate")
 
     def delete_subject(self, subject):
         self.subject_model.delete_subject(subject)
@@ -264,10 +268,8 @@ class Model():
         self.measurement_model.delete_measurement(measurement)
         self.get_measurements()
 
-    def update_current_contact(self, current_contact_index):
-        # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
-        #self.contacts = contacts
-        self.current_contact_index = current_contact_index
+    def update_current_contact(self):
+        # Notify everyone things have been updated
         self.calculate_shape()
         self.update_average()
         pub.sendMessage("updated_current_contact")
@@ -325,7 +327,8 @@ class Model():
 
     def calculate_shape(self):
         self.shape = self.session_model.calculate_shape(contacts=self.contacts)
-        pub.sendMessage("update_shape", shape=self.shape)
+        # TODO I don't think people care about this any more!
+        pub.sendMessage("update_shape")
 
 
     # # These functions are no longer up to date!
@@ -347,19 +350,22 @@ class Model():
 
     def update_n_max(self):
         self.n_max = self.measurement_model.update_n_max()
-        pub.sendMessage("update_n_max", n_max=self.n_max)
+        # TODO I don't think people care about this any more!
+        pub.sendMessage("update_n_max")
 
     def changed_settings(self):
         self.measurement_folder = self.settings.measurement_folder()
         self.database_file = self.settings.database_file()
 
     def clear_cached_values(self):
-        print "model.clear_cached_values"
-        self.subject_id = ""
-        self.subject_name = ""
-        self.session_id = ""
-        self.session.clear()
-        self.sessions = {}
+        # TODO Figure out what can be cleared and when, perhaps I can use an argument to check the level of clearing
+        # like, subject/session/measurement etc
+        #print "model.clear_cached_values"
+        #self.subject_id = ""
+        #self.subject_name = ""
+        #self.session_id = ""
+        #self.session.clear()
+        #self.sessions = {}
         self.measurement_name = ""
         self.measurement.clear()
         self.measurements = {}

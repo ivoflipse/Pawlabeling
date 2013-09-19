@@ -89,10 +89,10 @@ class AnalysisWidget(QtGui.QTabWidget):
         pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.unsubscribe(self.update_contacts_tree, "update_contacts")
 
-    def update_measurements_tree(self, measurements):
+    def update_measurements_tree(self):
         self.measurement_tree.clear()
 
-        for measurement in measurements.values():
+        for measurement in self.model.measurements.values():
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
             measurement_item.setText(0, measurement.measurement_name)
 
@@ -157,8 +157,8 @@ class AnalysisWidget(QtGui.QTabWidget):
     #     pub.sendMessage("calculate_results")
 
     # TODO Add a way to switch between looking at individual contacts to an average result
-    # def show_average_results(self, evt=None):
-    #     pass
+    def show_average_results(self, evt=None):
+         pass
 
     def create_toolbar_actions(self):
         self.filter_outliers_action = gui.create_action(text="&Track Contacts",

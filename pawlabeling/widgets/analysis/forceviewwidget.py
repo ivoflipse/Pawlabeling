@@ -166,4 +166,3 @@ class ContactView(QtGui.QWidget):
         self.max_duration = None
         self.max_force = None
         self.filtered = None
-        self.contacts.clear()
