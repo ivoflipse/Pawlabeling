@@ -136,7 +136,7 @@ class Model():
     def get_contacts(self):
         # self.contacts gets initialized when the session is loaded
         # if you want to track again, call repeat_track_contacts
-        pub.sendMessage("update_contacts", contacts=self.contacts)
+        pub.sendMessage("update_contacts")
         # Check if we should update n_max everywhere
         # TODO This should already be up to date, I don't think it'll be needed any more
         self.update_n_max()
@@ -283,14 +283,14 @@ class Model():
         for contact in self.contacts[self.measurement_name]:
             contact.contact_label = -2
 
-        pub.sendMessage("update_contacts_tree", contacts=self.contacts)
+        pub.sendMessage("update_contacts_tree")
 
     def repeat_track_contacts(self):
         contacts = self.contact_model.repeat_track_contacts(measurement=self.measurement,
                                                             measurement_data=self.measurement_data,
                                                             plate=self.plate)
         self.contacts[self.measurement_name] = contacts
-        pub.sendMessage("update_contacts_tree", contacts=self.contacts)
+        pub.sendMessage("update_contacts_tree")
 
     def load_contacts(self):
         """
@@ -321,7 +321,7 @@ class Model():
     def update_average(self):
         self.average_data = self.session_model.update_average(contacts=self.contacts,
                                                               shape=self.shape)
-        pub.sendMessage("update_average", average_data=self.average_data)
+        pub.sendMessage("update_average")
 
     def calculate_shape(self):
         self.shape = self.session_model.calculate_shape(contacts=self.contacts)

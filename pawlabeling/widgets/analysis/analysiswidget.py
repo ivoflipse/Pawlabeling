@@ -8,6 +8,7 @@ from pubsub import pub
 from pawlabeling.functions import gui, io
 from pawlabeling.settings import settings
 from pawlabeling.widgets.analysis import resultswidget
+from pawlabeling.models import model
 
 
 class AnalysisWidget(QtGui.QTabWidget):
@@ -20,9 +21,8 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.subject_name = ""
         self.outlier_toggle = False
         self.logger = logging.getLogger("logger")
+        self.model = model.model
 
-        # Initialize our variables that will cache results
-        self.contacts = defaultdict(list)
         self.settings = settings.settings
         self.colors = self.settings.colors()
         self.contact_dict = self.settings.contact_dict()
@@ -81,9 +81,6 @@ class AnalysisWidget(QtGui.QTabWidget):
 
         self.create_toolbar_actions()
 
-        pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        pub.subscribe(self.update_measurement, "update_measurement")
-
     def subscribe(self):
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.subscribe(self.update_contacts_tree, "update_contacts")
@@ -91,12 +88,6 @@ class AnalysisWidget(QtGui.QTabWidget):
     def unsubscribe(self):
         pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.unsubscribe(self.update_contacts_tree, "update_contacts")
-
-    def calculate_results(self):
-        pub.sendMessage("calculate_results")
-
-    def update_measurement(self, measurement):
-        self.measurement_name = measurement.measurement_name
 
     def update_measurements_tree(self, measurements):
         self.measurement_tree.clear()
@@ -108,13 +99,12 @@ class AnalysisWidget(QtGui.QTabWidget):
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item, True)
 
-    def update_contacts_tree(self, contacts):
-        self.contacts = contacts
+    def update_contacts_tree(self):
         self.max_length = 0
         # Clear any existing contacts
         self.contacts_tree.clear()
         # Add the contacts to the contacts_tree
-        for contact in self.contacts[self.measurement_name]:
+        for contact in self.model.contacts[self.model.measurement_name]:
             if contact.length > self.max_length:
                 self.max_length = contact.length
             rootItem = QtGui.QTreeWidgetItem(self.contacts_tree)
@@ -142,10 +132,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Update the slider's max value
         self.slider.setMaximum(self.max_length)
 
-    def clear_cached_values(self):
-        self.n_max = 0
-        self.contacts.clear()
-
     def change_frame(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))
         self.frame = frame
@@ -161,37 +147,38 @@ class AnalysisWidget(QtGui.QTabWidget):
             return
 
         # Notify the model to update the subject_name + measurement_name if necessary
-        self.measurement_name = self.measurement_tree.currentItem().text(0)
-        measurement = {"measurement_name":self.measurement_name}
-        pub.sendMessage("put_measurement", measurement=measurement)
+        measurement_name = self.measurement_tree.currentItem().text(0)
+        measurement = {"measurement_name": measurement_name}
+        self.model.put_measurement(measurement=measurement)
 
-        # Now get everything that belongs to the measurement, the contacts and the measurement_data
-        pub.sendMessage("get_measurement_data")
-        pub.sendMessage("get_contacts")
+    # TODO This needs to be re-enabled somehow
+    # def calculate_results(self):
+    #     self.model.calculate_results()
+    #     pub.sendMessage("calculate_results")
 
     # TODO Add a way to switch between looking at individual contacts to an average result
-    def show_average_results(self, evt=None):
-        pass
+    # def show_average_results(self, evt=None):
+    #     pass
 
     def create_toolbar_actions(self):
         self.filter_outliers_action = gui.create_action(text="&Track Contacts",
-                                                       shortcut=QtGui.QKeySequence("CTRL+F"),
-                                                       icon=QtGui.QIcon(
-                                                           os.path.join(os.path.dirname(__file__),
-                                                                        "../images/edit_zoom.png")),
-                                                       tip="Filter outliers",
-                                                       checkable=True,
-                                                       connection=self.filter_outliers
+                                                        shortcut=QtGui.QKeySequence("CTRL+F"),
+                                                        icon=QtGui.QIcon(
+                                                            os.path.join(os.path.dirname(__file__),
+                                                                         "../images/edit_zoom.png")),
+                                                        tip="Filter outliers",
+                                                        checkable=True,
+                                                        connection=self.filter_outliers
         )
 
         self.show_average_results_action = gui.create_action(text="&Show Average results",
-                                                     shortcut=QtGui.QKeySequence("CTRL+A"),
-                                                     icon=QtGui.QIcon(
-                                                         os.path.join(os.path.dirname(__file__),
-                                                                      "../images/force_graph_icon.png")),
-                                                     tip="Switch to average results",
-                                                     checkable=True,
-                                                     connection=self.show_average_results
+                                                             shortcut=QtGui.QKeySequence("CTRL+A"),
+                                                             icon=QtGui.QIcon(
+                                                                 os.path.join(os.path.dirname(__file__),
+                                                                              "../images/force_graph_icon.png")),
+                                                             tip="Switch to average results",
+                                                             checkable=True,
+                                                             connection=self.show_average_results
         )
 
         self.actions = [self.filter_outliers_action, self.show_average_results_action]

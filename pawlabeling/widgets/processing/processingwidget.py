@@ -116,6 +116,8 @@ class ProcessingWidget(QtGui.QWidget):
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item, True)
 
+    # TODO Add some attribute to each measurement, where I can check whether its stored
+    # Then I only need update_measurements_tree
     def update_measurement_status(self, measurements):
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))

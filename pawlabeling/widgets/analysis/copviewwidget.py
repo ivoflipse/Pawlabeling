@@ -1,11 +1,11 @@
 import logging
 import numpy as np
 from PySide import QtGui, QtCore
+from pubsub import pub
 from pawlabeling.functions import utility, calculations
 from pawlabeling.settings import settings
-from pubsub import pub
+from pawlabeling.models import model
 
-logger = logging.getLogger("logger")
 
 class CopViewWidget(QtGui.QWidget):
     def __init__(self, parent):
@@ -60,13 +60,14 @@ class ContactView(QtGui.QWidget):
         self.label = QtGui.QLabel(label)
         self.contact_label = contact_label
         self.parent = parent
+        self.model = model.model
         self.settings = settings.settings
         self.degree = self.settings.interpolation_results()
-        self.n_max = 0
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
         self.mx = 1
         self.my = 1
+        self.mz = 1
         self.min_x = 0
         self.max_x = self.mx
         self.min_y = 0
@@ -106,16 +107,14 @@ class ContactView(QtGui.QWidget):
         self.setMinimumHeight(height)
         self.setLayout(self.main_layout)
 
-        pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
-        # TODO Note that I turned this stuff off
-        #pub.subscribe(self.update_average, "update_average")
+        pub.subscribe(self.update_average, "update_average")
 
     # TODO I have no idea how to filter this
-    def update_average(self, average_data):
-        if self.contact_label in average_data:
-            self.average_data = average_data[self.contact_label]
+    def update_average(self):
+        if self.contact_label in self.model.average_data:
+            self.average_data = self.model.average_data[self.contact_label]
             self.max_of_max = self.average_data.max(axis=2)
             self.change_frame(frame=-1)
             self.length = self.average_data.shape[2]
@@ -124,15 +123,9 @@ class ContactView(QtGui.QWidget):
         self.outlier_toggle = toggle
         #self.draw()
 
-    def update_n_max(self, n_max):
-        self.n_max = n_max
-        # Only draw if we actually have any data
-        if self.average_data.sum():
-            self.draw()
-
     def draw_cop(self):
         # If we still have the default shape, don't bother
-        if self.average_data.shape == (15, 15, 15):
+        if self.average_data.shape == (1, 1, 1):
             return
 
         # Remove all the previous ellipses if coming back from update_cop
@@ -206,23 +199,23 @@ class ContactView(QtGui.QWidget):
         self.data = np.rot90(np.rot90(self.data))
         self.data = self.data[:, ::-1]
         # Display the average measurement_data for the requested frame
-        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table)
+        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.model.n_max, self.color_table)
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 
     def change_frame(self, frame):
         self.frame = frame
         # See that we stay within bounds
-        if self.frame < self.length:
+        if self.frame < self.length and self.contact_label in self.model.average_data:
             self.draw()
 
     def clear_cached_values(self):
         self.data = np.zeros((self.mx, self.my))
-        self.average_data = np.zeros((self.mx, self.my, 15))
+        self.average_data = np.zeros((self.mx, self.my, self.mz))
         self.max_of_max = self.data[:]
         # Put the screen to black
         self.image.setPixmap(
-            utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.n_max, self.color_table))
+            utility.get_QPixmap(np.zeros((self.mx, self.my)), self.degree, self.model.n_max, self.color_table))
         for point in self.cop_ellipses:
             self.scene.removeItem(point)
         self.cop_ellipses = []

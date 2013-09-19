@@ -6,6 +6,7 @@ from matplotlib.figure import Figure
 from pubsub import pub
 from pawlabeling.functions import utility, calculations
 from pawlabeling.settings import settings
+from pawlabeling.models import model
 
 
 class ForceViewWidget(QtGui.QWidget):
@@ -64,7 +65,7 @@ class ContactView(QtGui.QWidget):
         self.label = QtGui.QLabel(label)
         self.contact_label = contact_label
         self.parent = parent
-        self.n_max = 0
+        self.model = model.model
         self.frame = 0
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
@@ -89,21 +90,13 @@ class ContactView(QtGui.QWidget):
         self.setMinimumHeight(height)
         self.setLayout(self.main_layout)
 
-        pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.update_results, "update_results")
         pub.subscribe(self.filter_outliers, "filter_outliers")
-        pub.subscribe(self.update_contacts, "update_contacts")
-
-    def update_contacts(self, contacts):
-        self.contacts = contacts
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
         self.draw()
-
-    def update_n_max(self, n_max):
-        self.n_max = n_max
 
     def update_results(self, results, max_results):
         self.forces = results[self.contact_label]["force"]
@@ -113,7 +106,7 @@ class ContactView(QtGui.QWidget):
         self.draw()
 
     def draw(self):
-        if not self.contacts:
+        if not self.model.contacts:
             return
 
         self.clear_axes()
@@ -124,7 +117,7 @@ class ContactView(QtGui.QWidget):
         self.max_duration = 0
         self.max_force = 0
 
-        for measurement_name, contacts in self.contacts.items():
+        for measurement_name, contacts in self.model.contacts.items():
             for contact in contacts:
                 if contact.contact_label == self.contact_label:
                     force = np.pad(contact.force_over_time, 1, mode="constant", constant_values=0)
@@ -156,44 +149,6 @@ class ContactView(QtGui.QWidget):
         self.axes.set_ylim([0, self.max_force * 1.2])
         self.canvas.draw()
 
-    # def draw(self):
-    #     if not self.forces:
-    #         return
-    #
-    #     self.clear_axes()
-    #     interpolate_length = 100
-    #     lengths = []
-    #
-    #     if self.outlier_toggle:
-    #         filtered = self.filtered
-    #     else:
-    #         filtered = []
-    #
-    #     # The zero padding of leaving elements out is 'painful'
-    #     force_over_time = np.zeros((len(self.forces)-len(filtered), interpolate_length))
-    #     forces = [f for index, f in enumerate(self.forces) if index not in filtered]
-    #
-    #     for index, force in enumerate(forces):
-    #         force = np.pad(force, 1, mode="constant", constant_values=0)
-    #         lengths.append(len(force))
-    #         force_over_time[index, :] = calculations.interpolate_time_series(force, interpolate_length)
-    #         time_line = calculations.interpolate_time_series(np.arange(np.max(len(force))), interpolate_length)
-    #         self.axes.plot(time_line, force_over_time[index, :], alpha=0.5)
-    #
-    #     mean_length = np.mean(lengths)
-    #     interpolated_time_line = calculations.interpolate_time_series(np.arange(int(mean_length)), interpolate_length)
-    #     mean_force = np.mean(force_over_time, axis=0)
-    #     std_force = np.std(force_over_time, axis=0)
-    #     self.axes.plot(interpolated_time_line, mean_force, color="r", linewidth=3)
-    #     self.axes.plot(interpolated_time_line, mean_force + std_force, color="r", linewidth=1)
-    #     self.axes.fill_between(interpolated_time_line, mean_force - std_force, mean_force + std_force, facecolor="r",
-    #                            alpha=0.5)
-    #     self.axes.plot(interpolated_time_line, mean_force - std_force, color="r", linewidth=1)
-    #     self.vertical_line = self.axes.axvline(linewidth=4, color='r')
-    #     self.vertical_line.set_xdata(self.frame)
-    #     self.axes.set_xlim([0, self.max_duration + 2])  # +2 because we padded the array
-    #     self.axes.set_ylim([0, self.max_force * 1.2])
-    #     self.canvas.draw()
 
     def change_frame(self, frame):
         self.frame = frame

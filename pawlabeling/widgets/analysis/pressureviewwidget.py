@@ -5,6 +5,7 @@ from matplotlib.figure import Figure
 from pubsub import pub
 from pawlabeling.functions import utility, calculations
 from pawlabeling.settings import settings
+from pawlabeling.models import model
 
 
 class PressureViewWidget(QtGui.QWidget):
@@ -61,7 +62,7 @@ class ContactView(QtGui.QWidget):
         self.label = QtGui.QLabel(label)
         self.contact_label = contact_label
         self.parent = parent
-        self.n_max = 0
+        self.model = model.model
         self.frame = 0
         self.x = 0
         self.y = 0
@@ -86,7 +87,6 @@ class ContactView(QtGui.QWidget):
         self.setMinimumHeight(height)
         self.setLayout(self.main_layout)
 
-        pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.update_results, "update_results")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
@@ -94,9 +94,6 @@ class ContactView(QtGui.QWidget):
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
         self.draw()
-
-    def update_n_max(self, n_max):
-        self.n_max = n_max
 
     def update_results(self, results, max_results):
         self.pressures = results[self.contact_label]["pressure"]
@@ -107,29 +104,33 @@ class ContactView(QtGui.QWidget):
 
     def draw(self):
         # If there's no measurement_data, return
-        if not self.pressures:
+        if not self.model.contacts:
             return
 
         self.clear_axes()
         interpolate_length = 100
         lengths = []
+        pressure_over_time = []
+        self.max_duration = 0
+        self.max_pressure = 0
 
-        if self.outlier_toggle:
-            filtered = self.filtered
-        else:
-            filtered = []
+        for measurement_name, contacts in self.model.contacts.items():
+            for contact in contacts:
+                if contact.contact_label == self.contact_label:
+                    pressure = np.pad(contact.pressure_over_time, 1, mode="constant", constant_values=0)
+                    if len(pressure) > self.max_duration:
+                        self.max_duration = len(pressure)
+                    if np.max(pressure) > self.max_pressure:
+                        self.max_pressure = np.max(pressure)
 
-        pressure_over_time = np.zeros((len(self.pressures)-len(filtered), interpolate_length))
-        pressures = [p for index, p in enumerate(self.pressures) if index not in filtered]
+                    lengths.append(len(pressure))
+                    interpolated_pressure = calculations.interpolate_time_series(pressure, interpolate_length)
+                    pressure_over_time.append(interpolated_pressure)
+                    time_line = calculations.interpolate_time_series(np.arange(np.max(len(pressure))),
+                                                                     interpolate_length)
+                    self.axes.plot(time_line, interpolated_pressure, alpha=0.5)
 
-        for index, pressure in enumerate(pressures):
-            pressure = np.pad(pressure, 1, mode="constant", constant_values=0)
-            # Calculate the length AFTER padding the pressure
-            lengths.append(len(pressure))
-            pressure_over_time[index, :] = calculations.interpolate_time_series(pressure, interpolate_length)
-            time_line = calculations.interpolate_time_series(np.arange(np.max(len(pressure))), interpolate_length)
-            self.axes.plot(time_line, pressure_over_time[index, :], alpha=0.5)
-
+        pressure_over_time = np.array(pressure_over_time)
         mean_length = np.mean(lengths)
         interpolated_time_line = calculations.interpolate_time_series(np.arange(int(mean_length)), interpolate_length)
         mean_pressure = np.mean(pressure_over_time, axis=0)

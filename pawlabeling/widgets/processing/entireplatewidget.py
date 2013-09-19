@@ -103,20 +103,19 @@ class EntirePlateWidget(QtGui.QWidget):
             action.setShortcutContext(Qt.ApplicationShortcut)  # WidgetWithChildrenShortcut
 
         # TODO I might have to unsubscribe these as well...
-        pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.update_measurement, "update_measurement")
         pub.subscribe(self.update_measurement_data, "update_measurement_data")
         pub.subscribe(self.update_contacts, "updated_current_contact")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
-    def update_measurement(self, measurement):
+    def update_measurement(self):
         self.clear_gait_line()
 
-        self.n_max = measurement.maximum_value
-        self.height = measurement.number_of_rows
-        self.width = measurement.number_of_columns
-        self.num_frames = measurement.number_of_frames
-        self.measurement_name = measurement.measurement_name
+        self.n_max = self.model.measurement.maximum_value
+        self.height = self.model.measurement.number_of_rows
+        self.width = self.model.measurement.number_of_columns
+        self.num_frames = self.model.measurement.number_of_frames
+        self.measurement_name = self.model.measurement.measurement_name
 
     def fast_backward(self):
         self.change_slider(-1, fast=True)
@@ -144,9 +143,6 @@ class EntirePlateWidget(QtGui.QWidget):
         self.slider_text.setText("Frame: {}".format(frame))
         self.frame = frame
         self.change_frame(self.frame)
-
-    def update_n_max(self, n_max):
-        self.n_max = n_max
 
     def update_measurement_data(self, measurement_data):
         # Update the measurement
