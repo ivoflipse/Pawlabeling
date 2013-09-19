@@ -73,26 +73,24 @@ class Sessions(object):
     def calculate_average_data(self, contacts, shape):
         num_contacts = defaultdict(int)
         mx, my, mz = shape
-        empty_array = np.zeros(shape)
-        average_data = {0: empty_array[:],
-                        1: empty_array[:],
-                        2: empty_array[:],
-                        3: empty_array[:]
-        }
+        average_data = {}
         for measurement_name, contacts in contacts.items():
             for contact in contacts:
-                if contact.contact_label > 0:
+                if contact.contact_label >= 0:
                     num_contacts[contact.contact_label] += 1
                     x, y, z = contact.data.shape
                     offset_x = int((mx - x) / 2)
                     offset_y = int((my - y) / 2)
+                    # Check if the contact_label is present, else initialize with an empty array
+                    if contact.contact_label not in average_data:
+                        average_data[contact.contact_label] = np.zeros(shape)
+
                     data = average_data[contact.contact_label]
                     data[offset_x:offset_x + x, offset_y:offset_y + y, :z] += contact.data
 
         for contact_label, data in average_data.items():
             if num_contacts[contact_label] > 0:
                 weight = 1. / num_contacts[contact_label]
-                # Overwrite the temporary value
                 average_data[contact_label] = np.multiply(data, weight)
 
         return average_data

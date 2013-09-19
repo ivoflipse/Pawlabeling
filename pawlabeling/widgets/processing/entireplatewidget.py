@@ -106,7 +106,6 @@ class EntirePlateWidget(QtGui.QWidget):
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.update_measurement, "update_measurement")
         pub.subscribe(self.update_measurement_data, "update_measurement_data")
-        pub.subscribe(self.update_bounding_boxes, "updated_current_contact")
         pub.subscribe(self.update_contacts, "updated_current_contact")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
@@ -158,10 +157,16 @@ class EntirePlateWidget(QtGui.QWidget):
         self.slider.setValue(-1)
         self.update_entire_plate()
 
-    def update_contacts(self, contacts, current_contact_index):
-        self.contacts = contacts
+    def update_contacts(self):
         if not self.gait_lines:
             self.draw_gait_line()
+
+        self.clear_bounding_box()
+        for index, contact in enumerate(self.model.contacts[self.measurement_name]):
+            self.draw_bounding_box(contact, contact.contact_label)
+            if self.model.current_contact_index == index:
+                self.draw_bounding_box(contact, contact_label=-1)
+        self.resizeEvent()
 
     def change_frame(self, frame):
         # Set the frame
@@ -224,22 +229,14 @@ class EntirePlateWidget(QtGui.QWidget):
         self.bounding_boxes.append(bounding_box)
         self.resizeEvent()
 
-    def update_bounding_boxes(self, contacts, current_contact_index):
-        self.clear_bounding_box()
-        for index, contact in enumerate(contacts[self.measurement_name]):
-            self.draw_bounding_box(contacts[self.measurement_name][index], contact.contact_label)
-            if current_contact_index == index:
-                self.draw_bounding_box(contacts[self.measurement_name][index], contact_label=-1)
-        self.resizeEvent()
-
     def draw_gait_line(self):
         self.gait_line_pen = QtGui.QPen(Qt.white)
         self.gait_line_pen.setWidth(2)
         self.gait_line_pen.setColor(Qt.white)
 
-        for index in range(1, len(self.contacts[self.measurement_name])):
-            prev_contact = self.contacts[self.measurement_name][index - 1]
-            cur_contact = self.contacts[self.measurement_name][index]
+        for index in range(1, len(self.model.contacts[self.measurement_name])):
+            prev_contact = self.model.contacts[self.measurement_name][index - 1]
+            cur_contact = self.model.contacts[self.measurement_name][index]
             polygon = QtGui.QPolygonF(
                 [QtCore.QPointF((prev_contact.min_x + (prev_contact.width/2)) * self.degree,
                                  (prev_contact.min_y + (prev_contact.height/2)) * self.degree),

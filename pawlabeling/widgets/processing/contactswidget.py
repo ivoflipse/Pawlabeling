@@ -54,34 +54,23 @@ class ContactWidgets(QtGui.QWidget):
         self.setLayout(self.main_layout)
 
         # TODO I might have to unsubscribe these as well...
-        pub.subscribe(self.update_measurement, "update_measurement")
         pub.subscribe(self.update_contacts, "updated_current_contact")
-        pub.subscribe(self.update_average, "update_average")
-        pub.subscribe(self.update_shape, "update_shape")
 
-    def update_average(self, average_data):
-        self.average_data = average_data
-
-    def update_shape(self, shape):
-        self.mx, self.my, self.mz = shape
-
-    def update_measurement(self, measurement):
-        self.measurement_name = measurement.measurement_name
-
-    def update_contacts(self, contacts, current_contact_index):
+    def update_contacts(self):
         # Clear any previous results, which may be out of date
         self.clear_contacts()
 
         # Update those for which we have a average measurement_data
-        for contact_label, average_contact in self.average_data.items():
+        for contact_label, average_contact in self.model.average_data.items():
             widget = self.contacts_list[contact_label]
             widget.update(average_contact)
 
         # Update the current contact widget
         widget = self.contacts_list[-1]
-        current_contact = contacts[self.measurement_name][current_contact_index]
+        current_contact = self.model.contacts[self.model.measurement_name][self.model.current_contact_index]
 
         x, y, z = current_contact.data.shape
+        self.mx, self.my, self.mz = self.model.shape
         normalized_current_contact = np.zeros((self.mx, self.my, self.mz))
         offset_x = int((self.mx - x) / 2)
         offset_y = int((self.my - y) / 2)
@@ -143,6 +132,7 @@ class ContactWidget(QtGui.QWidget):
     def __init__(self, parent, label, contact_label):
         super(ContactWidget, self).__init__(parent)
         self.parent = parent
+        self.model = model.model
         self.settings = settings.settings
         self.degree = self.settings.interpolation_contact_widgets()
         self.n_max = 0
@@ -152,9 +142,9 @@ class ContactWidget(QtGui.QWidget):
         self.color_table = self.image_color_table.create_color_table()
         self.mx = 1
         self.my = 1
+        self.mz = 1
         self.data = np.zeros((self.mx, self.my))
-        self.data_list = []
-        self.average_data = []
+        self.average_data = np.zeros((self.mx, self.my, self.mz))
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
@@ -195,13 +185,8 @@ class ContactWidget(QtGui.QWidget):
 
         pub.subscribe(self.update_n_max, "update_n_max")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        pub.subscribe(self.update_plate, "update_plate")
-
-    def update_plate(self, plate):
-        self.plate = plate
 
     def update_n_max(self, n_max):
-        self.n_max = n_max
         # Redraw, just in case
         self.redraw()
 
@@ -212,7 +197,8 @@ class ContactWidget(QtGui.QWidget):
         self.max_pressure = np.max(calculations.force_over_time(self.average_data))
         x, y, z = np.nonzero(self.average_data)
         self.mean_duration = np.max(z)
-        self.mean_surface = np.max(calculations.pixel_count_over_time(self.average_data) * self.plate.sensor_surface)
+        self.mean_surface = np.max(
+            calculations.pixel_count_over_time(self.average_data) * self.model.plate.sensor_surface)
 
         self.max_pressure_label.setText("{:3.1f} N".format(self.max_pressure))
         self.mean_duration_label.setText("{} frames".format(int(self.mean_duration)))
@@ -220,13 +206,13 @@ class ContactWidget(QtGui.QWidget):
 
         # Make sure the contacts are facing upright
         self.data = np.rot90(np.rot90(self.average_data.max(axis=2)))[:, ::-1]
-        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table,
+        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.model.n_max, self.color_table,
                                           interpolation="cubic")
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 
     def redraw(self):
-        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.n_max, self.color_table,
+        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.model.n_max, self.color_table,
                                           interpolation="cubic")
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()

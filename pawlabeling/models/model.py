@@ -264,14 +264,13 @@ class Model():
         self.measurement_model.delete_measurement(measurement)
         self.get_measurements()
 
-    def update_current_contact(self):
+    def update_current_contact(self, current_contact_index):
         # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
         #self.contacts = contacts
-        #self.current_contact_index = current_contact_index
+        self.current_contact_index = current_contact_index
         self.calculate_shape()
         self.update_average()
-        pub.sendMessage("updated_current_contact", contacts=self.contacts,
-                        current_contact_index=self.current_contact_index)
+        pub.sendMessage("updated_current_contact")
 
     def store_contacts(self):
         self.contact_model.update_contacts(contacts=self.contacts, measurement_name=self.measurement_name)

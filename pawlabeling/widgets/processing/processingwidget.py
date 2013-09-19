@@ -11,6 +11,7 @@ from pawlabeling.widgets.processing import contactswidget
 from pawlabeling.widgets.processing import entireplatewidget
 from pawlabeling.models import model
 
+
 class ProcessingWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ProcessingWidget, self).__init__(parent)
@@ -82,21 +83,18 @@ class ProcessingWidget(QtGui.QWidget):
         self.subscribe()
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.changed_settings, "changed_settings")
+        pub.subscribe(self.put_subject, "put_subject")
+        pub.subscribe(self.put_session, "put_session")
 
     # I've added subscribe/unsubscribe, such that when we're in the analysis tab, we don't want to respond to
     # everything it sends/receives
     def subscribe(self):
-        #pub.subscribe(self.update_measurements_tree, "get_file_paths")
-        pub.subscribe(self.put_subject, "put_subject")
-        pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.subscribe(self.update_measurement_status, "update_measurement_status")
         pub.subscribe(self.update_contacts_tree, "update_contacts")
         pub.subscribe(self.stored_status, "stored_status")
 
     def unsubscribe(self):
-        pub.unsubscribe(self.put_subject, "put_subject")
-        pub.unsubscribe(self.put_session, "put_session")
         pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
         pub.unsubscribe(self.update_measurement_status, "update_measurement_status")
         pub.unsubscribe(self.update_contacts_tree, "update_contacts")
@@ -131,11 +129,11 @@ class ProcessingWidget(QtGui.QWidget):
         # Check if the tree aint empty!
         if not self.measurement_tree.topLevelItemCount():
             return
-        # Notify the model to update the subject_name + measurement_name if necessary
+            # Notify the model to update the subject_name + measurement_name if necessary
         self.measurement_name = self.measurement_tree.currentItem().text(0)
         self.measurement_name_label.setText("Measurement name: {}".format(self.measurement_name))
 
-        measurement = {"measurement_name":self.measurement_name}
+        measurement = {"measurement_name": self.measurement_name}
         self.model.put_measurement(measurement=measurement)
 
     def update_contacts_tree(self, contacts):
@@ -177,7 +175,8 @@ class ProcessingWidget(QtGui.QWidget):
                         item.setForeground(idx, self.colors[contact_label])
 
             # TODO This should mutate the variables in self.model
-            self.model.update_current_contact()
+            self.model.update_current_contact(current_contact_index=self.current_contact_index)
+
 
     def undo_label(self):
         self.previous_contact()
@@ -306,12 +305,12 @@ class ProcessingWidget(QtGui.QWidget):
 
     def track_contacts(self, event=None):
         # Make the model track new contacts
-        pub.sendMessage("track_contacts")
+        self.model.repeat_track_contacts()
         # Make sure every widget gets updated
         self.update_current_contact()
 
     def store_status(self, event=None):
-        pub.sendMessage("store_contacts")
+        self.model.store_contacts()
 
     def stored_status(self, success):
         # If we were successful, change the color of the tree
@@ -447,7 +446,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                    connection=self.undo_label
         )
 
-        # TODO Not all actions are editable yet
+        # TODO Not all actions are editable yet in the settings
         self.actions = [self.store_status_action, self.track_contacts_action,
                         self.left_front_action, self.left_hind_action,
                         self.right_front_action, self.right_hind_action,
