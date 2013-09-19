@@ -233,6 +233,11 @@ class Model():
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
         pub.sendMessage("update_measurement", measurement=self.measurement)
 
+        # TODO Have this load the contacts and measurement data
+        # Now get everything that belongs to the measurement, the contacts and the measurement_data
+        self.get_measurement_data()
+        self.get_contacts()
+
     def put_contact(self, contact):
         self.contact = contact
         self.contact_id = contact["contact_id"]
@@ -259,10 +264,10 @@ class Model():
         self.measurement_model.delete_measurement(measurement)
         self.get_measurements()
 
-    def update_current_contact(self, current_contact_index, contacts):
+    def update_current_contact(self):
         # I wonder if this gets mutated by processing widget, in which case I don't have to pass it here
-        self.contacts = contacts
-        self.current_contact_index = current_contact_index
+        #self.contacts = contacts
+        #self.current_contact_index = current_contact_index
         self.calculate_shape()
         self.update_average()
         pub.sendMessage("updated_current_contact", contacts=self.contacts,
@@ -312,6 +317,8 @@ class Model():
 
 
 
+
+
     def update_average(self):
         self.average_data = self.session_model.update_average(contacts=self.contacts,
                                                               shape=self.shape)
@@ -336,8 +343,6 @@ class Model():
     #     self.results, self.max_results = self.session_model.calculate_results(data_list=self.data_list,
     #                                                                           plate=self.plate)
     #     pub.sendMessage("update_results", results=self.results, max_results=self.max_results)
-
-
 
 
 
@@ -368,3 +373,6 @@ class Model():
 
         self.logger.info("Model.clear_cached_values")
         pub.sendMessage("clear_cached_values")
+
+
+model = Model()

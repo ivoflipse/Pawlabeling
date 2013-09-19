@@ -9,13 +9,14 @@ from pawlabeling.functions import io, gui
 from pawlabeling.settings import settings
 from pawlabeling.widgets.processing import contactswidget
 from pawlabeling.widgets.processing import entireplatewidget
-
+from pawlabeling.models import model
 
 class ProcessingWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ProcessingWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
+        self.model = model.model
 
         # Create a label to display the measurement name
         self.subject_name_label = QtGui.QLabel(self)
@@ -135,10 +136,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.measurement_name_label.setText("Measurement name: {}".format(self.measurement_name))
 
         measurement = {"measurement_name":self.measurement_name}
-        pub.sendMessage("put_measurement", measurement=measurement)
-        # Now get everything that belongs to the measurement, the contacts and the measurement_data
-        pub.sendMessage("get_measurement_data")
-        pub.sendMessage("get_contacts")
+        self.model.put_measurement(measurement=measurement)
 
     def update_contacts_tree(self, contacts):
         self.contacts = contacts
@@ -178,8 +176,8 @@ class ProcessingWidget(QtGui.QWidget):
                     if contact_label >= 0:
                         item.setForeground(idx, self.colors[contact_label])
 
-            pub.sendMessage("update_current_contact", current_contact_index=self.current_contact_index,
-                            contacts=self.contacts)
+            # TODO This should mutate the variables in self.model
+            self.model.update_current_contact()
 
     def undo_label(self):
         self.previous_contact()

@@ -4,6 +4,7 @@ from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
 from pawlabeling.settings import settings
+from pawlabeling.models import model
 
 
 class SubjectWidget(QtGui.QWidget):
@@ -11,6 +12,7 @@ class SubjectWidget(QtGui.QWidget):
         super(SubjectWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
+        self.model = model.model
         self.settings = settings.settings
         label_font = self.settings.label_font()
         date_format = self.settings.date_format()
@@ -88,14 +90,14 @@ class SubjectWidget(QtGui.QWidget):
 
     def create_subject(self):
         subject = self.get_subject_fields()
-        pub.sendMessage("create_subject", subject=subject)
-        pub.sendMessage("get_subjects")
+        self.model.create_subject(subject=subject)
+        self.model.get_subjects()
 
     def delete_subject(self):
         current_item = self.subject_tree.currentItem()
         index = self.subject_tree.indexFromItem(current_item).row()
         subject = self.subjects[index]
-        pub.sendMessage("delete_subject", subject=subject)
+        self.model.delete_subject(subject=subject)
 
     def get_subject_fields(self):
         # TODO Check here if the required fields have been entered
@@ -151,7 +153,7 @@ class SubjectWidget(QtGui.QWidget):
         subject = self.subjects[index]
         # Should we broadcast which user is currently selected?
         # So the model can update itself?
-        pub.sendMessage("put_subject", subject=subject)
+        self.model.put_subject(subject=subject)
 
     def get_subjects(self):
         pub.sendMessage("get_subjects")

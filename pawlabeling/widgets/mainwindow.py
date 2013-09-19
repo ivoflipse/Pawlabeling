@@ -47,7 +47,7 @@ class MainWindow(QtGui.QMainWindow):
 
         # Create the base model for the entire application
         # Make sure to do this first, in case anything relies on it
-        self.model = model.Model()
+        self.model = model.model
 
         self.database_widget = databasewidget.DatabaseWidget(self)
         self.processing_widget = processingwidget.ProcessingWidget(self)

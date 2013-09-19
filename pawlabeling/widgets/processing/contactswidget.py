@@ -5,12 +5,14 @@ import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, calculations
 from pawlabeling.settings import settings
+from pawlabeling.models import model
 
 
 class ContactWidgets(QtGui.QWidget):
     def __init__(self, parent):
         super(ContactWidgets, self).__init__(parent)
         self.parent = parent
+        self.model = model.model
 
         self.left_front = ContactWidget(self, label="Left Front", contact_label=0)
         self.left_hind = ContactWidget(self, label="Left Hind", contact_label=1)

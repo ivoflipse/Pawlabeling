@@ -5,12 +5,14 @@ from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import utility, gui
 from pawlabeling.settings import settings
+from pawlabeling.models import model
 
 
 class EntirePlateWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(EntirePlateWidget, self).__init__(parent)
         self.parent = parent
+        self.model = model.model
         #self.resize(settings.entire_plate_widget_width, settings.entire_plate_widget_height)
         self.ratio = 1
         self.num_frames = 0

@@ -355,7 +355,6 @@ class SessionDataTable(Table):
     class Contacts(tables.IsDescription):
         session_id = tables.StringCol(64)
         subject_id = tables.StringCol(64)
-        contact_id = tables.StringCol(16)
         contact_label = tables.Int16Col()
         orientation = tables.BoolCol()
         min_x = tables.UInt16Col()
@@ -367,8 +366,6 @@ class SessionDataTable(Table):
         width = tables.UInt16Col()
         height = tables.UInt16Col()
         length = tables.UInt16Col()
-        invalid = tables.BoolCol()
-        filtered = tables.BoolCol()
 
     def __init__(self, database_file, subject_id, session_id):
         super(SessionDataTable, self).__init__(database_file=database_file)
@@ -382,8 +379,8 @@ class SessionDataTable(Table):
     def get_contact_data(self):
         contacts = []
         for contact in self.session_group.contacts:
-            contact_id = contact["contact_id"]
-            group = self.session_group.__getattr__(contact_id)
+            contact_label = contact["contact_label"]
+            group = self.session_group.__getattr__(contact_label)
             contact_data = {}
             for item_id in self.item_ids:
                 contact_data[item_id] = group.__getattr__(item_id).read()

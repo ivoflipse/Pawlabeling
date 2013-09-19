@@ -4,6 +4,7 @@ from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui
 from pawlabeling.settings import settings
+from pawlabeling.models import model
 
 
 class SessionWidget(QtGui.QWidget):
@@ -11,6 +12,7 @@ class SessionWidget(QtGui.QWidget):
         super(SessionWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
+        self.model = model.model
         self.settings = settings.settings
         label_font = self.settings.label_font()
         date_format = self.settings.date_format()
@@ -75,9 +77,9 @@ class SessionWidget(QtGui.QWidget):
         session["session_time"] = self.session_time.time().toString(u"HH:mm")
 
         try:
-            pub.sendMessage("create_session", session=session)
+            self.model.create_session(session=session)
             # After creating a new session, get the updated table
-            pub.sendMessage("get_sessions")
+            self.model.get_sessions()
         except settings.MissingIdentifier:
             pass
 
@@ -85,7 +87,7 @@ class SessionWidget(QtGui.QWidget):
         current_item = self.session_tree.currentItem()
         index = self.session_tree.indexFromItem(current_item).row()
         session = self.sessions[index]
-        pub.sendMessage("delete_session", session=session)
+        self.model.delete_session(session=session)
 
     def get_session_fields(self):
         session = {}
@@ -100,7 +102,7 @@ class SessionWidget(QtGui.QWidget):
         # Get the index
         index = self.session_tree.indexFromItem(current_item).row()
         session = self.sessions[index]
-        pub.sendMessage("put_session", session=session)
+        self.model.put_session(session=session)
 
     def update_sessions_tree(self, sessions):
         self.session_tree.clear()

@@ -7,13 +7,14 @@ from PySide.QtCore import Qt
 from pubsub import pub
 from pawlabeling.functions import io, gui, utility
 from pawlabeling.settings import settings
-
+from pawlabeling.models import model
 
 class MeasurementWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(MeasurementWidget, self).__init__(parent)
 
         self.logger = logging.getLogger("logger")
+        self.model = model.model
         self.settings = settings.settings
         label_font = self.settings.label_font()
 
@@ -87,13 +88,13 @@ class MeasurementWidget(QtGui.QWidget):
         self.get_plates()
 
     def get_plates(self):
-        pub.sendMessage("get_plates")
+        self.model.get_plates()
 
     def delete_measurement(self):
         current_item = self.measurement_tree.currentItem()
         index = self.measurement_tree.indexFromItem(current_item).row()
         measurement = self.measurements[index]
-        pub.sendMessage("delete_measurement", measurement=measurement)
+        self.model.delete_measurement(measurement=measurement)
 
     def update_plates(self, plates):
         self.plates = plates
@@ -127,10 +128,10 @@ class MeasurementWidget(QtGui.QWidget):
         item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(item)
 
-    def get_measurements(self, session=None):
+    def get_measurements(self):
         # If we have a different session, clear the tree
         self.measurement_tree.clear()
-        pub.sendMessage("get_measurements")
+        self.model.get_measurements()
 
     def change_file_location(self, evt=None):
         measurement_folder = self.settings.measurement_folder()
@@ -197,9 +198,9 @@ class MeasurementWidget(QtGui.QWidget):
                            "frequency": frequency
             }
             try:
-                pub.sendMessage("create_measurement", measurement=measurement)
+                self.model.create_measurement(measurement=measurement)
                 # Update the tree after a measurement has been created
-                pub.sendMessage("get_measurements")
+                self.get_measurements()
             except settings.MissingIdentifier:
                 pass
 
