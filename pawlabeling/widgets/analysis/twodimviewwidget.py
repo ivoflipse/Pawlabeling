@@ -12,6 +12,7 @@ class TwoDimViewWidget(QtGui.QWidget):
         super(TwoDimViewWidget, self).__init__(parent)
         self.label = QtGui.QLabel("2D View")
         self.parent = parent
+        self.active = False
 
         self.left_front = ContactView(self, label="Left Front", contact_label=0)
         self.left_hind = ContactView(self, label="Left Hind", contact_label=1)
@@ -52,6 +53,7 @@ class TwoDimViewWidget(QtGui.QWidget):
         if self == widget:
             self.active = True
             for contact_label, widget in self.contacts_list.items():
+                print "active"
                 widget.draw()
 
 
@@ -104,8 +106,9 @@ class ContactView(QtGui.QWidget):
         if self.contact_label in self.model.average_data:
             self.average_data = self.model.average_data[self.contact_label]
             self.max_of_max = self.average_data.max(axis=2)
-            self.change_frame(frame=-1)
             self.length = self.average_data.shape[2]
+            if self.parent.active:
+                self.change_frame(frame=-1)
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
@@ -130,6 +133,7 @@ class ContactView(QtGui.QWidget):
             self.draw()
 
     def clear_cached_values(self):
+        self.frame = -1
         self.data = np.zeros((self.mx, self.my))
         self.average_data = np.zeros((self.mx, self.my, 15))
         self.max_of_max = self.data[:]

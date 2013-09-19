@@ -137,7 +137,6 @@ class Model():
         # self.contacts gets initialized when the session is loaded
         # if you want to track again, call repeat_track_contacts
         self.current_contact_index = 0
-        self.update_n_max()
         pub.sendMessage("update_contacts")
 
     def get_measurement_data(self):
@@ -202,6 +201,7 @@ class Model():
         # TODO perhaps I should roll these below functions into one, then call get_blabla on the results later
         # Load the contacts, but have it not send out anything
         self.load_contacts()
+        self.update_n_max()
         # Calculate the data_list
         # self.calculate_data_list()
         # # Check if there's any data in the data_list, then we don't have any labeled contacts yet

@@ -13,6 +13,7 @@ class PressureViewWidget(QtGui.QWidget):
         super(PressureViewWidget, self).__init__(parent)
         self.label = QtGui.QLabel("Pressure View")
         self.parent = parent
+        self.active = False
 
         self.left_front = ContactView(self, label="Left Front", contact_label=0)
         self.left_hind = ContactView(self, label="Left Hind", contact_label=1)
@@ -100,7 +101,8 @@ class ContactView(QtGui.QWidget):
         self.max_duration = max_results["duration"]
         self.max_pressure = max_results["pressure"]
         self.filtered = results[self.contact_label]["filtered"]
-        self.draw()
+        if self.parent.active:
+            self.draw()
 
     def draw(self):
         # If there's no measurement_data, return
@@ -149,7 +151,8 @@ class ContactView(QtGui.QWidget):
     def change_frame(self, frame):
         self.frame = frame
         self.vertical_line.set_xdata(self.frame)
-        self.canvas.draw()
+        #self.canvas.draw()
+        self.canvas.draw_idle()
 
     def clear_axes(self):
         self.axes.cla()
