@@ -350,7 +350,6 @@ class Model():
 
     def update_n_max(self):
         self.n_max = self.measurement_model.update_n_max()
-        # TODO I don't think people care about this any more!
         pub.sendMessage("update_n_max")
 
     def changed_settings(self):

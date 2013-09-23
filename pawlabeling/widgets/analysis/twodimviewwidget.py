@@ -53,7 +53,6 @@ class TwoDimViewWidget(QtGui.QWidget):
         if self == widget:
             self.active = True
             for contact_label, widget in self.contacts_list.iteritems():
-                print "active"
                 widget.draw()
 
 

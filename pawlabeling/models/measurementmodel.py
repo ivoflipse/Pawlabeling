@@ -140,7 +140,7 @@ class Measurement(object):
         self.measurement_name = measurement["measurement_name"]
         self.number_of_frames = measurement["number_of_frames"]
         self.number_of_rows = measurement["number_of_rows"]
-        self.number_of_columns = measurement["number_of_rows"]
+        self.number_of_columns = measurement["number_of_columns"]
         self.frequency = measurement["frequency"]
         self.orientation = measurement["orientation"]
         self.maximum_value = measurement["maximum_value"]

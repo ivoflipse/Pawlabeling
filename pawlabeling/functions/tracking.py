@@ -1,4 +1,5 @@
 import numpy as np
+from collections import defaultdict
 import cv2
 from pawlabeling.functions.utility import update_bounding_box
 from pawlabeling.settings import settings
@@ -80,11 +81,10 @@ def merge_contours(contact1, contact2):
     """
     # Iterate through all the frames
     for frame in contact2:
-        if frame not in contact1:
-            contact1[frame] = []
         for contour in contact2[frame]:
             contact1[frame].append(contour)
-            # This makes sure it won't accidentally merge either
+
+        # This makes sure it won't accidentally merge either
         contact2[frame] = []
 
 
@@ -106,8 +106,8 @@ def merging_contacts(contacts):
     euclidean_distance = np.mean(sides) * settings.settings.tracking_spatial()
     average_surface = np.mean(surfaces) * settings.settings.tracking_surface()
     # Initialize two dictionaries for calculating the Minimal Spanning Tree
-    leaders = {}
-    clusters = {}
+    leaders = defaultdict()
+    clusters = defaultdict(set)
     # This list forms the heap to which we'll add all edges
     edges = []
     for index1, contact1 in enumerate(contacts):
@@ -213,18 +213,18 @@ def merging_contacts(contacts):
     # This is where we actually merge the contacts in
     # each cluster
     for key, indices in list(clusters.iteritems()):
-        newContact = {}
+        new_contact = defaultdict(list)
         for index in indices:
             contact = contacts[index]
-            merge_contours(newContact, contact)
-        new_contacts.append(newContact)
+            merge_contours(new_contact, contact)
+        new_contacts.append(new_contact)
 
     return new_contacts
 
 
 def find_contours(data):
     # Dictionary to fill with results
-    contour_dict = {}
+    contour_dict = defaultdict()
     # Find the contours in this frame
     rows, cols, numFrames = data.shape
     for frame in xrange(numFrames):
@@ -241,22 +241,18 @@ def find_contours(data):
 
 def create_graph(contour_dict, euclidean_distance=15):
     # Create a graph
-    G = {}
+    G = defaultdict(set)
     # Now go through the contour_dict and for each contour, check if there's a matching contour in the adjacent frame
     for frame in contour_dict:
         contours = contour_dict[frame]
         for index1, contour1 in enumerate(contours):
-            # Initialize a key for this frame + index combo
-            G[(frame, index1)] = set()
             # Get the contours from the previous frame
             for f in [frame - 1]:
                 if f in contour_dict:
                     otherContours = contour_dict[f]
                     # Iterate through the contacts in the adjacent frame
                     for index2, contour2 in enumerate(otherContours):
-                        if (f, index2) not in G:
-                            G[(f, index2)] = set()
-                            # Pick the shortest contour, to do the least amount of work
+                        # Pick the shortest contour, to do the least amount of work
                         if len(contour1) <= len(contour2):
                             short_contour, long_contour = contour1, contour2
                         else:
@@ -297,8 +293,8 @@ def search_graph(G, contour_dict):
         if key not in explored:
             frame, index1 = key
             # Initialize a new contact
-            contact = {frame: [contour_dict[frame][index1]]}
-            #contact[frame] = [contour_dict[frame][index1]]
+            contact = defaultdict(list)
+            contact[frame].append(contour_dict[frame][index1])
             explored.add(key)
             nodes = set(G[key])
             # Keep going until there are no more nodes to explore
@@ -306,8 +302,6 @@ def search_graph(G, contour_dict):
                 vertex = nodes.pop()
                 if vertex not in explored:
                     f, index2 = vertex
-                    if f not in contact:
-                        contact[f] = []
                     contact[f].append(contour_dict[f][index2])
                     # Add vertex's neighbors to nodes
                     for v in G[vertex]:

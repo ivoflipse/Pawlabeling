@@ -36,7 +36,7 @@ class Sessions(object):
                                          name=session.session_id)
 
     def get_sessions(self):
-        sessions = {}
+        sessions = defaultdict()
         for session in self.sessions_table.get_sessions():
             session_object = Session(self.subject_id)
             session_object.restore(session)
@@ -73,7 +73,7 @@ class Sessions(object):
     def calculate_average_data(self, contacts, shape):
         num_contacts = defaultdict(int)
         mx, my, mz = shape
-        average_data = {}
+        average_data = defaultdict()
         for measurement_name, contacts in contacts.iteritems():
             for contact in contacts:
                 if contact.contact_label >= 0:
@@ -81,9 +81,7 @@ class Sessions(object):
                     x, y, z = contact.data.shape
                     offset_x = int((mx - x) / 2)
                     offset_y = int((my - y) / 2)
-                    # Check if the contact_label is present, else initialize with an empty array
-                    if contact.contact_label not in average_data:
-                        average_data[contact.contact_label] = np.zeros(shape)
+                    average_data[contact.contact_label] = np.zeros(shape)
 
                     data = average_data[contact.contact_label]
                     data[offset_x:offset_x + x, offset_y:offset_y + y, :z] += contact.data
@@ -98,7 +96,7 @@ class Sessions(object):
     # TODO Why are we calculating stuff? These things are already stored, so be lazy and load them!
     def calculate_results(self, contacts, plate):
         results = defaultdict(lambda: defaultdict(list))
-        max_results = {}
+        max_results = defaultdict()
 
         for contact_label, contact in contacts.iteritems():
             data = contact.data

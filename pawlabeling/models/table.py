@@ -1,4 +1,5 @@
 from itertools import izip
+from collections import defaultdict
 import tables
 
 
@@ -36,7 +37,7 @@ class Table(object):
 
         results = []
         for row in rows:
-            result = {}
+            result = defaultdict()
             for key, value in zip(table.colnames, row):
                 result[key] = value
             results.append(result)
@@ -135,7 +136,7 @@ class SubjectsTable(Table):
         subject_list = self.subjects_table.read()
         subjects = []
         for s in subject_list:
-            subject = {}
+            subject = defaultdict()
             for key, value in izip(self.column_names, s):
                 subject[key] = value
             subjects.append(subject)
@@ -187,7 +188,7 @@ class SessionsTable(Table):
         session_list = self.sessions_table.read()
         sessions = []
         for s in session_list:
-            session = {}
+            session = defaultdict()
             for key, value in izip(self.column_names, s):
                 session[key] = value
             sessions.append(session)
@@ -250,7 +251,7 @@ class MeasurementsTable(Table):
         measurement_list = self.measurements_table.read()
         measurements = []
         for m in measurement_list:
-            measurement = {}
+            measurement = defaultdict()
             for column, value in izip(self.column_names, m):
                 measurement[column] = value
             measurements.append(measurement)
@@ -322,7 +323,7 @@ class ContactsTable(Table):
         contact_list = self.contacts_table.read()
         contacts = []
         for c in contact_list:
-            contact = {}
+            contact = defaultdict()
             for column, value in izip(self.column_names, c):
                 contact[column] = value
             contacts.append(contact)
@@ -346,7 +347,7 @@ class ContactDataTable(Table):
         for contact in self.measurement_group.contacts:
             contact_id = contact["contact_id"]
             group = self.measurement_group.__getattr__(contact_id)
-            contact_data = {}
+            contact_data = defaultdict()
             for item_id in self.item_ids:
                 contact_data[item_id] = group.__getattr__(item_id).read()
             contacts.append(contact_data)
@@ -382,7 +383,7 @@ class SessionDataTable(Table):
         for contact in self.session_group.contacts:
             contact_label = contact["contact_label"]
             group = self.session_group.__getattr__(contact_label)
-            contact_data = {}
+            contact_data = defaultdict()
             for item_id in self.item_ids:
                 contact_data[item_id] = group.__getattr__(item_id).read()
             contacts.append(contact_data)
@@ -428,7 +429,7 @@ class PlatesTable(Table):
         plates_list = self.plates_table.read()
         plates = []
         for s in plates_list:
-            plate = {}
+            plate = defaultdict()
             for key, value in izip(self.column_names, s):
                 plate[key] = value
             plates.append(plate)

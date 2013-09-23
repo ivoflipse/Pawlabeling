@@ -207,12 +207,14 @@ class ContactWidget(QtGui.QWidget):
 
         # Make sure the contacts are facing upright
         self.data = np.rot90(np.rot90(self.average_data.max(axis=2)))[:, ::-1]
+        print np.max(self.data)
         self.pixmap = utility.get_QPixmap(self.data, self.degree, self.model.n_max, self.color_table,
                                           interpolation="cubic")
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 
     def redraw(self):
+        print np.max(self.data)
         self.pixmap = utility.get_QPixmap(self.data, self.degree, self.model.n_max, self.color_table,
                                           interpolation="cubic")
         self.image.setPixmap(self.pixmap)

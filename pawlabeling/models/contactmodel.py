@@ -178,7 +178,7 @@ class Contact(object):
         self.padding = self.settings.padding_factor()
 
         self.frames = sorted(contact.keys())
-        self.contour_list = {}
+        self.contour_list = defaultdict(list)
         for frame in self.frames:
             # Adjust the contour for the padding
             contours = contact[frame]

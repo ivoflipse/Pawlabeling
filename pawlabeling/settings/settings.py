@@ -391,7 +391,7 @@ class Settings(QtCore.QSettings):
             return default_value
 
     def read_settings(self):
-        self.settings = {}
+        self.settings = defaultdict()
         self.settings["contact_dict"] = self.contact_dict()
         self.settings["colors"] = self.colors()
 
