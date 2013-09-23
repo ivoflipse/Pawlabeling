@@ -73,7 +73,7 @@ class Sessions(object):
     def calculate_average_data(self, contacts, shape):
         num_contacts = defaultdict(int)
         mx, my, mz = shape
-        average_data = defaultdict()
+        average_data = defaultdict(lambda: np.zeros(shape))
         for measurement_name, contacts in contacts.iteritems():
             for contact in contacts:
                 if contact.contact_label >= 0:
@@ -81,8 +81,6 @@ class Sessions(object):
                     x, y, z = contact.data.shape
                     offset_x = int((mx - x) / 2)
                     offset_y = int((my - y) / 2)
-                    average_data[contact.contact_label] = np.zeros(shape)
-
                     data = average_data[contact.contact_label]
                     data[offset_x:offset_x + x, offset_y:offset_y + y, :z] += contact.data
 
