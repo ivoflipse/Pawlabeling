@@ -13,7 +13,6 @@ class EntirePlateWidget(QtGui.QWidget):
         super(EntirePlateWidget, self).__init__(parent)
         self.parent = parent
         self.model = model.model
-        #self.resize(settings.entire_plate_widget_width, settings.entire_plate_widget_height)
         self.ratio = 1
         self.num_frames = 0
 
@@ -37,6 +36,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.degree = self.settings.interpolation_entire_plate()
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
+        self.setMinimumHeight(self.settings.entire_plate_widget_height())
 
         # Create a slider
         self.slider = QtGui.QSlider(self)

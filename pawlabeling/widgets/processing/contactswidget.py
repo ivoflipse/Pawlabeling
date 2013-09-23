@@ -62,7 +62,7 @@ class ContactWidgets(QtGui.QWidget):
         self.clear_contacts()
 
         # Update those for which we have a average measurement_data
-        for contact_label, average_contact in self.model.average_data.items():
+        for contact_label, average_contact in self.model.average_data.iteritems():
             widget = self.contacts_list[contact_label]
             widget.update(average_contact)
 
@@ -101,7 +101,7 @@ class ContactWidgets(QtGui.QWidget):
         durations = []
         data_list = []
         # Then iterate through the other contacts
-        for contact_label, contact in list(self.contacts_list.items()):
+        for contact_label, contact in list(self.contacts_list.iteritems()):
             # Skip comparing with yourself
             if contact_label == -1:
                 continue
@@ -125,7 +125,7 @@ class ContactWidgets(QtGui.QWidget):
             current_contact.label_prediction.setText("{}".format(self.contact_dict[best_result]))
 
     def clear_contacts(self):
-        for contact_label, widget in self.contacts_list.items():
+        for contact_label, widget in self.contacts_list.iteritems():
             widget.clear_cached_values()
 
 

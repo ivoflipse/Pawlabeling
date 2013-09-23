@@ -150,7 +150,7 @@ class Model():
     def get_plate(self):
         # From one of the measurements, get its plate_id and call put_plate
         if self.measurements:
-            for measurement_id, measurement in self.measurements.items():
+            for measurement_id, measurement in self.measurements.iteritems():
                 # Update the plate information
                 plate = self.plates[measurement.plate_id]
 
@@ -229,7 +229,7 @@ class Model():
                                                   subject_id=self.subject_id,
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
-        self.contact_model = self.contact_models[self.measurement.measurement_id]
+        self.contact_model = self.contact_models[measurement.measurement_id]
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
         pub.sendMessage("update_measurement")
 
@@ -304,7 +304,7 @@ class Model():
         self.contacts.clear()
 
         measurements = {}
-        for measurement_id, measurement in self.measurements.items():
+        for measurement_id, measurement in self.measurements.iteritems():
             contact_model = self.contact_models[measurement_id]
             contacts = contact_model.get_contacts(measurement)
             if contacts:
@@ -367,7 +367,7 @@ class Model():
         #self.session.clear()
         #self.sessions = {}
         self.measurement_name = ""
-        self.measurement.clear()
+        # self.measurement.clear()
         self.measurements = {}
         self.contact.clear()
         self.contacts.clear()

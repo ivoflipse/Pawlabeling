@@ -442,7 +442,7 @@ class Settings(QtCore.QSettings):
     def save_settings(self, settings):
         """
         """
-        for key, value in settings.items():
+        for key, value in settings.iteritems():
             if key not in ["brands", "colors", "contact_dict"]:  # I want to skip these
                 self.write_value(key, value)
 

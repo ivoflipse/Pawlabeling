@@ -149,13 +149,13 @@ class SettingsWidget(QtGui.QWidget):
         This function should probably do some validation
         """
         settings_dict = self.settings.read_settings()
-        for key, nested in settings_dict.items():
+        for key, nested in settings_dict.iteritems():
             # This will help skip settings we don't change anyway
             if key not in self.settings.lookup_table:
                 del settings_dict[key]
                 break
 
-            for nested_key, old_value in nested.items():
+            for nested_key, old_value in nested.iteritems():
                 if type(nested_key) not in [str, unicode]:
                     break
 

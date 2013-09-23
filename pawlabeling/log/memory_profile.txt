@@ -13,7 +13,7 @@ Line #    Mem usage    Increment   Line Contents
    315   660.805 MB     0.000 MB           my = 0
    316   660.477 MB    -0.328 MB           mz = 0
    317                                     # Group all the measurement_data percontact
-   318   660.465 MB    -0.012 MB           for measurement_name, contacts in self.contacts.items():
+   318   660.465 MB    -0.012 MB           for measurement_name, contacts in self.contacts.iteritems():
    319   660.805 MB     0.340 MB               for contact in contacts:
    320   660.805 MB     0.000 MB                   contact_label = contact.contact_label
    321   660.805 MB     0.000 MB                   if contact_label >= 0:
@@ -28,7 +28,7 @@ Line #    Mem usage    Increment   Line Contents
    330
    331   660.805 MB     0.000 MB           shape = (mx, my, mz)
    332                                     # Then get the normalized measurement_data
-   333   660.805 MB     0.000 MB           for contact_label, data in data_list.items():
+   333   660.805 MB     0.000 MB           for contact_label, data in data_list.iteritems():
    334                                         normalized_data = utility.calculate_average_data(data, shape)
    335                                         self.average_data[contact_label]= normalized_data
 

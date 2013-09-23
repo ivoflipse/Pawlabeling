@@ -212,7 +212,7 @@ def merging_contacts(contacts):
     # we might have to move things around several times
     # This is where we actually merge the contacts in
     # each cluster
-    for key, indices in list(clusters.items()):
+    for key, indices in list(clusters.iteritems()):
         newContact = {}
         for index in indices:
             contact = contacts[index]

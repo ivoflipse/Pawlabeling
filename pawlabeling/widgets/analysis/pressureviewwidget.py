@@ -43,7 +43,7 @@ class PressureViewWidget(QtGui.QWidget):
         pub.subscribe(self.active_widget, "active_widget")
 
     def change_frame(self, frame):
-        for contact_label, widget in self.contacts_list.items():
+        for contact_label, widget in self.contacts_list.iteritems():
             if self.active:
                 widget.change_frame(frame)
             else:
@@ -53,7 +53,7 @@ class PressureViewWidget(QtGui.QWidget):
         self.active = False
         if self == widget:
             self.active = True
-            for contact_label, widget in self.contacts_list.items():
+            for contact_label, widget in self.contacts_list.iteritems():
                 widget.draw()
 
 
@@ -116,7 +116,7 @@ class ContactView(QtGui.QWidget):
         self.max_duration = 0
         self.max_pressure = 0
 
-        for measurement_name, contacts in self.model.contacts.items():
+        for measurement_name, contacts in self.model.contacts.iteritems():
             for contact in contacts:
                 if contact.contact_label == self.contact_label:
                     pressure = np.pad(contact.pressure_over_time, 1, mode="constant", constant_values=0)

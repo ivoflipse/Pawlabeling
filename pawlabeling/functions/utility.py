@@ -37,7 +37,7 @@ def update_bounding_box(contact):
     total_min_y, total_max_y = float("inf"), float("-inf")
 
     # For each contour, get the sizes
-    for frame, contours in contact.items():
+    for frame, contours in contact.iteritems():
         for contour in contours:
             x, y, width, height = boundingRect(contour)
             if x < total_min_x:

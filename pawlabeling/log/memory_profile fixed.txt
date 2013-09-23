@@ -12,7 +12,7 @@ Line #    Mem usage    Increment   Line Contents
     85   177.609 MB     0.000 MB           # TODO reduce this size to the size of the bounding box of the contact (width, length, duration)
     86   181.230 MB     3.621 MB           self.data = np.zeros((self.width, self.height, self.length))
     87
-    88   225.969 MB    44.738 MB           for index, (frame, contours) in enumerate(self.contour_list.items()):
+    88   225.969 MB    44.738 MB           for index, (frame, contours) in enumerate(self.contour_list.iteritems()):
     89   181.230 MB   -44.738 MB           # Pass a single contour as if it were a contact
     90   225.969 MB    44.738 MB               center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: contours})
     91                                         # Get the non_zero pixels coordinates for that frame

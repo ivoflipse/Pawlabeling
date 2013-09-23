@@ -59,7 +59,7 @@ class Contacts(object):
             self.contact_group = self.contacts_table.create_contact(**contact)
 
 
-        for item_id, data in results.items():
+        for item_id, data in results.iteritems():
             result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
             if not result:
                 self.contacts_table.store_data(group=self.contact_group,
@@ -221,7 +221,7 @@ class Contact(object):
         # Create an empty array that should fit the entire contact
         self.data = np.zeros((self.width, self.height, self.length))
 
-        for index, (frame, contours) in enumerate(sorted(self.contour_list.items())):
+        for index, (frame, contours) in enumerate(sorted(self.contour_list.iteritems())):
             # Pass a single contour as if it were a contact
             center, min_x, max_x, min_y, max_y = utility.update_bounding_box({frame: contours})
             # Get the non_zero pixels coordinates for that frame

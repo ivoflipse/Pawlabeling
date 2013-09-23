@@ -31,7 +31,7 @@ class Table(object):
     def search_table(self, table, **kwargs):
         # Create a query out of the kwargs
         query = " & ".join(
-            ["({} == '{}')".format(key, value) for key, value in kwargs.items() if value != ""])
+            ["({} == '{}')".format(key, value) for key, value in kwargs.iteritems() if value != ""])
         rows = table.readWhere(query)
 
         results = []
@@ -309,7 +309,7 @@ class ContactsTable(Table):
         for row in self.contacts_table:
             if row["contact_id"] == kwargs["contact_id"]:
                 # Update any fields that have changed
-                for key, value in kwargs.items():
+                for key, value in kwargs.iteritems():
                     if row[key] != value:
                         row[key] = value
                         row.update()

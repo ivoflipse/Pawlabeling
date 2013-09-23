@@ -165,7 +165,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.files_tree.clear()
 
         self.file_paths = io.get_file_paths()
-        for file_name, file_path in self.file_paths.items():
+        for file_name, file_path in self.file_paths.iteritems():
             root_item = QtGui.QTreeWidgetItem(self.files_tree)
             root_item.setText(0, file_name)
             file_size = os.path.getsize(file_path)
@@ -186,7 +186,7 @@ class MeasurementWidget(QtGui.QWidget):
         plate = self.find_plate(brand=brand, model=model)
         plate_id = plate.plate_id
         frequency = int(self.frequency.itemText(self.frequency.currentIndex()))
-        for file_name, file_path in self.file_paths.items():
+        for file_name, file_path in self.file_paths.iteritems():
             date_time = time.strftime("%Y-%m-%d %H:%M", time.gmtime(os.path.getctime(file_path))).split(" ")
             # Check if the brands and model have been changed or not
             measurement = {"measurement_name": file_name,
@@ -204,7 +204,7 @@ class MeasurementWidget(QtGui.QWidget):
                 pass
 
     def find_plate(self, brand, model):
-        for plate_id, plate in self.model.plates.items():
+        for plate_id, plate in self.model.plates.iteritems():
             if plate.brand == brand and plate.model == model:
                 return plate
 

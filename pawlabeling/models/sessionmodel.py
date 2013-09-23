@@ -53,7 +53,7 @@ class Sessions(object):
         mz = 0
 
         # Iterate over the contacts and retrieve the overall size
-        for measurement_name, contacts in contacts.items():
+        for measurement_name, contacts in contacts.iteritems():
             for contact in contacts:
                 x, y, z = contact.data.shape
                 if x > mx:
@@ -74,7 +74,7 @@ class Sessions(object):
         num_contacts = defaultdict(int)
         mx, my, mz = shape
         average_data = {}
-        for measurement_name, contacts in contacts.items():
+        for measurement_name, contacts in contacts.iteritems():
             for contact in contacts:
                 if contact.contact_label >= 0:
                     num_contacts[contact.contact_label] += 1
@@ -88,7 +88,7 @@ class Sessions(object):
                     data = average_data[contact.contact_label]
                     data[offset_x:offset_x + x, offset_y:offset_y + y, :z] += contact.data
 
-        for contact_label, data in average_data.items():
+        for contact_label, data in average_data.iteritems():
             if num_contacts[contact_label] > 0:
                 weight = 1. / num_contacts[contact_label]
                 average_data[contact_label] = np.multiply(data, weight)
@@ -100,7 +100,7 @@ class Sessions(object):
         results = defaultdict(lambda: defaultdict(list))
         max_results = {}
 
-        for contact_label, contact in contacts.items():
+        for contact_label, contact in contacts.iteritems():
             data = contact.data
             results[contact_label]["filtered"] = utility.filter_outliers(data, contact_label)
             for data in data:
@@ -151,7 +151,7 @@ class Sessions(object):
         else:
             self.contact_group = self.sessions_table.create_group(parent=self.session_group, item_id=contact_label)
 
-        for item_id, data in results.items():
+        for item_id, data in results.iteritems():
             result = self.sessions_table.get_data(group=self.contact_group, item_id=item_id)
             if not result:
                 self.sessions_table.store_data(group=self.contact_group,

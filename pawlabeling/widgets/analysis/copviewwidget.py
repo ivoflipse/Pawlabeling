@@ -42,7 +42,7 @@ class CopViewWidget(QtGui.QWidget):
         pub.subscribe(self.active_widget, "active_widget")
 
     def change_frame(self, frame):
-        for contact_label, widget in self.contacts_list.items():
+        for contact_label, widget in self.contacts_list.iteritems():
             if self.active:
                 widget.change_frame(frame)
             else:
@@ -52,7 +52,7 @@ class CopViewWidget(QtGui.QWidget):
         self.active = False
         if self == widget:
             self.active = True
-            for contact_label, widget in self.contacts_list.items():
+            for contact_label, widget in self.contacts_list.iteritems():
                 widget.draw()
 
 class ContactView(QtGui.QWidget):
