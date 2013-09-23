@@ -52,7 +52,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.contacts_tree.setColumnCount(5)
         self.contacts_tree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
         # Set the widths of the columns
-        for column in range(self.contacts_tree.columnCount()):
+        for column in xrange(self.contacts_tree.columnCount()):
             self.contacts_tree.setColumnWidth(column, 60)
         self.contacts_tree.itemActivated.connect(self.switch_contacts)
 
@@ -118,7 +118,7 @@ class ProcessingWidget(QtGui.QWidget):
     def update_measurement_status(self, measurements):
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
-        for index in range(self.measurement_tree.topLevelItemCount()):
+        for index in xrange(self.measurement_tree.topLevelItemCount()):
             item = self.measurement_tree.topLevelItem(index)
             measurement_name = item.text(0)
             if measurement_name in measurements:
@@ -167,7 +167,7 @@ class ProcessingWidget(QtGui.QWidget):
                 item.setText(1, self.contact_dict[contact_label])
 
                 # Update the colors in the contact tree
-                for idx in range(item.columnCount()):
+                for idx in xrange(item.columnCount()):
                     if contact_label >= 0:
                         item.setForeground(idx, self.colors[contact_label])
 

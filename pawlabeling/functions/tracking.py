@@ -21,7 +21,7 @@ def closest_contact(contact1, contact2, center1, euclidean_distance):
     # This makes sure it checks if there's nothing close in the neighboring frame
     # Shouldn't this be up to the gap?
     # Add more frames
-    for f in range(1, 6):
+    for f in xrange(1, 6):
         frames.append(minFrame - f)
         frames.append(maxFrame + f)
         #frames += [minFrame - 2, minFrame - 1, maxFrame + 1, maxFrame + 2]
@@ -227,7 +227,7 @@ def find_contours(data):
     contour_dict = {}
     # Find the contours in this frame
     rows, cols, numFrames = data.shape
-    for frame in range(numFrames):
+    for frame in xrange(numFrames):
         copy_data = data[:, :, frame].T * 1.
         # Threshold the measurement_data
         _, copy_data = cv2.threshold(copy_data, 0.0, 1, cv2.THRESH_BINARY)

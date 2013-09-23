@@ -1,5 +1,6 @@
 from __future__ import division
 import logging
+from itertools import izip
 from PySide import QtGui, QtCore
 import numpy as np
 from pubsub import pub
@@ -124,8 +125,8 @@ def pad_with_zeros(data, data_slices, mx, my):
         ny, nx, nt = np.shape(data[dat_slice])
         offset_y, offset_x = int((my - ny) / 2), int((mx - nx) / 2)
         temp_array = np.zeros((my, mx))
-        for y in range(ny):
-            for x in range(nx):
+        for y in xrange(ny):
+            for x in xrange(nx):
                 temp_array[y + offset_y, x + offset_x] = data[dat_slice].max(axis=2)[y, x]
         padded[contact_number] = temp_array
     return padded
@@ -350,8 +351,8 @@ class ImageColorTable():
         self.red_threshold = 256.0
 
     def create_color_table(self):
-        color_table = [self.black for _ in range(255)]
-        for val in range(255):
+        color_table = [self.black for _ in xrange(255)]
+        for val in xrange(255):
             if val < self.black_threshold:
                 color_table[val] = interpolate_rgb(self.black, self.black_threshold,
                                                    self.blue, self.blue_threshold, val)
@@ -407,7 +408,7 @@ def filter_outliers(data, contact_label, num_std=2):
 
     new_data = []
     filtered = []
-    for index, (l, f, p, d) in enumerate(zip(lengths, forces, pixel_counts, data)):
+    for index, (l, f, p, d) in enumerate(izip(lengths, forces, pixel_counts, data)):
         if (min_std_lengths < l < max_std_lengths and
                         min_std_forces < f < max_std_forces and
                         min_std_pixel_counts < p < max_std_pixel_counts):
@@ -464,7 +465,7 @@ def agglomerative_clustering(data, num_clusters):
                 if node in clusters:
                     del clusters[node]
 
-    labels = [0 for _ in range(len(leaders))]
+    labels = [0 for _ in xrange(len(leaders))]
     keys = list(clusters.keys())
     for leader in clusters:
         for node in clusters[leader]:
@@ -476,7 +477,7 @@ def agglomerative_clustering(data, num_clusters):
 def chunks(l, n):
     """ Yield successive n-sized chunks from l.
     """
-    for i in range(0, len(l), n):
+    for i in xrange(0, len(l), n):
         yield l[i:i + n]
 
 
@@ -526,7 +527,7 @@ def map_to_string(piecewise_aggregate_approximation, alphabet_size):
     }
     # Get the right cut-off point from the mapping
     cut_points = mapping[alphabet_size]
-    for i in range(len(piecewise_aggregate_approximation)):
+    for i in xrange(len(piecewise_aggregate_approximation)):
         result[i] = np.sum((cut_points <= piecewise_aggregate_approximation[i]))
     return result
 
@@ -548,7 +549,7 @@ def timeseries2symbol(data, N, n, alphabet_size):
 
     # If N == data_len, then this will only be done once
     # So then we don't use a sliding window
-    for i in range(len(data) - (N - 1)):
+    for i in xrange(len(data) - (N - 1)):
     # Slice the measurement_data
         sub_section = data[i:i + N]
         # Z normalize it
@@ -639,9 +640,9 @@ def build_dist_table(alphabet_size):
     }
     cutlines = mapping[alphabet_size]
     dist_matrix = np.zeros((alphabet_size, alphabet_size))
-    for i in range(alphabet_size):
+    for i in xrange(alphabet_size):
         # the min_dist for adjacent symbols are 0, so we start with i+2
-        for j in range(i, alphabet_size):
+        for j in xrange(i, alphabet_size):
             # Get the squared difference
             dist_matrix[i, j] = (cutlines[i] - cutlines[j]) ** 2
             dist_matrix[j, i] = dist_matrix[i, j]

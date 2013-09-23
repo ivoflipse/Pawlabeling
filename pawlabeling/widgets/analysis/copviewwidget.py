@@ -149,9 +149,9 @@ class ContactView(QtGui.QWidget):
 
         # Create a strided index
         z = average_data.shape[2]
-        index = [x for x in range(0, z, int(z / self.x))]
+        index = [x for x in xrange(0, z, int(z / self.x))]
 
-        for frame in range(len(self.cop_x)-1):
+        for frame in xrange(len(self.cop_x)-1):
             x1 = self.cop_x[frame]
             x2 = self.cop_x[frame + 1]
             y1 = self.cop_y[frame]

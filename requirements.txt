@@ -6,3 +6,4 @@ matplotlib
 pypubsub
 tables
 nose
+imreg

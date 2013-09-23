@@ -2,6 +2,7 @@ from collections import defaultdict
 import logging
 import numpy as np
 import cv2
+from itertools import izip
 from pubsub import pub
 from pawlabeling.functions import utility, calculations, tracking
 from pawlabeling.settings import settings
@@ -91,7 +92,7 @@ class Contacts(object):
         contact_data = contact_data_table.get_contact_data()
         contacts = contacts_table.get_contacts()
         # Create Contact instances out of them
-        for x, y in zip(contacts, contact_data):
+        for x, y in izip(contacts, contact_data):
             contact = Contact(subject_id=self.subject_id,
                               session_id=self.session_id,
                               measurement_id=self.measurement_id)
@@ -314,7 +315,7 @@ class Contact(object):
         self.measurement_id = contact["measurement_id"]
         self.contact_id = int(contact["contact_id"].split("_")[1])  # Convert it back
         self.contact_label = contact["contact_label"]
-        self.frames = [x for x in range(contact["min_z"], contact["max_z"] + 1)]
+        self.frames = [x for x in xrange(contact["min_z"], contact["max_z"] + 1)]
         self.width = contact["width"]
         self.height = contact["height"]
         self.length = contact["length"]

@@ -31,12 +31,12 @@ def calculate_cop_numpy(data):
 
     x_coordinate, y_coordinate = np.arange(x), np.arange(y)
     temp_x, temp_y = np.zeros(y), np.zeros(x)
-    for frame in range(z):
+    for frame in xrange(z):
         if np.sum(data[:, :, frame]) > 0.0:  # Else divide by zero
             # This can be rewritten as a vector calculation
-            for col in range(y):
+            for col in xrange(y):
                 temp_x[col] = np.sum(data[col, :, frame] * x_coordinate)
-            for row in range(x):
+            for row in xrange(x):
                 temp_y[row] = np.sum(data[:, row, frame] * y_coordinate)
             # np.divide should guard against divide by zero
             cop_x[frame] = np.divide(np.sum(temp_x), np.sum(data[:, :, frame]))
@@ -49,7 +49,7 @@ def calculate_cop_scipy(data):
     y, x, z = np.shape(data)
     cop_x = np.zeros(z, dtype=np.float32)
     cop_y = np.zeros(z, dtype=np.float32)
-    for frame in range(z):
+    for frame in xrange(z):
         if np.sum(data[:, :, frame]) > 0:
             # While it may seem odd, x and y are mixed up, must be my own fault
             y, x = center_of_mass(data[:, :, frame])
@@ -72,7 +72,7 @@ def force_over_time(data):
 def pixel_count_over_time(data):
     assert len(data.shape) == 3
     x, y, z = data.shape
-    return np.array([np.count_nonzero(data[:, :, frame]) for frame in range(z)])
+    return np.array([np.count_nonzero(data[:, :, frame]) for frame in xrange(z)])
 
 
 def surface_over_time(data, sensor_surface):

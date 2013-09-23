@@ -230,7 +230,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.gait_line_pen.setWidth(2)
         self.gait_line_pen.setColor(Qt.white)
 
-        for index in range(1, len(self.model.contacts[self.measurement_name])):
+        for index in xrange(1, len(self.model.contacts[self.measurement_name])):
             prev_contact = self.model.contacts[self.measurement_name][index - 1]
             cur_contact = self.model.contacts[self.measurement_name][index]
             polygon = QtGui.QPolygonF(

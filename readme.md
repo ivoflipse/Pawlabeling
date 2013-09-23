@@ -74,9 +74,12 @@ In any case, you need to install:
 
 - [OpenCV](http://www.lfd.uci.edu/~gohlke/pythonlibs/#opencv)
 - [PySide](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyside)
+- [PyPubsub](http://pubsub.sourceforge.net/)
+- [imreg](https://github.com/pyimreg/imreg)
 - Numpy (included in Acaconda)
 - Scipy (included in Acaconda)
-
+- PyTables (included in Anaconda)
+- Nose (for testing, included in Anaconda)
 
 Usage
 -----

@@ -132,6 +132,9 @@ class ContactView(QtGui.QWidget):
                                                                      interpolate_length)
                     self.axes.plot(time_line, interpolated_pressure, alpha=0.5)
 
+        # If this is empty, there were no contacts to plot
+        if not pressure_over_time:
+            return
         pressure_over_time = np.array(pressure_over_time)
         mean_length = np.mean(lengths)
         interpolated_time_line = calculations.interpolate_time_series(np.arange(int(mean_length)), interpolate_length)

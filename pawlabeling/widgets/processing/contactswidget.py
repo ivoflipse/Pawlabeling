@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+from itertools import izip
 from PySide import QtGui
 import numpy as np
 from pubsub import pub
@@ -116,7 +117,7 @@ class ContactWidgets(QtGui.QWidget):
             percentages_durations = [np.sqrt((d - duration) ** 2) / duration for d in durations]
             percentages_data = [np.sum(np.sqrt((d - data) ** 2)) / np.sum(np.sum(data)) for d in data_list]
             results = []
-            for p, s, d, d2 in zip(percentages_pressures, percentages_surfaces, percentages_durations,
+            for p, s, d, d2 in izip(percentages_pressures, percentages_surfaces, percentages_durations,
                                    percentages_data):
                 results.append(p + s + d + d2)
 

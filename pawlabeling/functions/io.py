@@ -95,6 +95,8 @@ def load_zebris(infile):
         return results.swapaxes(0, 1)
 
 
+# TODO Check to replace the looping using iter with a sentinel value
+# See Raymond Hettinger's presentation from PyCon about Beautiful Python
 # This functions is modified from:
 # http://stackoverflow.com/questions/4087919/how-can-i-improve-my-contact-detection
 def load_rsscan(infile):

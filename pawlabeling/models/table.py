@@ -1,3 +1,4 @@
+from itertools import izip
 import tables
 
 
@@ -135,7 +136,7 @@ class SubjectsTable(Table):
         subjects = []
         for s in subject_list:
             subject = {}
-            for key, value in zip(self.column_names, s):
+            for key, value in izip(self.column_names, s):
                 subject[key] = value
             subjects.append(subject)
         return subjects
@@ -187,7 +188,7 @@ class SessionsTable(Table):
         sessions = []
         for s in session_list:
             session = {}
-            for key, value in zip(self.column_names, s):
+            for key, value in izip(self.column_names, s):
                 session[key] = value
             sessions.append(session)
         return sessions
@@ -250,7 +251,7 @@ class MeasurementsTable(Table):
         measurements = []
         for m in measurement_list:
             measurement = {}
-            for column, value in zip(self.column_names, m):
+            for column, value in izip(self.column_names, m):
                 measurement[column] = value
             measurements.append(measurement)
         return measurements
@@ -322,7 +323,7 @@ class ContactsTable(Table):
         contacts = []
         for c in contact_list:
             contact = {}
-            for column, value in zip(self.column_names, c):
+            for column, value in izip(self.column_names, c):
                 contact[column] = value
             contacts.append(contact)
         return contacts
@@ -428,7 +429,7 @@ class PlatesTable(Table):
         plates = []
         for s in plates_list:
             plate = {}
-            for key, value in zip(self.column_names, s):
+            for key, value in izip(self.column_names, s):
                 plate[key] = value
             plates.append(plate)
         return plates

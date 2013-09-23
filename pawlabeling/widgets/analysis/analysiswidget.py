@@ -44,7 +44,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.contacts_tree.setColumnCount(5)
         self.contacts_tree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
         # Set the widths of the columns
-        for column in range(self.contacts_tree.columnCount()):
+        for column in xrange(self.contacts_tree.columnCount()):
             self.contacts_tree.setColumnWidth(column, 55)
 
         self.results_widget = resultswidget.ResultsWidget(self)
@@ -116,7 +116,7 @@ class AnalysisWidget(QtGui.QTabWidget):
             force = np.max(contact.force_over_time)
             rootItem.setText(4, str(int(force)))
 
-            for idx in range(rootItem.columnCount()):
+            for idx in xrange(rootItem.columnCount()):
                 rootItem.setBackground(idx, self.colors[contact.contact_label])
 
         # Initialize the current contact index, which we'll need for keep track of the labeling
