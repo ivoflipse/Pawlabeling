@@ -23,7 +23,7 @@ class MeasurementWidget(QtGui.QWidget):
 
         self.measurement_folder_label = QtGui.QLabel("File path:")
         self.measurement_folder = QtGui.QLineEdit()
-        self.measurement_folder.setText(self.settings.measurement_folder())
+        self.measurement_folder.setText(self.model.measurement_folder)
         self.measurement_folder.textChanged.connect(self.check_measurement_folder)
 
         self.measurement_folder_button = QtGui.QToolButton()
@@ -133,7 +133,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.model.get_measurements()
 
     def change_file_location(self, evt=None):
-        measurement_folder = self.settings.measurement_folder()
+        measurement_folder = self.model.measurement_folder
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your measurements",
@@ -142,14 +142,13 @@ class MeasurementWidget(QtGui.QWidget):
         #self.file_dialog.setOption(QtGui.QFileDialog.ShowDirsOnly)
         self.file_dialog.setViewMode(QtGui.QFileDialog.Detail)
 
-        # TODO Not sure whether I really want to overwrite the default folder, since it might be nested
-        # Which makes it hard to use for other sessions, because you have to navigate back up
-
         # Change where settings.measurement_folder is pointing too
         if self.file_dialog.exec_():
             measurement_folder = self.file_dialog.selectedFiles()[0]
 
-        self.settings.write_value("folders/measurement_folder", measurement_folder)
+        # I'm no lnoger overwriting the settings, that wasn't very user friendly
+        #self.settings.write_value("folders/measurement_folder", measurement_folder)
+        self.model.measurement_folder = measurement_folder
 
         self.measurement_folder.setText(measurement_folder)
         # Update the files tree
@@ -158,7 +157,6 @@ class MeasurementWidget(QtGui.QWidget):
     def check_measurement_folder(self, evt=None):
         measurement_folder = self.measurement_folder.text()
         if os.path.exists(measurement_folder) and os.path.isdir(measurement_folder):
-            settings.measurement_folder = measurement_folder
             self.update_files_tree()
 
     def update_files_tree(self):
