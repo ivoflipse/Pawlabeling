@@ -207,13 +207,13 @@ class ContactWidget(QtGui.QWidget):
 
         # Make sure the contacts are facing upright
         self.data = np.rot90(np.rot90(self.average_data.max(axis=2)))[:, ::-1]
-        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.model.n_max, self.color_table,
+        self.pixmap = utility.get_qpixmap(self.data, self.degree, self.model.n_max, self.color_table,
                                           interpolation="cubic")
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 
     def redraw(self):
-        self.pixmap = utility.get_QPixmap(self.data, self.degree, self.model.n_max, self.color_table,
+        self.pixmap = utility.get_qpixmap(self.data, self.degree, self.model.n_max, self.color_table,
                                           interpolation="cubic")
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
@@ -222,7 +222,7 @@ class ContactWidget(QtGui.QWidget):
         self.data = np.zeros((self.mx, self.my))
         self.average_data = []
         # Put the screen to black
-        self.image.setPixmap(utility.get_QPixmap(np.zeros((15, 15)), self.degree, self.n_max, self.color_table))
+        self.image.setPixmap(utility.get_qpixmap(np.zeros((15, 15)), self.degree, self.n_max, self.color_table))
         self.max_pressure = float("inf")
         self.mean_duration = float("inf")
         self.mean_surface = float("inf")

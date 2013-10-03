@@ -191,27 +191,6 @@ def load_results(input_path):
         raise Exception("Results do not contain Contact's. You've used an incorrect file")
 
 
-def results_to_pickle(pickle_path, contacts):
-    """
-    pickle_path is a path like "subject_name\\measurement_name"
-    contacts is a list of Contacts
-
-    It appends .pkl as an extensions to the pickle_path and
-    uses pickle to dump the contacts to the file location
-    """
-    # Check if the parent folder exists
-    parent_folder = os.path.dirname(pickle_path)
-    if not os.path.exists(parent_folder):
-        raise Exception("Parent folder does not exists, can't save the file")
-
-    if not contacts:
-        raise Exception("There are no contacts in this measurement, can't save the file")
-
-    # Open a file with pkl (pickle) added to the path_name
-    with open(pickle_path + ".pkl", "wb") as pickle_file:
-        pickle.dump(contacts, pickle_file)
-
-
 def zip_file(root, file_name):
     if not root:
         raise Exception("Incorrect root folder")
@@ -255,8 +234,8 @@ def get_file_paths():
     logger.info("io.get_file_paths: Searching for measurements...")
 
     root = settings.settings.measurement_folder()
-    assert os.path.exists(root) == True
-    assert os.path.isdir(root) == True
+    assert os.path.exists(root)
+    assert os.path.isdir(root)
     file_names = [name for name in os.listdir(root)
                   if os.path.isfile(os.path.join(root, name))]
 

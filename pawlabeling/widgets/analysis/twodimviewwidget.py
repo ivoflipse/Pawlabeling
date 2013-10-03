@@ -122,7 +122,7 @@ class ContactView(QtGui.QWidget):
         self.data = np.rot90(np.rot90(self.data))
         self.data = self.data[:, ::-1]
         # Display the average measurement_data for the requested frame
-        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.model.n_max, self.color_table))
+        self.image.setPixmap(utility.get_qpixmap(self.data, self.degree, self.model.n_max, self.color_table))
         self.resizeEvent()
 
     def change_frame(self, frame):
@@ -137,7 +137,7 @@ class ContactView(QtGui.QWidget):
         self.average_data = np.zeros((self.mx, self.my, 15))
         self.max_of_max = self.data[:]
         # Put the screen to black
-        self.image.setPixmap(utility.get_QPixmap(self.data, self.degree, self.model.n_max, self.color_table))
+        self.image.setPixmap(utility.get_qpixmap(self.data, self.degree, self.model.n_max, self.color_table))
 
     def resizeEvent(self, event=None):
         item_size = self.view.mapFromScene(self.image.sceneBoundingRect()).boundingRect().size()

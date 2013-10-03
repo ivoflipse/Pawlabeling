@@ -182,6 +182,8 @@ class Model():
         self.measurement_model = measurementmodel.Measurements(subject_id=self.subject_id,
                                                                session_id=self.session_id)
 
+        # TODO How did I manage to keep making this stuff so complicated?!?
+
         # Load all the measurements for this session
         self.get_measurements()
         # If there are no measurements yet, stop right here
@@ -287,6 +289,7 @@ class Model():
 
         pub.sendMessage("update_contacts_tree")
 
+    # TODO This should only be used when you've changed tracking thresholds
     def repeat_track_contacts(self):
         contacts = self.contact_model.repeat_track_contacts(measurement=self.measurement,
                                                             measurement_data=self.measurement_data,

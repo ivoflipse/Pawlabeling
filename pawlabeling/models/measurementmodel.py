@@ -1,7 +1,5 @@
-import logging
-from pubsub import pub
 from pawlabeling.models import table
-from pawlabeling.functions import calculations, io
+from pawlabeling.functions import io
 from pawlabeling.settings import settings
 
 
@@ -45,10 +43,10 @@ class Measurements(object):
     def delete_measurement(self, measurement):
         # Delete both the row and the group
         self.measurements_table.remove_row(table=self.measurements_table.measurements_table,
-                                       name_id="measurement_id",
-                                       item_id=measurement.measurement_id)
+                                           name_id="measurement_id",
+                                           item_id=measurement.measurement_id)
         self.measurements_table.remove_group(where="/{}/{}".format(self.subject_id, self.session_id),
-                                         name=measurement.measurement_id)
+                                             name=measurement.measurement_id)
 
     def get_measurements(self):
         measurements = {}

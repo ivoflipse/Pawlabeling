@@ -1,7 +1,6 @@
 import logging
 from collections import defaultdict
 import numpy as np
-from pubsub import pub
 from pawlabeling.models import table
 from pawlabeling.settings import settings
 from pawlabeling.functions import calculations, utility

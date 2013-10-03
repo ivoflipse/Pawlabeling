@@ -1,3 +1,4 @@
+pubsub
 numpy
 PySide
 cv2

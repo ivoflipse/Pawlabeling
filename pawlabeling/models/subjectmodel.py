@@ -1,5 +1,4 @@
 import logging
-from pubsub import pub
 from pawlabeling.models import table
 from pawlabeling.settings import settings
 

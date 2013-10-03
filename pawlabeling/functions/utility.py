@@ -92,7 +92,7 @@ def standardize_contact(contact, std_num_x=20, std_num_y=20):
     # Rescale the pressure values
     zi -= zi.min()
     zi /= zi.max()
-    zi -= zi.mean() #<- Helps distinguish front from hind contacts...
+    zi -= zi.mean()
     return zi
 
 
@@ -134,10 +134,10 @@ def pad_with_zeros(data, data_slices, mx, my):
 
 def average_contacts(contacts):
     num_contacts = len(contacts)
-    empty_array = np.zeros((50, 100, num_contacts)) # This should fit AN.THING
+    empty_array = np.zeros((50, 100, num_contacts))  # This should fit AN.THING
     for index, contact in enumerate(contacts):
         nx, ny = np.shape(contact)
-        empty_array[0:nx, 0:ny, index] = contact # dump the array in the empty one
+        empty_array[0:nx, 0:ny, index] = contact  # dump the array in the empty one
     average_array = np.mean(empty_array, axis=2)
     max_x, max_y = np.max(np.nonzero(average_array)[0]), np.max(np.nonzero(average_array)[1])
     average_array = average_array[0:max_x + 1, 0:max_y + 1]
@@ -157,7 +157,7 @@ def contour_to_polygon(contour, degree, offset_x=0, offset_y=0):
         polygon.append(QtCore.QPointF((coordinates[0][0] + 1 - offset_x) * degree,
                                       (
                                           coordinates[0][
-                                              1] + 1 - offset_y) * degree)) # Pray this doesn't go out of bounds!
+                                              1] + 1 - offset_y) * degree))  # Pray this doesn't go out of bounds!
     return QtGui.QPolygonF(polygon)
 
 
@@ -197,7 +197,7 @@ def average_contacts(contacts):
     empty_array = np.zeros((50, 100, num_contacts)) # This seems rather wasteful with space
     for index, contact in enumerate(contacts):
         nx, ny = np.shape(contact)
-        empty_array[0:nx, 0:ny, index] = contact # dump the array in the empty one
+        empty_array[0:nx, 0:ny, index] = contact  # dump the array in the empty one
     average_array = np.mean(empty_array, axis=2)
     max_x, max_y = np.max(np.nonzero(average_array)[0]), np.max(np.nonzero(average_array)[1])
     average_array = average_array[0:max_x + 1, 0:max_y + 1]
@@ -228,9 +228,11 @@ def normalize(array, n_max):
 
 
 def array_to_qimage(array, color_table):
-    """Convert the 2D numpy array  into a 8-bit QImage with a gray
-    colormap.  The first dimension represents the vertical image axis."""
-    array = np.require(array, np.uint8, 'C')
+    """
+    Convert the 2D numpy array  into a 8-bit QImage with a gray
+    colormap.  The first dimension represents the vertical image axis.
+    """
+    assert np.require(array, np.uint8, 'C')
     width, height = array.shape
     result = QtGui.QImage(array.data, height, width, QtGui.QImage.Format_Indexed8)
     result.ndarray = array
@@ -241,7 +243,7 @@ def array_to_qimage(array, color_table):
     return result
 
 
-def get_QPixmap(data, degree, n_max, color_table, interpolation="cubic"):
+def get_qpixmap(data, degree, n_max, color_table, interpolation="cubic"):
     """
     This function expects a single frame, it will interpolate/resize it with a given degree and
     return a pixmap
@@ -763,5 +765,3 @@ mapping = {
          0.67,
          0.84, 1.04, 1.28, 1.64],
 }
-
-

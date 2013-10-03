@@ -1,8 +1,11 @@
-import numpy as np
 from collections import defaultdict
 import cv2
+
+import numpy as np
+
 from pawlabeling.functions.utility import update_bounding_box
 from pawlabeling.settings import settings
+
 
 def closest_contact(contact1, contact2, center1, euclidean_distance):
     """
@@ -18,19 +21,18 @@ def closest_contact(contact1, contact2, center1, euclidean_distance):
     """
     # Perhaps I should add a boolean for when there's a gap or not
     frames = list(contact1.keys())
-    minFrame, maxFrame = min(frames), max(frames)
+    min_frame, max_frame = min(frames), max(frames)
     # This makes sure it checks if there's nothing close in the neighboring frame
     # Shouldn't this be up to the gap?
     # Add more frames
     for f in xrange(1, 6):
-        frames.append(minFrame - f)
-        frames.append(maxFrame + f)
-        #frames += [minFrame - 2, minFrame - 1, maxFrame + 1, maxFrame + 2]
-    minDistance = euclidean_distance
+        frames.append(min_frame - f)
+        frames.append(max_frame + f)
+    min_distance = euclidean_distance
     value = 0
     for frame in frames:
         if frame in contact2:
-            if contact2[frame]: # How can there be an empty list in here?
+            if contact2[frame]:  # How can there be an empty list in here?
                 center2, _, _, _, _ = update_bounding_box({frame: contact2[frame]})
                 #distance = np.linalg.norm(np.array(center1) - np.array(center2))
                 x1 = center1[0]
@@ -38,8 +40,8 @@ def closest_contact(contact1, contact2, center1, euclidean_distance):
                 x2 = center2[0]
                 y2 = center2[1]
                 distance = (abs(x1 - x2) ** 2 + abs(y1 - y2) ** 2) ** 0.5
-                if distance < minDistance:
-                    minDistance = distance
+                if distance < min_distance:
+                    min_distance = distance
                 if distance <= euclidean_distance:
                     value += euclidean_distance - distance
     return value / float(len(frames))
@@ -100,7 +102,7 @@ def merging_contacts(contacts):
     import heapq
 
     # Get the important temporal spatial variables
-    sides, centerList, surfaces, lengths = calculate_temporal_spatial_variables(contacts)
+    sides, center_list, surfaces, lengths = calculate_temporal_spatial_variables(contacts)
     # Get their averages and adjust them when needed
     frame_threshold = np.mean(lengths) * settings.settings.tracking_temporal()
     euclidean_distance = np.mean(sides) * settings.settings.tracking_spatial()
@@ -114,13 +116,13 @@ def merging_contacts(contacts):
         clusters[index1] = {index1}
         leaders[index1] = index1
 
-        center1 = centerList[index1]
+        center1 = center_list[index1]
         frames1 = set(contact1.keys())
         length1 = len(frames1)
         surface1 = surfaces[index1]
         for index2, contact2 in enumerate(contacts):
             if index1 != index2:
-                center2 = centerList[index2]
+                center2 = center_list[index2]
                 #distance = np.linalg.norm(np.array(center1) - np.array(center2))
                 # Instead of linalg, we just compare the first two coordinates
                 # of both contacts
@@ -166,7 +168,7 @@ def merging_contacts(contacts):
                     else:
                         if length1 <= frame_threshold and not overlap:
                             gap = min([abs(f1 - f2) for f1 in frames1 for f2 in frames2])
-                            if gap < 5: # I changed it to 5, which may or may not work
+                            if gap < 5:  # I changed it to 5, which may or may not work
                                 merge = True
                                 # If we've found a merge, we'll add it to the heap
                     if merge:
@@ -226,8 +228,8 @@ def find_contours(data):
     # Dictionary to fill with results
     contour_dict = defaultdict()
     # Find the contours in this frame
-    rows, cols, numFrames = data.shape
-    for frame in xrange(numFrames):
+    rows, cols, num_frames = data.shape
+    for frame in xrange(num_frames):
         copy_data = data[:, :, frame].T * 1.
         # Threshold the measurement_data
         _, copy_data = cv2.threshold(copy_data, 0.0, 1, cv2.THRESH_BINARY)
@@ -241,7 +243,7 @@ def find_contours(data):
 
 def create_graph(contour_dict, euclidean_distance=15):
     # Create a graph
-    G = defaultdict(set)
+    graph = defaultdict(set)
     # Now go through the contour_dict and for each contour, check if there's a matching contour in the adjacent frame
     for frame in contour_dict:
         contours = contour_dict[frame]
@@ -249,9 +251,9 @@ def create_graph(contour_dict, euclidean_distance=15):
             # Get the contours from the previous frame
             for f in [frame - 1]:
                 if f in contour_dict:
-                    otherContours = contour_dict[f]
+                    other_contours = contour_dict[f]
                     # Iterate through the contacts in the adjacent frame
-                    for index2, contour2 in enumerate(otherContours):
+                    for index2, contour2 in enumerate(other_contours):
                         # Pick the shortest contour, to do the least amount of work
                         if len(contour1) <= len(contour2):
                             short_contour, long_contour = contour1, contour2
@@ -274,29 +276,29 @@ def create_graph(contour_dict, euclidean_distance=15):
                                     if cv2.pointPolygonTest(long_contour, coordinates, 0) > -1.0:
                                         match = True
                                         # Create a bi-directional edge between the two keys
-                                        G[(frame, index1)].add((f, index2))
-                                        G[(f, index2)].add((frame, index1))
+                                        graph[(frame, index1)].add((f, index2))
+                                        graph[(f, index2)].add((frame, index1))
                                         # Perhaps this could be sped up, by keeping a cache of centroids of contacts
                                         # then check if there was a contact in the same place on the last frame
                                         # if so, link them and stop looking
-    return G
+    return graph
 
 
-def search_graph(G, contour_dict):
+def search_graph(graph, contour_dict):
     # Empty list of contacts
     contacts = []
     # Set to keep track of contours we've already visited
     explored = set()
     # Go through all nodes in G and find every node
     # its connected to using BFS
-    for key in G:
+    for key in graph:
         if key not in explored:
             frame, index1 = key
             # Initialize a new contact
             contact = defaultdict(list)
             contact[frame].append(contour_dict[frame][index1])
             explored.add(key)
-            nodes = set(G[key])
+            nodes = set(graph[key])
             # Keep going until there are no more nodes to explore
             while len(nodes) != 0:
                 vertex = nodes.pop()
@@ -304,7 +306,7 @@ def search_graph(G, contour_dict):
                     f, index2 = vertex
                     contact[f].append(contour_dict[f][index2])
                     # Add vertex's neighbors to nodes
-                    for v in G[vertex]:
+                    for v in graph[vertex]:
                         if v not in explored:
                             nodes.add(v)
                     explored.add(vertex)
@@ -325,9 +327,9 @@ def track_contours_graph(data):
     # and the values are the contours
     contour_dict = find_contours(data)
     # Create a graph by connecting contours that have overlap with contours in the previous frame
-    G = create_graph(contour_dict, euclidean_distance=15)
+    graph = create_graph(contour_dict, euclidean_distance=15)
     # Search through the graph for all connected components
-    contacts = search_graph(G, contour_dict)
+    contacts = search_graph(graph, contour_dict)
     # Merge connected components using a minimal spanning tree, where the contacts larger than the threshold are
     # only allowed to merge if they have overlap that's >= than the frame threshold
     contacts = merging_contacts(contacts)

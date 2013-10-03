@@ -1,12 +1,14 @@
 from collections import defaultdict
-import logging
-import numpy as np
 import cv2
 from itertools import izip
+
+import numpy as np
 from pubsub import pub
+
 from pawlabeling.functions import utility, calculations, tracking
 from pawlabeling.settings import settings
 from pawlabeling.models import table
+
 #from memory_profiler import profile
 
 
@@ -58,7 +60,6 @@ class Contacts(object):
             # If it doesn't already exist, we create the contact and store the data
             self.contact_group = self.contacts_table.create_contact(**contact)
 
-
         for item_id, data in results.iteritems():
             result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
             if not result:
@@ -102,7 +103,6 @@ class Contacts(object):
             new_contacts.append(contact)
         return new_contacts
 
-    # TODO This should only be used when you've changed tracking thresholds
     def repeat_track_contacts(self, measurement, measurement_data, plate):
         return self.track_contacts(measurement, measurement_data, plate)
 
@@ -157,6 +157,7 @@ class Contacts(object):
         # Get the rows from the table and their corresponding data
         return contact_data_table.get_contact_data()
 
+
 class Contact(object):
     """
     This class has only one real function and that's to take a contact and create some
@@ -168,17 +169,19 @@ class Contact(object):
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
+        self.contact_id = None
         self.invalid = False
+        self.orientation = False
         self.filtered = False  # This can be used to check if the contact should be filtered or not
         self.contact_label = -2  # Contacts are labeled as -2 by default, this means unlabeled
+        self.settings = settings.settings
+        self.contour_list = defaultdict(list)
+        self.padding = self.settings.padding_factor()
+        self.frames = []
 
     def create_contact(self, contact, measurement_data, orientation):
         self.orientation = orientation  # True means the contact is upside down
-        self.settings = settings.settings
-        self.padding = self.settings.padding_factor()
-
         self.frames = sorted(contact.keys())
-        self.contour_list = defaultdict(list)
         for frame in self.frames:
             # Adjust the contour for the padding
             contours = contact[frame]
@@ -276,7 +279,7 @@ class Contact(object):
         Checks if the contact touches the edge of the plate and if the forces at the beginning or end of a contact
         aren't too high. If so, it will mark the contact as invalid and set the contact_label to -3
         """
-        if self.touches_edge(measurement_data) or self.incomplete_step():
+        if self.touches_edge(measurement_data) or self.incomplete_step:
             self.invalid = True
             self.contact_label = -3
 
@@ -292,6 +295,7 @@ class Contact(object):
 
         return x_touch or y_touch or z_touch
 
+    @property
     def incomplete_step(self):
         """
         Checks if the force at the start or end of a contact aren't higher than a configurable threshold, in which case

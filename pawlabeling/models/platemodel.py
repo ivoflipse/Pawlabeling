@@ -1,5 +1,4 @@
 import logging
-from pubsub import pub
 from pawlabeling.models import table
 from pawlabeling.settings import settings
 
@@ -44,6 +43,7 @@ class Plates(object):
     def put_plate(self, plate):
         self.plate = plate
 
+
 class Plate(object):
     """
         plate_id = tables.StringCol(64)
@@ -55,6 +55,7 @@ class Plate(object):
         sensor_height = tables.FloatCol()
         sensor_surface = tables.FloatCol()
     """
+
     def __init__(self):
         pass
 
@@ -70,14 +71,14 @@ class Plate(object):
 
     def to_dict(self):
         plate = {
-            "plate_id":self.plate_id,
-            "brand":self.brand,
-            "model":self.model,
-            "number_of_rows":self.number_of_rows,
-            "number_of_columns":self.number_of_columns,
-            "sensor_width":self.sensor_width,
-            "sensor_height":self.sensor_height,
-            "sensor_surface":self.sensor_surface,
+            "plate_id": self.plate_id,
+            "brand": self.brand,
+            "model": self.model,
+            "number_of_rows": self.number_of_rows,
+            "number_of_columns": self.number_of_columns,
+            "sensor_width": self.sensor_width,
+            "sensor_height": self.sensor_height,
+            "sensor_surface": self.sensor_surface,
         }
         return plate
 
