@@ -95,37 +95,82 @@ class Sessions(object):
         results = defaultdict(lambda: defaultdict(list))
         max_results = defaultdict()
 
-        for contact_label, contact in contacts.iteritems():
-            data = contact.data
-            results[contact_label]["filtered"] = utility.filter_outliers(data, contact_label)
-            for data in data:
-                force = calculations.force_over_time(data)
+        # results[contact_label]["filtered"] = self.filter_outliers(data, contact_label)
+        for contact_label, contacts in contacts.iteritems():  # Woops I'm overwriting something here
+            for contact in contacts:
+                force = contact.force_over_time
                 results[contact_label]["force"].append(force)
                 max_force = np.max(force)
                 if max_force > max_results.get("force", 0):
                     max_results["force"] = max_force
 
-                pressure = calculations.pressure_over_time(data, sensor_surface=plate.sensor_surface)
+                pressure = contact.pressure_over_time
                 results[contact_label]["pressure"].append(pressure)
                 max_pressure = np.max(pressure)
                 if max_pressure > max_results.get("pressure", 0):
                     max_results["pressure"] = max_pressure
 
-                surface = calculations.surface_over_time(data, sensor_surface=plate.sensor_surface)
+                surface = contact.surface_over_time
                 results[contact_label]["surface"].append(surface)
                 max_surface = np.max(surface)
                 if max_surface > max_results.get("surface", 0):
                     max_results["surface"] = max_surface
 
-                cop_x, cop_y = calculations.calculate_cop(data)
+                cop_x = contact.cop_x
+                cop_y = contact.cop_y
                 results[contact_label]["cop"].append((cop_x, cop_y))
 
-                x, y, z = np.nonzero(data)
+                x, y, z = np.nonzero(contact.data)
                 max_duration = np.max(z)
                 if max_duration > max_results.get("duration", 0):
                     max_results["duration"] = max_duration
 
         return results, max_results
+
+    def filter_outliers(self, data, contact_label, num_std=2):
+        lengths = np.array([d.shape[2] for d in data])
+        forces = np.array([np.max(calculations.force_over_time(d)) for d in data])
+        pixel_counts = np.array([np.max(calculations.pixel_count_over_time(d)) for d in data])
+
+        # Get mean +/- num_std's * std
+        mean_length = np.mean(lengths)
+        std_length = np.std(lengths)
+        min_std_lengths = mean_length - num_std * std_length
+        max_std_lengths = mean_length + num_std * std_length
+
+        mean_forces = np.mean(forces)
+        std_forces = np.std(forces)
+        min_std_forces = mean_forces - num_std * std_forces
+        max_std_forces = mean_forces + num_std * std_forces
+
+        mean_pixel_counts = np.mean(pixel_counts)
+        std_pixel_counts = np.std(pixel_counts)
+        min_std_pixel_counts = mean_pixel_counts - num_std * std_pixel_counts
+        max_std_pixel_counts = mean_pixel_counts + num_std * std_pixel_counts
+
+        new_data = []
+        filtered = []
+        for index, (l, f, p, d) in enumerate(izip(lengths, forces, pixel_counts, data)):
+            if (min_std_lengths < l < max_std_lengths and
+                            min_std_forces < f < max_std_forces and
+                            min_std_pixel_counts < p < max_std_pixel_counts):
+                new_data.append(d)
+            # If the std is zero, it means we only have one item, don't filter it!
+            elif std_length == 0 or std_forces == 0 or std_pixel_counts == 0:
+                new_data.append(d)
+            else:
+                filtered.append(index)
+
+        if filtered:
+            contact_dict = settings.settings.contact_dict()
+            # Notify the system which contacts you deleted
+            pub.sendMessage("updata_statusbar",
+                            status="Removed {} contact(s) from {}".format(len(filtered), contact_dict[contact_label]))
+            logger.info("Removed {} contact(s) from {}".format(len(filtered), contact_dict[contact_label]))
+            # else:
+        #     logger.info("No contacts removed")
+        # Changed this function so now it returns the indices of filtered contacts
+        return filtered
 
     def create_session_data(self, average_contact):
         # Get the label we're dealing with

@@ -48,7 +48,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.measurement_tree.itemActivated.connect(self.put_measurement)
 
         # Set the widths of the columns
-        for column in xrange(self.measurement_tree.columnCount()):
+        self.measurement_tree.setColumnWidth(0, 75)
+        for column in xrange(1, self.measurement_tree.columnCount()):
             self.measurement_tree.setColumnWidth(column, 55)
 
         self.entire_plate_widget = entireplatewidget.EntirePlateWidget(self)
@@ -143,11 +144,9 @@ class ProcessingWidget(QtGui.QWidget):
             return
         self.model.current_measurement_index = self.measurement_tree.indexOfTopLevelItem(current_item)
         # Notify the model to update the subject_name + measurement_name if necessary
-        self.measurement_name = current_item.text(0)
-        self.measurement_name_label.setText("Measurement name: {}".format(self.measurement_name))
-
-        measurement = {"measurement_name": self.measurement_name}
-        self.model.put_measurement(measurement=measurement)
+        measurement_name = current_item.text(0)
+        self.measurement_name_label.setText("Measurement name: {}".format(measurement_name))
+        self.model.put_measurement(measurement_name=measurement_name)
 
     def get_current_measurement_item(self):
         return self.measurement_tree.topLevelItem(self.model.current_measurement_index)

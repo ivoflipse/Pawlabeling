@@ -154,7 +154,8 @@ class SubjectWidget(QtGui.QWidget):
         subject = self.subjects[index]
         # Should we broadcast which user is currently selected?
         # So the model can update itself?
-        self.model.put_subject(subject=subject)
+        # self.model.put_subject(subject=subject)
+        pub.sendMessage("put_subject", subject=subject)
 
     def get_subjects(self):
         pub.sendMessage("get_subjects")

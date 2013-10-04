@@ -102,7 +102,8 @@ class SessionWidget(QtGui.QWidget):
         # Get the index
         index = self.session_tree.indexFromItem(current_item).row()
         session = self.sessions[index]
-        self.model.put_session(session=session)
+        # self.model.put_session(session=session)
+        pub.sendMessage("put_session", session=session)
 
     def update_sessions_tree(self):
         self.session_tree.clear()

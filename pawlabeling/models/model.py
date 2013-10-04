@@ -131,7 +131,6 @@ class Model():
         self.sessions = self.session_model.get_sessions()
         pub.sendMessage("update_sessions_tree")
 
-    # TODO Add some attribute to each measurement, where I can check whether its stored
     def get_measurements(self):
         self.measurements = self.measurement_model.get_measurements()
         pub.sendMessage("update_measurements_tree")
@@ -188,6 +187,7 @@ class Model():
                                                                session_id=self.session_id)
 
         # TODO How did I manage to keep making this stuff so complicated?!?
+        # TODO perhaps I should roll these below functions into one, then call get_blabla on the results later
 
         # Load all the measurements for this session
         self.get_measurements()
@@ -204,22 +204,9 @@ class Model():
             self.contact_models[measurement.measurement_id] = contact_model
 
         self.get_plate()
-
-        # TODO perhaps I should roll these below functions into one, then call get_blabla on the results later
         # Load the contacts, but have it not send out anything
         self.load_contacts()
         self.update_n_max()
-        # Calculate the data_list
-        # self.calculate_data_list()
-        # # Check if there's any data in the data_list, then we don't have any labeled contacts yet
-        # if not self.data_list:
-        #     return
-        #    # Next calculate the average based on the contacts
-        #self.calculate_average()
-        # This needs to come after calculate average, perhaps refactor calculate_average into 2 functions?
-        #self.calculate_results()
-        #self.average_data = self.session_model.update_average(contacts=self.contacts)
-        self.calculate_shape()
         self.update_average()
 
     # TODO This function is messed up again!
@@ -284,7 +271,6 @@ class Model():
 
     def update_current_contact(self):
         # Notify everyone things have been updated
-        self.calculate_shape()
         self.update_average()
         pub.sendMessage("updated_current_contact")
 
@@ -337,14 +323,10 @@ class Model():
 
 
     def update_average(self):
+        self.shape = self.session_model.calculate_shape(contacts=self.contacts)
         self.average_data = self.session_model.update_average(contacts=self.contacts,
                                                               shape=self.shape)
         pub.sendMessage("update_average")
-
-    def calculate_shape(self):
-        self.shape = self.session_model.calculate_shape(contacts=self.contacts)
-        # TODO I don't think people care about this any more!
-        pub.sendMessage("update_shape")
 
 
     # # These functions are no longer up to date!

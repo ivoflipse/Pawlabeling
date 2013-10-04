@@ -386,53 +386,6 @@ class ImageColorTable():
                             "There's an error in your color table. This is likely caused by incorrect normalization")
         return color_table
 
-
-def filter_outliers(data, contact_label, num_std=2):
-    lengths = np.array([d.shape[2] for d in data])
-    forces = np.array([np.max(calculations.force_over_time(d)) for d in data])
-    pixel_counts = np.array([np.max(calculations.pixel_count_over_time(d)) for d in data])
-
-    # Get mean +/- num_std's * std
-    mean_length = np.mean(lengths)
-    std_length = np.std(lengths)
-    min_std_lengths = mean_length - num_std * std_length
-    max_std_lengths = mean_length + num_std * std_length
-
-    mean_forces = np.mean(forces)
-    std_forces = np.std(forces)
-    min_std_forces = mean_forces - num_std * std_forces
-    max_std_forces = mean_forces + num_std * std_forces
-
-    mean_pixel_counts = np.mean(pixel_counts)
-    std_pixel_counts = np.std(pixel_counts)
-    min_std_pixel_counts = mean_pixel_counts - num_std * std_pixel_counts
-    max_std_pixel_counts = mean_pixel_counts + num_std * std_pixel_counts
-
-    new_data = []
-    filtered = []
-    for index, (l, f, p, d) in enumerate(izip(lengths, forces, pixel_counts, data)):
-        if (min_std_lengths < l < max_std_lengths and
-                        min_std_forces < f < max_std_forces and
-                        min_std_pixel_counts < p < max_std_pixel_counts):
-            new_data.append(d)
-        # If the std is zero, it means we only have one item, don't filter it!
-        elif std_length == 0 or std_forces == 0 or std_pixel_counts == 0:
-            new_data.append(d)
-        else:
-            filtered.append(index)
-
-    if filtered:
-        contact_dict = settings.settings.contact_dict()
-        # Notify the system which contacts you deleted
-        pub.sendMessage("updata_statusbar",
-                        status="Removed {} contact(s) from {}".format(len(filtered), contact_dict[contact_label]))
-        logger.info("Removed {} contact(s) from {}".format(len(filtered), contact_dict[contact_label]))
-        # else:
-    #     logger.info("No contacts removed")
-    # Changed this function so now it returns the indices of filtered contacts
-    return filtered
-
-
 def agglomerative_clustering(data, num_clusters):
     from collections import defaultdict
     import heapq
