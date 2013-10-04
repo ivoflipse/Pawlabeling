@@ -201,7 +201,7 @@ class Model():
             contact_model = contactmodel.Contacts(subject_id=self.subject_id,
                                                   session_id=self.session_id,
                                                   measurement_id=measurement.measurement_id)
-            self.contact_models[measurement.measurement_id] = contact_model
+            self.contact_models[measurement.measurement_name] = contact_model
 
         self.get_plate()
         # Load the contacts, but have it not send out anything
@@ -223,7 +223,7 @@ class Model():
                                                   subject_id=self.subject_id,
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
-        self.contact_model = self.contact_models[measurement.measurement_id]
+        self.contact_model = self.contact_models[measurement.measurement_name]
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
         pub.sendMessage("update_measurement")
 
@@ -310,7 +310,7 @@ class Model():
 
         measurements = {}
         for measurement_id, measurement in self.measurements.iteritems():
-            contact_model = self.contact_models[measurement_id]
+            contact_model = self.contact_models[measurement.measurement_name]
             contacts = contact_model.get_contacts(measurement)
             if contacts:
                 self.contacts[measurement.measurement_name] = contacts
@@ -323,15 +323,20 @@ class Model():
 
 
     def update_average(self):
-        print "model.update_average"
         self.shape = self.session_model.calculate_shape(contacts=self.contacts)
         self.average_data = self.session_model.calculate_average_data(contacts=self.contacts,
                                                                       shape=self.shape)
-        # This updates contacts in place
-        # TODO Perhaps store the changes to contacts?
-        # TODO This probably has to move to another function, so I don't have to do it every time I label a contact
-        self.session_model.calculate_results(contacts=self.contacts)
         pub.sendMessage("update_average")
+
+    def calculate_results(self):
+        self.update_average()
+        # This updates contacts in place
+        self.session_model.calculate_results(contacts=self.contacts)
+        # This might have changed self.contacts, so we should update it to be sure
+        for measurement_name, contacts in self.contacts.items():
+            # Make sure to update on the right model
+            contact_model = self.contact_models[measurement_name]
+            contact_model.update_contacts(measurement_name=measurement_name, contacts=self.contacts)
 
     def update_n_max(self):
         self.n_max = self.measurement_model.update_n_max()

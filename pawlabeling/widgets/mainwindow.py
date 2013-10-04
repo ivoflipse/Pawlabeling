@@ -95,6 +95,8 @@ class MainWindow(QtGui.QMainWindow):
         elif self.tab_widget.currentIndex() == 2:
             self.processing_widget.unsubscribe()
             self.analysis_widget.select_initial_measurement()
+            # Calculate the results if it hasn't been done already
+            self.model.calculate_results()
         elif self.tab_widget.currentIndex() == 3:
             self.processing_widget.unsubscribe()
             self.settings_widget.update_fields()

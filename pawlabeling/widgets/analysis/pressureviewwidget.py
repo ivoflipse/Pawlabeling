@@ -69,7 +69,6 @@ class ContactView(QtGui.QWidget):
         self.y = 0
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
-        self.filtered = []
         self.outlier_toggle = False
 
         self.dpi = 100
@@ -88,7 +87,6 @@ class ContactView(QtGui.QWidget):
         self.setMinimumHeight(height)
         self.setLayout(self.main_layout)
 
-        pub.subscribe(self.update_results, "update_results")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
         pub.subscribe(self.update_contact, "update_contact")
@@ -96,14 +94,6 @@ class ContactView(QtGui.QWidget):
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
         self.draw()
-
-    def update_results(self, results, max_results):
-        self.pressures = results[self.contact_label]["pressure"]
-        self.max_duration = max_results["duration"]
-        self.max_pressure = max_results["pressure"]
-        self.filtered = results[self.contact_label]["filtered"]
-        if self.parent.active:
-            self.draw()
 
     def update_contact(self):
         if self.contact_label == self.model.contact.contact_label:
@@ -186,4 +176,3 @@ class ContactView(QtGui.QWidget):
         self.pressures = None
         self.max_duration = None
         self.max_pressure = None
-        self.filtered = None

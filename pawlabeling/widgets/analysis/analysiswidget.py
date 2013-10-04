@@ -26,7 +26,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.settings = settings.settings
         self.colors = self.settings.colors()
         self.contact_dict = self.settings.contact_dict()
-        self.toggle = False
+        self.average_toggle = False
 
         self.toolbar = gui.Toolbar(self)
 
@@ -124,6 +124,10 @@ class AnalysisWidget(QtGui.QTabWidget):
 
                 for idx in xrange(contact_item.columnCount()):
                     color = self.colors[contact.contact_label]
+                    # If a contact is filtered, mark it as invalid
+                    if self.outlier_toggle:
+                        if contact.filtered:
+                            color = self.colors[-3]
                     color.setAlphaF(0.5)
                     contact_item.setBackground(idx, color)
 
@@ -163,6 +167,8 @@ class AnalysisWidget(QtGui.QTabWidget):
 
     def filter_outliers(self, event=None):
         self.outlier_toggle = not self.outlier_toggle
+        # Refresh the tree
+        self.update_measurements_tree()
         pub.sendMessage("filter_outliers", toggle=self.outlier_toggle)
 
     def put_measurement(self):
@@ -181,18 +187,13 @@ class AnalysisWidget(QtGui.QTabWidget):
         contact_id = int(current_item.text(0))  # Convert the unicode to int
         self.model.put_contact(contact_id=contact_id)
 
-    # TODO This needs to be re-enabled somehow
-    # def calculate_results(self):
-    #     self.model.calculate_results()
-    #     pub.sendMessage("calculate_results")
-
     def show_average_results(self):
-        self.toggle = not self.toggle
-        pub.sendMessage("show_average_results", toggle=self.toggle)
+        self.average_toggle = not self.average_toggle
+        pub.sendMessage("show_average_results", toggle=self.average_toggle)
         self.set_max_length()
 
     def set_max_length(self):
-        if self.toggle:
+        if self.average_toggle:
             self.slider.setMaximum(self.max_length)
         else:
             max_length = 0

@@ -140,12 +140,13 @@ class Contacts(object):
         return contacts
 
     def update_contact(self, contact):
-        self.contact_group = self.contacts_table.update_contact(**contact)
+        self.contacts_table.update_contact(**contact)
 
     def update_contacts(self, contacts, measurement_name):
         for contact in contacts[measurement_name]:
             contact = contact.to_dict()  # This takes care of some of the book keeping for us
             self.update_contact(contact)
+        self.contacts_table.contacts_table.flush()
 
     def get_contact_data(self, measurement):
         measurement_id = measurement.measurement_id

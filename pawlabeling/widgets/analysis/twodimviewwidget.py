@@ -77,7 +77,6 @@ class ContactView(QtGui.QWidget):
         self.max_z = 0
         self.frame = -1
         self.length = 0
-        self.filtered = []
         self.outlier_toggle = False
         self.average_toggle = False
         self.data = np.zeros((self.mx, self.my))

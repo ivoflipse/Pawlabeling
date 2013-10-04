@@ -264,6 +264,7 @@ class MeasurementsTable(Table):
                 for attr, value in kwargs.iteritems():
                     row[attr] = value
                 row.update()
+        self.measurements_table.flush()
 
 
 class ContactsTable(Table):
@@ -319,10 +320,10 @@ class ContactsTable(Table):
             if row["contact_id"] == kwargs["contact_id"]:
                 # Update any fields that have changed
                 for key, value in kwargs.iteritems():
-                    if row[key] != value:
-                        row[key] = value
-                        row.update()
-        self.table.flush()
+                    row[key] = value
+                    row.update()
+
+        self.contacts_table.flush()
 
     def get_contact(self, contact_id=""):
         return self.search_table(self.contacts_table, contact_id=contact_id)
