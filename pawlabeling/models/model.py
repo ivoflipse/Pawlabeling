@@ -129,6 +129,7 @@ class Model():
         self.sessions = self.session_model.get_sessions()
         pub.sendMessage("update_sessions_tree")
 
+    # TODO Add some attribute to each measurement, where I can check whether its stored
     def get_measurements(self):
         self.measurements = self.measurement_model.get_measurements()
         pub.sendMessage("update_measurements_tree")
@@ -217,6 +218,7 @@ class Model():
         self.calculate_shape()
         self.update_average()
 
+    # TODO This function is messed up again!
     def put_measurement(self, measurement):
         for m in self.measurements.values():
             if m.measurement_name == measurement["measurement_name"]:
@@ -297,6 +299,7 @@ class Model():
         self.contacts[self.measurement_name] = contacts
         pub.sendMessage("update_contacts_tree")
 
+    # TODO Make sure this function doesn't have to pass along data
     def load_contacts(self):
         """
         Check if there if any measurements for this subject have already been processed
@@ -317,10 +320,7 @@ class Model():
                 measurements[measurement.measurement_name] = measurement
 
         # This notifies the measurement_trees which measurements have contacts assigned to them
-        pub.sendMessage("update_measurement_status", measurements=measurements)
-
-
-
+        pub.sendMessage("update_measurement_status")
 
 
     def update_average(self):

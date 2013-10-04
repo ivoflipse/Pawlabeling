@@ -33,19 +33,14 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.measurement_tree = QtGui.QTreeWidget(self)
         self.measurement_tree.setMaximumWidth(300)
         self.measurement_tree.setMinimumWidth(300)
-        self.measurement_tree.setMaximumHeight(200)
-        self.measurement_tree.setColumnCount(1)
-        self.measurement_tree.setHeaderLabel("Measurements")
+        #self.measurement_tree.setMaximumHeight(200)
+        self.measurement_tree.setColumnCount(5)
+        self.measurement_tree.setHeaderLabels(["Name", "Label", "Length", "Surface", "Force"])
         self.measurement_tree.itemActivated.connect(self.put_measurement)
 
-        self.contacts_tree = QtGui.QTreeWidget(self)
-        self.contacts_tree.setMaximumWidth(300)
-        self.contacts_tree.setMinimumWidth(300)
-        self.contacts_tree.setColumnCount(5)
-        self.contacts_tree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
         # Set the widths of the columns
-        for column in xrange(self.contacts_tree.columnCount()):
-            self.contacts_tree.setColumnWidth(column, 55)
+        for column in xrange(self.measurement_tree.columnCount()):
+            self.measurement_tree.setColumnWidth(column, 55)
 
         self.results_widget = resultswidget.ResultsWidget(self)
 
@@ -53,7 +48,8 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.slider = QtGui.QSlider(self)
         self.slider.setOrientation(Qt.Horizontal)
         self.slider.setMinimum(-1)
-        self.slider.setMaximum(0)
+        self.max_length = 0
+        self.slider.setMaximum(self.max_length)
         self.slider.setValue(-1)
         self.slider.valueChanged.connect(self.change_frame)
         self.slider_text = QtGui.QLabel(self)
@@ -68,7 +64,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.layout.addLayout(self.slider_layout)
         self.vertical_layout = QtGui.QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
-        self.vertical_layout.addWidget(self.contacts_tree)
         self.horizontal_layout = QtGui.QHBoxLayout()
         self.horizontal_layout.addLayout(self.vertical_layout)
         self.horizontal_layout.addLayout(self.layout)
@@ -82,12 +77,10 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.create_toolbar_actions()
 
     def subscribe(self):
-        pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.subscribe(self.update_contacts_tree, "update_contacts")
+        pub.subscribe(self.update_measurements_tree, "update_measurement_status")
 
     def unsubscribe(self):
-        pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.unsubscribe(self.update_contacts_tree, "update_contacts")
+        pub.unsubscribe(self.update_measurements_tree, "update_measurement_status")
 
     def update_measurements_tree(self):
         self.measurement_tree.clear()
@@ -95,42 +88,37 @@ class AnalysisWidget(QtGui.QTabWidget):
         for measurement in self.model.measurements.values():
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
             measurement_item.setText(0, measurement.measurement_name)
+            measurement_item.setFirstColumnSpanned(True)
+            for contact in self.model.contacts[measurement.measurement_name]:
+                if contact.length > self.max_length:
+                    self.max_length = contact.length
 
-        item = self.measurement_tree.topLevelItem(0)
-        self.measurement_tree.setCurrentItem(item, True)
+                contact_item = QtGui.QTreeWidgetItem(measurement_item)
+                contact_item.setText(0, str(contact.contact_id))
+                contact_item.setText(1, self.contact_dict[contact.contact_label])
+                contact_item.setText(2, str(contact.length))  # Sets the frame count
+                max_surface = np.max(contact.surface_over_time)
+                contact_item.setText(3, str(int(max_surface)))
+                max_force = np.max(contact.force_over_time)
+                contact_item.setText(4, str(int(max_force)))
 
-    def update_contacts_tree(self):
-        self.max_length = 0
-        # Clear any existing contacts
-        self.contacts_tree.clear()
-        # Add the contacts to the contacts_tree
-        for contact in self.model.contacts[self.model.measurement_name]:
-            if contact.length > self.max_length:
-                self.max_length = contact.length
-            rootItem = QtGui.QTreeWidgetItem(self.contacts_tree)
-            rootItem.setText(0, str(contact.contact_id))
-            rootItem.setText(1, self.contact_dict[contact.contact_label])
-            rootItem.setText(2, str(contact.length))  # Sets the frame count
-            surface = np.max(contact.surface_over_time)
-            rootItem.setText(3, str(int(surface)))
-            force = np.max(contact.force_over_time)
-            rootItem.setText(4, str(int(force)))
-
-            for idx in xrange(rootItem.columnCount()):
-                rootItem.setBackground(idx, self.colors[contact.contact_label])
+                for idx in xrange(contact_item.columnCount()):
+                    color = self.colors[contact.contact_label]
+                    color.setAlphaF(0.5)
+                    contact_item.setBackground(idx, color)
 
         # Initialize the current contact index, which we'll need for keep track of the labeling
         self.current_contact_index = 0
 
-        # Select the first item in the contacts tree
-        item = self.contacts_tree.topLevelItem(self.current_contact_index)
-        self.contacts_tree.setCurrentItem(item)
-        #self.update_current_contact()
+        measurement_item = self.measurement_tree.topLevelItem(0)
+        self.measurement_tree.setCurrentItem(measurement_item, True)
 
-        # Sort the items per label
-        self.contacts_tree.sortItems(1, Qt.AscendingOrder)
+        #contact_item = measurement_item.child(self.current_contact_index)
+        #self.measurement_tree.setCurrentItem(contact_item, True)
+
         # Update the slider's max value
         self.slider.setMaximum(self.max_length)
+
 
     def change_frame(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))

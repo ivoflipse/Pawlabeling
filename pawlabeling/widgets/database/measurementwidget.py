@@ -81,7 +81,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.setLayout(self.measurement_layout)
 
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.subscribe(self.update_measurement_status, "update_measurement_status")
+        #pub.subscribe(self.update_measurement_status, "update_measurement_status")
         pub.subscribe(self.update_plates, "update_plates")
 
         self.update_files_tree()
@@ -107,14 +107,14 @@ class MeasurementWidget(QtGui.QWidget):
         index = self.plate.findText(plate)
         self.plate.setCurrentIndex(index)
 
-    def update_measurement_status(self, measurements):
-        # Create a green brush for coloring stored results
-        green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
-        for index in xrange(self.measurement_tree.topLevelItemCount()):
-            item = self.measurement_tree.topLevelItem(index)
-            measurement_name = item.text(0)
-            if measurement_name in measurements:
-                item.setForeground(0, green_brush)
+    # def update_measurement_status(self):
+    #     # Create a green brush for coloring stored results
+    #     green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
+    #     for index in xrange(self.measurement_tree.topLevelItemCount()):
+    #         item = self.measurement_tree.topLevelItem(index)
+    #         measurement_name = item.text(0)
+    #         if measurement_name in measurements:
+    #             item.setForeground(0, green_brush)
 
     def update_measurements_tree(self):
         self.measurement_tree.clear()

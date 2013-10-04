@@ -42,19 +42,14 @@ class ProcessingWidget(QtGui.QWidget):
         self.measurement_tree = QtGui.QTreeWidget(self)
         self.measurement_tree.setMaximumWidth(300)
         self.measurement_tree.setMinimumWidth(300)
-        self.measurement_tree.setColumnCount(1)
-        self.measurement_tree.setHeaderLabel("Measurements")
+        #self.measurement_tree.setMaximumHeight(200)
+        self.measurement_tree.setColumnCount(5)
+        self.measurement_tree.setHeaderLabels(["Name", "Label", "Length", "Surface", "Force"])
         self.measurement_tree.itemActivated.connect(self.put_measurement)
 
-        self.contacts_tree = QtGui.QTreeWidget(self)
-        self.contacts_tree.setMaximumWidth(300)
-        self.contacts_tree.setMinimumWidth(300)
-        self.contacts_tree.setColumnCount(5)
-        self.contacts_tree.setHeaderLabels(["Contacts", "Label", "Length", "Surface", "Force"])
         # Set the widths of the columns
-        for column in xrange(self.contacts_tree.columnCount()):
-            self.contacts_tree.setColumnWidth(column, 60)
-        self.contacts_tree.itemActivated.connect(self.switch_contacts)
+        for column in xrange(self.measurement_tree.columnCount()):
+            self.measurement_tree.setColumnWidth(column, 55)
 
         self.entire_plate_widget = entireplatewidget.EntirePlateWidget(self)
         self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
@@ -68,7 +63,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.layout.addWidget(self.contacts_widget)
         self.vertical_layout = QtGui.QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
-        self.vertical_layout.addWidget(self.contacts_tree)
         self.horizontal_layout = QtGui.QHBoxLayout()
         self.horizontal_layout.addLayout(self.vertical_layout)
         self.horizontal_layout.addLayout(self.layout)
@@ -86,15 +80,11 @@ class ProcessingWidget(QtGui.QWidget):
     # I've added subscribe/unsubscribe, such that when we're in the analysis tab, we don't want to respond to
     # everything it sends/receives
     def subscribe(self):
-        pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.subscribe(self.update_measurement_status, "update_measurement_status")
-        pub.subscribe(self.update_contacts_tree, "update_contacts")
+        pub.subscribe(self.update_measurements_tree, "update_measurement_status")
         pub.subscribe(self.stored_status, "stored_status")
 
     def unsubscribe(self):
-        pub.unsubscribe(self.update_measurements_tree, "update_measurements_tree")
-        pub.unsubscribe(self.update_measurement_status, "update_measurement_status")
-        pub.unsubscribe(self.update_contacts_tree, "update_contacts")
+        pub.unsubscribe(self.update_measurements_tree, "update_measurement_status")
         pub.unsubscribe(self.stored_status, "stored_status")
 
     def put_subject(self, subject):
@@ -106,23 +96,45 @@ class ProcessingWidget(QtGui.QWidget):
 
     def update_measurements_tree(self):
         self.measurement_tree.clear()
-        for measurement in self.model.measurements.values():
-            measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree)
-            measurement_item.setText(0, measurement.measurement_name)
-
-        item = self.measurement_tree.topLevelItem(0)
-        self.measurement_tree.setCurrentItem(item, True)
-
-    # TODO Add some attribute to each measurement, where I can check whether its stored
-    # Then I only need update_measurements_tree
-    def update_measurement_status(self, measurements):
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
-        for index in xrange(self.measurement_tree.topLevelItemCount()):
-            item = self.measurement_tree.topLevelItem(index)
-            measurement_name = item.text(0)
-            if measurement_name in measurements:
-                item.setForeground(0, green_brush)
+
+        for measurement in self.model.measurements.values():
+            measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
+            measurement_item.setText(0, measurement.measurement_name)
+            measurement_item.setFirstColumnSpanned(True)
+            contact_labels = []
+            for contact in self.model.contacts[measurement.measurement_name]:
+                if contact.contact_label < 0:
+                    contact_labels.append(True)
+                else:
+                    contact_labels.append(False)
+
+                contact_item = QtGui.QTreeWidgetItem(measurement_item)
+                contact_item.setText(0, str(contact.contact_id))
+                contact_item.setText(1, self.contact_dict[contact.contact_label])
+                contact_item.setText(2, str(contact.length))  # Sets the frame count
+                max_surface = np.max(contact.surface_over_time)
+                contact_item.setText(3, str(int(max_surface)))
+                max_force = np.max(contact.force_over_time)
+                contact_item.setText(4, str(int(max_force)))
+
+                for idx in xrange(contact_item.columnCount()):
+                    color = self.colors[contact.contact_label]
+                    color.setAlphaF(0.5)
+                    contact_item.setBackground(idx, color)
+
+            # If several contacts have been labeled, marked the measurement
+            if not all(contact_labels):
+                for idx in xrange(measurement_item.columnCount()):
+                    measurement_item.setForeground(idx, green_brush)
+
+            # Initialize the current contact index, which we'll need for keep track of the labeling
+            self.current_contact_index = 0
+
+            measurement_item = self.measurement_tree.topLevelItem(0)
+            self.measurement_tree.setCurrentItem(measurement_item, True)
+
 
     def put_measurement(self):
         # Check if the tree aint empty!
@@ -135,41 +147,25 @@ class ProcessingWidget(QtGui.QWidget):
         measurement = {"measurement_name": self.measurement_name}
         self.model.put_measurement(measurement=measurement)
 
-    def update_contacts_tree(self):
-        # Clear any existing contacts
-        self.contacts_tree.clear()
-        # Add the contacts to the contacts_tree
-        for contact in self.model.contacts[self.model.measurement_name]:
-            rootItem = QtGui.QTreeWidgetItem(self.contacts_tree)
-            rootItem.setText(0, str(contact.contact_id))
-            rootItem.setText(1, self.contact_dict[contact.contact_label])
-            rootItem.setText(2, str(contact.length))  # Sets the frame count
-            surface = np.max(contact.surface_over_time)
-            rootItem.setText(3, str(int(surface)))
-            force = np.max(contact.force_over_time)
-            rootItem.setText(4, str(int(force)))
-
-        # Initialize the current contact index, which we'll need for keep track of the labeling
-        self.model.current_contact_index = 0
-
-        # Select the first item in the contacts tree
-        item = self.contacts_tree.topLevelItem(self.model.current_contact_index)
-        self.contacts_tree.setCurrentItem(item)
-        self.update_current_contact()
-
     def update_current_contact(self):
         if (self.model.current_contact_index <= len(self.model.contacts[self.model.measurement_name]) and
                     len(self.model.contacts[self.model.measurement_name]) > 0):
             for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
                 contact_label = contact.contact_label
+                # TODO What's the index of the current measurement?
+                current_item = self.measurement_tree.currentItem()
+                print current_item.text(0)
+                print current_item.parent()
+                # Get the current item's parent
+                measurement_item = current_item.parent().text(0)
                 # Get the current row from the tree
-                item = self.contacts_tree.topLevelItem(index)
-                item.setText(1, self.contact_dict[contact_label])
+                contact_item = measurement_item.child(index)
+                contact_item.setText(1, self.contact_dict[contact_label])
 
                 # Update the colors in the contact tree
-                for idx in xrange(item.columnCount()):
+                for idx in xrange(contact_item.columnCount()):
                     if contact_label >= 0:
-                        item.setForeground(idx, self.colors[contact_label])
+                        contact_item.setForeground(idx, self.colors[contact_label])
 
             self.model.update_current_contact()
 
@@ -365,7 +361,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.left_hind_action = gui.create_action(text="Select Left Hind",
                                                   shortcut=self.settings.left_hind(),
                                                   icon=QtGui.QIcon(
-                                                      os.path.join(os.path.dirname(__file__), "../images/LH_icon.png")),
+                                                      os.path.join(os.path.dirname(__file__),
+                                                                   "../images/LH_icon.png")),
                                                   tip="Select the Left Hind contact",
                                                   checkable=False,
                                                   connection=self.select_left_hind

@@ -232,7 +232,7 @@ def array_to_qimage(array, color_table):
     Convert the 2D numpy array  into a 8-bit QImage with a gray
     colormap.  The first dimension represents the vertical image axis.
     """
-    assert np.require(array, np.uint8, 'C')
+    array = np.require(array, np.uint8, 'C')
     width, height = array.shape
     result = QtGui.QImage(array.data, height, width, QtGui.QImage.Format_Indexed8)
     result.ndarray = array
