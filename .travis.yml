@@ -31,7 +31,7 @@ before_install:
   - sudo apt-get install python-nose
 
 install:
-  - "pip install -q pypubsub --use-mirrors"
+  - "pip install -q pypubsub==3.1.2 --use-mirrors"
   - "pip install -q numexpr==1.4.2 --use-mirrors"
   - "pip install -q cython --use-mirrors"
   - "pip install -q tables==2.4.0 --use-mirrors"

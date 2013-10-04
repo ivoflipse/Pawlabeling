@@ -323,11 +323,13 @@ class Model():
 
 
     def update_average(self):
+        print "model.update_average"
         self.shape = self.session_model.calculate_shape(contacts=self.contacts)
         self.average_data = self.session_model.calculate_average_data(contacts=self.contacts,
                                                                       shape=self.shape)
         # This updates contacts in place
         # TODO Perhaps store the changes to contacts?
+        # TODO This probably has to move to another function, so I don't have to do it every time I label a contact
         self.session_model.calculate_results(contacts=self.contacts)
         pub.sendMessage("update_average")
 
