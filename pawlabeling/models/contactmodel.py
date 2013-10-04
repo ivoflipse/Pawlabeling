@@ -309,6 +309,8 @@ class Contact(object):
             return True
         return False
 
+    # TODO This should be converted to a @classmethod
+    # http://scipy-lectures.github.io/advanced/advanced_python/#id11
     def restore(self, contact):
         """
         This function takes a dictionary of the stored_results (the result of contact_to_dict) and recreates all the

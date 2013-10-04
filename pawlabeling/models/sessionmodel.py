@@ -1,6 +1,8 @@
 import logging
 from collections import defaultdict
+from itertools import izip
 import numpy as np
+from pubsub import pub
 from pawlabeling.models import table
 from pawlabeling.settings import settings
 from pawlabeling.functions import calculations, utility
@@ -41,10 +43,6 @@ class Sessions(object):
             session_object.restore(session)
             sessions[session_object.session_id] = session_object
         return sessions
-
-    def update_average(self, contacts, shape):
-        average_data = self.calculate_average_data(contacts=contacts, shape=shape)
-        return average_data
 
     def calculate_shape(self, contacts):
         mx = 0
@@ -90,87 +88,102 @@ class Sessions(object):
 
         return average_data
 
-    # TODO Why are we calculating stuff? These things are already stored, so be lazy and load them!
-    def calculate_results(self, contacts, plate):
+    def calculate_results(self, contacts):
+        # TODO Do I really need to do this here? Its not like I'm really calculating anything
         results = defaultdict(lambda: defaultdict(list))
         max_results = defaultdict()
 
-        # results[contact_label]["filtered"] = self.filter_outliers(data, contact_label)
-        for contact_label, contacts in contacts.iteritems():  # Woops I'm overwriting something here
-            for contact in contacts:
-                force = contact.force_over_time
-                results[contact_label]["force"].append(force)
-                max_force = np.max(force)
-                if max_force > max_results.get("force", 0):
-                    max_results["force"] = max_force
+        for measurement_name, contact_list in contacts.iteritems():
+            for contact in contact_list:
+                if contact.contact_label >= 0:
+                    force = contact.force_over_time
+                    results[contact.contact_label]["force"].append(force)
+                    max_force = np.max(force)
+                    if max_force > max_results.get("force", 0):
+                        max_results["force"] = max_force
 
-                pressure = contact.pressure_over_time
-                results[contact_label]["pressure"].append(pressure)
-                max_pressure = np.max(pressure)
-                if max_pressure > max_results.get("pressure", 0):
-                    max_results["pressure"] = max_pressure
+                    pressure = contact.pressure_over_time
+                    results[contact.contact_label]["pressure"].append(pressure)
+                    max_pressure = np.max(pressure)
+                    if max_pressure > max_results.get("pressure", 0):
+                        max_results["pressure"] = max_pressure
 
-                surface = contact.surface_over_time
-                results[contact_label]["surface"].append(surface)
-                max_surface = np.max(surface)
-                if max_surface > max_results.get("surface", 0):
-                    max_results["surface"] = max_surface
+                    surface = contact.surface_over_time
+                    results[contact.contact_label]["surface"].append(surface)
+                    max_surface = np.max(surface)
+                    if max_surface > max_results.get("surface", 0):
+                        max_results["surface"] = max_surface
 
-                cop_x = contact.cop_x
-                cop_y = contact.cop_y
-                results[contact_label]["cop"].append((cop_x, cop_y))
+                    cop_x = contact.cop_x
+                    cop_y = contact.cop_y
+                    results[contact.contact_label]["cop"].append((cop_x, cop_y))
 
-                x, y, z = np.nonzero(contact.data)
-                max_duration = np.max(z)
-                if max_duration > max_results.get("duration", 0):
-                    max_results["duration"] = max_duration
+                    length = contact.length
+                    results[contact.contact_label]["length"].append(length)
+                    if length > max_results.get("length", 0):
+                        max_results["length"] = length
+
+        # Calculate the bounds based on all the (labeled) contacts
+        lower_bound, upper_bound = self.calculate_bounds(results)
+
+        for measurement_name, contact_list in contacts.iteritems():
+            for contact in contact_list:
+                if contact.contact_label >= 0:
+                    pressure = np.max(contact.pressure_over_time)
+                    force = np.max(contact.force_over_time)
+                    surface = np.max(contact.surface_over_time)
+                    length = contact.length
+
+                    lower_bound_pressure = lower_bound[contact.contact_label]["pressure"]
+                    upper_bound_pressure = upper_bound[contact.contact_label]["pressure"]
+                    lower_bound_force = lower_bound[contact.contact_label]["force"]
+                    upper_bound_force = upper_bound[contact.contact_label]["force"]
+                    lower_bound_surface = lower_bound[contact.contact_label]["surface"]
+                    upper_bound_surface = upper_bound[contact.contact_label]["surface"]
+                    lower_bound_length = lower_bound[contact.contact_label]["length"]
+                    upper_bound_length = upper_bound[contact.contact_label]["length"]
+
+                    # TODO This is what its all really about!
+
+                    if not (lower_bound_pressure < pressure < upper_bound_pressure and
+                                        lower_bound_force < force < upper_bound_force and
+                                        lower_bound_surface < surface < upper_bound_surface and
+                                        lower_bound_length < length < upper_bound_length):
+                        contact.filtered = True
 
         return results, max_results
 
-    def filter_outliers(self, data, contact_label, num_std=2):
-        lengths = np.array([d.shape[2] for d in data])
-        forces = np.array([np.max(calculations.force_over_time(d)) for d in data])
-        pixel_counts = np.array([np.max(calculations.pixel_count_over_time(d)) for d in data])
+    def calculate_bounds(self, results, num_std=1.96):
+        lower_bound = defaultdict(lambda: defaultdict(list))
+        upper_bound = defaultdict(lambda: defaultdict(list))
+        for contact_label, values in results.iteritems():
+            pressure = [np.max(p) for p in values["pressure"]]
+            force = [np.max(f) for f in values["force"]]
+            surface = [np.max(s) for s in values["surface"]]
+            duration = [d for d in values["length"]]
 
-        # Get mean +/- num_std's * std
-        mean_length = np.mean(lengths)
-        std_length = np.std(lengths)
-        min_std_lengths = mean_length - num_std * std_length
-        max_std_lengths = mean_length + num_std * std_length
+            # Get mean +/- num_std's * std
+            mean_length = np.mean(pressure)
+            std_length = np.std(pressure)
+            lower_bound[contact_label]["pressure"] = mean_length - num_std * std_length
+            upper_bound[contact_label]["pressure"] = mean_length + num_std * std_length
 
-        mean_forces = np.mean(forces)
-        std_forces = np.std(forces)
-        min_std_forces = mean_forces - num_std * std_forces
-        max_std_forces = mean_forces + num_std * std_forces
+            mean_forces = np.mean(force)
+            std_forces = np.std(force)
+            lower_bound[contact_label]["force"] = mean_forces - num_std * std_forces
+            upper_bound[contact_label]["force"] = mean_forces + num_std * std_forces
 
-        mean_pixel_counts = np.mean(pixel_counts)
-        std_pixel_counts = np.std(pixel_counts)
-        min_std_pixel_counts = mean_pixel_counts - num_std * std_pixel_counts
-        max_std_pixel_counts = mean_pixel_counts + num_std * std_pixel_counts
+            mean_surface = np.mean(surface)
+            std_surface = np.std(surface)
+            lower_bound[contact_label]["surface"] = mean_surface - num_std * std_surface
+            upper_bound[contact_label]["surface"] = mean_surface + num_std * std_surface
 
-        new_data = []
-        filtered = []
-        for index, (l, f, p, d) in enumerate(izip(lengths, forces, pixel_counts, data)):
-            if (min_std_lengths < l < max_std_lengths and
-                            min_std_forces < f < max_std_forces and
-                            min_std_pixel_counts < p < max_std_pixel_counts):
-                new_data.append(d)
-            # If the std is zero, it means we only have one item, don't filter it!
-            elif std_length == 0 or std_forces == 0 or std_pixel_counts == 0:
-                new_data.append(d)
-            else:
-                filtered.append(index)
+            mean_duration = np.mean(duration)
+            std_duration = np.std(duration)
+            lower_bound[contact_label]["length"] = mean_duration - num_std * std_duration
+            upper_bound[contact_label]["length"] = mean_duration + num_std * std_duration
 
-        if filtered:
-            contact_dict = settings.settings.contact_dict()
-            # Notify the system which contacts you deleted
-            pub.sendMessage("updata_statusbar",
-                            status="Removed {} contact(s) from {}".format(len(filtered), contact_dict[contact_label]))
-            logger.info("Removed {} contact(s) from {}".format(len(filtered), contact_dict[contact_label]))
-            # else:
-        #     logger.info("No contacts removed")
-        # Changed this function so now it returns the indices of filtered contacts
-        return filtered
+        return lower_bound, upper_bound
 
     def create_session_data(self, average_contact):
         # Get the label we're dealing with

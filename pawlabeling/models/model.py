@@ -324,27 +324,12 @@ class Model():
 
     def update_average(self):
         self.shape = self.session_model.calculate_shape(contacts=self.contacts)
-        self.average_data = self.session_model.update_average(contacts=self.contacts,
-                                                              shape=self.shape)
+        self.average_data = self.session_model.calculate_average_data(contacts=self.contacts,
+                                                                      shape=self.shape)
+        # This updates contacts in place
+        # TODO Perhaps store the changes to contacts?
+        self.session_model.calculate_results(contacts=self.contacts)
         pub.sendMessage("update_average")
-
-
-    # # These functions are no longer up to date!
-    # def calculate_data_list(self):
-    #     self.data_list, self.shape = self.session_model.calculate_data_list(contacts=self.contacts)
-    #     pub.sendMessage("update_shape", shape=self.shape)
-    #
-    # def calculate_average(self):
-    #     self.average_data = self.session_model.calculate_average(data_list=self.data_list,
-    #                                                              shape=self.shape)
-    #     pub.sendMessage("update_average", average_data=self.average_data)
-    #
-    # def calculate_results(self):
-    #     self.results, self.max_results = self.session_model.calculate_results(data_list=self.data_list,
-    #                                                                           plate=self.plate)
-    #     pub.sendMessage("update_results", results=self.results, max_results=self.max_results)
-
-
 
     def update_n_max(self):
         self.n_max = self.measurement_model.update_n_max()

@@ -124,6 +124,10 @@ class ContactView(QtGui.QWidget):
 
         for measurement_name, contacts in self.model.contacts.iteritems():
             for contact in contacts:
+                # Skip contacts that have been filtered if the toggle is on
+                if self.outlier_toggle:
+                    if contact.filtered:
+                        continue
                 if contact.contact_label == self.contact_label:
                     pressure = np.pad(contact.pressure_over_time, 1, mode="constant", constant_values=0)
                     if len(pressure) > self.max_duration:
