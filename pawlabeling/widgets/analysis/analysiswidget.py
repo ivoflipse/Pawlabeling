@@ -82,10 +82,17 @@ class AnalysisWidget(QtGui.QTabWidget):
     def unsubscribe(self):
         pub.unsubscribe(self.update_measurements_tree, "update_measurement_status")
 
+    def get_current_measurement_item(self):
+        return self.measurement_tree.topLevelItem(self.current_measurement_index)
+
     def update_measurements_tree(self):
         self.measurement_tree.clear()
+        # Create a green brush for coloring stored results
+        green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
 
-        for measurement in self.model.measurements.values():
+        self.measurements = {}
+        for index, measurement in enumerate(self.model.measurements.values()):
+            self.measurements[index] = measurement
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
             measurement_item.setText(0, measurement.measurement_name)
             measurement_item.setFirstColumnSpanned(True)
@@ -107,10 +114,15 @@ class AnalysisWidget(QtGui.QTabWidget):
                     color.setAlphaF(0.5)
                     contact_item.setBackground(idx, color)
 
+            # If several contacts have been labeled, marked the measurement
+            if measurement.processed:
+                for idx in xrange(measurement_item.columnCount()):
+                    measurement_item.setForeground(idx, green_brush)
+
         # Initialize the current contact index, which we'll need for keep track of the labeling
         self.current_contact_index = 0
-
-        measurement_item = self.measurement_tree.topLevelItem(0)
+        self.current_measurement_index = 0
+        measurement_item = self.measurement_tree.topLevelItem(self.current_measurement_index)
         self.measurement_tree.setCurrentItem(measurement_item, True)
 
         #contact_item = measurement_item.child(self.current_contact_index)

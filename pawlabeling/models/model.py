@@ -37,6 +37,7 @@ class Model():
         self.results = defaultdict(lambda: defaultdict(list))
         self.max_results = defaultdict()
         self.n_max = 0
+        self.current_measurement_index = 0
 
         self.logger = logging.getLogger("logger")
 
@@ -284,6 +285,9 @@ class Model():
             self.measurement_name))
         pub.sendMessage("update_statusbar", status="Results saved")
         pub.sendMessage("stored_status", success=True)
+        # Notify the measurement that it has been processed
+        self.measurement.processed = True
+        self.measurement_model.update(measurement=self.measurement)
 
     def reset_contact_labels(self):
         for contact in self.contacts[self.measurement_name]:

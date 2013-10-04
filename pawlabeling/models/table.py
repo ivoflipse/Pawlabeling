@@ -210,6 +210,7 @@ class MeasurementsTable(Table):
         maximum_value = tables.FloatCol()
         date = tables.StringCol(32)
         time = tables.StringCol(32)
+        processed = tables.BoolCol()
 
     def __init__(self, database_file, subject_id, session_id):
         super(MeasurementsTable, self).__init__(database_file=database_file)
@@ -256,6 +257,13 @@ class MeasurementsTable(Table):
                 measurement[column] = value
             measurements.append(measurement)
         return measurements
+
+    def update_measurement(self, item_id, **kwargs):
+        for row in self.measurements_table:
+            if row["measurement_id"] == item_id:
+                for attr, value in kwargs.iteritems():
+                    row[attr] = value
+                row.update()
 
 
 class ContactsTable(Table):

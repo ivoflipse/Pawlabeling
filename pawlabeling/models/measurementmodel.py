@@ -2,11 +2,6 @@ from pawlabeling.models import table
 from pawlabeling.functions import io
 from pawlabeling.settings import settings
 
-
-class MissingIdentifier(Exception):
-    pass
-
-
 class Measurements(object):
     def __init__(self, subject_id, session_id):
         self.subject_id = subject_id
@@ -77,6 +72,8 @@ class Measurements(object):
                 n_max = max_value
         return n_max
 
+    def update(self, measurement):
+        self.measurements_table.update_measurement(item_id=measurement.measurement_id, **measurement.to_dict())
 
 class Measurement(object):
     def __init__(self, subject_id, session_id):
@@ -106,6 +103,7 @@ class Measurement(object):
 
         self.date = measurement["date"]
         self.time = measurement["time"]
+        self.processed = False
 
         # Extract the measurement_data
         self.measurement_data = io.load(input_file, brand=self.plate.brand)
@@ -144,6 +142,7 @@ class Measurement(object):
         self.maximum_value = measurement["maximum_value"]
         self.date = measurement["date"]
         self.time = measurement["time"]
+        self.processed = measurement["processed"]
         # TODO Tag the data on here as well
 
     def to_dict(self):
@@ -160,5 +159,6 @@ class Measurement(object):
             "orientation": self.orientation,
             "maximum_value": self.maximum_value,
             "date": self.date,
-            "time": self.time
+            "time": self.time,
+            "processed": self.processed
         }
