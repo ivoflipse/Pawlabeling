@@ -36,7 +36,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         #self.measurement_tree.setMaximumHeight(200)
         self.measurement_tree.setColumnCount(5)
         self.measurement_tree.setHeaderLabels(["Name", "Label", "Length", "Surface", "Force"])
-        self.measurement_tree.itemActivated.connect(self.put_measurement)
+        self.measurement_tree.itemActivated.connect(self.item_activated)
 
         # Set the widths of the columns
         for column in xrange(self.measurement_tree.columnCount()):
@@ -82,6 +82,17 @@ class AnalysisWidget(QtGui.QTabWidget):
     def unsubscribe(self):
         pub.unsubscribe(self.update_measurements_tree, "update_measurement_status")
 
+    def item_activated(self):
+        # Check if the tree aint empty!
+        if not self.measurement_tree.topLevelItemCount():
+            return
+
+        current_item = self.measurement_tree.currentItem()
+        if current_item.parent():
+            self.put_contact()
+        else:
+            self.put_measurement()
+
     def get_current_measurement_item(self):
         return self.measurement_tree.topLevelItem(self.current_measurement_index)
 
@@ -125,9 +136,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         measurement_item = self.measurement_tree.topLevelItem(self.current_measurement_index)
         self.measurement_tree.setCurrentItem(measurement_item, True)
 
-        #contact_item = measurement_item.child(self.current_contact_index)
-        #self.measurement_tree.setCurrentItem(contact_item, True)
-
         # Update the slider's max value
         self.slider.setMaximum(self.max_length)
 
@@ -142,14 +150,16 @@ class AnalysisWidget(QtGui.QTabWidget):
         pub.sendMessage("filter_outliers", toggle=self.outlier_toggle)
 
     def put_measurement(self):
-        # Check if the tree aint empty!
-        if not self.measurement_tree.topLevelItemCount():
-            return
-
+        current_item = self.measurement_tree.currentItem()
         # Notify the model to update the subject_name + measurement_name if necessary
-        measurement_name = self.measurement_tree.currentItem().text(0)
+        measurement_name = current_item.text(0)
         measurement = {"measurement_name": measurement_name}
         self.model.put_measurement(measurement=measurement)
+
+    def put_contact(self):
+        current_item = self.measurement_tree.currentItem()
+        contact_id = current_item.text(0)
+        self.model.put_contact(contact_id=contact_id)
 
     # TODO This needs to be re-enabled somehow
     # def calculate_results(self):

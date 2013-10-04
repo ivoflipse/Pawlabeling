@@ -152,6 +152,7 @@ class Model():
     def get_plate(self):
         # From one of the measurements, get its plate_id and call put_plate
         if self.measurements:
+            plate = None
             for measurement_id, measurement in self.measurements.iteritems():
                 # Update the plate information
                 plate = self.plates[measurement.plate_id]
@@ -246,10 +247,16 @@ class Model():
         # TODO get_contacts doesn't really do anything, but send a message, can't this be done differently
         self.get_contacts()
 
-    def put_contact(self, contact):
-        self.contact = contact
-        self.contact_id = contact["contact_id"]
+    def put_contact(self, contact_id):
+        # Find the contact with the corresponding id
+        for contact in self.contacts[self.self.measurement_name]:
+            if contact.contact_id == contact_id:
+                self.contact = contact
+                break
+
+        self.contact_id = self.contact["contact_id"]
         self.logger.info("Contact ID set to {}".format(self.contact_id))
+        pub.sendMessage("update_contact")
 
     def put_plate(self, plate):
         self.plate = plate
