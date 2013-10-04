@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 import numpy as np
 from PySide import QtGui
 from pubsub import pub
@@ -78,9 +79,8 @@ class ContactView(QtGui.QWidget):
         self.length = 0
         self.filtered = []
         self.outlier_toggle = False
+        self.average_toggle = False
         self.data = np.zeros((self.mx, self.my))
-        self.average_data = np.zeros((self.mx, self.my, 1))
-        self.max_of_max = self.data.copy()
 
         self.scene = QtGui.QGraphicsScene(self)
         self.view = QtGui.QGraphicsView(self.scene)
@@ -100,23 +100,49 @@ class ContactView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
         pub.subscribe(self.update_average, "update_average")
+        pub.subscribe(self.update_contact, "update_contact")
+        pub.subscribe(self.show_average_results, "show_average_results")
 
-    def update_average(self):
-        if self.contact_label in self.model.average_data:
-            self.average_data = self.model.average_data[self.contact_label]
-            self.max_of_max = self.average_data.max(axis=2)
-            self.length = self.average_data.shape[2]
-            if self.parent.active:
-                self.change_frame(frame=-1)
+    def show_average_results(self, toggle):
+        self.average_toggle = toggle
+        if self.parent.active:
+            self.change_frame(frame=-1)
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
+        if self.parent.active:
+            self.change_frame(frame=-1)
+
+    # TODO I'm not sure I want this state to even be in this widget
+    def update_average(self):
+        if self.contact_label in self.model.average_data:
+            if self.parent.active:
+                self.change_frame(frame=-1)
+
+    def update_contact(self):
+        if self.contact_label == self.model.contact.contact_label:
+            if self.parent.active:
+                self.change_frame(frame=-1)
+
+    def get_data(self):
+        if self.average_toggle:
+            if self.frame == -1:
+                self.data = self.model.average_data[self.contact_label].max(axis=2)
+            else:
+                self.data = self.model.average_data[self.contact_label][:, :, self.frame]
+            self.length = self.model.average_data[self.contact_label].shape[2]
+        else:
+            if self.frame == -1:
+                self.data = self.model.selected_contacts[self.contact_label].data.max(axis=2)
+            else:
+                self.data = self.model.selected_contacts[self.contact_label].data[:, :, self.frame]
+
+            # Add padding, just like the average has
+            self.data = np.pad(self.data, 2, mode="constant", constant_values=0)
+            self.length = self.model.selected_contacts[self.contact_label].data.shape[2]
 
     def draw(self):
-        if self.frame == -1:
-            self.data = self.max_of_max
-        else:
-            self.data = self.average_data[:, :, self.frame]
+        self.get_data()
 
         # Make sure the contacts are facing upright
         self.data = np.rot90(np.rot90(self.data))
@@ -128,14 +154,14 @@ class ContactView(QtGui.QWidget):
     def change_frame(self, frame):
         self.frame = frame
         # If we're not displaying the empty array
-        if self.frame < self.length and self.contact_label in self.model.average_data:
+        if (self.frame < self.length and
+                    self.contact_label in self.model.average_data and
+                    self.contact_label in self.model.selected_contacts):
             self.draw()
 
     def clear_cached_values(self):
         self.frame = -1
         self.data = np.zeros((self.mx, self.my))
-        self.average_data = np.zeros((self.mx, self.my, 15))
-        self.max_of_max = self.data[:]
         # Put the screen to black
         self.image.setPixmap(utility.get_qpixmap(self.data, self.degree, self.model.n_max, self.color_table))
 

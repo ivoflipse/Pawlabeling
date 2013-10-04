@@ -94,7 +94,7 @@ class MainWindow(QtGui.QMainWindow):
             self.processing_widget.put_measurement()
         elif self.tab_widget.currentIndex() == 2:
             self.processing_widget.unsubscribe()
-            self.analysis_widget.put_measurement()
+            self.analysis_widget.select_initial_measurement()
         elif self.tab_widget.currentIndex() == 3:
             self.processing_widget.unsubscribe()
             self.settings_widget.update_fields()

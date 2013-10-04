@@ -77,12 +77,11 @@ class ContactView(QtGui.QWidget):
         self.frame = -1
         self.length = 0
         self.outlier_toggle = False
+        self.average_toggle = False
         self.ratio = 1
         self.cop_x = np.zeros(15)
         self.cop_y = np.zeros(15)
         self.data = np.zeros((self.mx, self.my))
-        self.average_data = np.zeros((self.mx, self.my, 1))
-        self.max_of_max = self.data.copy()
 
         self.line_pen = QtGui.QPen(QtCore.Qt.white)
         self.line_pen.setWidth(2)
@@ -111,23 +110,43 @@ class ContactView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
         pub.subscribe(self.update_average, "update_average")
+        pub.subscribe(self.show_average_results, "show_average_results")
 
-    # TODO I have no idea how to filter this
+    def show_average_results(self, toggle):
+        self.average_toggle = toggle
+        if self.parent.active:
+            self.change_frame(frame=-1)
+
     def update_average(self):
         if self.contact_label in self.model.average_data:
-            self.average_data = self.model.average_data[self.contact_label]
-            self.max_of_max = self.average_data.max(axis=2)
-            self.length = self.average_data.shape[2]
             if self.parent.active:
                 self.change_frame(frame=-1)
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
-        #self.draw()
+        if self.parent.active:
+            self.change_frame(frame=-1)
+
+    def get_data(self):
+        if self.average_toggle:
+            if self.frame == -1:
+                self.data = self.model.average_data[self.contact_label].max(axis=2)
+            else:
+                self.data = self.model.average_data[self.contact_label][:, :, self.frame]
+            self.length = self.model.average_data[self.contact_label].shape[2]
+        else:
+            if self.frame == -1:
+                self.data = self.model.selected_contacts[self.contact_label].data.max(axis=2)
+            else:
+                self.data = self.model.selected_contacts[self.contact_label].data[:, :, self.frame]
+
+            # Add padding, just like the average has
+            self.data = np.pad(self.data, 2, mode="constant", constant_values=0)
+            self.length = self.model.selected_contacts[self.contact_label].data.shape[2]
 
     def draw_cop(self):
         # If we still have the default shape, don't bother
-        if self.average_data.shape == (1, 1, 1):
+        if self.data.shape == (1, 1):
             return
 
         # Remove all the previous ellipses if coming back from update_cop
@@ -138,17 +157,23 @@ class ContactView(QtGui.QWidget):
         # This value determines how many points of the COP are being plotted.
         self.x = 15
 
-        x, y, z = np.nonzero(self.average_data)
+        if self.average_toggle:
+            data = self.model.average_data[self.contact_label]
+        else:
+            data = self.model.selected_contacts[self.contact_label].data
+            data = np.pad(data, pad_width=((2,2),(2,2),(0,0)), mode="constant", constant_values=0)
+
+        x, y, z = np.nonzero(data)
         # Just calculate the COP over the average measurement_data
-        average_data = np.rot90(np.rot90(self.average_data[:]))
+        data = np.rot90(np.rot90(data))
         # For some reason I can't do the slicing in the above call
-        average_data = average_data[:,::-1,:]
+        data = data[:,::-1,:]
 
         # Only calculate the COP until we still have data in the frame
-        self.cop_x, self.cop_y = calculations.calculate_cop(average_data[:,:, :np.max(z)])
+        self.cop_x, self.cop_y = calculations.calculate_cop(data[:,:, :np.max(z)])
 
         # Create a strided index
-        z = average_data.shape[2]
+        z = data.shape[2]
         index = [x for x in xrange(0, z, int(z / self.x))]
 
         for frame in xrange(len(self.cop_x)-1):
@@ -190,11 +215,10 @@ class ContactView(QtGui.QWidget):
             self.cop_ellipses.append(ellipse)
 
     def draw(self):
+        self.get_data()
         if self.frame == -1:
-            self.data = self.max_of_max
             self.draw_cop()
         else:
-            self.data = self.average_data[:, :, self.frame]
             self.update_cop()
 
         # Make sure the contacts are facing upright
@@ -208,14 +232,14 @@ class ContactView(QtGui.QWidget):
     def change_frame(self, frame):
         self.frame = frame
         # See that we stay within bounds
-        if self.frame < self.length and self.contact_label in self.model.average_data:
+        if (self.frame < self.length and
+                    self.contact_label in self.model.average_data and
+                    self.contact_label in self.model.selected_contacts):
             self.draw()
 
     def clear_cached_values(self):
         self.frame = -1
         self.data = np.zeros((self.mx, self.my))
-        self.average_data = np.zeros((self.mx, self.my, self.mz))
-        self.max_of_max = self.data[:]
         # Put the screen to black
         self.image.setPixmap(
             utility.get_qpixmap(np.zeros((self.mx, self.my)), self.degree, self.model.n_max, self.color_table))

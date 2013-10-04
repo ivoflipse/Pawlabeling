@@ -35,6 +35,7 @@ class Model():
         self.average_data = defaultdict()
         self.contacts = defaultdict(list)
         self.results = defaultdict(lambda: defaultdict(list))
+        self.selected_contacts = defaultdict()
         self.max_results = defaultdict()
         self.n_max = 0
         self.current_measurement_index = 0
@@ -170,6 +171,7 @@ class Model():
         self.session_model = sessionmodel.Sessions(subject_id=self.subject_id)
         pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject.first_name,
                                                                            self.subject.last_name))
+        self.subject_name = "{} {}".format(self.subject.first_name, self.subject.last_name)
         self.get_sessions()
 
     def put_session(self, session):
@@ -221,15 +223,14 @@ class Model():
         self.update_average()
 
     # TODO This function is messed up again!
-    def put_measurement(self, measurement):
-        for m in self.measurements.values():
-            if m.measurement_name == measurement["measurement_name"]:
-                measurement = m
+    def put_measurement(self, measurement_name):
+        for measurement in self.measurements.values():
+            if measurement.measurement_name == measurement_name:
+                self.measurement = measurement
+                self.measurement_id = measurement.measurement_id
+                self.measurement_name = measurement.measurement_name
                 break
 
-        self.measurement = measurement
-        self.measurement_id = measurement.measurement_id
-        self.measurement_name = measurement.measurement_name
         self.logger.info("Measurement ID set to {}".format(self.measurement_id))
         self.contacts_table = table.ContactsTable(database_file=self.database_file,
                                                   subject_id=self.subject_id,
@@ -247,16 +248,17 @@ class Model():
         # TODO get_contacts doesn't really do anything, but send a message, can't this be done differently
         self.get_contacts()
 
+    # TODO What happens if you select a contact from another measurement?
     def put_contact(self, contact_id):
         # Find the contact with the corresponding id
-        for contact in self.contacts[self.self.measurement_name]:
+        for contact in self.contacts[self.measurement_name]:
             if contact.contact_id == contact_id:
                 self.contact = contact
+                self.contact_id = self.contact.contact_id
+                self.logger.info("Contact ID set to {}".format(self.contact_id))
+                self.selected_contacts[self.contact.contact_label] = contact
+                pub.sendMessage("update_contact")
                 break
-
-        self.contact_id = self.contact["contact_id"]
-        self.logger.info("Contact ID set to {}".format(self.contact_id))
-        pub.sendMessage("update_contact")
 
     def put_plate(self, plate):
         self.plate = plate

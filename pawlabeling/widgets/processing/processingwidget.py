@@ -103,6 +103,7 @@ class ProcessingWidget(QtGui.QWidget):
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
             measurement_item.setText(0, measurement.measurement_name)
             measurement_item.setFirstColumnSpanned(True)
+            measurement_item.setExpanded(True)
             for contact in self.model.contacts[measurement.measurement_name]:
                 contact_item = QtGui.QTreeWidgetItem(measurement_item)
                 contact_item.setText(0, str(contact.contact_id))

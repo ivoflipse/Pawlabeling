@@ -26,6 +26,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.settings = settings.settings
         self.colors = self.settings.colors()
         self.contact_dict = self.settings.contact_dict()
+        self.toggle = False
 
         self.toolbar = gui.Toolbar(self)
 
@@ -39,7 +40,8 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.measurement_tree.itemActivated.connect(self.item_activated)
 
         # Set the widths of the columns
-        for column in xrange(self.measurement_tree.columnCount()):
+        self.measurement_tree.setColumnWidth(0, 75)
+        for column in xrange(1, self.measurement_tree.columnCount()):
             self.measurement_tree.setColumnWidth(column, 55)
 
         self.results_widget = resultswidget.ResultsWidget(self)
@@ -107,10 +109,10 @@ class AnalysisWidget(QtGui.QTabWidget):
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
             measurement_item.setText(0, measurement.measurement_name)
             measurement_item.setFirstColumnSpanned(True)
+            measurement_item.setExpanded(True)
             for contact in self.model.contacts[measurement.measurement_name]:
                 if contact.length > self.max_length:
                     self.max_length = contact.length
-
                 contact_item = QtGui.QTreeWidgetItem(measurement_item)
                 contact_item.setText(0, str(contact.contact_id))
                 contact_item.setText(1, self.contact_dict[contact.contact_label])
@@ -130,15 +132,29 @@ class AnalysisWidget(QtGui.QTabWidget):
                 for idx in xrange(measurement_item.columnCount()):
                     measurement_item.setForeground(idx, green_brush)
 
-        # Initialize the current contact index, which we'll need for keep track of the labeling
-        self.current_contact_index = 0
+        # Update the slider's max value
+        # TODO This should actually be the max_length of the things being displayed
+        self.slider.setMaximum(self.max_length)
+
+    def select_initial_measurement(self):
         self.current_measurement_index = 0
         measurement_item = self.measurement_tree.topLevelItem(self.current_measurement_index)
         self.measurement_tree.setCurrentItem(measurement_item, True)
+        # We need to set a measurement name, before we can get contacts from it
+        self.put_measurement()
+        # For the current measurement, select the first of each contact labels (if available)
+        self.select_initial_contacts()
 
-        # Update the slider's max value
-        self.slider.setMaximum(self.max_length)
-
+    def select_initial_contacts(self):
+        measurement_item = self.measurement_tree.currentItem()
+        measurement_name = measurement_item.text(0)
+        lookup = {0:0, 1:0, 2:0, 3:0}
+        for index in range(measurement_item.childCount()):
+            contact = self.model.contacts[measurement_name][index]
+            if contact.contact_label in lookup and not lookup[contact.contact_label]:
+                self.model.put_contact(contact_id=contact.contact_id)
+                lookup[contact.contact_label] = 1
+        self.set_max_length()
 
     def change_frame(self, frame):
         self.slider_text.setText("Frame: {}".format(frame))
@@ -153,12 +169,16 @@ class AnalysisWidget(QtGui.QTabWidget):
         current_item = self.measurement_tree.currentItem()
         # Notify the model to update the subject_name + measurement_name if necessary
         measurement_name = current_item.text(0)
-        measurement = {"measurement_name": measurement_name}
-        self.model.put_measurement(measurement=measurement)
+        self.model.put_measurement(measurement_name=measurement_name)
 
     def put_contact(self):
+        # Check to make sure the measurement is selected first
         current_item = self.measurement_tree.currentItem()
-        contact_id = current_item.text(0)
+        measurement_item = current_item.parent()
+        self.measurement_tree.setCurrentItem(measurement_item)
+        self.put_measurement()
+        # Now put the contact
+        contact_id = int(current_item.text(0))  # Convert the unicode to int
         self.model.put_contact(contact_id=contact_id)
 
     # TODO This needs to be re-enabled somehow
@@ -166,9 +186,20 @@ class AnalysisWidget(QtGui.QTabWidget):
     #     self.model.calculate_results()
     #     pub.sendMessage("calculate_results")
 
-    # TODO Add a way to switch between looking at individual contacts to an average result
-    def show_average_results(self, evt=None):
-         pass
+    def show_average_results(self):
+        self.toggle = not self.toggle
+        pub.sendMessage("show_average_results", toggle=self.toggle)
+        self.set_max_length()
+
+    def set_max_length(self):
+        if self.toggle:
+            self.slider.setMaximum(self.max_length)
+        else:
+            max_length = 0
+            for contact in self.model.selected_contacts.values():
+                if contact.length > max_length:
+                    max_length = contact.length
+            self.slider.setMaximum(max_length)
 
     def create_toolbar_actions(self):
         self.filter_outliers_action = gui.create_action(text="&Track Contacts",
