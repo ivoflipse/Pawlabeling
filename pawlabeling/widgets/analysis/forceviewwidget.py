@@ -94,6 +94,7 @@ class ContactView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.update_results, "update_results")
         pub.subscribe(self.filter_outliers, "filter_outliers")
+        pub.subscribe(self.update_contact, "update_contact")
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
@@ -106,6 +107,11 @@ class ContactView(QtGui.QWidget):
         self.filtered = results[self.contact_label]["filtered"]
         if self.parent.active:
             self.draw()
+
+    def update_contact(self):
+        if self.contact_label == self.model.contact.contact_label:
+            if self.parent.active:
+                self.draw()
 
     def draw(self):
         if not self.model.contacts:
@@ -134,6 +140,16 @@ class ContactView(QtGui.QWidget):
                     time_line = calculations.interpolate_time_series(np.arange(np.max(len(force))),
                                                                      interpolate_length)
                     self.axes.plot(time_line, interpolated_force, alpha=0.5)
+
+        # If there's a contact selected, plot that too
+        if self.contact_label in self.model.selected_contacts:
+            contact = self.model.selected_contacts[self.contact_label]
+            force = np.pad(contact.force_over_time, 1, mode="constant", constant_values=0)
+            interpolated_force = calculations.interpolate_time_series(force, interpolate_length)
+            time_line = calculations.interpolate_time_series(np.arange(np.max(len(force))),
+                                                             interpolate_length)
+            self.axes.plot(time_line, interpolated_force, color="k", linewidth=4, alpha=0.75)
+
 
         # If this is empty, there were no contacts to plot
         if not force_over_time:
