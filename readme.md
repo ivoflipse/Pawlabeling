@@ -1,4 +1,4 @@
-Paw Labeling
+Paw Labeling [![Build Status](https://travis-ci.org/ivoflipse/Pawlabeling.png)](https://travis-ci.org/ivoflipse/Pawlabeling)
 ============
 
 ![Paw labeling tool](doc/images/Pawlabeling.png)
@@ -6,9 +6,9 @@ Paw Labeling
 Overview
 --------
 
-[![Build Status](https://travis-ci.org/ivoflipse/Pawlabeling.png)](https://travis-ci.org/ivoflipse/Pawlabeling)
+
 Paw Labeling is a tool to process veterinary pressure measurements.
-It can currently import RSscan and Zebris entire plate export-files.
+It can currently import RSscan, Zebris and Tekscan entire plate export-files.
 
 It assumes all measurements are organized in folders as following:
 
@@ -49,13 +49,19 @@ Features
 Screenshots
 -----------
 
+![Database](doc/images/Database.png)
+
 ![Processing](doc/images/Processing.png)
 
-![Processing](doc/images/2D_view.png)
+![2D View](doc/images/2D_view.png)
 
-![Processing](doc/images/Force.png)
+![Pressure](doc/images/Pressure.png)
 
-![Processing](doc/images/COP.png)
+![Force](doc/images/Force.png)
+
+![COP](doc/images/COP.png)
+
+![Settings](doc/images/settings.png)
 
 Installation
 -----
@@ -74,7 +80,7 @@ In any case, you need to install:
 
 - [OpenCV](http://www.lfd.uci.edu/~gohlke/pythonlibs/#opencv)
 - [PySide](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyside)
-- [PyPubsub](http://pubsub.sourceforge.net/)
+- [PyPubsub](http://pubsub.sourceforge.net/) (note that version 3.2 seems broken at the moment)
 - [imreg](https://github.com/pyimreg/imreg)
 - Numpy (included in Acaconda)
 - Scipy (included in Acaconda)

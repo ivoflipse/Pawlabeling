@@ -49,6 +49,8 @@ class TestLoad(TestCase):
     #     measurement_data = io.load(file_name=file_name)
     #     self.assertEqual(measurement_data.shape, (128L, 56L, 1472L))
 
+    # TODO Add a test for loading Tekscan
+
 # This test is no longer necessary, since the files are in PyTables
 # class TestFindStoredFile(TestCase):
 #     def setUp(self):
@@ -232,47 +234,23 @@ class TestZipFile(TestCase):
 
 
 class TestGetFilePaths(TestCase):
-    def setUp(self):
+    def test_get_file_paths(self):
         # Let's try and change the measurement folder
         root = os.path.dirname(os.path.abspath(__file__))
-        file_name = os.path.join(root, "files/zip_folder/Dog1")
-
-        self.settings = settings.settings
-        # Cache the old location so we can reset it
-        self.old_folder = self.settings.measurement_folder()
-        # Change the settings folder
-        self.settings.write_value("folders/measurement_folder", file_name)
-
-    def test_get_file_paths(self):
+        measurement_folder = os.path.join(root, "files/zip_folder/Dog1")
         # Get the file_paths
-        file_paths = io.get_file_paths()
+        file_paths = io.get_file_paths(measurement_folder=measurement_folder)
         # Check if file_paths is correct
         self.assertEqual(sorted(file_paths.keys()), ["fake_export_1", "fake_export_2", "fake_export_3"])
-
-    def tearDown(self):
-        # Restore it to the old folder
-        self.settings.write_value("folders/measurement_folder", self.old_folder)
 
 class TestGetFilePaths2(TestCase):
     """
     Second test case, but this time on an empty folder.
     This way I could reuse the setUp and tearDown.
     """
-    def setUp(self):
+    def test_get_file_paths(self):
         # Let's try and change the measurement folder
         root = os.path.dirname(os.path.abspath(__file__))
-        file_name = os.path.join(root, "files/zip_folder")
-
-        self.settings = settings.settings
-        # Cache the old location so we can reset it
-        self.old_folder = self.settings.measurement_folder()
-        # Change the settings folder
-        self.settings.write_value("folders/measurement_folder", file_name)
-
-    def test_get_file_paths(self):
-        file_paths = io.get_file_paths()
+        measurement_folder  = os.path.join(root, "files/zip_folder")
+        file_paths = io.get_file_paths(measurement_folder =measurement_folder )
         self.assertEqual(file_paths.keys(), [])
-
-    def tearDown(self):
-        # Restore it to the old folder
-        self.settings.write_value("folders/measurement_folder", self.old_folder)

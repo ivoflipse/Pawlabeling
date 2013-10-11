@@ -126,6 +126,31 @@ def load_rsscan(infile):
         raise Exception
     return result
 
+def load_tekscan(infile):
+    """Reads all data in the datafile. Returns an array of times for each
+    slice, and a 3D array of pressure data with shape (nx, ny, ntimes)."""
+    data_slices = []
+    data = []
+    first_frame = False
+    for line in infile:
+        split_line = line.strip().split(',')
+        # skip the whole header thing
+        if split_line and split_line[0][:5] == "Frame":
+            first_frame = True
+            continue
+
+        line_length = len(split_line)
+        if first_frame:
+            if line_length == 1:
+                if data:
+                    array_data = np.array(data, dtype=np.float32)
+                    data_slices.append(array_data)
+                    data = []
+            else:
+                data.append(split_line)
+
+    result = np.dstack(data_slices)
+    return result
 
 def load(input_file, brand):
     if brand == "rsscan":
@@ -138,6 +163,11 @@ def load(input_file, brand):
             return load_zebris(input_file)
         except Exception as e:
             logger.debug("Loading with Zebris format failed. Exception: {}".format(e))
+    elif brand == "tekscan":
+        try:
+            return load_tekscan(input_file)
+        except Exception as e:
+            logger.debug("Loading with Tekscan format failed. Exception: {}".format(e))
     else:
         pub.sendMessage("update_statusbar", status="Couldn't load file")
         logger.warning("Couldn't load file. Please contact me for support.")
@@ -162,33 +192,6 @@ def open_zip_file(file_name):
         input_file = infile.read(file_name)
 
     return input_file
-
-
-def load_results(input_path):
-    # Return if we don't have an input_path, this means there are no results
-    if not input_path:
-        return
-
-    results = []
-    with open(input_path, "rb") as pickle_file:
-        results = pickle.load(pickle_file)
-
-    # Empty results or non-list ones are not allowed
-    if not results:
-        raise Exception("Results are empty. Incorrect file or it could not be read")
-    if type(results) is not list:
-        raise Exception("Results are of the wrong type. You've used an incorrect file")
-
-    # Check the type of the first item in the list
-    from pawlabeling.models.contactmodel import Contact
-
-    contacts = []
-    for contact in results:
-        contacts.append(isinstance(contact, Contact))
-    if all(contacts):
-        return results
-    else:
-        raise Exception("Results do not contain Contact's. You've used an incorrect file")
 
 
 def zip_file(root, file_name):
@@ -224,23 +227,21 @@ def zip_file(root, file_name):
     return os.path.join(root, new_file_path)
 
 
-def get_file_paths():
+def get_file_paths(measurement_folder):
     from collections import defaultdict
-    from pawlabeling.settings import settings
 
     # Clear any existing file names
     file_paths = defaultdict(list)
 
     logger.info("io.get_file_paths: Searching for measurements...")
 
-    root = settings.settings.measurement_folder()
-    assert os.path.exists(root)
-    assert os.path.isdir(root)
-    file_names = [name for name in os.listdir(root)
-                  if os.path.isfile(os.path.join(root, name))]
+    assert os.path.exists(measurement_folder)
+    assert os.path.isdir(measurement_folder)
+    file_names = [name for name in os.listdir(measurement_folder)
+                  if os.path.isfile(os.path.join(measurement_folder, name))]
 
     for file_name in file_names:
-        file_paths[file_name] = os.path.join(root, file_name)
+        file_paths[file_name] = os.path.join(measurement_folder, file_name)
 
     if not file_paths:
         logger.info("No files found, please check the measurement folder in your settings file")

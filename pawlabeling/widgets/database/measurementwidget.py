@@ -162,7 +162,7 @@ class MeasurementWidget(QtGui.QWidget):
     def update_files_tree(self):
         self.files_tree.clear()
 
-        self.file_paths = io.get_file_paths()
+        self.file_paths = io.get_file_paths(measurement_folder=self.model.measurement_folder)
         for file_name, file_path in self.file_paths.iteritems():
             root_item = QtGui.QTreeWidgetItem(self.files_tree)
             root_item.setText(0, file_name)

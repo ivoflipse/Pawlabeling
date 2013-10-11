@@ -1,10 +1,9 @@
-pubsub
 numpy
 PySide
 cv2
 scipy
 matplotlib
-pypubsub
+pypubsub==3.1.2
 tables
 nose
 imreg
