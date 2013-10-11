@@ -160,6 +160,9 @@ class Settings(QtCore.QSettings):
         key = "folders/measurement_folder"
         default_value = os.path.join(self.root_folder, "samples\\Measurements")
         setting_value = self.value(key)
+        # Check if this folder even exists, else return the relative path
+        if not os.path.exists(setting_value):
+            return default_value
         if isinstance(setting_value, str) or isinstance(setting_value, unicode):
             return setting_value
         else:
@@ -169,6 +172,9 @@ class Settings(QtCore.QSettings):
         key = "folders/database_folder"
         default_value = ".\\database"
         setting_value = self.value(key)
+        # Check if this folder even exists, else return the relative path
+        if not os.path.exists(setting_value):
+            return default_value
         if isinstance(setting_value, str) or isinstance(setting_value, unicode):
             return setting_value
         else:
@@ -178,6 +184,10 @@ class Settings(QtCore.QSettings):
         key = "folders/database_file"
         default_value = os.path.join(self.root_folder, "database\\data.h5")
         setting_value = self.value(key)
+        # Check if this folder even exists, else return the relative path
+        if not os.path.exists(setting_value):
+            return default_value
+        # TODO what if the default value doesn't exist either
         if isinstance(setting_value, str) or isinstance(setting_value, unicode):
             return setting_value
         else:

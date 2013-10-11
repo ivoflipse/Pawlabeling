@@ -146,7 +146,7 @@ class MeasurementWidget(QtGui.QWidget):
         if self.file_dialog.exec_():
             measurement_folder = self.file_dialog.selectedFiles()[0]
 
-        # I'm no lnoger overwriting the settings, that wasn't very user friendly
+        # I'm no longer overwriting the settings, that wasn't very user friendly
         #self.settings.write_value("folders/measurement_folder", measurement_folder)
         self.model.measurement_folder = measurement_folder
 

@@ -104,21 +104,22 @@ def load_rsscan(infile):
     slice, and a 3D array of pressure measurement_data with shape (nx, ny, nz)."""
     data_slices = []
     data = []
+    first_frame = False
     for line in iter(infile.splitlines()):
         split_line = line.strip().split()
+        # Skip the whole header thing
+        if split_line and split_line[0][:5] == "Frame":
+            first_frame = True
+            continue
+
         line_length = len(split_line)
-        if line_length == 0:
-            if len(data) != 0:
+        if first_frame:
+            if line_length == 0:
                 array_data = np.array(data, dtype=np.float32)
                 data_slices.append(array_data)
-        elif line_length == 4:  # header
-            data = []
-        else:
-            data.append(split_line)
-
-    # Because there won't be an empty line, I need to add the last frame outside the loop
-    array_data = np.array(data, dtype=np.float32)
-    data_slices.append(array_data)
+                data = []
+            else:
+                data.append(split_line)
 
     result = np.dstack(data_slices)
     # Check if we didn't pass an empty array
@@ -132,9 +133,9 @@ def load_tekscan(infile):
     data_slices = []
     data = []
     first_frame = False
-    for line in infile:
+    for line in iter(infile.splitlines()):
         split_line = line.strip().split(',')
-        # skip the whole header thing
+        # Skip the whole header thing
         if split_line and split_line[0][:5] == "Frame":
             first_frame = True
             continue

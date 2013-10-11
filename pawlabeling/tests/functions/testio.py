@@ -16,7 +16,7 @@ class TestLoad(TestCase):
         file_name = os.path.join(parent_folder, file_location)
         input_file = io.open_zip_file(file_name)
         data = io.load(input_file, brand="rsscan")
-        self.assertEqual(data.shape, (256L, 63L, 250L))
+        self.assertEqual(data.shape, (256L, 63L, 249L))
 
     def test_load_empty_string(self):
         data = io.load("", brand="rsscan")
