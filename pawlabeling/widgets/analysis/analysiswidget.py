@@ -38,6 +38,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.measurement_tree.setColumnCount(5)
         self.measurement_tree.setHeaderLabels(["Name", "Label", "Length", "Surface", "Force"])
         self.measurement_tree.itemActivated.connect(self.item_activated)
+        self.measurement_tree.setItemsExpandable(False)
 
         # Set the widths of the columns
         self.measurement_tree.setColumnWidth(0, 75)
@@ -110,6 +111,7 @@ class AnalysisWidget(QtGui.QTabWidget):
             measurement_item.setText(0, measurement.measurement_name)
             measurement_item.setFirstColumnSpanned(True)
             measurement_item.setExpanded(True)
+
             for contact in self.model.contacts[measurement.measurement_name]:
                 if contact.length > self.max_length:
                     self.max_length = contact.length
