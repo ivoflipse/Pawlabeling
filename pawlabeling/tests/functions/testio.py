@@ -248,9 +248,13 @@ class TestGetFilePaths2(TestCase):
     Second test case, but this time on an empty folder.
     This way I could reuse the setUp and tearDown.
     """
-    def test_get_file_paths(self):
+    def setUp(self):
         # Let's try and change the measurement folder
         root = os.path.dirname(os.path.abspath(__file__))
-        measurement_folder  = os.path.join(root, "files/empty_folder")
-        file_paths = io.get_file_paths(measurement_folder =measurement_folder)
+        self.measurement_folder  = os.path.join(root, "files/empty_folder")
+        if not os.path.exists(self.measurement_folder):
+            os.makedirs(self.measurement_folder)
+
+    def test_get_file_paths(self):
+        file_paths = io.get_file_paths(measurement_folder=self.measurement_folder)
         self.assertEqual(file_paths.keys(), [])
