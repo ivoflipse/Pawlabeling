@@ -1,11 +1,12 @@
 Paw Labeling
 ============
 
-![Paw labeling tool](docs/images/Pawlabeling.png)
+![Paw labeling tool](doc/images/Pawlabeling.png)
 
 Overview
 --------
 
+[![Build Status](https://travis-ci.org/ivoflipse/Pawlabeling.png)](https://travis-ci.org/ivoflipse/Pawlabeling)
 Paw Labeling is a tool to process veterinary pressure measurements.
 It can currently import RSscan and Zebris entire plate export-files.
 
@@ -48,13 +49,13 @@ Features
 Screenshots
 -----------
 
-![Processing](docs/images/Processing.png)
+![Processing](doc/images/Processing.png)
 
-![Processing](docs/images/2D_view.png)
+![Processing](doc/images/2D_view.png)
 
-![Processing](docs/images/Force.png)
+![Processing](doc/images/Force.png)
 
-![Processing](docs/images/COP.png)
+![Processing](doc/images/COP.png)
 
 Installation
 -----
@@ -73,9 +74,12 @@ In any case, you need to install:
 
 - [OpenCV](http://www.lfd.uci.edu/~gohlke/pythonlibs/#opencv)
 - [PySide](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyside)
+- [PyPubsub](http://pubsub.sourceforge.net/)
+- [imreg](https://github.com/pyimreg/imreg)
 - Numpy (included in Acaconda)
 - Scipy (included in Acaconda)
-
+- PyTables (included in Anaconda)
+- Nose (for testing, included in Anaconda)
 
 Usage
 -----

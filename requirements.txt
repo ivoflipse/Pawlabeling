@@ -1,5 +1,10 @@
-numpy >= 1.7.1
-PySide >= 1.1.2
-cv2 >= 2.4.2
-scipy >= 0.12.0
-matplotlib >= 1.2.1
+pubsub
+numpy
+PySide
+cv2
+scipy
+matplotlib
+pypubsub
+tables
+nose
+imreg
