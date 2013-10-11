@@ -169,7 +169,7 @@ class Settings(QtCore.QSettings):
 
     def database_folder(self):
         key = "folders/database_folder"
-        default_value = ".\\database"
+        default_value = os.path.join(self.root_folder, "database")
         setting_value = self.value(key)
         # Check if this folder even exists, else return the relative path
         if not os.path.exists(setting_value):
