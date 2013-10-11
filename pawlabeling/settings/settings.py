@@ -49,7 +49,7 @@ class Settings(QtCore.QSettings):
 
     def contact_dict(self):
         # Lookup table for converting indices to labels
-        key = "contact_dict"
+        key = "main/contact_dict"
         default_value = {
             0: "LF",
             1: "LH",
@@ -63,7 +63,7 @@ class Settings(QtCore.QSettings):
 
     def colors(self):
         # Colors for displaying bounding boxes
-        key = "colors"
+        key = "main/colors"
         default_value = [
             QtGui.QColor(QtCore.Qt.green),
             QtGui.QColor(QtCore.Qt.darkGreen),
@@ -402,8 +402,8 @@ class Settings(QtCore.QSettings):
 
     def read_settings(self):
         self.settings = defaultdict()
-        self.settings["contact_dict"] = self.contact_dict()
-        self.settings["colors"] = self.colors()
+        self.settings["main/contact_dict"] = self.contact_dict()
+        self.settings["main/colors"] = self.colors()
 
         self.settings["plate/plate"] = self.plate()
 
@@ -453,7 +453,8 @@ class Settings(QtCore.QSettings):
         """
         """
         for key, value in settings.iteritems():
-            if key not in ["brands", "colors", "contact_dict"]:  # I want to skip these
+            if key not in ["main/colors", "main/contact_dict"]:  # I want to skip these
+                #print key, value
                 self.write_value(key, value)
 
     def write_value(self, key, value):

@@ -148,31 +148,35 @@ class SettingsWidget(QtGui.QWidget):
         Store the changes to the widgets to the settings.ini file
         This function should probably do some validation
         """
+        print "Saving settings"
         settings_dict = self.settings.read_settings()
-        for key, nested in settings_dict.iteritems():
+        ignore = []
+        for key, old_value in settings_dict.iteritems():
+            print "1", key, old_value
             # This will help skip settings we don't change anyway
-            if key not in self.settings.lookup_table:
-                del settings_dict[key]
-                break
+            group, item = key.split("/")
+            if group not in self.settings.lookup_table:
+                ignore.append(key)
+                continue
 
-            for nested_key, old_value in nested.iteritems():
-                if type(nested_key) not in [str, unicode]:
-                    break
+            if hasattr(self, item):
+                new_value = getattr(self, item).text()
+                print "2", item, new_value
+                if type(old_value) == int:
+                    new_value = int(new_value)
+                if type(old_value) == float:
+                    new_value = float(new_value)
+                if type(old_value) == QtGui.QKeySequence:
+                    new_value = QtGui.QKeySequence.fromString(new_value)
+                if type(old_value) == bool:
+                    new_value = bool(new_value)
+                    print new_value
+                if old_value != new_value:
+                    settings_dict[key][item] = new_value
 
-                if hasattr(self, nested_key):
-                    new_value = getattr(self, nested_key).text()
-                    if type(old_value) == int:
-                        new_value = int(new_value)
-                    if type(old_value) == float:
-                        new_value = float(new_value)
-                    if type(old_value) == QtGui.QKeySequence:
-                        new_value = QtGui.QKeySequence.fromString(new_value)
-                    if type(old_value) == bool:
-                        new_value = bool(new_value)
-                        print new_value
-                    if old_value != new_value:
-                        settings_dict[key][nested_key] = new_value
-
+        print "ignore", ignore
+        settings_dict = {key:value for key, value in settings_dict.iteritems() if key not in ignore}
+        print settings_dict
         self.settings.save_settings(settings_dict)
 
         # Notify the rest of the application that the settings have changed
