@@ -238,8 +238,9 @@ def get_file_paths(measurement_folder):
 
     assert os.path.exists(measurement_folder)
     assert os.path.isdir(measurement_folder)
-    file_names = [name for name in os.listdir(measurement_folder)
-                  if os.path.isfile(os.path.join(measurement_folder, name))]
+    file_names = [name for name in os.listdir(measurement_folder)]
+    # Removed the isfile condition
+    #if os.path.isfile(os.path.join(measurement_folder, name))
 
     for file_name in file_names:
         file_paths[file_name] = os.path.join(measurement_folder, file_name)

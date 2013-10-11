@@ -44,13 +44,15 @@ class Settings(QtCore.QSettings):
             "application": ["zip_files", "show_maximized", "restore_last_session"],
         }
 
+        self.create_contact_dict()
+        self.create_colors()
+
         # Set up the logger
         self.setup_logging()
 
-    def contact_dict(self):
+    def create_contact_dict(self):
         # Lookup table for converting indices to labels
-        key = "main/contact_dict"
-        default_value = {
+        self.contact_dict = {
             0: "LF",
             1: "LH",
             2: "RF",
@@ -59,12 +61,10 @@ class Settings(QtCore.QSettings):
             -2: "NA",
             -1: "Current"
         }
-        return default_value
 
-    def colors(self):
+    def create_colors(self):
         # Colors for displaying bounding boxes
-        key = "main/colors"
-        default_value = [
+        self.colors = [
             QtGui.QColor(QtCore.Qt.green),
             QtGui.QColor(QtCore.Qt.darkGreen),
             QtGui.QColor(QtCore.Qt.red),
@@ -73,7 +73,6 @@ class Settings(QtCore.QSettings):
             QtGui.QColor(QtCore.Qt.white),
             QtGui.QColor(QtCore.Qt.yellow)
         ]
-        return default_value
 
     def plate(self):
         key = "plate/plate"
@@ -402,9 +401,6 @@ class Settings(QtCore.QSettings):
 
     def read_settings(self):
         self.settings = defaultdict()
-        self.settings["main/contact_dict"] = self.contact_dict()
-        self.settings["main/colors"] = self.colors()
-
         self.settings["plate/plate"] = self.plate()
 
         self.settings["keyboard_shortcuts/left_front"] = self.left_front()
@@ -453,9 +449,8 @@ class Settings(QtCore.QSettings):
         """
         """
         for key, value in settings.iteritems():
-            if key not in ["main/colors", "main/contact_dict"]:  # I want to skip these
-                #print key, value
-                self.write_value(key, value)
+            print key, value
+            self.write_value(key, value)
 
     def write_value(self, key, value):
         """

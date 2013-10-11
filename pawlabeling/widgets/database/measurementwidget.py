@@ -53,9 +53,10 @@ class MeasurementWidget(QtGui.QWidget):
         self.plate_layout.addStretch(1)
 
         self.files_tree = QtGui.QTreeWidget(self)
-        self.files_tree.setColumnCount(3)
-        self.files_tree.setHeaderLabels(["Name", "Size", "Date"])
+        self.files_tree.setColumnCount(4)
+        self.files_tree.setHeaderLabels(["","Name", "Size", "Date"])
         self.files_tree.header().resizeSection(0, 200)
+        self.files_tree.setColumnWidth(0, 40)
 
         self.measurement_tree_label = QtGui.QLabel("Measurements")
         self.measurement_tree_label.setFont(label_font)
@@ -133,7 +134,9 @@ class MeasurementWidget(QtGui.QWidget):
         self.model.get_measurements()
 
     def change_file_location(self, evt=None):
-        measurement_folder = self.model.measurement_folder
+        # We load the measurement folder from the settings, this is the base folder. Then we select the folder
+        # we're interested in and set model.measurement_folder to that value
+        measurement_folder = self.settings.measurement_folder()
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your measurements",
@@ -165,15 +168,23 @@ class MeasurementWidget(QtGui.QWidget):
         self.file_paths = io.get_file_paths(measurement_folder=self.model.measurement_folder)
         for file_name, file_path in self.file_paths.iteritems():
             root_item = QtGui.QTreeWidgetItem(self.files_tree)
-            root_item.setText(0, file_name)
+            # If its not a measurement, give it a directory icon
+            if not os.path.isfile(file_path):
+                root_item.setIcon(0, QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                              "../images/folder_icon.png")))
+            else:
+                # Give it some paw as an icon
+                root_item.setIcon(0, QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                              "../images/paw_icon.png")))
+            root_item.setText(1, file_name)
             file_size = os.path.getsize(file_path)
             file_size = utility.humanize_bytes(bytes=file_size, precision=1)
-            root_item.setText(1, file_size)
+            root_item.setText(2, file_size)
             # This is one messed up format
             creation_date = os.path.getctime(file_path)
             creation_date = time.strftime("%Y-%m-%d", time.gmtime(creation_date))
             # DAMNIT Why can't I use a locale on this?
-            root_item.setText(2, creation_date)
+            root_item.setText(3, creation_date)
 
     def add_measurements(self, evt=None):
         # All measurements from the same session must have the same brands/model/frequency
@@ -185,6 +196,10 @@ class MeasurementWidget(QtGui.QWidget):
         plate_id = plate.plate_id
         frequency = int(self.frequency.itemText(self.frequency.currentIndex()))
         for file_name, file_path in self.file_paths.iteritems():
+            # Only load measurements, so skip directories
+            if not os.path.isfile(file_path):
+                continue
+
             date_time = time.strftime("%Y-%m-%d %H:%M", time.gmtime(os.path.getctime(file_path))).split(" ")
             # Check if the brands and model have been changed or not
             measurement = {"measurement_name": file_name,

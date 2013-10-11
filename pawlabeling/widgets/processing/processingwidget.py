@@ -31,8 +31,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.label_layout.addStretch(1)
 
         self.settings = settings.settings
-        self.colors = self.settings.colors()
-        self.contact_dict = self.settings.contact_dict()
+        self.colors = self.settings.colors
+        self.contact_dict = self.settings.contact_dict
 
         self.toolbar = gui.Toolbar(self)
         # Create all the toolbar actions
@@ -320,8 +320,8 @@ class ProcessingWidget(QtGui.QWidget):
         pass
 
     def changed_settings(self):
-        self.colors = self.settings.colors()
-        self.contact_dict = self.settings.contact_dict()
+        self.colors = self.settings.colors
+        self.contact_dict = self.settings.contact_dict
         # Update all the keyboard shortcuts
         self.left_front_action.setShortcut(self.settings.left_front())
         self.left_hind_action.setShortcut(self.settings.left_hind())

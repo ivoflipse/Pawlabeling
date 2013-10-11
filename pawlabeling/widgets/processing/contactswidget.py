@@ -33,7 +33,7 @@ class ContactWidgets(QtGui.QWidget):
 
         self.logger = logging.getLogger("logger")
         self.settings = settings.settings
-        self.contact_dict = self.settings.contact_dict()
+        self.contact_dict = self.settings.contact_dict
 
         self.left_contacts_layout = QtGui.QVBoxLayout()
         self.left_contacts_layout.addWidget(self.left_front)

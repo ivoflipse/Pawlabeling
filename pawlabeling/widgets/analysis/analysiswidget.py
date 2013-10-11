@@ -24,8 +24,8 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.model = model.model
 
         self.settings = settings.settings
-        self.colors = self.settings.colors()
-        self.contact_dict = self.settings.contact_dict()
+        self.colors = self.settings.colors
+        self.contact_dict = self.settings.contact_dict
         self.average_toggle = False
 
         self.toolbar = gui.Toolbar(self)

@@ -251,6 +251,6 @@ class TestGetFilePaths2(TestCase):
     def test_get_file_paths(self):
         # Let's try and change the measurement folder
         root = os.path.dirname(os.path.abspath(__file__))
-        measurement_folder  = os.path.join(root, "files/zip_folder")
-        file_paths = io.get_file_paths(measurement_folder =measurement_folder )
+        measurement_folder  = os.path.join(root, "files/empty_folder/empty_nested_folder")
+        file_paths = io.get_file_paths(measurement_folder =measurement_folder)
         self.assertEqual(file_paths.keys(), [])

@@ -148,20 +148,13 @@ class SettingsWidget(QtGui.QWidget):
         Store the changes to the widgets to the settings.ini file
         This function should probably do some validation
         """
-        print "Saving settings"
         settings_dict = self.settings.read_settings()
-        ignore = []
         for key, old_value in settings_dict.iteritems():
-            print "1", key, old_value
             # This will help skip settings we don't change anyway
             group, item = key.split("/")
-            if group not in self.settings.lookup_table:
-                ignore.append(key)
-                continue
 
             if hasattr(self, item):
                 new_value = getattr(self, item).text()
-                print "2", item, new_value
                 if type(old_value) == int:
                     new_value = int(new_value)
                 if type(old_value) == float:
@@ -170,13 +163,12 @@ class SettingsWidget(QtGui.QWidget):
                     new_value = QtGui.QKeySequence.fromString(new_value)
                 if type(old_value) == bool:
                     new_value = bool(new_value)
-                    print new_value
+                if type(old_value) == unicode:
+                    new_value = str(new_value)
                 if old_value != new_value:
-                    settings_dict[key][item] = new_value
+                    print key, item, new_value, settings_dict[key]
+                    settings_dict[key] = new_value
 
-        print "ignore", ignore
-        settings_dict = {key:value for key, value in settings_dict.iteritems() if key not in ignore}
-        print settings_dict
         self.settings.save_settings(settings_dict)
 
         # Notify the rest of the application that the settings have changed
