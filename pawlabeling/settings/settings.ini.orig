@@ -1,11 +1,21 @@
 [widgets]
-main_window_width=1330
-main_window_height=755
+<<<<<<< HEAD
+main_window_width=1440
+main_window_height=977
 main_window_left=0
 main_window_top=25
-entire_plate_widget_width=600
+entire_plate_widget_width=800
 entire_plate_widget_height=300
 contacts_widget_height=130
+=======
+main_window_width=2560
+main_window_height=1377
+main_window_left=-8
+main_window_top=-8
+entire_plate_widget_width=600
+entire_plate_widget_height=200
+contacts_widget_height=300
+>>>>>>> 86f1718c9fbb26ea5e61723c34ca5fd04b5e2427
 main_window_size=@Rect(0 25 1440 830)
 
 [application]
@@ -35,7 +45,7 @@ end_force_percentage=0.25
 tracking_temporal=0.5
 
 [folders]
-database_folder=C:\\Dropbox\\Pawlabeling\\pawlabeling\\database
+database_folder=C:\\Dropbox\\Development\\Pawlabeling\\pawlabeling\\database
 database_file=C:\\Dropbox\\Development\\Pawlabeling\\pawlabeling\\database\\data.h5
 measurement_folder=C:/Exports
 
