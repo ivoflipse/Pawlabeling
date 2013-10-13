@@ -115,10 +115,8 @@ class SessionWidget(QtGui.QWidget):
             rootItem.setText(1, session.session_date)
             rootItem.setText(2, session.session_time)
 
-        # We select the last session, assuming this is the one we just created
-        count = self.session_tree.topLevelItemCount()
-        if count:
-            # Select the last session
-            item = self.session_tree.topLevelItem(count - 1)
-            self.session_tree.setCurrentItem(item)
-            self.put_session()
+
+        # Select the first item
+        item = self.session_tree.topLevelItem(0)
+        self.session_tree.setCurrentItem(item)
+        self.put_session()

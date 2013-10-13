@@ -135,13 +135,11 @@ class SubjectWidget(QtGui.QWidget):
             rootItem.setText(1, subject.last_name)
             rootItem.setText(2, subject.birthday)
 
-        # This only works if the tree aint empty
-        subject_count = self.subject_tree.topLevelItemCount()
-        if subject_count:
-            # Select the last item in the contacts tree
-            item = self.subject_tree.topLevelItem(subject_count - 1) # Get the last one
-            self.subject_tree.setCurrentItem(item)
-            self.put_subject()
+
+        # Select the first subject
+        item = self.subject_tree.topLevelItem(0)
+        self.subject_tree.setCurrentItem(item)
+        self.put_subject()
 
     # TODO If a subject is selected in the subject_tree, fill in its information in the subject fields
     # TODO Allow for a way to edit the information for a subject and/or session

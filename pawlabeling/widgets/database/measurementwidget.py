@@ -206,6 +206,13 @@ class MeasurementWidget(QtGui.QWidget):
         plate = self.find_plate(brand=brand, model=model)
         plate_id = plate.plate_id
         frequency = int(self.frequency.itemText(self.frequency.currentIndex()))
+        # Initialize a progress bar
+        progress = 0
+        pub.sendMessage("update_progress", progress=progress)
+        # Calculate how much progress we make each step
+        total_work =  len(self.file_paths)
+        step_work = 100. / total_work
+
         for file_name, file_path in self.file_paths.iteritems():
             # Only load measurements, so skip directories
             if not os.path.isfile(file_path):
@@ -225,8 +232,15 @@ class MeasurementWidget(QtGui.QWidget):
                 self.model.create_measurement(measurement=measurement)
                 # Update the tree after a measurement has been created
                 self.get_measurements()
+                # Increment the progress
+                progress += step_work
+                pub.sendMessage("update_progress", progress=progress)
             except settings.MissingIdentifier:
                 pass
+
+        # When we're done, signal we've reached 100%
+        progress = 100
+        pub.sendMessage("update_progress", progress=progress)
 
     def find_plate(self, brand, model):
         for plate_id, plate in self.model.plates.iteritems():

@@ -60,6 +60,10 @@ class MainWindow(QtGui.QMainWindow):
         self.status = self.statusBar()
         self.status.showMessage("Ready")
 
+        self.progress = QtGui.QProgressBar()
+        self.progress.setRange(0, 100)
+        self.status.addPermanentWidget(self.progress)
+
         self.message_box = QtGui.QMessageBox()
 
         self.tab_widget = QtGui.QTabWidget(self)
@@ -73,6 +77,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.installEventFilter(self)
         pub.subscribe(self.change_status, "update_statusbar")
+        pub.subscribe(self.update_progress, "update_progress")
         pub.subscribe(self.launch_message_box, "message_box")
 
         # TODO Now you can call whatever you want
@@ -104,6 +109,16 @@ class MainWindow(QtGui.QMainWindow):
     def change_status(self, status):
         self.logger.info(status)
         self.status.showMessage(status)
+
+    def update_progress(self, progress):
+        """
+        If we start displaying progress, create a progress bar.
+        Once we reach 100%, remove it again
+        """
+        if progress == 0:
+            self.progress.reset()
+        else:
+            self.progress.setValue(progress)
 
     def launch_message_box(self, message):
         self.message_box.setText(message)
