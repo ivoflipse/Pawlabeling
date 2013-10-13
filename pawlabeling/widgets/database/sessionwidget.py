@@ -71,10 +71,7 @@ class SessionWidget(QtGui.QWidget):
         if not self.session_name.text():
             return
 
-        session = {}
-        session["session_name"] = self.session_name.text()
-        session["session_date"] = self.session_date.date().toString(Qt.ISODate)
-        session["session_time"] = self.session_time.time().toString(u"HH:mm")
+        session = self.get_session_fields()
 
         try:
             self.model.create_session(session=session)
@@ -93,6 +90,8 @@ class SessionWidget(QtGui.QWidget):
         session = {}
         session["session_name"] = self.session_name.text()
         session["session_date"] = self.session_date.date().toString(Qt.ISODate)
+        # Update the time
+        self.session_time.setTime(QtCore.QTime.currentTime())
         session["session_time"] = self.session_time.time().toString(u"HH:mm")  # Qt.ISODate
         return session
 
