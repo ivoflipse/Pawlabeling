@@ -190,6 +190,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Now put the contact
         contact_id = int(current_item.text(0))  # Convert the unicode to int
         self.model.put_contact(contact_id=contact_id)
+        self.set_max_length()
 
     def show_average_results(self):
         self.average_toggle = not self.average_toggle
