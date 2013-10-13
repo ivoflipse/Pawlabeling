@@ -54,6 +54,19 @@ class SettingsWidget(QtGui.QWidget):
         self.right_hind_label = QtGui.QLabel("Right Hind Shortcut")
         self.right_hind = QtGui.QLineEdit()
 
+        self.main_window_width_label = QtGui.QLabel("Main Window Width")
+        self.main_window_width = QtGui.QLineEdit()
+
+        self.main_window_height_label = QtGui.QLabel("Main Window Height")
+        self.main_window_height = QtGui.QLineEdit()
+
+        self.main_window_top_label = QtGui.QLabel("Main Window Top")
+        self.main_window_top = QtGui.QLineEdit()
+
+        self.main_window_left_label = QtGui.QLabel("Main Window Left ")
+        self.main_window_left = QtGui.QLineEdit()
+
+
         self.interpolation_entire_plate_label = QtGui.QLabel("Interpolation: Entire Plate")
         self.interpolation_entire_plate = QtGui.QLineEdit()
 
@@ -89,6 +102,10 @@ class SettingsWidget(QtGui.QWidget):
                         ["database_file_label", "database_file"],
                         ["left_front_label", "left_front", "", "right_front_label", "right_front"],
                         ["left_hind_label", "left_hind", "", "right_hind_label", "right_hind"],
+                        ["main_window_width_label", "main_window_width", "",
+                         "main_window_height_label", "main_window_height", "",
+                         "main_window_top_label", "main_window_top","",
+                         "main_window_left_label", "main_window_left", ""],
                         ["interpolation_entire_plate_label", "interpolation_entire_plate", "",
                         "interpolation_contact_widgets_label", "interpolation_contact_widgets", "",
                         "interpolation_results_label", "interpolation_results"],
@@ -141,9 +158,15 @@ class SettingsWidget(QtGui.QWidget):
         self.right_front.setText(self.settings.right_front().toString())
         self.right_hind.setText(self.settings.right_hind().toString())
 
+        self.main_window_height.setText(str(self.settings.main_window_height()))
+        self.main_window_width.setText(str(self.settings.main_window_width()))
+        self.main_window_top.setText(str(self.settings.main_window_top()))
+        self.main_window_left.setText(str(self.settings.main_window_left()))
+
         self.interpolation_entire_plate.setText(str(self.settings.interpolation_entire_plate()))
         self.interpolation_contact_widgets.setText(str(self.settings.interpolation_contact_widgets()))
         self.interpolation_results.setText(str(self.settings.interpolation_results()))
+
         self.start_force_percentage.setText(str(self.settings.start_force_percentage()))
         self.end_force_percentage.setText(str(self.settings.end_force_percentage()))
         self.tracking_temporal.setText(str(self.settings.tracking_temporal()))
@@ -165,6 +188,7 @@ class SettingsWidget(QtGui.QWidget):
                     new_value = getattr(self, item).text()
                 else:
                     new_value = getattr(self, item).currentText()
+
                 if type(old_value) == int:
                     new_value = int(new_value)
                 if type(old_value) == float:

@@ -79,6 +79,7 @@ class MainWindow(QtGui.QMainWindow):
         pub.subscribe(self.change_status, "update_statusbar")
         pub.subscribe(self.update_progress, "update_progress")
         pub.subscribe(self.launch_message_box, "message_box")
+        pub.subscribe(self.changed_settings, "changed_settings")
 
         # TODO Now you can call whatever you want
         pub.sendMessage("get_subjects")
@@ -105,6 +106,14 @@ class MainWindow(QtGui.QMainWindow):
         elif self.tab_widget.currentIndex() == 3:
             self.processing_widget.unsubscribe()
             self.settings_widget.update_fields()
+
+    def changed_settings(self):
+        width = self.settings.main_window_width()
+        height = self.settings.main_window_height()
+        self.resize(width, height)
+        x = self.settings.main_window_left()
+        y = self.settings.main_window_top()
+        self.move(x, y)
 
     def change_status(self, status):
         self.logger.info(status)
