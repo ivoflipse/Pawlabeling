@@ -78,6 +78,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.changed_settings, "changed_settings")
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
+        pub.subscribe(self.changed_settings, "changed_settings")
 
     # I've added subscribe/unsubscribe, such that when we're in the analysis tab, we don't want to respond to
     # everything it sends/receives
@@ -88,6 +89,15 @@ class ProcessingWidget(QtGui.QWidget):
     def unsubscribe(self):
         pub.unsubscribe(self.update_measurements_tree, "update_measurement_status")
         pub.unsubscribe(self.stored_status, "stored_status")
+
+    def changed_settings(self):
+        self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
+        self.entire_plate_widget.setMaximumHeight(self.settings.entire_plate_widget_height())
+        self.entire_plate_widget.adjustSize()
+        for contact in self.contacts_widget.contacts_list:
+            contact.setMinimumHeight(self.settings.contacts_widget_height())
+            contact.adjustSize()
+        self.adjustSize()
 
     def put_subject(self, subject):
         subject_name = "{} {}".format(subject.first_name, subject.last_name)
