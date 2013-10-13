@@ -45,7 +45,7 @@ class ProcessingWidget(QtGui.QWidget):
         #self.measurement_tree.setMaximumHeight(200)
         self.measurement_tree.setColumnCount(5)
         self.measurement_tree.setHeaderLabels(["Name", "Label", "Length", "Surface", "Force"])
-        self.measurement_tree.itemActivated.connect(self.put_measurement)
+        self.measurement_tree.itemActivated.connect(self.item_activated)
         self.measurement_tree.setItemsExpandable(False)
 
         # Set the widths of the columns
@@ -74,8 +74,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.setLayout(self.main_layout)
 
         self.subscribe()
-        pub.subscribe(self.clear_cached_values, "clear_cached_values")
-        pub.subscribe(self.changed_settings, "changed_settings")
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.changed_settings, "changed_settings")
@@ -93,11 +91,8 @@ class ProcessingWidget(QtGui.QWidget):
     def changed_settings(self):
         self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
         self.entire_plate_widget.setMaximumHeight(self.settings.entire_plate_widget_height())
-        self.entire_plate_widget.adjustSize()
         for contact in self.contacts_widget.contacts_list:
             contact.setMinimumHeight(self.settings.contacts_widget_height())
-            contact.adjustSize()
-        self.adjustSize()
 
     def put_subject(self, subject):
         subject_name = "{} {}".format(subject.first_name, subject.last_name)
@@ -106,6 +101,7 @@ class ProcessingWidget(QtGui.QWidget):
     def put_session(self, session):
         self.session_name_label.setText("Session: {}\t".format(session.session_name))
 
+    # TODO I should split this function up, such that reloading the tree is independent of setting indices and such
     def update_measurements_tree(self):
         self.measurement_tree.clear()
         # Create a green brush for coloring stored results
@@ -152,6 +148,17 @@ class ProcessingWidget(QtGui.QWidget):
         measurement_item = self.get_current_measurement_item()
         self.measurement_tree.setCurrentItem(measurement_item, True)
 
+    def item_activated(self):
+        # Check if the tree aint empty!
+        if not self.measurement_tree.topLevelItemCount():
+            return
+
+        current_item = self.measurement_tree.currentItem()
+        if current_item.parent():
+            self.put_contact()
+        else:
+            self.put_measurement()
+
     # TODO Change this so it first checks what we clicked on and then calls the right function
     def put_measurement(self):
         # Check if the tree aint empty!
@@ -162,11 +169,38 @@ class ProcessingWidget(QtGui.QWidget):
         # Only put the measurement if we selected a measurement
         if current_item.parent():
             return
+
         self.model.current_measurement_index = self.measurement_tree.indexOfTopLevelItem(current_item)
         # Notify the model to update the subject_name + measurement_name if necessary
         measurement_name = current_item.text(0)
         self.measurement_name_label.setText("Measurement name: {}".format(measurement_name))
         self.model.put_measurement(measurement_name=measurement_name)
+
+    def put_contact(self):
+        # Check to make sure the measurement is selected first
+        current_item = self.measurement_tree.currentItem()
+        measurement_item = current_item.parent()
+        self.measurement_tree.setCurrentItem(measurement_item)
+        self.put_measurement()
+        # Now put the contact
+        contact_id = int(current_item.text(0))  # Convert the unicode to int
+        self.model.put_contact(contact_id=contact_id)
+
+        for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
+            if contact.contact_id == contact_id:
+                self.model.current_contact_index = index
+
+        self.set_current_contact_label()
+        self.update_current_contact()
+
+    # TODO Perhaps this should loop over all measurements, to make sure none are out of line
+    def set_current_contact_label(self):
+        for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
+            # Switch between the current selected contact
+            if contact.contact_label == -1:
+                contact.contact_label = -2
+            if index == self.model.current_contact_index:
+                contact.contact_label = -1
 
     def get_current_measurement_item(self):
         return self.measurement_tree.topLevelItem(self.model.current_measurement_index)
@@ -213,7 +247,7 @@ class ProcessingWidget(QtGui.QWidget):
 
         current_contact = self.get_current_contact()
         current_contact.invalid = not current_contact.invalid
-        current_contact = self.get_current_contact()
+        self.get_current_contact()
         # Update the screen
         self.update_current_contact()
 
@@ -254,15 +288,6 @@ class ProcessingWidget(QtGui.QWidget):
         """
         return True if self.model.contacts[self.model.measurement_name] else False
 
-    def check_label_status(self):
-        results = []
-        for contact in self.model.contacts[self.model.measurement_name]:
-            if contact.contact_label == -2:
-                results.append(True)
-            else:
-                results.append(False)
-        return any(results)
-
     def previous_contact(self):
         if not self.contacts_available():
             return
@@ -271,15 +296,9 @@ class ProcessingWidget(QtGui.QWidget):
         if self.model.current_contact_index == 0:
             return
 
-        # If we haven't labeled the current contact yet, mark it as unselected
-        current_contact = self.get_current_contact()
-        if current_contact.contact_label == -1:
-            current_contact.contact_label = -2
-
         self.model.current_contact_index -= 1
         current_contact = self.get_current_contact()
-        if current_contact.contact_label < 0:
-            current_contact.contact_label = -1
+        self.set_current_contact_label()
 
         measurement_item = self.get_current_measurement_item()
         contact_item = measurement_item.child(self.model.current_contact_index)
@@ -294,24 +313,14 @@ class ProcessingWidget(QtGui.QWidget):
         if self.model.current_contact_index == len(self.model.contacts[self.model.measurement_name]) - 1:
             return
 
-        # If we haven't labeled the current contact yet, mark it as unselected
-        current_contact = self.get_current_contact()
-        if current_contact.contact_label == -1:
-            current_contact.contact_label = -2
 
         self.model.current_contact_index += 1
         current_contact = self.get_current_contact()
-        if current_contact.contact_label < 0:
-            current_contact.contact_label = -1
+        self.set_current_contact_label()
 
         measurement_item = self.get_current_measurement_item()
         contact_item = measurement_item.child(self.model.current_contact_index)
         self.measurement_tree.setCurrentItem(contact_item)
-        self.update_current_contact()
-
-    def switch_contacts(self):
-        item = self.contacts_tree.selectedItems()[0]
-        self.model.current_contact_index = int(item.text(0))
         self.update_current_contact()
 
     def track_contacts(self, event=None):
@@ -330,12 +339,7 @@ class ProcessingWidget(QtGui.QWidget):
             green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
             current_item.setForeground(0, green_brush)
 
-    def clear_cached_values(self):
-        pass
-
     def changed_settings(self):
-        self.colors = self.settings.colors
-        self.contact_dict = self.settings.contact_dict
         # Update all the keyboard shortcuts
         self.left_front_action.setShortcut(self.settings.left_front())
         self.left_hind_action.setShortcut(self.settings.left_hind())
