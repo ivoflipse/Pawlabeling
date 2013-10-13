@@ -6,6 +6,7 @@ from PySide import QtGui, QtCore
 from pubsub import pub
 from pawlabeling.settings import settings
 from pawlabeling.functions import gui
+from pawlabeling.models import model
 
 
 class SettingsWidget(QtGui.QWidget):
@@ -15,6 +16,7 @@ class SettingsWidget(QtGui.QWidget):
         # Set up the logger
         self.logger = logging.getLogger("logger")
         self.settings = settings.settings
+        self.model = model.model
         label_font = self.settings.label_font()
 
         self.toolbar = gui.Toolbar(self)
@@ -76,6 +78,10 @@ class SettingsWidget(QtGui.QWidget):
         self.tracking_surface_label = QtGui.QLabel("Tracking Surface Threshold")
         self.tracking_surface = QtGui.QLineEdit()
 
+        self.plate_label = QtGui.QLabel("Plate")
+        self.plate = QtGui.QComboBox()
+        self.update_plates()
+
         self.update_fields()
 
         self.widgets = [["measurement_folder_label","measurement_folder", "measurement_folder_button"],
@@ -90,7 +96,9 @@ class SettingsWidget(QtGui.QWidget):
                          "end_force_percentage_label", "end_force_percentage", ""],
                         ["tracking_temporal_label", "tracking_temporal", "",
                          "tracking_spatial_label", "tracking_spatial", "",
-                         "tracking_surface_label", "tracking_surface", ""]
+                         "tracking_surface_label", "tracking_surface", ""],
+                        ["plate_label", "plate"],
+
         ]
 
         self.settings_layout = QtGui.QGridLayout()
@@ -117,7 +125,6 @@ class SettingsWidget(QtGui.QWidget):
 
         self.create_toolbar_actions()
 
-        #pub.subscribe(self.change_status, "update_statusbar")
         #pub.subscribe(self.launch_message_box, "message_box")
 
     def update_fields(self):
@@ -154,7 +161,10 @@ class SettingsWidget(QtGui.QWidget):
             group, item = key.split("/")
 
             if hasattr(self, item):
-                new_value = getattr(self, item).text()
+                if hasattr(getattr(self, item), "text"):
+                    new_value = getattr(self, item).text()
+                else:
+                    new_value = getattr(self, item).currentText()
                 if type(old_value) == int:
                     new_value = int(new_value)
                 if type(old_value) == float:
@@ -166,7 +176,6 @@ class SettingsWidget(QtGui.QWidget):
                 if type(old_value) == unicode:
                     new_value = str(new_value)
                 if old_value != new_value:
-                    print key, item, new_value, settings_dict[key]
                     settings_dict[key] = new_value
 
         self.settings.save_settings(settings_dict)
@@ -209,6 +218,12 @@ class SettingsWidget(QtGui.QWidget):
 
         #self.settings.write_value("folders/database_folder", database_folder)
         self.database_folder.setText(database_folder)
+
+    def update_plates(self):
+        # This sorts the plates by the number in their plate_id
+        for plate_id in sorted(self.model.plates, key=lambda x: int(x.split("_")[1])):
+            plate = self.model.plates[plate_id]
+            self.plate.addItem("{} {}".format(plate.brand, plate.model))
 
     def create_toolbar_actions(self):
         self.save_settings_action = gui.create_action(text="&Save Settings",

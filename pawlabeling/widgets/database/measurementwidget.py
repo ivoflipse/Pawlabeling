@@ -95,9 +95,8 @@ class MeasurementWidget(QtGui.QWidget):
         self.setLayout(self.measurement_layout)
 
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        # TODO This workflow seems rather broken
-        pub.subscribe(self.update_measurements_tree, "update_measurement_status")
         pub.subscribe(self.update_plates, "update_plates")
+        pub.subscribe(self.changed_settings, "changed_settings")
 
         self.update_files_tree()
         self.get_plates()
@@ -121,6 +120,9 @@ class MeasurementWidget(QtGui.QWidget):
         plate = self.settings.plate()
         index = self.plate.findText(plate)
         self.plate.setCurrentIndex(index)
+
+    def changed_settings(self):
+        self.update_plates()
 
     def update_measurements_tree(self):
         self.measurement_tree.clear()

@@ -448,7 +448,6 @@ class Settings(QtCore.QSettings):
         """
         """
         for key, value in settings.iteritems():
-            print key, value
             self.write_value(key, value)
 
     def write_value(self, key, value):
