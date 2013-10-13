@@ -278,11 +278,11 @@ class Contact(object):
         """
         Input: measurement_data = 3D entire plate measurement_data array
         Checks if the contact touches the edge of the plate and if the forces at the beginning or end of a contact
-        aren't too high. If so, it will mark the contact as invalid and set the contact_label to -3
+        aren't too high. If so, it will mark the contact as invalid
         """
         if self.touches_edge(measurement_data) or self.incomplete_step:
             self.invalid = True
-            self.contact_label = -3
+            self.filtered = True
 
     def touches_edge(self, data):
         """
@@ -293,7 +293,7 @@ class Contact(object):
         x_touch = (self.min_x == 0) or (self.max_x == ny)
         y_touch = (self.min_y == 0) or (self.max_y == nx)
         z_touch = (self.min_z == nt)
-
+        #print x_touch, y_touch, z_touch
         return x_touch or y_touch or z_touch
 
     @property
@@ -304,7 +304,7 @@ class Contact(object):
         """
         force_over_time = calculations.force_over_time(self.data)
         max_force = np.max(force_over_time)
-        #print force_over_time[0], force_over_time[-1], max_force, settings.start_force_percentage
+        #print force_over_time[0], force_over_time[-1], max_force, self.settings.start_force_percentage()
         if (force_over_time[0] > (self.settings.start_force_percentage() * max_force) or
                     force_over_time[-1] > (self.settings.end_force_percentage() * max_force)):
             return True

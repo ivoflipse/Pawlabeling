@@ -5,7 +5,7 @@ from PySide import QtGui, QtCore
 from pubsub import pub
 import logging
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 
 class Settings(QtCore.QSettings):
@@ -57,7 +57,6 @@ class Settings(QtCore.QSettings):
             1: "LH",
             2: "RF",
             3: "RH",
-            -3: "Invalid",
             -2: "NA",
             -1: "Current"
         }
@@ -139,7 +138,7 @@ class Settings(QtCore.QSettings):
 
     def invalid_contact(self):
         key = "keyboard_shortcuts/invalid_contact"
-        default_value = QtGui.QKeySequence.fromString("Delete")
+        default_value = QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Delete)
         setting_value = self.value(key)
         if isinstance(setting_value, QtGui.QKeySequence):
             return setting_value
@@ -169,7 +168,7 @@ class Settings(QtCore.QSettings):
 
     def database_folder(self):
         key = "folders/database_folder"
-        default_value = ".\\database"
+        default_value = os.path.join(self.root_folder, "database")
         setting_value = self.value(key)
         # Check if this folder even exists, else return the relative path
         if not os.path.exists(setting_value):
@@ -242,7 +241,7 @@ class Settings(QtCore.QSettings):
         default_value = 1
         setting_value = self.value(key)
         if isinstance(setting_value, int):
-            return setting_value
+            return int(setting_value)
         else:
             return default_value
 
@@ -251,39 +250,39 @@ class Settings(QtCore.QSettings):
         default_value = 0
         setting_value = self.value(key)
         if isinstance(setting_value, int):
-            return setting_value
+            return int(setting_value)
         else:
             return default_value
 
     def main_window_top(self):
-        key = "thresholds/main_window_top"
+        key = "widgets/main_window_top"
         default_value = 25
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
-            return setting_value
+        if setting_value:
+            return int(setting_value)
         else:
             return default_value
 
     def main_window_width(self):
-        key = "thresholds/main_window_width"
+        key = "widgets/main_window_width"
         default_value = 1440
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
-            return setting_value
+        if setting_value:
+            return int(setting_value)
         else:
             return default_value
 
     def main_window_height(self):
-        key = "thresholds/main_window_height"
+        key = "widgets/main_window_height"
         default_value = 830
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
-            return setting_value
+        if setting_value:
+            return int(setting_value)
         else:
             return default_value
 
     def main_window_size(self):
-        key = "thresholds/main_window_size"
+        key = "widgets/main_window_size"
         default_value = QtCore.QRect(0, 25, 1440, 830)
         setting_value = self.value(key)
         if isinstance(setting_value, QtCore.QRect):
@@ -292,29 +291,29 @@ class Settings(QtCore.QSettings):
             return default_value
 
     def entire_plate_widget_width(self):
-        key = "thresholds/entire_plate_widget_width"
+        key = "widgets/entire_plate_widget_width"
         default_value = 800
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
-            return setting_value
+        if setting_value:
+            return int(setting_value)
         else:
             return default_value
 
     def entire_plate_widget_height(self):
-        key = "thresholds/entire_plate_widget_height"
+        key = "widgets/entire_plate_widget_height"
         default_value = 450
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
-            return setting_value
+        if setting_value:
+            return int(setting_value)
         else:
             return default_value
 
     def contacts_widget_height(self):
-        key = "thresholds/contacts_widget_height"
+        key = "widgets/contacts_widget_height"
         default_value = 170
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
-            return setting_value
+        if setting_value:
+            return int(setting_value)
         else:
             return default_value
 
@@ -322,8 +321,8 @@ class Settings(QtCore.QSettings):
         key = "interpolation/interpolation_entire_plate"
         default_value = 4
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
-            return setting_value
+        if setting_value:
+            return int(setting_value)
         else:
             return default_value
 
@@ -331,8 +330,8 @@ class Settings(QtCore.QSettings):
         key = "interpolation/interpolation_contact_widgets"
         default_value = 8
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
-            return setting_value
+        if setting_value:
+            return int(setting_value)
         else:
             return default_value
 
@@ -340,8 +339,8 @@ class Settings(QtCore.QSettings):
         key = "interpolation/interpolation_results"
         default_value = 16
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
-            return setting_value
+        if setting_value:
+            return int(setting_value)
         else:
             return default_value
 
@@ -449,7 +448,6 @@ class Settings(QtCore.QSettings):
         """
         """
         for key, value in settings.iteritems():
-            print key, value
             self.write_value(key, value)
 
     def write_value(self, key, value):

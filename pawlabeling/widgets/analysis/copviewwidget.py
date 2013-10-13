@@ -52,8 +52,13 @@ class CopViewWidget(QtGui.QWidget):
         self.active = False
         if self == widget:
             self.active = True
+            progress = 0
+            pub.sendMessage("update_progress", progress=progress)
             for contact_label, widget in self.contacts_list.iteritems():
                 widget.draw()
+                progress += 25
+                pub.sendMessage("update_progress", progress=progress)
+            pub.sendMessage("update_progress", progress=100)
 
 class ContactView(QtGui.QWidget):
     def __init__(self, parent, label, contact_label):
@@ -215,6 +220,9 @@ class ContactView(QtGui.QWidget):
             self.cop_ellipses.append(ellipse)
 
     def draw(self):
+        if self.frame > self.length:
+            return
+
         self.get_data()
         if self.frame == -1:
             self.draw_cop()

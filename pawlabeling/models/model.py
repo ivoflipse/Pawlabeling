@@ -15,7 +15,6 @@ class Model():
         # TODO change the models measurement folder instead of writing it to the settings
         self.measurement_folder = self.settings.measurement_folder()
         self.database_file = self.settings.database_file()
-
         self.plate_model = platemodel.Plates()
         # Create the plates if they do not yet exists
         self.plate_model.create_plates()
@@ -189,12 +188,14 @@ class Model():
         # TODO How did I manage to keep making this stuff so complicated?!?
         # TODO perhaps I should roll these below functions into one, then call get_blabla on the results later
 
+        pub.sendMessage("update_progress", progress=0)
         # Load all the measurements for this session
         self.get_measurements()
         # If there are no measurements yet, stop right here
         if not self.measurements:
             return
 
+        pub.sendMessage("update_progress", progress=50)
         # Create Contacts instances for each measurement
         self.contact_models = {}
         for measurement in self.measurements.values():
@@ -206,8 +207,10 @@ class Model():
         self.get_plate()
         # Load the contacts, but have it not send out anything
         self.load_contacts()
+        pub.sendMessage("update_progress", progress=75)
         self.update_n_max()
         self.update_average()
+        pub.sendMessage("update_progress", progress=100)
 
     # TODO This function is messed up again!
     def put_measurement(self, measurement_name):
@@ -232,10 +235,9 @@ class Model():
         self.get_measurement_data()
         # Check that its not empty
         assert self.contacts[self.measurement_name]
-        # TODO get_contacts doesn't really do anything, but send a message, can't this be done differently
+        # TODO get_contacts doesn't really do anything, but send a message, can't this be done differently?
         self.get_contacts()
 
-    # TODO What happens if you select a contact from another measurement?
     def put_contact(self, contact_id):
         # Find the contact with the corresponding id
         for contact in self.contacts[self.measurement_name]:
@@ -252,8 +254,6 @@ class Model():
         self.plate_id = plate.plate_id
         self.sensor_surface = self.plate.sensor_surface
         self.logger.info("Plate ID set to {}".format(self.plate_id))
-        # TODO I doubt anyone even cares about this message any more
-        pub.sendMessage("update_plate")
 
     def delete_subject(self, subject):
         self.subject_model.delete_subject(subject)

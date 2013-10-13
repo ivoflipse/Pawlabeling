@@ -213,19 +213,15 @@ class TestZipFile(TestCase):
 
     def test_zip_file(self):
         # Try zipping the file
-        io.zip_file(self.root, self.new_file_name)
+        io.zip_file(file_path=self.new_file_name)
 
         # Check to see that the file exists
         exists = os.path.exists(self.new_file_name + ".zip")
         self.assertTrue(exists)
 
-    def test_zip_file_wrong_root(self):
-        with self.assertRaises(Exception):
-            io.zip_file(root="", file_name=self.new_file_name)
-
     def test_zip_file_wrong_file_name(self):
         with self.assertRaises(Exception):
-            io.zip_file(root=self.root, file_name="")
+            io.zip_file(file_path="")
 
     def tearDown(self):
         # Remove the file if it still exists
@@ -248,9 +244,13 @@ class TestGetFilePaths2(TestCase):
     Second test case, but this time on an empty folder.
     This way I could reuse the setUp and tearDown.
     """
-    def test_get_file_paths(self):
+    def setUp(self):
         # Let's try and change the measurement folder
         root = os.path.dirname(os.path.abspath(__file__))
-        measurement_folder  = os.path.join(root, "files/empty_folder/empty_nested_folder")
-        file_paths = io.get_file_paths(measurement_folder =measurement_folder)
+        self.measurement_folder  = os.path.join(root, "files/empty_folder")
+        if not os.path.exists(self.measurement_folder):
+            os.makedirs(self.measurement_folder)
+
+    def test_get_file_paths(self):
+        file_paths = io.get_file_paths(measurement_folder=self.measurement_folder)
         self.assertEqual(file_paths.keys(), [])

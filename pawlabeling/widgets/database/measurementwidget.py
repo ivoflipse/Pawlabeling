@@ -28,8 +28,18 @@ class MeasurementWidget(QtGui.QWidget):
 
         self.measurement_folder_button = QtGui.QToolButton()
         self.measurement_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                        "../images/folder_icon.png")))
+                                                                        "../images/folder.png")))
         self.measurement_folder_button.clicked.connect(self.change_file_location)
+
+        self.measurement_up_button = QtGui.QToolButton()
+        self.measurement_up_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                                    "../images/folder_up.png")))
+        self.measurement_up_button.clicked.connect(self.move_folder_up)
+
+        self.measurement_reset_button = QtGui.QToolButton()
+        self.measurement_reset_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                                       "../images/folder_refresh.png")))
+        self.measurement_reset_button.clicked.connect(self.reset_measurement_folder)
 
         self.measurement_folder_layout = QtGui.QHBoxLayout()
         self.measurement_folder_layout.addWidget(self.measurement_folder)
@@ -50,6 +60,8 @@ class MeasurementWidget(QtGui.QWidget):
         self.plate_layout.addWidget(self.plate)
         self.plate_layout.addWidget(self.frequency_label)
         self.plate_layout.addWidget(self.frequency)
+        self.plate_layout.addWidget(self.measurement_up_button)
+        self.plate_layout.addWidget(self.measurement_reset_button)
         self.plate_layout.addStretch(1)
 
         self.files_tree = QtGui.QTreeWidget(self)
@@ -57,6 +69,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.files_tree.setHeaderLabels(["","Name", "Size", "Date"])
         self.files_tree.header().resizeSection(0, 200)
         self.files_tree.setColumnWidth(0, 40)
+        self.files_tree.itemActivated.connect(self.select_file)
 
         self.measurement_tree_label = QtGui.QLabel("Measurements")
         self.measurement_tree_label.setFont(label_font)
@@ -82,9 +95,8 @@ class MeasurementWidget(QtGui.QWidget):
         self.setLayout(self.measurement_layout)
 
         pub.subscribe(self.update_measurements_tree, "update_measurements_tree")
-        # TODO This workflow seems rather broken
-        pub.subscribe(self.update_measurements_tree, "update_measurement_status")
         pub.subscribe(self.update_plates, "update_plates")
+        pub.subscribe(self.changed_settings, "changed_settings")
 
         self.update_files_tree()
         self.get_plates()
@@ -108,6 +120,9 @@ class MeasurementWidget(QtGui.QWidget):
         plate = self.settings.plate()
         index = self.plate.findText(plate)
         self.plate.setCurrentIndex(index)
+
+    def changed_settings(self):
+        self.update_plates()
 
     def update_measurements_tree(self):
         self.measurement_tree.clear()
@@ -159,6 +174,7 @@ class MeasurementWidget(QtGui.QWidget):
 
     def check_measurement_folder(self, evt=None):
         measurement_folder = self.measurement_folder.text()
+        self.model.measurement_folder = measurement_folder
         if os.path.exists(measurement_folder) and os.path.isdir(measurement_folder):
             self.update_files_tree()
 
@@ -166,16 +182,27 @@ class MeasurementWidget(QtGui.QWidget):
         self.files_tree.clear()
 
         self.file_paths = io.get_file_paths(measurement_folder=self.model.measurement_folder)
+        sort_list = []
         for file_name, file_path in self.file_paths.iteritems():
+            if not os.path.isfile(file_path):
+                sort_list.append((0, file_name))
+            else:
+                sort_list.append((1, file_name))
+
+        # I want it sorted by type and name
+        sort_list = sorted(sort_list, key=lambda x: (x[0], x[1]))
+
+        for file_type, file_name in sort_list:
+            file_path = self.file_paths[file_name]
             root_item = QtGui.QTreeWidgetItem(self.files_tree)
             # If its not a measurement, give it a directory icon
-            if not os.path.isfile(file_path):
+            if not file_type:
                 root_item.setIcon(0, QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                              "../images/folder_icon.png")))
+                                                              "../images/folder.png")))
             else:
                 # Give it some paw as an icon
                 root_item.setIcon(0, QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                              "../images/paw_icon.png")))
+                                                              "../images/paw.png")))
             root_item.setText(1, file_name)
             file_size = os.path.getsize(file_path)
             file_size = utility.humanize_bytes(bytes=file_size, precision=1)
@@ -186,6 +213,28 @@ class MeasurementWidget(QtGui.QWidget):
             # DAMNIT Why can't I use a locale on this?
             root_item.setText(3, creation_date)
 
+    def select_file(self):
+         # Check if the tree aint empty!
+        if not self.files_tree.topLevelItemCount():
+            return
+
+        current_item = self.files_tree.currentItem()
+        file_name = current_item.text(1)
+        file_path = self.file_paths[file_name]
+        # Check if its a directory
+        if os.path.isdir(file_path):
+            # Update the text in self.measurement_folder
+            self.measurement_folder.setText(file_path)
+
+    def move_folder_up(self):
+        measurement_folder = self.measurement_folder.text()
+        parent_directory = os.path.dirname(measurement_folder)
+        self.measurement_folder.setText(parent_directory)
+
+    def reset_measurement_folder(self):
+        measurement_folder = self.settings.measurement_folder()
+        self.measurement_folder.setText(measurement_folder)
+
     def add_measurements(self, evt=None):
         # All measurements from the same session must have the same brands/model/frequency
         plate_text = self.plate.itemText(self.plate.currentIndex())
@@ -195,6 +244,13 @@ class MeasurementWidget(QtGui.QWidget):
         plate = self.find_plate(brand=brand, model=model)
         plate_id = plate.plate_id
         frequency = int(self.frequency.itemText(self.frequency.currentIndex()))
+        # Initialize a progress bar
+        progress = 0
+        pub.sendMessage("update_progress", progress=progress)
+        # Calculate how much progress we make each step
+        total_work =  len(self.file_paths)
+        step_work = 100. / total_work
+
         for file_name, file_path in self.file_paths.iteritems():
             # Only load measurements, so skip directories
             if not os.path.isfile(file_path):
@@ -213,8 +269,15 @@ class MeasurementWidget(QtGui.QWidget):
                 self.model.create_measurement(measurement=measurement)
                 # Update the tree after a measurement has been created
                 self.get_measurements()
+                # Increment the progress
+                progress += step_work
+                pub.sendMessage("update_progress", progress=progress)
             except settings.MissingIdentifier:
                 pass
+
+        # When we're done, signal we've reached 100%
+        progress = 100
+        pub.sendMessage("update_progress", progress=progress)
 
     def find_plate(self, brand, model):
         for plate_id, plate in self.model.plates.iteritems():

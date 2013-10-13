@@ -124,28 +124,25 @@ class SubjectWidget(QtGui.QWidget):
     def update_subjects_tree(self):
         # Clear any existing contacts
         self.subject_tree.clear()
-        # TODO Should I store self.model.subjects differently, so you can use the index?
         self.subjects = {}
+
+        if not self.model.subjects.values():
+            return
+
         # Add the subjects to the subject_tree
-        # TODO This won't be sorted!
-        for index, subject in enumerate(self.model.subjects.values()):
+        subject_list = sorted(self.model.subjects.values(), key=lambda subject: (subject.first_name, subject.last_name))
+
+        for index, subject in enumerate(subject_list):
             self.subjects[index] = subject
             rootItem = QtGui.QTreeWidgetItem(self.subject_tree)
             rootItem.setText(0, subject.first_name)
             rootItem.setText(1, subject.last_name)
             rootItem.setText(2, subject.birthday)
 
-        # This only works if the tree aint empty
-        subject_count = self.subject_tree.topLevelItemCount()
-        if subject_count:
-            # Select the last item in the contacts tree
-            item = self.subject_tree.topLevelItem(subject_count - 1) # Get the last one
-            self.subject_tree.setCurrentItem(item)
-            self.put_subject()
-
-    # TODO If a subject is selected in the subject_tree, fill in its information in the subject fields
-    # TODO Allow for a way to edit the information for a subject and/or session
-    # TODO currently self.subjects is rather naive, if the table is sorted for example, the indices will no longer match
+        # Select the first subject
+        item = self.subject_tree.topLevelItem(0)
+        self.subject_tree.setCurrentItem(item)
+        self.put_subject()
 
     def put_subject(self, evt=None):
         current_item = self.subject_tree.currentItem()

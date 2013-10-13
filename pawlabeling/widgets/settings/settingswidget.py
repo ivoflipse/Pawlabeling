@@ -6,6 +6,7 @@ from PySide import QtGui, QtCore
 from pubsub import pub
 from pawlabeling.settings import settings
 from pawlabeling.functions import gui
+from pawlabeling.models import model
 
 
 class SettingsWidget(QtGui.QWidget):
@@ -15,6 +16,7 @@ class SettingsWidget(QtGui.QWidget):
         # Set up the logger
         self.logger = logging.getLogger("logger")
         self.settings = settings.settings
+        self.model = model.model
         label_font = self.settings.label_font()
 
         self.toolbar = gui.Toolbar(self)
@@ -26,16 +28,15 @@ class SettingsWidget(QtGui.QWidget):
         self.measurement_folder = QtGui.QLineEdit()
         self.measurement_folder_button = QtGui.QToolButton()
         self.measurement_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                        "../images/folder_icon.png")))
+                                                                        "../images/folder.png")))
         self.measurement_folder_button.clicked.connect(self.change_measurement_folder)
 
         self.database_folder_label = QtGui.QLabel("Database folder")
         self.database_folder = QtGui.QLineEdit()
         self.database_folder_button = QtGui.QToolButton()
         self.database_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                        "../images/folder_icon.png")))
+                                                                     "../images/folder.png")))
         self.database_folder_button.clicked.connect(self.change_database_folder)
-
 
         self.database_file_label = QtGui.QLabel("Database file")
         self.database_file = QtGui.QLineEdit()
@@ -52,6 +53,27 @@ class SettingsWidget(QtGui.QWidget):
         self.right_hind_label = QtGui.QLabel("Right Hind Shortcut")
         self.right_hind = QtGui.QLineEdit()
 
+        self.main_window_width_label = QtGui.QLabel("Main Window Width")
+        self.main_window_width = QtGui.QLineEdit()
+
+        self.main_window_height_label = QtGui.QLabel("Main Window Height")
+        self.main_window_height = QtGui.QLineEdit()
+
+        self.main_window_top_label = QtGui.QLabel("Main Window Top")
+        self.main_window_top = QtGui.QLineEdit()
+
+        self.main_window_left_label = QtGui.QLabel("Main Window Left ")
+        self.main_window_left = QtGui.QLineEdit()
+
+        self.entire_plate_widget_width_label = QtGui.QLabel("Entire Plate Widget Width")
+        self.entire_plate_widget_width = QtGui.QLineEdit()
+
+        self.entire_plate_widget_height_label = QtGui.QLabel("Entire Plate Widget Height")
+        self.entire_plate_widget_height = QtGui.QLineEdit()
+
+        self.contacts_widget_height_label = QtGui.QLabel("Contacts Widget Height")
+        self.contacts_widget_height = QtGui.QLineEdit()
+
         self.interpolation_entire_plate_label = QtGui.QLabel("Interpolation: Entire Plate")
         self.interpolation_entire_plate = QtGui.QLineEdit()
 
@@ -59,7 +81,7 @@ class SettingsWidget(QtGui.QWidget):
         self.interpolation_contact_widgets = QtGui.QLineEdit()
 
         self.interpolation_results_label = QtGui.QLabel("Interpolation: Results")
-        self.interpolation_results  = QtGui.QLineEdit()
+        self.interpolation_results = QtGui.QLineEdit()
 
         self.start_force_percentage_label = QtGui.QLabel("Start Force %")
         self.start_force_percentage = QtGui.QLineEdit()
@@ -76,21 +98,34 @@ class SettingsWidget(QtGui.QWidget):
         self.tracking_surface_label = QtGui.QLabel("Tracking Surface Threshold")
         self.tracking_surface = QtGui.QLineEdit()
 
+        self.plate_label = QtGui.QLabel("Plate")
+        self.plate = QtGui.QComboBox()
+        self.update_plates()
+
         self.update_fields()
 
-        self.widgets = [["measurement_folder_label","measurement_folder", "measurement_folder_button"],
+        self.widgets = [["measurement_folder_label", "measurement_folder", "measurement_folder_button"],
                         ["database_folder_label", "database_folder", "database_folder_button"],
                         ["database_file_label", "database_file"],
                         ["left_front_label", "left_front", "", "right_front_label", "right_front"],
                         ["left_hind_label", "left_hind", "", "right_hind_label", "right_hind"],
+                        ["main_window_width_label", "main_window_width", "",
+                         "main_window_height_label", "main_window_height", "",
+                         "main_window_top_label", "main_window_top", "",
+                         "main_window_left_label", "main_window_left", ""],
+                        ["entire_plate_widget_width_label", "entire_plate_widget_width", "",
+                         "entire_plate_widget_height_label", "entire_plate_widget_height", "",
+                         "contacts_widget_height_label", "contacts_widget_height"],
                         ["interpolation_entire_plate_label", "interpolation_entire_plate", "",
-                        "interpolation_contact_widgets_label", "interpolation_contact_widgets", "",
-                        "interpolation_results_label", "interpolation_results"],
+                         "interpolation_contact_widgets_label", "interpolation_contact_widgets", "",
+                         "interpolation_results_label", "interpolation_results"],
                         ["start_force_percentage_label", "start_force_percentage", "",
                          "end_force_percentage_label", "end_force_percentage", ""],
                         ["tracking_temporal_label", "tracking_temporal", "",
                          "tracking_spatial_label", "tracking_spatial", "",
-                         "tracking_surface_label", "tracking_surface", ""]
+                         "tracking_surface_label", "tracking_surface", ""],
+                        ["plate_label", "plate"],
+
         ]
 
         self.settings_layout = QtGui.QGridLayout()
@@ -102,7 +137,6 @@ class SettingsWidget(QtGui.QWidget):
                 if widget_name:
                     widget = getattr(self, widget_name)
                     self.settings_layout.addWidget(widget, row, column)
-
 
         self.main_layout = QtGui.QVBoxLayout()
         self.main_layout.addWidget(self.toolbar)
@@ -117,7 +151,6 @@ class SettingsWidget(QtGui.QWidget):
 
         self.create_toolbar_actions()
 
-        #pub.subscribe(self.change_status, "update_statusbar")
         #pub.subscribe(self.launch_message_box, "message_box")
 
     def update_fields(self):
@@ -134,9 +167,19 @@ class SettingsWidget(QtGui.QWidget):
         self.right_front.setText(self.settings.right_front().toString())
         self.right_hind.setText(self.settings.right_hind().toString())
 
+        self.main_window_height.setText(str(self.settings.main_window_height()))
+        self.main_window_width.setText(str(self.settings.main_window_width()))
+        self.main_window_top.setText(str(self.settings.main_window_top()))
+        self.main_window_left.setText(str(self.settings.main_window_left()))
+
+        self.entire_plate_widget_height.setText(str(self.settings.entire_plate_widget_height()))
+        self.entire_plate_widget_width.setText(str(self.settings.entire_plate_widget_width()))
+        self.contacts_widget_height.setText(str(self.settings.contacts_widget_height()))
+
         self.interpolation_entire_plate.setText(str(self.settings.interpolation_entire_plate()))
         self.interpolation_contact_widgets.setText(str(self.settings.interpolation_contact_widgets()))
         self.interpolation_results.setText(str(self.settings.interpolation_results()))
+
         self.start_force_percentage.setText(str(self.settings.start_force_percentage()))
         self.end_force_percentage.setText(str(self.settings.end_force_percentage()))
         self.tracking_temporal.setText(str(self.settings.tracking_temporal()))
@@ -154,7 +197,11 @@ class SettingsWidget(QtGui.QWidget):
             group, item = key.split("/")
 
             if hasattr(self, item):
-                new_value = getattr(self, item).text()
+                if hasattr(getattr(self, item), "text"):
+                    new_value = getattr(self, item).text()
+                else:
+                    new_value = getattr(self, item).currentText()
+
                 if type(old_value) == int:
                     new_value = int(new_value)
                 if type(old_value) == float:
@@ -166,7 +213,6 @@ class SettingsWidget(QtGui.QWidget):
                 if type(old_value) == unicode:
                     new_value = str(new_value)
                 if old_value != new_value:
-                    print key, item, new_value, settings_dict[key]
                     settings_dict[key] = new_value
 
         self.settings.save_settings(settings_dict)
@@ -210,15 +256,26 @@ class SettingsWidget(QtGui.QWidget):
         #self.settings.write_value("folders/database_folder", database_folder)
         self.database_folder.setText(database_folder)
 
+    def update_plates(self):
+        # This sorts the plates by the number in their plate_id
+        for plate_id in sorted(self.model.plates, key=lambda x: int(x.split("_")[1])):
+            plate = self.model.plates[plate_id]
+            self.plate.addItem("{} {}".format(plate.brand, plate.model))
+
+        # Check the settings for which plate to set as default
+        plate = self.settings.plate()
+        index = self.plate.findText(plate)
+        self.plate.setCurrentIndex(index)
+
     def create_toolbar_actions(self):
         self.save_settings_action = gui.create_action(text="&Save Settings",
-                                                        shortcut=QtGui.QKeySequence("CTRL+S"),
-                                                        icon=QtGui.QIcon(
-                                                            os.path.join(os.path.dirname(__file__),
-                                                                         "../images/save_icon.png")),
-                                                        tip="Save settings",
-                                                        checkable=False,
-                                                        connection=self.save_settings
+                                                      shortcut=QtGui.QKeySequence("CTRL+S"),
+                                                      icon=QtGui.QIcon(
+                                                          os.path.join(os.path.dirname(__file__),
+                                                                       "../images/save.png")),
+                                                      tip="Save settings",
+                                                      checkable=False,
+                                                      connection=self.save_settings
         )
 
         self.actions = [self.save_settings_action]

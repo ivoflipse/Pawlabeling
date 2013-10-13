@@ -78,6 +78,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.changed_settings, "changed_settings")
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
+        pub.subscribe(self.changed_settings, "changed_settings")
 
     # I've added subscribe/unsubscribe, such that when we're in the analysis tab, we don't want to respond to
     # everything it sends/receives
@@ -88,6 +89,15 @@ class ProcessingWidget(QtGui.QWidget):
     def unsubscribe(self):
         pub.unsubscribe(self.update_measurements_tree, "update_measurement_status")
         pub.unsubscribe(self.stored_status, "stored_status")
+
+    def changed_settings(self):
+        self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
+        self.entire_plate_widget.setMaximumHeight(self.settings.entire_plate_widget_height())
+        self.entire_plate_widget.adjustSize()
+        for contact in self.contacts_widget.contacts_list:
+            contact.setMinimumHeight(self.settings.contacts_widget_height())
+            contact.adjustSize()
+        self.adjustSize()
 
     def put_subject(self, subject):
         subject_name = "{} {}".format(subject.first_name, subject.last_name)
@@ -110,7 +120,10 @@ class ProcessingWidget(QtGui.QWidget):
             for contact in self.model.contacts[measurement.measurement_name]:
                 contact_item = QtGui.QTreeWidgetItem(measurement_item)
                 contact_item.setText(0, str(contact.contact_id))
-                contact_item.setText(1, self.contact_dict[contact.contact_label])
+                if contact.invalid:
+                    contact_item.setText(1, "Invalid")
+                else:
+                    contact_item.setText(1, self.contact_dict[contact.contact_label])
                 contact_item.setText(2, str(contact.length))  # Sets the frame count
                 max_surface = np.max(contact.surface_over_time)
                 contact_item.setText(3, str(int(max_surface)))
@@ -120,6 +133,9 @@ class ProcessingWidget(QtGui.QWidget):
                 for idx in xrange(contact_item.columnCount()):
                     color = self.colors[contact.contact_label]
                     color.setAlphaF(0.5)
+                    # If a contact is filtered, mark it as invalid
+                    if contact.invalid:
+                        color = self.colors[-3]
                     contact_item.setBackground(idx, color)
 
             # If several contacts have been labeled, marked the measurement
@@ -127,12 +143,14 @@ class ProcessingWidget(QtGui.QWidget):
                 for idx in xrange(measurement_item.columnCount()):
                     measurement_item.setForeground(idx, green_brush)
 
-            # Initialize the current contact index, which we'll need for keep track of the labeling
-            self.model.current_contact_index = 0
-            self.model.current_measurement_index = 0
+        # Sort the tree by measurement name
+        self.measurement_tree.sortByColumn(0, Qt.AscendingOrder)
+        # Initialize the current contact index, which we'll need for keep track of the labeling
+        self.model.current_contact_index = 0
+        self.model.current_measurement_index = 0
 
-            measurement_item = self.get_current_measurement_item()
-            self.measurement_tree.setCurrentItem(measurement_item, True)
+        measurement_item = self.get_current_measurement_item()
+        self.measurement_tree.setCurrentItem(measurement_item, True)
 
     # TODO Change this so it first checks what we clicked on and then calls the right function
     def put_measurement(self):
@@ -182,11 +200,6 @@ class ProcessingWidget(QtGui.QWidget):
         if not self.contacts_available():
             return
 
-        # Check if any other contact has the label -1, if so change it to -2
-        for index, contact in self.model.contacts[self.model.measurement_name]:
-            if contact.contact_label == -1:
-                contact.contact_label = -2
-
         # Remove the label
         current_contact = self.get_current_contact()
         current_contact.contact_label = -1
@@ -198,38 +211,41 @@ class ProcessingWidget(QtGui.QWidget):
         if not self.contacts_available():
             return
 
-        # I've picked -3 as the label for invalid contacts
         current_contact = self.get_current_contact()
-        current_contact.contact_label = -3
+        current_contact.invalid = not current_contact.invalid
+        current_contact = self.get_current_contact()
         # Update the screen
         self.update_current_contact()
 
     def get_current_contact(self):
         current_contact = self.model.contacts[self.model.measurement_name][self.model.current_contact_index]
+        # Toggle the button if its invalid
+        if current_contact.invalid:
+            if not self.invalid_contact_action.isChecked():
+                self.invalid_contact_action.toggle()
+        else:
+            if self.invalid_contact_action.isChecked():
+                self.invalid_contact_action.toggle()
         return current_contact
 
     def select_left_front(self):
         current_contact = self.get_current_contact()
-        if current_contact.contact_label != -3:
-            current_contact.contact_label = 0
+        current_contact.contact_label = 0
         self.next_contact()
 
     def select_left_hind(self):
         current_contact = self.get_current_contact()
-        if current_contact.contact_label != -3:
-            current_contact.contact_label = 1
+        current_contact.contact_label = 1
         self.next_contact()
 
     def select_right_front(self):
         current_contact = self.get_current_contact()
-        if current_contact.contact_label != -3:
-            current_contact.contact_label = 2
+        current_contact.contact_label = 2
         self.next_contact()
 
     def select_right_hind(self):
         current_contact = self.get_current_contact()
-        if current_contact.contact_label != -3:
-            current_contact.contact_label = 3
+        current_contact.contact_label = 3
         self.next_contact()
 
     def contacts_available(self):
@@ -262,9 +278,8 @@ class ProcessingWidget(QtGui.QWidget):
 
         self.model.current_contact_index -= 1
         current_contact = self.get_current_contact()
-        # If we encounter an invalid contact and its not the first contact, skip this one
-        if current_contact.contact_label == -3 and self.check_label_status():
-            self.previous_contact()
+        if current_contact.contact_label < 0:
+            current_contact.contact_label = -1
 
         measurement_item = self.get_current_measurement_item()
         contact_item = measurement_item.child(self.model.current_contact_index)
@@ -286,9 +301,8 @@ class ProcessingWidget(QtGui.QWidget):
 
         self.model.current_contact_index += 1
         current_contact = self.get_current_contact()
-        # If we encounter an invalid contact and its not the last contact, skip this one
-        if current_contact.contact_label == -3 and self.check_label_status():
-            self.next_contact()
+        if current_contact.contact_label < 0:
+            current_contact.contact_label = -1
 
         measurement_item = self.get_current_measurement_item()
         contact_item = measurement_item.child(self.model.current_contact_index)
@@ -347,7 +361,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                      shortcut=QtGui.QKeySequence("CTRL+S"),
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
-                                                                      "../images/save_icon.png")),
+                                                                      "../images/save.png")),
                                                      tip="Mark the tracking as correct",
                                                      checkable=False,
                                                      connection=self.store_status
@@ -357,7 +371,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                    shortcut=self.settings.left_front(),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
-                                                                    "../images/LF_icon.png")),
+                                                                    "../images/LF.png")),
                                                    tip="Select the Left Front contact",
                                                    checkable=False,
                                                    connection=self.select_left_front
@@ -367,7 +381,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                   shortcut=self.settings.left_hind(),
                                                   icon=QtGui.QIcon(
                                                       os.path.join(os.path.dirname(__file__),
-                                                                   "../images/LH_icon.png")),
+                                                                   "../images/LH.png")),
                                                   tip="Select the Left Hind contact",
                                                   checkable=False,
                                                   connection=self.select_left_hind
@@ -376,7 +390,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.right_front_action = gui.create_action(text="Select Right Front",
                                                     shortcut=self.settings.right_front(),
                                                     icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                  "../images/RF_icon.png")),
+                                                                                  "../images/RF.png")),
                                                     tip="Select the Right Front contact",
                                                     checkable=False,
                                                     connection=self.select_right_front
@@ -386,7 +400,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                    shortcut=self.settings.right_hind(),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
-                                                                    "../images/RH_icon.png")),
+                                                                    "../images/RH.png")),
                                                    tip="Select the Right Hind contact",
                                                    checkable=False,
                                                    connection=self.select_right_hind
@@ -418,7 +432,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                      shortcut=self.settings.remove_label(),
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
-                                                                      "../images/cancel_icon.png")),
+                                                                      "../images/cancel.png")),
                                                      tip="Delete the label from the contact",
                                                      checkable=False,
                                                      connection=self.remove_label
@@ -428,9 +442,9 @@ class ProcessingWidget(QtGui.QWidget):
                                                         shortcut=self.settings.invalid_contact(),
                                                         icon=QtGui.QIcon(
                                                             os.path.join(os.path.dirname(__file__),
-                                                                         "../images/trash_icon.png")),
+                                                                         "../images/trash.png")),
                                                         tip="Mark the contact as invalid",
-                                                        checkable=False,
+                                                        checkable=True,
                                                         connection=self.invalid_contact
         )
 
@@ -438,7 +452,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                    shortcut=QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Z),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
-                                                                    "../images/undo_icon.png")),
+                                                                    "../images/undo.png")),
                                                    tip="Delete the label from the contact",
                                                    checkable=False,
                                                    connection=self.undo_label

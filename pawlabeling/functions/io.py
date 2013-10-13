@@ -195,16 +195,12 @@ def open_zip_file(file_name):
     return input_file
 
 
-def zip_file(root, file_name):
-    if not root:
-        raise Exception("Incorrect root folder")
-
-    if not file_name:
+def zip_file(file_path):
+    if not file_path:
         raise Exception("Incorrect file name")
 
     import zipfile
 
-    file_path = os.path.join(root, file_name)
     # Create a new zip file and add .zip to the file_name
     new_file_path = file_path + ".zip"
     outfile = zipfile.ZipFile(new_file_path, "w")
@@ -225,7 +221,7 @@ def zip_file(root, file_name):
         # Raise another exception to let the caller deal with it
         raise Exception
 
-    return os.path.join(root, new_file_path)
+    return new_file_path
 
 
 def get_file_paths(measurement_folder):

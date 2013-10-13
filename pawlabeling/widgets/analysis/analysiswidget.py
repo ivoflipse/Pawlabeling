@@ -138,6 +138,8 @@ class AnalysisWidget(QtGui.QTabWidget):
                 for idx in xrange(measurement_item.columnCount()):
                     measurement_item.setForeground(idx, green_brush)
 
+        # Sort the tree by measurement name
+        self.measurement_tree.sortByColumn(0, Qt.AscendingOrder)
         # Update the slider's max value
         # TODO This should actually be the max_length of the things being displayed
         self.slider.setMaximum(self.max_length)
@@ -188,6 +190,7 @@ class AnalysisWidget(QtGui.QTabWidget):
         # Now put the contact
         contact_id = int(current_item.text(0))  # Convert the unicode to int
         self.model.put_contact(contact_id=contact_id)
+        self.set_max_length()
 
     def show_average_results(self):
         self.average_toggle = not self.average_toggle
@@ -219,7 +222,7 @@ class AnalysisWidget(QtGui.QTabWidget):
                                                              shortcut=QtGui.QKeySequence("CTRL+A"),
                                                              icon=QtGui.QIcon(
                                                                  os.path.join(os.path.dirname(__file__),
-                                                                              "../images/force_graph_icon.png")),
+                                                                              "../images/force_graph.png")),
                                                              tip="Switch to average results",
                                                              checkable=True,
                                                              connection=self.show_average_results
