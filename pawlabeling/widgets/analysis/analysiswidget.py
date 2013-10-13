@@ -222,7 +222,7 @@ class AnalysisWidget(QtGui.QTabWidget):
                                                              shortcut=QtGui.QKeySequence("CTRL+A"),
                                                              icon=QtGui.QIcon(
                                                                  os.path.join(os.path.dirname(__file__),
-                                                                              "../images/force_graph_icon.png")),
+                                                                              "../images/force_graph.png")),
                                                              tip="Switch to average results",
                                                              checkable=True,
                                                              connection=self.show_average_results

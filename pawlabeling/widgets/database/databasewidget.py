@@ -45,7 +45,7 @@ class DatabaseWidget(QtGui.QWidget):
                                                        shortcut=QtGui.QKeySequence("CTRL+S"),
                                                        icon=QtGui.QIcon(
                                                            os.path.join(os.path.dirname(__file__),
-                                                                        "../images/save_icon.png")),
+                                                                        "../images/save.png")),
                                                        tip="Create a new subject",
                                                        checkable=False,
                                                        connection=self.subject_widget.create_subject
@@ -65,7 +65,7 @@ class DatabaseWidget(QtGui.QWidget):
                                                              shortcut=QtGui.QKeySequence("CTRL+Q"),
                                                              icon=QtGui.QIcon(
                                                                  os.path.join(os.path.dirname(__file__),
-                                                                              "../images/cancel_icon.png")),
+                                                                              "../images/cancel.png")),
                                                              tip="Clear all the subject text fields",
                                                              checkable=False,
                                                              connection=self.subject_widget.clear_subject_fields
@@ -105,7 +105,7 @@ class DatabaseWidget(QtGui.QWidget):
                                                          shortcut=QtGui.QKeySequence("CTRL+V"),
                                                          icon=QtGui.QIcon(
                                                              os.path.join(os.path.dirname(__file__),
-                                                                          "../images/add_to_database_icon.png")),
+                                                                          "../images/add_to_database.png")),
                                                          tip="Add measurements to the session",
                                                          checkable=False,
                                                          connection=self.measurement_widget.add_measurements

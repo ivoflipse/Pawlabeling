@@ -26,14 +26,14 @@ class SettingsWidget(QtGui.QWidget):
         self.measurement_folder = QtGui.QLineEdit()
         self.measurement_folder_button = QtGui.QToolButton()
         self.measurement_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                        "../images/folder_icon.png")))
+                                                                        "../images/folder.png")))
         self.measurement_folder_button.clicked.connect(self.change_measurement_folder)
 
         self.database_folder_label = QtGui.QLabel("Database folder")
         self.database_folder = QtGui.QLineEdit()
         self.database_folder_button = QtGui.QToolButton()
         self.database_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                        "../images/folder_icon.png")))
+                                                                     "../images/folder.png")))
         self.database_folder_button.clicked.connect(self.change_database_folder)
 
 
@@ -215,7 +215,7 @@ class SettingsWidget(QtGui.QWidget):
                                                         shortcut=QtGui.QKeySequence("CTRL+S"),
                                                         icon=QtGui.QIcon(
                                                             os.path.join(os.path.dirname(__file__),
-                                                                         "../images/save_icon.png")),
+                                                                         "../images/save.png")),
                                                         tip="Save settings",
                                                         checkable=False,
                                                         connection=self.save_settings

@@ -60,7 +60,7 @@ class EntirePlateWidget(QtGui.QWidget):
                                                       shortcut=QtGui.QKeySequence(QtCore.Qt.Key_Left),
                                                       icon=QtGui.QIcon(
                                                           os.path.join(os.path.dirname(__file__),
-                                                                       "../images/arrow_left_icon.png")),
+                                                                       "../images/arrow_left.png")),
                                                       tip="Move the slider to the left",
                                                       checkable=False,
                                                       connection=self.slide_to_left
@@ -69,7 +69,7 @@ class EntirePlateWidget(QtGui.QWidget):
         self.slide_to_right_action = gui.create_action(text="Slide Right",
                                                        shortcut=QtGui.QKeySequence(QtCore.Qt.Key_Right),
                                                        icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                     "../images/arrow_right_icon.png")),
+                                                                                     "../images/arrow_right.png")),
                                                        tip="Move the slider to the right",
                                                        checkable=False,
                                                        connection=self.slide_to_right
@@ -79,7 +79,7 @@ class EntirePlateWidget(QtGui.QWidget):
                                                       shortcut=QtGui.QKeySequence.MoveToNextWord,
                                                       #QKeySequence(Qt.CTRL + Qt.Key_Left),
                                                       icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                    "../images/arrow_left_icon.png")),
+                                                                                    "../images/arrow_left.png")),
                                                       tip="Move the slider to the left faster",
                                                       checkable=False,
                                                       connection=self.fast_backward
@@ -89,7 +89,7 @@ class EntirePlateWidget(QtGui.QWidget):
                                                      shortcut=QtGui.QKeySequence.MoveToPreviousWord,
                                                      #QKeySequence(Qt.CTRL + Qt.Key_Right),
                                                      icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                   "../images/arrow_right_icon.png")),
+                                                                                   "../images/arrow_right.png")),
                                                      tip="Move the slider to the right faster",
                                                      checkable=False,
                                                      connection=self.fast_forward

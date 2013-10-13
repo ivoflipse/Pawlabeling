@@ -355,7 +355,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                      shortcut=QtGui.QKeySequence("CTRL+S"),
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
-                                                                      "../images/save_icon.png")),
+                                                                      "../images/save.png")),
                                                      tip="Mark the tracking as correct",
                                                      checkable=False,
                                                      connection=self.store_status
@@ -365,7 +365,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                    shortcut=self.settings.left_front(),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
-                                                                    "../images/LF_icon.png")),
+                                                                    "../images/LF.png")),
                                                    tip="Select the Left Front contact",
                                                    checkable=False,
                                                    connection=self.select_left_front
@@ -375,7 +375,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                   shortcut=self.settings.left_hind(),
                                                   icon=QtGui.QIcon(
                                                       os.path.join(os.path.dirname(__file__),
-                                                                   "../images/LH_icon.png")),
+                                                                   "../images/LH.png")),
                                                   tip="Select the Left Hind contact",
                                                   checkable=False,
                                                   connection=self.select_left_hind
@@ -384,7 +384,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.right_front_action = gui.create_action(text="Select Right Front",
                                                     shortcut=self.settings.right_front(),
                                                     icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
-                                                                                  "../images/RF_icon.png")),
+                                                                                  "../images/RF.png")),
                                                     tip="Select the Right Front contact",
                                                     checkable=False,
                                                     connection=self.select_right_front
@@ -394,7 +394,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                    shortcut=self.settings.right_hind(),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
-                                                                    "../images/RH_icon.png")),
+                                                                    "../images/RH.png")),
                                                    tip="Select the Right Hind contact",
                                                    checkable=False,
                                                    connection=self.select_right_hind
@@ -426,7 +426,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                      shortcut=self.settings.remove_label(),
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
-                                                                      "../images/cancel_icon.png")),
+                                                                      "../images/cancel.png")),
                                                      tip="Delete the label from the contact",
                                                      checkable=False,
                                                      connection=self.remove_label
@@ -436,7 +436,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                         shortcut=self.settings.invalid_contact(),
                                                         icon=QtGui.QIcon(
                                                             os.path.join(os.path.dirname(__file__),
-                                                                         "../images/trash_icon.png")),
+                                                                         "../images/trash.png")),
                                                         tip="Mark the contact as invalid",
                                                         checkable=False,
                                                         connection=self.invalid_contact
@@ -446,7 +446,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                    shortcut=QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Z),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
-                                                                    "../images/undo_icon.png")),
+                                                                    "../images/undo.png")),
                                                    tip="Delete the label from the contact",
                                                    checkable=False,
                                                    connection=self.undo_label
