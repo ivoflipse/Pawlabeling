@@ -31,6 +31,11 @@ class MeasurementWidget(QtGui.QWidget):
                                                                         "../images/folder_icon.png")))
         self.measurement_folder_button.clicked.connect(self.change_file_location)
 
+        self.measurement_up_button = QtGui.QToolButton()
+        self.measurement_up_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                                        "../images/folder_up_icon.png")))
+        self.measurement_up_button.clicked.connect(self.move_folder_up)
+
         self.measurement_folder_layout = QtGui.QHBoxLayout()
         self.measurement_folder_layout.addWidget(self.measurement_folder)
         self.measurement_folder_layout.addWidget(self.measurement_folder_button)
@@ -50,6 +55,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.plate_layout.addWidget(self.plate)
         self.plate_layout.addWidget(self.frequency_label)
         self.plate_layout.addWidget(self.frequency)
+        self.plate_layout.addWidget(self.measurement_up_button)
         self.plate_layout.addStretch(1)
 
         self.files_tree = QtGui.QTreeWidget(self)
@@ -57,6 +63,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.files_tree.setHeaderLabels(["","Name", "Size", "Date"])
         self.files_tree.header().resizeSection(0, 200)
         self.files_tree.setColumnWidth(0, 40)
+        self.files_tree.itemActivated.connect(self.select_file)
 
         self.measurement_tree_label = QtGui.QLabel("Measurements")
         self.measurement_tree_label.setFont(label_font)
@@ -159,6 +166,7 @@ class MeasurementWidget(QtGui.QWidget):
 
     def check_measurement_folder(self, evt=None):
         measurement_folder = self.measurement_folder.text()
+        self.model.measurement_folder = measurement_folder
         if os.path.exists(measurement_folder) and os.path.isdir(measurement_folder):
             self.update_files_tree()
 
@@ -196,6 +204,24 @@ class MeasurementWidget(QtGui.QWidget):
             creation_date = time.strftime("%Y-%m-%d", time.gmtime(creation_date))
             # DAMNIT Why can't I use a locale on this?
             root_item.setText(3, creation_date)
+
+    def select_file(self, evt=None):
+         # Check if the tree aint empty!
+        if not self.files_tree.topLevelItemCount():
+            return
+
+        current_item = self.files_tree.currentItem()
+        file_name = current_item.text(1)
+        file_path = self.file_paths[file_name]
+        # Check if its a directory
+        if os.path.isdir(file_path):
+            # Update the text in self.measurement_folder
+            self.measurement_folder.setText(file_path)
+
+    def move_folder_up(self, evt=None):
+        measurement_folder = self.measurement_folder.text()
+        parent_directory = os.path.dirname(measurement_folder)
+        self.measurement_folder.setText(parent_directory)
 
     def add_measurements(self, evt=None):
         # All measurements from the same session must have the same brands/model/frequency
