@@ -252,7 +252,6 @@ class MeasurementWidget(QtGui.QWidget):
         for file_name, file_path in self.file_paths.iteritems():
             # Only load measurements, so skip directories
             if not os.path.isfile(file_path):
-                print file_path
                 continue
 
             date_time = time.strftime("%Y-%m-%d %H:%M", time.gmtime(os.path.getctime(file_path))).split(" ")

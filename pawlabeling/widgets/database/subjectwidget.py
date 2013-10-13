@@ -127,8 +127,9 @@ class SubjectWidget(QtGui.QWidget):
         # TODO Should I store self.model.subjects differently, so you can use the index?
         self.subjects = {}
         # Add the subjects to the subject_tree
-        # TODO This won't be sorted!
-        for index, subject in enumerate(self.model.subjects.values()):
+        subject_list = sorted(self.model.subjects.values(), key=lambda subject: (subject.first_name, subject.last_name))
+
+        for index, subject in enumerate(subject_list):
             self.subjects[index] = subject
             rootItem = QtGui.QTreeWidgetItem(self.subject_tree)
             rootItem.setText(0, subject.first_name)

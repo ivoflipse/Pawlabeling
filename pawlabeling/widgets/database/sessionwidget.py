@@ -108,13 +108,19 @@ class SessionWidget(QtGui.QWidget):
     def update_sessions_tree(self):
         self.session_tree.clear()
         self.sessions = {}
+
+        if not self.model.sessions.values():
+            return
+
+        session_list = sorted(self.model.sessions.values(),
+                              key=lambda session: (session.session_date, session.session_time))
+
         for index, session in enumerate(self.model.sessions.values()):
             self.sessions[index] = session
             rootItem = QtGui.QTreeWidgetItem(self.session_tree)
             rootItem.setText(0, session.session_name)
             rootItem.setText(1, session.session_date)
             rootItem.setText(2, session.session_time)
-
 
         # Select the first item
         item = self.session_tree.topLevelItem(0)
