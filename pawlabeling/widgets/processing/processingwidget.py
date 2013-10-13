@@ -261,9 +261,12 @@ class ProcessingWidget(QtGui.QWidget):
             current_contact.contact_label = -2
 
         self.model.current_contact_index -= 1
+        # TODO Shouldn't I set the label of this contact to -1?!? Lets find out!
         current_contact = self.get_current_contact()
+        current_contact.contact_label = -1
         # If we encounter an invalid contact and its not the first contact, skip this one
-        if current_contact.contact_label == -3 and self.check_label_status():
+        # current_contact.contact_label == -3 and # Turned off for now
+        if self.check_label_status():
             self.previous_contact()
 
         measurement_item = self.get_current_measurement_item()
@@ -286,8 +289,10 @@ class ProcessingWidget(QtGui.QWidget):
 
         self.model.current_contact_index += 1
         current_contact = self.get_current_contact()
+        current_contact.contact_label = -1
         # If we encounter an invalid contact and its not the last contact, skip this one
-        if current_contact.contact_label == -3 and self.check_label_status():
+        # current_contact.contact_label == -3 and  # Turned off
+        if self.check_label_status():
             self.next_contact()
 
         measurement_item = self.get_current_measurement_item()

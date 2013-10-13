@@ -10,29 +10,13 @@ Overview
 Paw Labeling is a tool to process veterinary pressure measurements.
 It can currently import RSscan, Zebris and Tekscan entire plate export-files.
 
-It assumes all measurements are organized in folders as following:
+It loads your export files, tracks them for contacts and lets you manually label them (Left Front, LF; Left Hind, LH; Right Front, RF; Right Hind, RH).
 
-    Dog Name 1
-            |___ Measurement export file 1
-            |___ Measurement export file 2
-            |___ Measurement export file 3
-    Dog Name 2
-            |___ Measurement export file 1
-            |___ Measurement export file 2
-            |___ Measurement export file 3
-    - ...
-            |___ ...
-
-This structure is loaded into a tree for navigation. Selecting a measurement will load it into the entire plate widget.
-It will then try to load meta data, such as the location of the paws and their labels from memory, if available.
-If this information is not available, it will try to track the individual contacts using a custom tracking algorithm and let you manually label the contacts with their respective labels
-(Left Front, LF; Left Hind, LH; Right Front, RF; Right Hind, RH).
-
-After the results have been saved, you can analyse the data by switching to the Analysis tab. The current version displays:
+After the labeling has been saved, you can analyse the data by switching to the Analysis tab. The current version displays:
 
 - an image of the maximal pressure for each sensor for the average of all contacts for each paw;
-- graphs of the pressure over time with an average + std's;
-- graphs of the force over time with an average + std's;
+- graphs of the pressure over time with an average + std's and one highlighted contact;
+- graphs of the force over time with an average + std's and one highlighted contact;
 - an image of the maximal pressure with the COP.
 
 There's a slider for the results which allows you to make the average results roll off or scroll a line along the graphs.
@@ -41,9 +25,10 @@ There's a slider for the results which allows you to make the average results ro
 Features
 --------
 
+- Add subjects to a PyTables database
 - Load measurements and track where the paws have made contact
 - Enable manual labeling of the contacts with their respective paw and saving of the results for later use
-- Analysis of the average results
+- Analysis of the average results or individual contacts
 
 
 Screenshots
@@ -66,7 +51,7 @@ Screenshots
 Installation
 -----
 
-Requires Python 2 (2.6 or newer), I'm not sure whether my dependencies are supported by Python 3 yet.
+Requires Python 2 (2.6 or newer), Python 3 is not supported because of the lack of OpenCV wrappers.
 
 I strongly recommend that you consider installing Python packages with pip, as in it is the current preferred method.
 If you are using pip, you can directly install all the dependencies from the requirements file using
@@ -81,31 +66,30 @@ In any case, you need to install:
 - [OpenCV](http://www.lfd.uci.edu/~gohlke/pythonlibs/#opencv)
 - [PySide](http://www.lfd.uci.edu/~gohlke/pythonlibs/#pyside)
 - [PyPubsub](http://pubsub.sourceforge.net/) (note that version 3.2 seems broken at the moment)
-- [imreg](https://github.com/pyimreg/imreg)
+- [pyimreg](https://github.com/pyimreg/imreg) (not yet integrated, but will be soon)
+- Pytables (included in Anaconda)
 - Numpy (included in Acaconda)
 - Scipy (included in Acaconda)
 - PyTables (included in Anaconda)
-- Nose (for testing, included in Anaconda)
+- Nose (for testing only, included in Anaconda)
 
 Usage
 -----
 
-**1. Edit `settings/configuration.py` for your system**
+**1. Edit `settings/settings.ini` for your system**
 
 Apply the following changes:
 
 - Change `measurment_folder` to the folder containing all your measurements organized as described above.
-- Change the `store_results_folder` to the folder where you'll be storing the paw labels and other results.
-- Change brand to your specific brand (either "rsscan" or "zebris"), if your brand is not supported, please contact me.
-- Change the frequency to your measurement frequency. Currently only one frequency for all measurements is supported, as this information is not generally available in all export files.
-- Change the main_window_height and width depending on your screen resolution and change the degree of interpolation if the images don't fit your screen.
-- Adjust the keyboard shortcuts in case you lack a keypad (for example on a laptop) by switching from `desktop = True` to `desktop = False` 
+- Change the `database_folder` to the folder where you want your PyTables database to be stored.
+- Set your plate to your specific brand and model, if your brand is not supported, please contact me.
+- Change the `main_window_height` and `main_window_width` depending on your screen resolution and change the degree of interpolation if the images don't fit your screen.
+- Adjust the keyboard shortcuts in case you lack a keypad (for example on a laptop)
 
 
 **2. Run `pawlabeling.py` to start the tool**
 
-It will automatically load the measurements, select the first one in the tree and look for contacts.
-Furthermore, it will mark any incomplete steps as `Invalid` if they touch the edges of the plate or if they were not finished before the end of the measurement.
+Create a new subject, create a session (like 'walking' or 'trotting'), add all the relevant measurements to it. This will also track for contacts and mark any incomplete steps as `Invalid` if they touch the edges of the plate or if they were not finished before the end of the measurement. You can now switch to the Processing tab for labeling your paws.
 
 **3. Label all your contacts**
 
@@ -115,7 +99,7 @@ Use the keypad to label the currently selected paw (highlighted in yellow):
 			->
 	1	3		LH	RH
 
-You can switch the currently selected contact by pressing `4` or `6`. Remove a label using `5` or undo the previous label using `Ctrl+Z`.
+You can switch the currently selected contact by pressing `4` or `6`. Remove a label using `5`, undo the previous label using `Ctrl+Z` and mark a contact as invalid by pressing `Del`.
 
 **4. Save your results**
 

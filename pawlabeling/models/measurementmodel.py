@@ -19,7 +19,8 @@ class Measurements(object):
         measurement_name = measurement["measurement_name"]
         if measurement_name[-3:] == "zip":
             measurement_name = measurement_name[:-4]
-            # If it already exists, restore the Measurement object and return that
+
+        # If it already exists, restore the Measurement object and return that
         result = self.measurements_table.get_measurement(measurement_name=measurement_name)
         if result:
             return
@@ -95,7 +96,7 @@ class Measurement(object):
             self.measurement_name = measurement_name
 
         # Get the raw string from the file path
-        input_file = self.load_file_path(measurement_name, file_path=file_path)
+        input_file = self.load_file_path(file_path=file_path)
 
         # Get the plate info, so we can get the brand
         self.plate_id = measurement["plate_id"]
@@ -112,7 +113,7 @@ class Measurement(object):
         self.maximum_value = self.measurement_data.max()  # Perhaps round this and store it as an int?
         self.frequency = measurement["frequency"]
 
-    def load_file_path(self, measurement_name, file_path):
+    def load_file_path(self, file_path):
         # Check if the file is zipped or not and extract the raw measurement_data
         if self.zipped:
             # Unzip the file
@@ -123,8 +124,7 @@ class Measurement(object):
 
             # If the user wants us to zip it, zip it so they don't keep taking up so much space!
             if settings.settings.zip_files():
-                measurement_folder = settings.settings.measurement_folder()
-                io.zip_file(measurement_folder, measurement_name)
+                io.zip_file(file_path)
 
         return input_file
 

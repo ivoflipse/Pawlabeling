@@ -213,19 +213,15 @@ class TestZipFile(TestCase):
 
     def test_zip_file(self):
         # Try zipping the file
-        io.zip_file(self.root, self.new_file_name)
+        io.zip_file(file_path=self.new_file_name)
 
         # Check to see that the file exists
         exists = os.path.exists(self.new_file_name + ".zip")
         self.assertTrue(exists)
 
-    def test_zip_file_wrong_root(self):
-        with self.assertRaises(Exception):
-            io.zip_file(root="", file_name=self.new_file_name)
-
     def test_zip_file_wrong_file_name(self):
         with self.assertRaises(Exception):
-            io.zip_file(root=self.root, file_name="")
+            io.zip_file(file_path="")
 
     def tearDown(self):
         # Remove the file if it still exists

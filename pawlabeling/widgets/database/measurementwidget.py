@@ -166,10 +166,21 @@ class MeasurementWidget(QtGui.QWidget):
         self.files_tree.clear()
 
         self.file_paths = io.get_file_paths(measurement_folder=self.model.measurement_folder)
+        sort_list = []
         for file_name, file_path in self.file_paths.iteritems():
+            if not os.path.isfile(file_path):
+                sort_list.append((0, file_name))
+            else:
+                sort_list.append((1, file_name))
+
+        # I want it sorted by type and name
+        sort_list = sorted(sort_list, key=lambda x: (x[0], x[1]))
+
+        for file_type, file_name in sort_list:
+            file_path = self.file_paths[file_name]
             root_item = QtGui.QTreeWidgetItem(self.files_tree)
             # If its not a measurement, give it a directory icon
-            if not os.path.isfile(file_path):
+            if not file_type:
                 root_item.setIcon(0, QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                               "../images/folder_icon.png")))
             else:
@@ -198,6 +209,7 @@ class MeasurementWidget(QtGui.QWidget):
         for file_name, file_path in self.file_paths.iteritems():
             # Only load measurements, so skip directories
             if not os.path.isfile(file_path):
+                print file_path
                 continue
 
             date_time = time.strftime("%Y-%m-%d %H:%M", time.gmtime(os.path.getctime(file_path))).split(" ")
