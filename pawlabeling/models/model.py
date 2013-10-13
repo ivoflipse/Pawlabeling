@@ -15,7 +15,6 @@ class Model():
         # TODO change the models measurement folder instead of writing it to the settings
         self.measurement_folder = self.settings.measurement_folder()
         self.database_file = self.settings.database_file()
-
         self.plate_model = platemodel.Plates()
         # Create the plates if they do not yet exists
         self.plate_model.create_plates()

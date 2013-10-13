@@ -110,7 +110,10 @@ class ProcessingWidget(QtGui.QWidget):
             for contact in self.model.contacts[measurement.measurement_name]:
                 contact_item = QtGui.QTreeWidgetItem(measurement_item)
                 contact_item.setText(0, str(contact.contact_id))
-                contact_item.setText(1, self.contact_dict[contact.contact_label])
+                if contact.invalid:
+                    contact_item.setText(1, "Invalid")
+                else:
+                    contact_item.setText(1, self.contact_dict[contact.contact_label])
                 contact_item.setText(2, str(contact.length))  # Sets the frame count
                 max_surface = np.max(contact.surface_over_time)
                 contact_item.setText(3, str(int(max_surface)))
@@ -120,6 +123,9 @@ class ProcessingWidget(QtGui.QWidget):
                 for idx in xrange(contact_item.columnCount()):
                     color = self.colors[contact.contact_label]
                     color.setAlphaF(0.5)
+                    # If a contact is filtered, mark it as invalid
+                    if contact.invalid:
+                        color = self.colors[-3]
                     contact_item.setBackground(idx, color)
 
             # If several contacts have been labeled, marked the measurement
@@ -135,7 +141,6 @@ class ProcessingWidget(QtGui.QWidget):
 
         measurement_item = self.get_current_measurement_item()
         self.measurement_tree.setCurrentItem(measurement_item, True)
-
 
     # TODO Change this so it first checks what we clicked on and then calls the right function
     def put_measurement(self):
@@ -185,11 +190,6 @@ class ProcessingWidget(QtGui.QWidget):
         if not self.contacts_available():
             return
 
-        # Check if any other contact has the label -1, if so change it to -2
-        for index, contact in self.model.contacts[self.model.measurement_name]:
-            if contact.contact_label == -1:
-                contact.contact_label = -2
-
         # Remove the label
         current_contact = self.get_current_contact()
         current_contact.contact_label = -1
@@ -201,38 +201,41 @@ class ProcessingWidget(QtGui.QWidget):
         if not self.contacts_available():
             return
 
-        # I've picked -3 as the label for invalid contacts
         current_contact = self.get_current_contact()
-        current_contact.contact_label = -3
+        current_contact.invalid = not current_contact.invalid
+        current_contact = self.get_current_contact()
         # Update the screen
         self.update_current_contact()
 
     def get_current_contact(self):
         current_contact = self.model.contacts[self.model.measurement_name][self.model.current_contact_index]
+        # Toggle the button if its invalid
+        if current_contact.invalid:
+            if not self.invalid_contact_action.isChecked():
+                self.invalid_contact_action.toggle()
+        else:
+            if self.invalid_contact_action.isChecked():
+                self.invalid_contact_action.toggle()
         return current_contact
 
     def select_left_front(self):
         current_contact = self.get_current_contact()
-        if current_contact.contact_label != -3:
-            current_contact.contact_label = 0
+        current_contact.contact_label = 0
         self.next_contact()
 
     def select_left_hind(self):
         current_contact = self.get_current_contact()
-        if current_contact.contact_label != -3:
-            current_contact.contact_label = 1
+        current_contact.contact_label = 1
         self.next_contact()
 
     def select_right_front(self):
         current_contact = self.get_current_contact()
-        if current_contact.contact_label != -3:
-            current_contact.contact_label = 2
+        current_contact.contact_label = 2
         self.next_contact()
 
     def select_right_hind(self):
         current_contact = self.get_current_contact()
-        if current_contact.contact_label != -3:
-            current_contact.contact_label = 3
+        current_contact.contact_label = 3
         self.next_contact()
 
     def contacts_available(self):
@@ -264,13 +267,9 @@ class ProcessingWidget(QtGui.QWidget):
             current_contact.contact_label = -2
 
         self.model.current_contact_index -= 1
-        # TODO Shouldn't I set the label of this contact to -1?!? Lets find out!
         current_contact = self.get_current_contact()
-        current_contact.contact_label = -1
-        # If we encounter an invalid contact and its not the first contact, skip this one
-        # current_contact.contact_label == -3 and # Turned off for now
-        if self.check_label_status():
-            self.previous_contact()
+        if current_contact.contact_label < 0:
+            current_contact.contact_label = -1
 
         measurement_item = self.get_current_measurement_item()
         contact_item = measurement_item.child(self.model.current_contact_index)
@@ -292,11 +291,8 @@ class ProcessingWidget(QtGui.QWidget):
 
         self.model.current_contact_index += 1
         current_contact = self.get_current_contact()
-        current_contact.contact_label = -1
-        # If we encounter an invalid contact and its not the last contact, skip this one
-        # current_contact.contact_label == -3 and  # Turned off
-        if self.check_label_status():
-            self.next_contact()
+        if current_contact.contact_label < 0:
+            current_contact.contact_label = -1
 
         measurement_item = self.get_current_measurement_item()
         contact_item = measurement_item.child(self.model.current_contact_index)
@@ -438,7 +434,7 @@ class ProcessingWidget(QtGui.QWidget):
                                                             os.path.join(os.path.dirname(__file__),
                                                                          "../images/trash.png")),
                                                         tip="Mark the contact as invalid",
-                                                        checkable=False,
+                                                        checkable=True,
                                                         connection=self.invalid_contact
         )
 

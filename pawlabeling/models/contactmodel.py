@@ -278,11 +278,11 @@ class Contact(object):
         """
         Input: measurement_data = 3D entire plate measurement_data array
         Checks if the contact touches the edge of the plate and if the forces at the beginning or end of a contact
-        aren't too high. If so, it will mark the contact as invalid and set the contact_label to -3
+        aren't too high. If so, it will mark the contact as invalid
         """
         if self.touches_edge(measurement_data) or self.incomplete_step:
             self.invalid = True
-            self.contact_label = -3
+            self.filtered = True
 
     def touches_edge(self, data):
         """

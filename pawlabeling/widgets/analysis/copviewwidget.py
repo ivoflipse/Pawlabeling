@@ -220,6 +220,9 @@ class ContactView(QtGui.QWidget):
             self.cop_ellipses.append(ellipse)
 
     def draw(self):
+        if self.frame > self.length:
+            return
+
         self.get_data()
         if self.frame == -1:
             self.draw_cop()

@@ -57,7 +57,6 @@ class Settings(QtCore.QSettings):
             1: "LH",
             2: "RF",
             3: "RH",
-            -3: "Invalid",
             -2: "NA",
             -1: "Current"
         }
@@ -139,7 +138,7 @@ class Settings(QtCore.QSettings):
 
     def invalid_contact(self):
         key = "keyboard_shortcuts/invalid_contact"
-        default_value = QtGui.QKeySequence.fromString("Delete")
+        default_value = QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Delete)
         setting_value = self.value(key)
         if isinstance(setting_value, QtGui.QKeySequence):
             return setting_value
