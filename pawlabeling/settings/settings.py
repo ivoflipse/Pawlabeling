@@ -157,7 +157,7 @@ class Settings(QtCore.QSettings):
     def measurement_folder(self):
         key = "folders/measurement_folder"
         default_value = os.path.join(self.root_folder, "samples\\Measurements")
-        setting_value = self.value(key)
+        setting_value = str(self.value(key))
         # Check if this folder even exists, else return the relative path
         if not os.path.exists(setting_value):
             return default_value
@@ -169,7 +169,7 @@ class Settings(QtCore.QSettings):
     def database_folder(self):
         key = "folders/database_folder"
         default_value = os.path.join(self.root_folder, "database")
-        setting_value = self.value(key)
+        setting_value = str(self.value(key))
         # Check if this folder even exists, else return the relative path
         if not os.path.exists(setting_value):
             return default_value
@@ -181,7 +181,7 @@ class Settings(QtCore.QSettings):
     def database_file(self):
         key = "folders/database_file"
         default_value = os.path.join(self.root_folder, "database\\data.h5")
-        setting_value = self.value(key)
+        setting_value = str(self.value(key))
         # Check if this folder even exists, else return the relative path
         if not os.path.exists(setting_value):
             return default_value
