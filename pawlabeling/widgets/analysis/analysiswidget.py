@@ -138,6 +138,8 @@ class AnalysisWidget(QtGui.QTabWidget):
                 for idx in xrange(measurement_item.columnCount()):
                     measurement_item.setForeground(idx, green_brush)
 
+        # Sort the tree by measurement name
+        self.measurement_tree.sortByColumn(0, Qt.AscendingOrder)
         # Update the slider's max value
         # TODO This should actually be the max_length of the things being displayed
         self.slider.setMaximum(self.max_length)

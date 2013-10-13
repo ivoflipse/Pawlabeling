@@ -293,7 +293,7 @@ class Contact(object):
         x_touch = (self.min_x == 0) or (self.max_x == ny)
         y_touch = (self.min_y == 0) or (self.max_y == nx)
         z_touch = (self.min_z == nt)
-
+        #print x_touch, y_touch, z_touch
         return x_touch or y_touch or z_touch
 
     @property
@@ -304,7 +304,7 @@ class Contact(object):
         """
         force_over_time = calculations.force_over_time(self.data)
         max_force = np.max(force_over_time)
-        #print force_over_time[0], force_over_time[-1], max_force, settings.start_force_percentage
+        #print force_over_time[0], force_over_time[-1], max_force, self.settings.start_force_percentage()
         if (force_over_time[0] > (self.settings.start_force_percentage() * max_force) or
                     force_over_time[-1] > (self.settings.end_force_percentage() * max_force)):
             return True

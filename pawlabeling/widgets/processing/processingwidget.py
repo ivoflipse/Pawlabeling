@@ -127,12 +127,15 @@ class ProcessingWidget(QtGui.QWidget):
                 for idx in xrange(measurement_item.columnCount()):
                     measurement_item.setForeground(idx, green_brush)
 
-            # Initialize the current contact index, which we'll need for keep track of the labeling
-            self.model.current_contact_index = 0
-            self.model.current_measurement_index = 0
+        # Sort the tree by measurement name
+        self.measurement_tree.sortByColumn(0, Qt.AscendingOrder)
+        # Initialize the current contact index, which we'll need for keep track of the labeling
+        self.model.current_contact_index = 0
+        self.model.current_measurement_index = 0
 
-            measurement_item = self.get_current_measurement_item()
-            self.measurement_tree.setCurrentItem(measurement_item, True)
+        measurement_item = self.get_current_measurement_item()
+        self.measurement_tree.setCurrentItem(measurement_item, True)
+
 
     # TODO Change this so it first checks what we clicked on and then calls the right function
     def put_measurement(self):
