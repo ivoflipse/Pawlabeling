@@ -94,12 +94,12 @@ class ProcessingWidget(QtGui.QWidget):
         for contact in self.contacts_widget.contacts_list:
             contact.setMinimumHeight(self.settings.contacts_widget_height())
 
-    def put_subject(self, subject):
-        subject_name = "{} {}".format(subject.first_name, subject.last_name)
+    def put_subject(self):
+        subject_name = "{} {}".format(self.model.subject.first_name, self.model.subject.last_name)
         self.subject_name_label.setText("Subject: {}\t".format(subject_name))
 
-    def put_session(self, session):
-        self.session_name_label.setText("Session: {}\t".format(session.session_name))
+    def put_session(self):
+        self.session_name_label.setText("Session: {}\t".format(self.model.session.session_name))
 
     # TODO I should split this function up, such that reloading the tree is independent of setting indices and such
     def update_measurements_tree(self):

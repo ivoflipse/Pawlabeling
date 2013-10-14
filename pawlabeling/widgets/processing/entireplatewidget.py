@@ -104,8 +104,8 @@ class EntirePlateWidget(QtGui.QWidget):
 
         # TODO I might have to unsubscribe these as well...
         pub.subscribe(self.update_measurement, "update_measurement")
-        pub.subscribe(self.update_measurement_data, "update_measurement_data")
-        pub.subscribe(self.update_contacts, "update_contacts")
+        pub.subscribe(self.update_measurement_data, "get_measurement_data")
+        pub.subscribe(self.update_contacts, "get_contacts")
         pub.subscribe(self.update_contacts, "updated_current_contact")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 

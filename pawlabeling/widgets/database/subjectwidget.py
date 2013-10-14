@@ -86,7 +86,7 @@ class SubjectWidget(QtGui.QWidget):
 
         self.setLayout(self.subject_tree_layout)
 
-        pub.subscribe(self.update_subjects_tree, "update_subjects_tree")
+        pub.subscribe(self.update_subjects_tree, "get_subjects")
 
     def create_subject(self):
         subject = self.get_subject_fields()
@@ -151,11 +151,10 @@ class SubjectWidget(QtGui.QWidget):
         subject = self.subjects[index]
         # Should we broadcast which user is currently selected?
         # So the model can update itself?
-        # self.model.put_subject(subject=subject)
-        pub.sendMessage("put_subject", subject=subject)
+        self.model.put_subject(subject=subject)
 
     def get_subjects(self):
-        pub.sendMessage("get_subjects")
+        self.model.get_subjects()
 
     def clear_subject_fields(self):
         for field in self.subject_fields:
