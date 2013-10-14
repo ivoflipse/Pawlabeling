@@ -115,6 +115,7 @@ class ContactView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
         pub.subscribe(self.update_average, "update_average")
+        pub.subscribe(self.update_contact, "put_contact")
         pub.subscribe(self.show_average_results, "show_average_results")
 
     def show_average_results(self, toggle):
@@ -124,6 +125,11 @@ class ContactView(QtGui.QWidget):
 
     def update_average(self):
         if self.contact_label in self.model.average_data:
+            if self.parent.active:
+                self.change_frame(frame=-1)
+
+    def update_contact(self):
+        if self.contact_label == self.model.contact.contact_label:
             if self.parent.active:
                 self.change_frame(frame=-1)
 

@@ -20,7 +20,6 @@ class Model():
         self.plate_model.create_plates()
 
         self.subject_model = subjectmodel.Subjects()
-
         # Initialize our variables that will cache results
         self.subject_id = ""
         self.subject_name = ""
@@ -41,35 +40,7 @@ class Model():
 
         self.logger = logging.getLogger("logger")
 
-        # CREATE
-        pub.subscribe(self.create_subject, "create_subject")
-        pub.subscribe(self.create_session, "create_session")
-        pub.subscribe(self.create_measurement, "create_measurement")
-        #pub.subscribe(self.create_contacts, "create_contact")
-        #pub.subscribe(self.create_plate, "create_plate")
-        # GET
-
-        pub.subscribe(self.get_sessions, "get_sessions")
-        pub.subscribe(self.get_measurements, "get_measurements")
-        pub.subscribe(self.get_contacts, "get_contacts")
-        pub.subscribe(self.get_measurement_data, "get_measurement_data")
-        pub.subscribe(self.get_plates, "get_plates")
-        # PUT
-        #pub.subscribe(self.put_subject, "put_subject")
-        pub.subscribe(self.put_session, "put_session")
-        pub.subscribe(self.put_measurement, "put_measurement")
-        pub.subscribe(self.put_contact, "put_contact")
-        pub.subscribe(self.put_plate, "put_plate")
-        # DELETE
-        pub.subscribe(self.delete_subject, "delete_subject")
-        pub.subscribe(self.delete_session, "delete_session")
-        pub.subscribe(self.delete_measurement, "delete_measurement")
         # Various
-        pub.subscribe(self.load_contacts, "load_contacts")
-        pub.subscribe(self.update_current_contact, "update_current_contact")
-        pub.subscribe(self.store_contacts, "store_contacts")
-        pub.subscribe(self.repeat_track_contacts, "track_contacts")
-        #pub.subscribe(self.calculate_results, "calculate_results")
         pub.subscribe(self.changed_settings, "changed_settings")
 
     def create_subject(self, subject):
@@ -230,7 +201,7 @@ class Model():
                                                   measurement_id=self.measurement_id)
         self.contact_model = self.contact_models[measurement.measurement_name]
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
-        pub.sendMessage("update_measurement")
+        pub.sendMessage("put_measurement")
 
         # TODO Have this load the contacts and measurement data
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
@@ -248,7 +219,7 @@ class Model():
                 self.contact_id = self.contact.contact_id
                 self.logger.info("Contact ID set to {}".format(self.contact_id))
                 self.selected_contacts[self.contact.contact_label] = contact
-                pub.sendMessage("update_contact")
+                pub.sendMessage("put_contact")
                 break
 
     def put_plate(self, plate):
@@ -274,7 +245,7 @@ class Model():
     def update_current_contact(self):
         # Notify everyone things have been updated
         self.update_average()
-        pub.sendMessage("updated_current_contact")
+        pub.sendMessage("update_current_contact")
 
     # TODO Store every contact, from every measurement?
     def store_contacts(self):
@@ -282,24 +253,18 @@ class Model():
         self.logger.info("Model.update_contacts: Results for {} have been successfully saved".format(
             self.measurement_name))
         pub.sendMessage("update_statusbar", status="Results saved")
-        pub.sendMessage("stored_status", success=True)
         # Notify the measurement that it has been processed
         self.measurement.processed = True
         self.measurement_model.update(measurement=self.measurement)
-
-    def reset_contact_labels(self):
-        for contact in self.contacts[self.measurement_name]:
-            contact.contact_label = -2
-
-        pub.sendMessage("update_contacts_tree")
+        pub.sendMessage("update_measurement_status")
 
     # TODO This should only be used when you've changed tracking thresholds
+    # Else it makes no sense at all
     def repeat_track_contacts(self):
         contacts = self.contact_model.repeat_track_contacts(measurement=self.measurement,
                                                             measurement_data=self.measurement_data,
                                                             plate=self.plate)
         self.contacts[self.measurement_name] = contacts
-        pub.sendMessage("update_contacts_tree")
 
     # TODO Make sure this function doesn't have to pass along data
     def load_contacts(self):
@@ -353,13 +318,7 @@ class Model():
         # TODO Figure out what can be cleared and when, perhaps I can use an argument to check the level of clearing
         # like, subject/session/measurement etc
         #print "model.clear_cached_values"
-        #self.subject_id = ""
-        #self.subject_name = ""
-        #self.session_id = ""
-        #self.session.clear()
-        #self.sessions = {}
         self.measurement_name = ""
-        # self.measurement.clear()
         self.measurements = {}
         self.contact.clear()
         self.contacts.clear()

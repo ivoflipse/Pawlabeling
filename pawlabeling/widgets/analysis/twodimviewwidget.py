@@ -104,7 +104,7 @@ class ContactView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
         pub.subscribe(self.update_average, "update_average")
-        pub.subscribe(self.update_contact, "update_contact")
+        pub.subscribe(self.update_contact, "put_contact")
         pub.subscribe(self.show_average_results, "show_average_results")
 
     def show_average_results(self, toggle):
