@@ -55,7 +55,7 @@ class ContactWidgets(QtGui.QWidget):
         self.setLayout(self.main_layout)
 
         # TODO I might have to unsubscribe these as well...
-        pub.subscribe(self.update_contacts, "updated_current_contact")
+        pub.subscribe(self.update_contacts, "update_current_contact")
 
     def update_contacts(self):
         # Clear any previous results, which may be out of date

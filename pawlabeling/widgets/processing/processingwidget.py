@@ -82,11 +82,9 @@ class ProcessingWidget(QtGui.QWidget):
     # everything it sends/receives
     def subscribe(self):
         pub.subscribe(self.update_measurements_tree, "update_measurement_status")
-        pub.subscribe(self.stored_status, "stored_status")
 
     def unsubscribe(self):
         pub.unsubscribe(self.update_measurements_tree, "update_measurement_status")
-        pub.unsubscribe(self.stored_status, "stored_status")
 
     def changed_settings(self):
         self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
@@ -94,12 +92,12 @@ class ProcessingWidget(QtGui.QWidget):
         for contact in self.contacts_widget.contacts_list:
             contact.setMinimumHeight(self.settings.contacts_widget_height())
 
-    def put_subject(self, subject):
-        subject_name = "{} {}".format(subject.first_name, subject.last_name)
+    def put_subject(self):
+        subject_name = "{} {}".format(self.model.subject.first_name, self.model.subject.last_name)
         self.subject_name_label.setText("Subject: {}\t".format(subject_name))
 
-    def put_session(self, session):
-        self.session_name_label.setText("Session: {}\t".format(session.session_name))
+    def put_session(self):
+        self.session_name_label.setText("Session: {}\t".format(self.model.session.session_name))
 
     # TODO I should split this function up, such that reloading the tree is independent of setting indices and such
     def update_measurements_tree(self):
@@ -331,13 +329,6 @@ class ProcessingWidget(QtGui.QWidget):
 
     def store_status(self, event=None):
         self.model.store_contacts()
-
-    def stored_status(self, success):
-        # If we were successful, change the color of the tree
-        if success:
-            current_item = self.measurement_tree.currentItem()
-            green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
-            current_item.setForeground(0, green_brush)
 
     def changed_settings(self):
         # Update all the keyboard shortcuts

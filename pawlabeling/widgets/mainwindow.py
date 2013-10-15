@@ -81,8 +81,8 @@ class MainWindow(QtGui.QMainWindow):
         pub.subscribe(self.launch_message_box, "message_box")
         pub.subscribe(self.changed_settings, "changed_settings")
 
-        # TODO Now you can call whatever you want
-        pub.sendMessage("get_subjects")
+        # This has to be called after all widgets have been created
+        self.model.get_subjects()
 
     def center(self):
         qr = self.frameGeometry()

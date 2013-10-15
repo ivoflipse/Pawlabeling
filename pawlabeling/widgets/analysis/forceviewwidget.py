@@ -97,7 +97,7 @@ class ContactView(QtGui.QWidget):
 
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
-        pub.subscribe(self.update_contact, "update_contact")
+        pub.subscribe(self.update_contact, "put_contact")
 
     def filter_outliers(self, toggle):
         self.outlier_toggle = toggle
