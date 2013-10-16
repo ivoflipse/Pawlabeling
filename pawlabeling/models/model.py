@@ -4,7 +4,7 @@ import numpy as np
 from pubsub import pub
 from pawlabeling.functions import utility, io, tracking, calculations
 from pawlabeling.settings import settings
-from pawlabeling.models import table, subjectmodel, sessionmodel, measurementmodel, contactmodel, platemodel, treemodel
+from pawlabeling.models import table, subjectmodel, sessionmodel, measurementmodel, contactmodel, platemodel
 #from memory_profiler import profile
 
 
@@ -95,10 +95,6 @@ class Model():
 
     def get_subjects(self):
         self.subjects = self.subject_model.get_subjects()
-        self.tree_model = treemodel.TreeModel(columnCount=3)
-        for subject_id, subject in self.subjects.items():
-            self.tree_model.addItem(subject)
-
         pub.sendMessage("get_subjects")
 
     def get_sessions(self):

@@ -20,13 +20,12 @@ class SubjectWidget(QtGui.QWidget):
 
         self.subject_tree_label = QtGui.QLabel("Subjects")
         self.subject_tree_label.setFont(label_font)
-        #self.subject_tree = QtGui.QTreeWidget(self)
-        self.subject_tree = QtGui.QTreeView(self)
-        #self.subject_tree.setMinimumWidth(300)
-        #self.subject_tree.setMaximumWidth(400)
-        #self.subject_tree.setColumnCount(3)
-        #self.subject_tree.setHeaderLabels(["First Name", "Last Name", "Mass"])
-        #self.subject_tree.itemActivated.connect(self.put_subject)
+        self.subject_tree = QtGui.QTreeWidget(self)
+        self.subject_tree.setMinimumWidth(300)
+        self.subject_tree.setMaximumWidth(400)
+        self.subject_tree.setColumnCount(3)
+        self.subject_tree.setHeaderLabels(["First Name", "Last Name", "Mass"])
+        self.subject_tree.itemActivated.connect(self.put_subject)
 
         self.subject_label = QtGui.QLabel("Subject")
         self.subject_label.setFont(label_font)
@@ -129,29 +128,28 @@ class SubjectWidget(QtGui.QWidget):
         return subject
 
     def update_subjects_tree(self):
-        # # Clear any existing contacts
-        # self.subject_tree.clear()
-        # self.subjects = {}
-        #
-        # if not self.model.subjects.values():
-        #     return
-        #
-        # # Add the subjects to the subject_tree
-        # subject_list = sorted(self.model.subjects.values(), key=lambda subject: (subject.first_name, subject.last_name))
-        #
-        # for index, subject in enumerate(subject_list):
-        #     self.subjects[index] = subject
-        #     rootItem = QtGui.QTreeWidgetItem(self.subject_tree)
-        #     rootItem.setText(0, subject.first_name)
-        #     rootItem.setText(1, subject.last_name)
-        #     rootItem.setText(2, str(subject.mass))  # Note 1.0 is the default value, sorry!
-        #
-        # # Select the first subject
-        # item = self.subject_tree.topLevelItem(0)
-        # self.subject_tree.setCurrentItem(item)
-        # self.put_subject()
-        #self.subject_tree.clear()
-        self.subject_tree.setModel(self.model.tree_model)
+        # Clear any existing contacts
+        self.subject_tree.clear()
+        self.subjects = {}
+
+        if not self.model.subjects.values():
+            return
+
+        # Add the subjects to the subject_tree
+        subject_list = sorted(self.model.subjects.values(), key=lambda subject: (subject.first_name, subject.last_name))
+
+        for index, subject in enumerate(subject_list):
+            self.subjects[index] = subject
+            rootItem = QtGui.QTreeWidgetItem(self.subject_tree)
+            rootItem.setText(0, subject.first_name)
+            rootItem.setText(1, subject.last_name)
+            rootItem.setText(2, str(subject.mass))  # Note 1.0 is the default value, sorry!
+
+        # Select the first subject
+        item = self.subject_tree.topLevelItem(0)
+        self.subject_tree.setCurrentItem(item)
+        self.put_subject()
+        self.subject_tree.clear()
 
     def put_subject(self, evt=None):
         current_item = self.subject_tree.currentItem()
