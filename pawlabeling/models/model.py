@@ -95,19 +95,11 @@ class Model():
 
     def get_subjects(self):
         self.subjects = self.subject_model.get_subjects()
-        pub.sendMessage("get_subjects")
-
-        print self.subjects
-
-        self.tree_model = treemodel.TreeModel(columnCount=5)
+        self.tree_model = treemodel.TreeModel(columnCount=3)
         for subject_id, subject in self.subjects.items():
             self.tree_model.addItem(subject)
 
-        print self.tree_model.rowCount()
-        print self.tree_model.columnCount()
-        index = self.tree_model.index(row=0, column=0)
-        print index.row()
-        print self.tree_model.data(index)
+        pub.sendMessage("get_subjects")
 
     def get_sessions(self):
         self.sessions = self.session_model.get_sessions()

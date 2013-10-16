@@ -12,8 +12,9 @@ class TreeModel(QtCore.QAbstractItemModel):
         self._columnCount = columnCount
 
     def data(self, index, role=Qt.DisplayRole):
+        print "data", index.row(), index.column()
         if role == Qt.DisplayRole:
-            return self._items[index.row()]
+            return self._items[index.row()]["first_name"]
         elif role == Qt.EditRole:
             return self._items[index.row()]
         else:
@@ -49,7 +50,7 @@ class TreeModel(QtCore.QAbstractItemModel):
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self._items)
 
-    def columnCount(self):
+    def columnCount(self, parent=QtCore.QModelIndex()):
         return self._columnCount
 
     def appendChild(self, items):
@@ -58,16 +59,28 @@ class TreeModel(QtCore.QAbstractItemModel):
     def child(self, row):
         return self._children[row]
 
-    def childrenCount(self):
-        return len(self._children)
+    # def childrenCount(self):
+    #     return len(self._children)
 
-    def hasChildren(self):
+    def hasChildren(self, parent=QtCore.QModelIndex()):
         if len(self._children) > 0:
             return True
         return False
 
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
+
+    def insertRows(self, row, count, parent=QtCore.QModelIndex()):
+        if row < 0 or row > len(self._items):
+            return
+
+        self.beginInsertRows(parent, row, row + count - 1)
+
+        while count != 0:
+            self._items.insert(row, parent)
+            count -= 1
+
+        self.endInsertRows()
 
     def removeRows(self, row, count, parent = QtCore.QModelIndex()):
         if row < 0 or row > len(self._items):
@@ -82,7 +95,6 @@ class TreeModel(QtCore.QAbstractItemModel):
         self.endRemoveRows()
 
     def addItem(self, item):
-        print item
         self.beginInsertRows(QtCore.QModelIndex(), len(self._items), len(self._items))
         self._items.append(str(item))
         self.endInsertRows()
