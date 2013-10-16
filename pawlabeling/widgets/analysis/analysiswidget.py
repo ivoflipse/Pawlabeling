@@ -230,7 +230,11 @@ class AnalysisWidget(QtGui.QTabWidget):
                                                              connection=self.show_average_results
         )
 
-        self.actions = [self.filter_outliers_action, self.show_average_results_action]
+        self.actions = [self.filter_outliers_action, self.show_average_results_action,
+                        "separator"]
 
         for action in self.actions:
-            self.toolbar.addAction(action)
+            if action == "separator":
+                self.toolbar.addSeparator()
+            else:
+                self.toolbar.addAction(action)

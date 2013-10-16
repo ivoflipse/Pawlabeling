@@ -449,13 +449,18 @@ class ProcessingWidget(QtGui.QWidget):
 
         # TODO Not all actions are editable yet in the settings
         self.actions = [self.store_status_action, self.track_contacts_action,
+                        "separator",
                         self.left_front_action, self.left_hind_action,
                         self.right_front_action, self.right_hind_action,
+                        "separator",
                         self.previous_contact_action, self.next_contact_action,
+                        "separator",
                         self.remove_label_action, self.invalid_contact_action, self.undo_label_action]
 
         for action in self.actions:
-            #action.setShortcutContext(Qt.WindowShortcut)
-            self.toolbar.addAction(action)
+            if action == "separator":
+                self.toolbar.addSeparator()
+            else:
+                self.toolbar.addAction(action)
 
 

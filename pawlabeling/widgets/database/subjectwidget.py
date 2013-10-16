@@ -23,7 +23,7 @@ class SubjectWidget(QtGui.QWidget):
         #self.subject_tree.setMinimumWidth(300)
         #self.subject_tree.setMaximumWidth(400)
         self.subject_tree.setColumnCount(3)
-        self.subject_tree.setHeaderLabels(["First Name", "Last Name", "Birthday"])
+        self.subject_tree.setHeaderLabels(["First Name", "Last Name", "Mass"])
 
         self.subject_tree.itemActivated.connect(self.put_subject)
 
@@ -137,7 +137,7 @@ class SubjectWidget(QtGui.QWidget):
             rootItem = QtGui.QTreeWidgetItem(self.subject_tree)
             rootItem.setText(0, subject.first_name)
             rootItem.setText(1, subject.last_name)
-            rootItem.setText(2, subject.birthday)
+            rootItem.setText(2, str(subject.mass))  # Note 1.0 is the default value, sorry!
 
         # Select the first subject
         item = self.subject_tree.topLevelItem(0)
