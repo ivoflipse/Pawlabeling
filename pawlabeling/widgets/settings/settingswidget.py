@@ -102,6 +102,11 @@ class SettingsWidget(QtGui.QWidget):
         self.plate = QtGui.QComboBox()
         self.update_plates()
 
+        self.frequency_label = QtGui.QLabel("Frequency")
+        self.frequency = QtGui.QComboBox(self)
+        for frequency in ["100", "125", "150", "200", "250", "500"]:
+            self.frequency.addItem(frequency)
+
         self.update_fields()
 
         self.widgets = [["measurement_folder_label", "measurement_folder", "measurement_folder_button"],
@@ -124,7 +129,8 @@ class SettingsWidget(QtGui.QWidget):
                         ["tracking_temporal_label", "tracking_temporal", "",
                          "tracking_spatial_label", "tracking_spatial", "",
                          "tracking_surface_label", "tracking_surface", ""],
-                        ["plate_label", "plate"],
+                        ["plate_label", "plate", "",
+                         "frequency_label", "frequency"],
 
         ]
 
@@ -185,6 +191,11 @@ class SettingsWidget(QtGui.QWidget):
         self.tracking_temporal.setText(str(self.settings.tracking_temporal()))
         self.tracking_spatial.setText(str(self.settings.tracking_spatial()))
         self.tracking_surface.setText(str(self.settings.tracking_surface()))
+
+        # Check the settings for which plate to set as default
+        frequency = self.settings.frequency()
+        index = self.frequency.findText(frequency)
+        self.frequency.setCurrentIndex(index)
 
     def save_settings(self, evt=None):
         """

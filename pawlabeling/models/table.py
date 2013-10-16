@@ -126,7 +126,15 @@ class SubjectsTable(Table):
         return group
 
     def get_new_id(self):
-        return "{}_{}".format(self.table_name, len(self.subjects_table))
+        subjects = self.get_subjects()
+        max_id = len(subjects)
+        for subject in subjects:
+            subject_id = int(subject["subject_id"].split("_")[-1])
+            if subject_id > max_id:
+                max_id = subject_id
+
+        max_id += 1
+        return "{}_{}".format(self.table_name, max_id)
 
     def get_subject(self, plate="", last_name="", birthday=""):
         return self.search_table(self.subjects_table, first_name=plate,

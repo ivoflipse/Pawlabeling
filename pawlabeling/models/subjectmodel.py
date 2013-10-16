@@ -42,10 +42,13 @@ class Subjects(object):
 
     def get_subjects(self):
         subjects = {}
-        for subject in self.subjects_table.get_subjects():
+        for index, subject in enumerate(self.subjects_table.get_subjects()):
             subject_object = Subject()
             subject_object.restore(subject)
+            # Because of this, you will never see two subjects with the same subject_id
+            # Even if they do exist (which shouldn't...)
             subjects[subject_object.subject_id] = subject_object
+            #subjects[index] = subject_object
         return subjects
 
 

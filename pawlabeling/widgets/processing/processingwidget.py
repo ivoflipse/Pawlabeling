@@ -114,23 +114,24 @@ class ProcessingWidget(QtGui.QWidget):
             for contact in self.model.contacts[measurement.measurement_name]:
                 contact_item = QtGui.QTreeWidgetItem(measurement_item)
                 contact_item.setText(0, str(contact.contact_id))
-                if contact.invalid:
-                    contact_item.setText(1, "Invalid")
-                else:
-                    contact_item.setText(1, self.contact_dict[contact.contact_label])
+                contact_item.setText(1, self.contact_dict[contact.contact_label])
                 contact_item.setText(2, str(contact.length))  # Sets the frame count
                 max_surface = np.max(contact.surface_over_time)
                 contact_item.setText(3, str(int(max_surface)))
                 max_force = np.max(contact.force_over_time)
                 contact_item.setText(4, str(int(max_force)))
+                contact_item.setText(3, str(int(max_surface)))
+                max_force = np.max(contact.force_over_time)
+                contact_item.setText(4, str(int(max_force)))
+
+                if contact.invalid:
+                    color = self.colors[-3]
+                else:
+                    color = self.colors[contact.contact_label]
+                color.setAlphaF(0.5)
 
                 for idx in xrange(contact_item.columnCount()):
-                    color = self.colors[contact.contact_label]
-                    color.setAlphaF(0.5)
-                    # If a contact is filtered, mark it as invalid
-                    if contact.invalid:
-                        color = self.colors[-3]
-                    contact_item.setBackground(idx, color)
+                   contact_item.setBackground(idx, color)
 
             # If several contacts have been labeled, marked the measurement
             if measurement.processed:
@@ -188,21 +189,13 @@ class ProcessingWidget(QtGui.QWidget):
             if contact.contact_id == contact_id:
                 self.model.current_contact_index = index
 
-        self.set_current_contact_label()
         self.update_current_contact()
-
-    # TODO Perhaps this should loop over all measurements, to make sure none are out of line
-    def set_current_contact_label(self):
-        for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
-            # Switch between the current selected contact
-            if contact.contact_label == -1:
-                contact.contact_label = -2
-            if index == self.model.current_contact_index:
-                contact.contact_label = -1
 
     def get_current_measurement_item(self):
         return self.measurement_tree.topLevelItem(self.model.current_measurement_index)
 
+    # TODO Can't this function call update_measurements_tree or something?
+    # Or rather, make one function that refreshes the tree and call that from both functions
     def update_current_contact(self):
         if (self.model.current_contact_index <= len(self.model.contacts[self.model.measurement_name]) and
                     len(self.model.contacts[self.model.measurement_name]) > 0):
@@ -210,15 +203,18 @@ class ProcessingWidget(QtGui.QWidget):
             # Get the currently selected measurement
             measurement_item = self.get_current_measurement_item()
             for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
-                contact_label = contact.contact_label
                 # Get the current row from the tree
                 contact_item = measurement_item.child(index)
-                contact_item.setText(1, self.contact_dict[contact_label])
+                contact_item.setText(1, self.contact_dict[contact.contact_label])
 
-                # Update the colors in the contact tree
+                if contact.invalid:
+                    color = self.colors[-3]
+                else:
+                    color = self.colors[contact.contact_label]
+                color.setAlphaF(0.5)
+
                 for idx in xrange(contact_item.columnCount()):
-                    if contact_label >= 0:
-                        contact_item.setBackground(idx, self.colors[contact_label])
+                    contact_item.setBackground(idx, color)
 
             self.model.update_current_contact()
 
@@ -234,7 +230,7 @@ class ProcessingWidget(QtGui.QWidget):
 
         # Remove the label
         current_contact = self.get_current_contact()
-        current_contact.contact_label = -1
+        current_contact.contact_label = -2
         # Update the screen
         self.update_current_contact()
 
@@ -295,8 +291,7 @@ class ProcessingWidget(QtGui.QWidget):
             return
 
         self.model.current_contact_index -= 1
-        current_contact = self.get_current_contact()
-        self.set_current_contact_label()
+        self.get_current_contact()
 
         measurement_item = self.get_current_measurement_item()
         contact_item = measurement_item.child(self.model.current_contact_index)
@@ -313,8 +308,7 @@ class ProcessingWidget(QtGui.QWidget):
 
 
         self.model.current_contact_index += 1
-        current_contact = self.get_current_contact()
-        self.set_current_contact_label()
+        self.get_current_contact()
 
         measurement_item = self.get_current_measurement_item()
         contact_item = measurement_item.child(self.model.current_contact_index)

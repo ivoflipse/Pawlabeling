@@ -29,7 +29,7 @@ class Settings(QtCore.QSettings):
 
         # Lookup table for all the different settings
         self.lookup_table = {
-            "plate": ["plate"],
+            "plate": ["plate", "frequency"],
             "folders": ["measurement_folder", "database_file", "database_folder"],
             "keyboard_shortcuts": ["left_front", "left_hind", "right_front", "right_hind",
                                    "previous_contact", "next_contact", "invalid_valid", "remove_label"],
@@ -78,6 +78,15 @@ class Settings(QtCore.QSettings):
         default_value = ""
         setting_value = self.value(key)
         if isinstance(setting_value, str) or isinstance(setting_value, unicode):
+            return setting_value
+        else:
+            return default_value
+
+    def frequency(self):
+        key = "plate/frequency"
+        default_value = "100"
+        setting_value = self.value(key)
+        if setting_value:
             return setting_value
         else:
             return default_value
@@ -401,6 +410,7 @@ class Settings(QtCore.QSettings):
     def read_settings(self):
         self.settings = defaultdict()
         self.settings["plate/plate"] = self.plate()
+        self.settings["plate/frequency"] = self.frequency()
 
         self.settings["keyboard_shortcuts/left_front"] = self.left_front()
         self.settings["keyboard_shortcuts/left_hind"] = self.left_hind()

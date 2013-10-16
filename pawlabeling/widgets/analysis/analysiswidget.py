@@ -124,13 +124,15 @@ class AnalysisWidget(QtGui.QTabWidget):
                 max_force = np.max(contact.force_over_time)
                 contact_item.setText(4, str(int(max_force)))
 
-                for idx in xrange(contact_item.columnCount()):
+                if contact.invalid:
+                    color = self.colors[-3]
+                elif self.outlier_toggle and contact.filtered:
+                    color = self.colors[-3]
+                else:
                     color = self.colors[contact.contact_label]
-                    # If a contact is filtered, mark it as invalid
-                    if self.outlier_toggle:
-                        if contact.filtered:
-                            color = self.colors[-3]
-                    color.setAlphaF(0.5)
+                color.setAlphaF(0.5)
+
+                for idx in xrange(contact_item.columnCount()):
                     contact_item.setBackground(idx, color)
 
             # If several contacts have been labeled, marked the measurement

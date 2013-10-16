@@ -67,4 +67,4 @@ $RECYCLE.BIN/
 .idea/workspace.xml
 
 # Project specific files #
-pawlabeling/settings/settings.ini
+*.ini

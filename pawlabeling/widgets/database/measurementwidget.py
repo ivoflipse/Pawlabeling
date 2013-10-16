@@ -48,12 +48,19 @@ class MeasurementWidget(QtGui.QWidget):
         self.plate_label = QtGui.QLabel("Plate")
         self.plate = QtGui.QComboBox(self)
         self.plate.activated.connect(self.change_plate)
+        self.plate_label = QtGui.QLabel("Plate")
+        self.plate = QtGui.QComboBox(self)
+        self.plate.activated.connect(self.change_plate)
 
         self.frequency_label = QtGui.QLabel("Frequency")
         self.frequency = QtGui.QComboBox(self)
         for frequency in ["100", "125", "150", "200", "250", "500"]:
             self.frequency.addItem(frequency)
         self.frequency.activated.connect(self.change_frequency)
+        # Check the settings for which plate to set as default
+        frequency = self.settings.frequency()
+        index = self.frequency.findText(frequency)
+        self.frequency.setCurrentIndex(index)
 
         self.plate_layout = QtGui.QHBoxLayout()
         self.plate_layout.addWidget(self.plate_label)
@@ -69,6 +76,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.files_tree.setHeaderLabels(["","Name", "Size", "Date"])
         self.files_tree.header().resizeSection(0, 200)
         self.files_tree.setColumnWidth(0, 40)
+        self.files_tree.setColumnWidth(1, 130)
         self.files_tree.itemActivated.connect(self.select_file)
 
         self.measurement_tree_label = QtGui.QLabel("Measurements")
@@ -235,6 +243,16 @@ class MeasurementWidget(QtGui.QWidget):
         measurement_folder = self.settings.measurement_folder()
         self.measurement_folder.setText(measurement_folder)
 
+    def move_folder_up(self):
+        measurement_folder = self.measurement_folder.text()
+        parent_directory = os.path.dirname(measurement_folder)
+        self.measurement_folder.setText(parent_directory)
+
+    def reset_measurement_folder(self):
+        measurement_folder = self.settings.measurement_folder()
+        self.measurement_folder.setText(measurement_folder)
+
+    # TODO Check whether there's even a session selected at the moment...
     def add_measurements(self, evt=None):
         # All measurements from the same session must have the same brands/model/frequency
         plate_text = self.plate.itemText(self.plate.currentIndex())

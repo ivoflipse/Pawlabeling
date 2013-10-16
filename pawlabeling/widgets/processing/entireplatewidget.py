@@ -160,11 +160,11 @@ class EntirePlateWidget(QtGui.QWidget):
 
         self.clear_bounding_box()
         for index, contact in enumerate(self.model.contacts[self.measurement_name]):
-            self.draw_bounding_box(contact)
-            # TODO If this contact is the current contact, its label should be -1
+            self.draw_bounding_box(contact, current_contact=False)
             if self.model.current_contact_index == index:
-                self.draw_bounding_box(contact)
+                self.draw_bounding_box(contact, current_contact=True)
         self.resizeEvent()
+
 
     def change_frame(self, frame):
         # Set the frame
@@ -202,15 +202,16 @@ class EntirePlateWidget(QtGui.QWidget):
             self.scene.removeItem(line)
         self.gait_lines = []
 
-    def draw_bounding_box(self, contact):
-        color = self.colors[contact.contact_label]
-        self.bounding_box_pen = QtGui.QPen(color)
-        self.bounding_box_pen.setWidth(3)
-
-        if contact.contact_label == -1:
+    def draw_bounding_box(self, contact, current_contact):
+        if current_contact:
             current_contact = 0.5
+            color = self.colors[-1]
         else:
             current_contact = 0
+            color = self.colors[contact.contact_label]
+
+        self.bounding_box_pen = QtGui.QPen(color)
+        self.bounding_box_pen.setWidth(3)
 
         polygon = QtGui.QPolygonF(
             [QtCore.QPointF((contact.min_x - current_contact) * self.degree,
