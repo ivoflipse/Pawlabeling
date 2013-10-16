@@ -84,7 +84,11 @@ class SessionWidget(QtGui.QWidget):
         current_item = self.session_tree.currentItem()
         index = self.session_tree.indexFromItem(current_item).row()
         session = self.sessions[index]
-        self.model.delete_session(session=session)
+        message = "Are you sure you want to delete session: {}?".format(session.session_name)
+        self.dialog = gui.Dialog(message=message, title="Delete session?", parent=self)
+        response = self.dialog.exec_()
+        if response:
+            self.model.delete_session(session=session)
 
     def get_session_fields(self):
         session = {}

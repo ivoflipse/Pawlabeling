@@ -5,6 +5,7 @@ from pubsub import pub
 from pawlabeling.functions import io, gui
 from pawlabeling.settings import settings
 from pawlabeling.models import model
+from pawlabeling.functions import gui
 
 
 class SubjectWidget(QtGui.QWidget):
@@ -97,7 +98,13 @@ class SubjectWidget(QtGui.QWidget):
         current_item = self.subject_tree.currentItem()
         index = self.subject_tree.indexFromItem(current_item).row()
         subject = self.subjects[index]
-        self.model.delete_subject(subject=subject)
+        message = "Are you sure you want to delete subject: {} {}?".format(subject.first_name, subject.last_name)
+
+        self.dialog = gui.Dialog(message=message, title="Delete subject?", parent=self)
+        response = self.dialog.exec_()
+        if response:
+            self.model.delete_subject(subject=subject)
+
 
     def get_subject_fields(self):
         # TODO Check here if the required fields have been entered

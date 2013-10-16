@@ -66,6 +66,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.message_box = QtGui.QMessageBox()
 
+
         self.tab_widget = QtGui.QTabWidget(self)
         self.tab_widget.addTab(self.database_widget, "Database")
         self.tab_widget.addTab(self.processing_widget, "Processing")

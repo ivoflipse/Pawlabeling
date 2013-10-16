@@ -116,7 +116,11 @@ class MeasurementWidget(QtGui.QWidget):
         current_item = self.measurement_tree.currentItem()
         index = self.measurement_tree.indexFromItem(current_item).row()
         measurement = self.measurements[index]
-        self.model.delete_measurement(measurement=measurement)
+        message = "Are you sure you want to delete measurement: {}?".format(measurement.measurement_name)
+        self.dialog = gui.Dialog(message=message, title="Delete measurement?", parent=self)
+        response = self.dialog.exec_()
+        if response:
+            self.model.delete_measurement(measurement=measurement)
 
     def update_plates(self):
         # This sorts the plates by the number in their plate_id
