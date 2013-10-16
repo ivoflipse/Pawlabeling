@@ -4,11 +4,12 @@ from PySide.QtCore import Qt
 from pubsub import pub
 
 class TreeModel(QtCore.QAbstractItemModel):
-    def __init__(self, parent=None):
+    def __init__(self, columnCount, parent=None):
         super(TreeModel, self).__init__(parent)
         self.parent = parent
-        self._items = {}
+        self._items = []
         self._children = []
+        self._columnCount = columnCount
 
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
@@ -25,7 +26,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             return True
         return False
 
-    def index(self, row, column, parent):
+    def index(self, row, column, parent=QtCore.QModelIndex()):
         if not parent.isValid():
             return self.createIndex(row, column, self._items[row])
         parentNode = parent.internalPointer()
@@ -45,11 +46,11 @@ class TreeModel(QtCore.QAbstractItemModel):
             return self.parent.children.index(self)
         return 0
 
-    def rowCount(self):
+    def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self._items)
 
     def columnCount(self):
-        return len(self._items)
+        return self._columnCount
 
     def appendChild(self, items):
         self._children.append(TreeModel(items=items, parent=self))
@@ -68,7 +69,7 @@ class TreeModel(QtCore.QAbstractItemModel):
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEditable | Qt.ItemIsEnabled
 
-    def removeRows(self, row, count, parent = Qt.QModelIndex()):
+    def removeRows(self, row, count, parent = QtCore.QModelIndex()):
         if row < 0 or row > len(self._items):
             return
 
@@ -81,10 +82,11 @@ class TreeModel(QtCore.QAbstractItemModel):
         self.endRemoveRows()
 
     def addItem(self, item):
-        self.beginInsertRows(Qt.QModelIndex(), len(self._items), len(self._items))
+        print item
+        self.beginInsertRows(QtCore.QModelIndex(), len(self._items), len(self._items))
         self._items.append(str(item))
         self.endInsertRows()
 
     def reset(self):
-        self._items = {}
+        self._items = []
         self._children = []
