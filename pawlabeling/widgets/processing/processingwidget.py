@@ -63,6 +63,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
         pub.subscribe(self.put_measurement, "put_measurement")
+        pub.subscribe(self.put_contact, "put_contact")
         pub.subscribe(self.changed_settings, "changed_settings")
 
     def put_subject(self):
@@ -74,6 +75,9 @@ class ProcessingWidget(QtGui.QWidget):
 
     def put_measurement(self):
         self.measurement_name_label.setText("Measurement name: {}".format(self.model.measurement.measurement_name))
+
+    def put_contact(self):
+        self.update_current_contact()
 
     def undo_label(self):
         self.previous_contact()
@@ -97,15 +101,11 @@ class ProcessingWidget(QtGui.QWidget):
 
         current_contact = self.get_current_contact()
         current_contact.invalid = not current_contact.invalid
-        self.get_current_contact()
         # Update the screen
         self.update_current_contact()
 
-    def get_current_measurement_item(self):
-        return self.measurement_tree.topLevelItem(self.model.current_measurement_index)
-
-    def get_current_contact(self):
-        current_contact = self.model.contacts[self.model.measurement_name][self.model.current_contact_index]
+    def check_invalid(self):
+        current_contact = self.get_current_contact()
         # Toggle the button if its invalid
         if current_contact.invalid:
             if not self.invalid_contact_action.isChecked():
@@ -113,6 +113,9 @@ class ProcessingWidget(QtGui.QWidget):
         else:
             if self.invalid_contact_action.isChecked():
                 self.invalid_contact_action.toggle()
+
+    def get_current_contact(self):
+        current_contact = self.model.contacts[self.model.measurement_name][self.model.current_contact_index]
         return current_contact
 
     def select_left_front(self):
@@ -141,6 +144,32 @@ class ProcessingWidget(QtGui.QWidget):
         """
         return True if self.model.contacts[self.model.measurement_name] else False
 
+    # TODO Can't this function call update_measurements_tree or something?
+    # Or rather, make one function that refreshes the tree and call that from both functions
+    def update_current_contact(self):
+        if (self.model.current_contact_index <= len(self.model.contacts[self.model.measurement_name]) and
+                    len(self.model.contacts[self.model.measurement_name]) > 0):
+
+            # Get the currently selected measurement
+            measurement_item = self.measurement_tree.get_current_measurement_item()
+            for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
+                # Get the current row from the tree
+                contact_item = measurement_item.child(index)
+                contact_item.setText(1, self.contact_dict[contact.contact_label])
+
+                if contact.invalid:
+                    color = self.colors[-3]
+                else:
+                    color = self.colors[contact.contact_label]
+                color.setAlphaF(0.5)
+
+                for idx in xrange(contact_item.columnCount()):
+                    contact_item.setBackground(idx, color)
+
+            self.check_invalid()
+            self.model.update_current_contact()
+            self.measurement_tree.update_current_contact()
+
     def previous_contact(self):
         if not self.contacts_available():
             return
@@ -150,11 +179,6 @@ class ProcessingWidget(QtGui.QWidget):
             return
 
         self.model.current_contact_index -= 1
-        self.get_current_contact()
-
-        measurement_item = self.get_current_measurement_item()
-        contact_item = measurement_item.child(self.model.current_contact_index)
-        self.measurement_tree.setCurrentItem(contact_item)
         self.update_current_contact()
 
     def next_contact(self):
@@ -167,11 +191,7 @@ class ProcessingWidget(QtGui.QWidget):
 
 
         self.model.current_contact_index += 1
-        self.get_current_contact()
-
-        measurement_item = self.get_current_measurement_item()
-        contact_item = measurement_item.child(self.model.current_contact_index)
-        self.measurement_tree.setCurrentItem(contact_item)
+        self.measurement_tree.update_current_contact()
         self.update_current_contact()
 
     def track_contacts(self, event=None):

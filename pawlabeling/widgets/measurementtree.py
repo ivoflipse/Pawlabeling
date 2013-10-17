@@ -86,6 +86,11 @@ class MeasurementTree(QtGui.QWidget):
         measurement_item = self.get_current_measurement_item()
         self.measurement_tree.setCurrentItem(measurement_item, True)
 
+    def update_current_contact(self):
+        measurement_item = self.get_current_measurement_item()
+        contact_item = measurement_item.child(self.model.current_contact_index)
+        self.measurement_tree.setCurrentItem(contact_item)
+
     def item_activated(self):
         # Check if the tree aint empty!
         if not self.measurement_tree.topLevelItemCount():
@@ -121,37 +126,17 @@ class MeasurementTree(QtGui.QWidget):
         self.put_measurement()
         # Now put the contact
         contact_id = int(current_item.text(0))  # Convert the unicode to int
-        self.model.put_contact(contact_id=contact_id)
 
         for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
             if contact.contact_id == contact_id:
                 self.model.current_contact_index = index
 
-        self.update_current_contact()
+        self.model.put_contact(contact_id=contact_id)
 
-    # TODO Can't this function call update_measurements_tree or something?
-    # Or rather, make one function that refreshes the tree and call that from both functions
-    def update_current_contact(self):
-        if (self.model.current_contact_index <= len(self.model.contacts[self.model.measurement_name]) and
-                    len(self.model.contacts[self.model.measurement_name]) > 0):
+    def get_current_measurement_item(self):
+        return self.measurement_tree.topLevelItem(self.model.current_measurement_index)
 
-            # Get the currently selected measurement
-            measurement_item = self.get_current_measurement_item()
-            for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
-                # Get the current row from the tree
-                contact_item = measurement_item.child(index)
-                contact_item.setText(1, self.contact_dict[contact.contact_label])
 
-                if contact.invalid:
-                    color = self.colors[-3]
-                else:
-                    color = self.colors[contact.contact_label]
-                color.setAlphaF(0.5)
-
-                for idx in xrange(contact_item.columnCount()):
-                    contact_item.setBackground(idx, color)
-
-            self.model.update_current_contact()
 
 instances = []
 
