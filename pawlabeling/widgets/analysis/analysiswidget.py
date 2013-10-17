@@ -29,7 +29,7 @@ class AnalysisWidget(QtGui.QTabWidget):
 
         self.toolbar = gui.Toolbar(self)
 
-        self.measurement_tree = measurementtree.get_measurement_tree()
+        self.measurement_tree = measurementtree.MeasurementTree()
         self.results_widget = resultswidget.ResultsWidget(self)
 
         # Create a slider

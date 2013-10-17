@@ -97,7 +97,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.tab_widget.currentIndex() == 0:
             pass
         elif self.tab_widget.currentIndex() == 1:
-            self.processing_widget.measurement_tree.put_measurement()
+            self.processing_widget.measurement_tree.select_initial_measurement()
         elif self.tab_widget.currentIndex() == 2:
             self.analysis_widget.measurement_tree.select_initial_measurement()
             # Calculate the results if it hasn't been done already
