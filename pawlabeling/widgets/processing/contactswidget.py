@@ -148,7 +148,7 @@ class ContactWidget(QtGui.QWidget):
         self.average_data = np.zeros((self.mx, self.my, self.mz))
 
         self.scene = QtGui.QGraphicsScene(self)
-        self.view = QtGui.QGraphicsView(self.scene)
+        self.view = ContactView(contact_label=self.contact_label, parent=self.scene)
         self.view.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.SmoothPixmapTransform)
         self.view.setViewportUpdateMode(self.view.FullViewportUpdate)
         self.image = QtGui.QGraphicsPixmapItem()
@@ -243,3 +243,13 @@ class ContactWidget(QtGui.QWidget):
             self.image.setTransform(QtGui.QTransform.fromScale(ratio, ratio), True)
             self.view.setSceneRect(self.view.rect())
             self.view.centerOn(self.image)
+
+
+class ContactView(QtGui.QGraphicsView):
+    def __init__(self, contact_label, parent=None):
+        super(ContactView, self).__init__(parent)
+        self.contact_label = contact_label
+        self.parent = parent
+
+    def mouseDoubleClickEvent(self, event):
+        pub.sendMessage("select_contact", contact_label=self.contact_label)

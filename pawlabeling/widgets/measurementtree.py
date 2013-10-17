@@ -154,12 +154,12 @@ class MeasurementTree(QtGui.QWidget):
     def get_current_measurement_item(self):
         return self.measurement_tree.topLevelItem(self.model.current_measurement_index)
 
-instances = []
-
-# This function makes sure only one instance of the measurement tree is created
-# that way it can be shared between different widgets
-def get_measurement_tree():
-    if not instances:
-        measurement_tree = MeasurementTree()
-        instances.append(measurement_tree)
-    return instances[0]
+#instances = []
+#
+## This function makes sure only one instance of the measurement tree is created
+## that way it can be shared between different widgets
+#def get_measurement_tree():
+#    if not instances:
+#        measurement_tree = MeasurementTree()
+#        instances.append(measurement_tree)
+#    return instances[0]

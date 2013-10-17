@@ -38,7 +38,7 @@ class ProcessingWidget(QtGui.QWidget):
         # Create all the toolbar actions
         self.create_toolbar_actions()
 
-        self.measurement_tree = measurementtree.get_measurement_tree()
+        self.measurement_tree = measurementtree.MeasurementTree()
 
         self.entire_plate_widget = entireplatewidget.EntirePlateWidget(self)
         self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
@@ -54,7 +54,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.vertical_layout.addWidget(self.measurement_tree)
         self.horizontal_layout = QtGui.QHBoxLayout()
         self.horizontal_layout.addLayout(self.vertical_layout)
-        self.horizontal_layout.addLayout(self.layout)
+        self.horizontal_layout.addLayout(self.layout, stretch=1)
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.toolbar)
         self.main_layout.addLayout(self.horizontal_layout)
@@ -65,6 +65,7 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.put_contact, "put_contact")
         pub.subscribe(self.changed_settings, "changed_settings")
+        pub.subscribe(self.select_contact, "select_contact")
 
     def put_subject(self):
         subject_name = "{} {}".format(self.model.subject.first_name, self.model.subject.last_name)
@@ -118,6 +119,13 @@ class ProcessingWidget(QtGui.QWidget):
         current_contact = self.model.contacts[self.model.measurement_name][self.model.current_contact_index]
         return current_contact
 
+    def select_contact(self, contact_label):
+        assert -1 < contact_label < 4
+        labels = [self.select_left_front, self.select_left_hind,
+                  self.select_right_front, self.select_right_hind]
+        # Call the respective function
+        labels[contact_label]()
+
     def select_left_front(self):
         current_contact = self.get_current_contact()
         current_contact.contact_label = 0
@@ -149,7 +157,6 @@ class ProcessingWidget(QtGui.QWidget):
     def update_current_contact(self):
         if (self.model.current_contact_index <= len(self.model.contacts[self.model.measurement_name]) and
                     len(self.model.contacts[self.model.measurement_name]) > 0):
-
             # Get the currently selected measurement
             measurement_item = self.measurement_tree.get_current_measurement_item()
             for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
