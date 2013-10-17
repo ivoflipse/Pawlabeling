@@ -4,9 +4,9 @@ from itertools import izip
 from PySide import QtGui
 import numpy as np
 from pubsub import pub
-from pawlabeling.functions import utility, calculations
-from pawlabeling.settings import settings
-from pawlabeling.models import model
+from ...functions import utility, calculations
+from ...settings import settings
+from ...models import model
 
 
 class ContactWidgets(QtGui.QWidget):

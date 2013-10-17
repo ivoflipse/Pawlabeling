@@ -5,11 +5,11 @@ from PySide import QtGui
 from PySide.QtCore import Qt
 import numpy as np
 from pubsub import pub
-from pawlabeling.functions import gui, io
-from pawlabeling.settings import settings
-from pawlabeling.widgets.analysis import resultswidget
-from pawlabeling.models import model
-from pawlabeling.widgets import measurementtree
+from ...functions import gui, io
+from ...settings import settings
+from ...widgets.analysis import resultswidget
+from ...models import model
+from ...widgets import measurementtree
 
 class AnalysisWidget(QtGui.QTabWidget):
     def __init__(self, parent):

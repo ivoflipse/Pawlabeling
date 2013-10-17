@@ -4,9 +4,9 @@ import logging
 from collections import defaultdict
 from PySide import QtGui, QtCore
 from pubsub import pub
-from pawlabeling.settings import settings
-from pawlabeling.functions import gui
-from pawlabeling.models import model
+from ...settings import settings
+from ...functions import gui
+from ...models import model
 
 
 class SettingsWidget(QtGui.QWidget):

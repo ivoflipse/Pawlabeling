@@ -1,6 +1,6 @@
 from PySide import QtGui
 from pubsub import pub
-from pawlabeling.widgets.analysis import forceviewwidget, twodimviewwidget, pressureviewwidget, copviewwidget
+from ...widgets.analysis import forceviewwidget, twodimviewwidget, pressureviewwidget, copviewwidget
 
 class ResultsWidget(QtGui.QWidget):
     def __init__(self, parent):

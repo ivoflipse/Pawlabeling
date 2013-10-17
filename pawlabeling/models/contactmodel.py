@@ -5,9 +5,9 @@ from itertools import izip
 import numpy as np
 from pubsub import pub
 
-from pawlabeling.functions import utility, calculations, tracking
-from pawlabeling.settings import settings
-from pawlabeling.models import table
+from ..functions import utility, calculations, tracking
+from ..settings import settings
+from ..models import table
 
 #from memory_profiler import profile
 

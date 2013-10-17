@@ -3,9 +3,9 @@ from collections import defaultdict
 import numpy as np
 from PySide import QtGui
 from pubsub import pub
-from pawlabeling.functions import utility
-from pawlabeling.settings import settings
-from pawlabeling.models import model
+from ...functions import utility
+from ...settings import settings
+from ...models import model
 
 
 class TwoDimViewWidget(QtGui.QWidget):

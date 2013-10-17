@@ -2,10 +2,10 @@ import logging
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
-from pawlabeling.functions import io, gui
-from pawlabeling.settings import settings
-from pawlabeling.models import model
-from pawlabeling.functions import gui
+from ...functions import io, gui
+from ...settings import settings
+from ...models import model
+from ...functions import gui
 
 
 class SubjectWidget(QtGui.QWidget):

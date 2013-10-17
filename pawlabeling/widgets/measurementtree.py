@@ -5,8 +5,8 @@ import numpy as np
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
-from pawlabeling.models import model
-from pawlabeling.settings import settings
+from ..models import model
+from ..settings import settings
 
 class MeasurementTree(QtGui.QWidget):
     def __init__(self, parent=None):

@@ -3,8 +3,8 @@ import logging
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
-from pawlabeling.functions import io, gui
-from pawlabeling.widgets.database import subjectwidget, sessionwidget, measurementwidget
+from ...functions import io, gui
+from ...widgets.database import subjectwidget, sessionwidget, measurementwidget
 
 
 class DatabaseWidget(QtGui.QWidget):

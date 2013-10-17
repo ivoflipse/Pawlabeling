@@ -2,7 +2,7 @@ from unittest import TestCase
 import os
 import numpy as np
 import logging
-from pawlabeling.functions import calculations, io
+from ..functions import calculations, io
 
 logger = logging.getLogger("logger")
 logger.disabled = True

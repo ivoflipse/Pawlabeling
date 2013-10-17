@@ -2,9 +2,9 @@ import logging
 import numpy as np
 from PySide import QtGui, QtCore
 from pubsub import pub
-from pawlabeling.functions import utility, calculations
-from pawlabeling.settings import settings
-from pawlabeling.models import model
+from ...functions import utility, calculations
+from ...settings import settings
+from ...models import model
 
 
 class CopViewWidget(QtGui.QWidget):

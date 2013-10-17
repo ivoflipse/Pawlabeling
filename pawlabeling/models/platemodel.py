@@ -1,6 +1,6 @@
 import logging
-from pawlabeling.models import table
-from pawlabeling.settings import settings
+from ..models import table
+from ..settings import settings
 
 
 class Plates(object):

@@ -3,9 +3,9 @@ import numpy as np
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
-from pawlabeling.functions import utility, gui
-from pawlabeling.settings import settings
-from pawlabeling.models import model
+from ...functions import utility, gui
+from ...settings import settings
+from ...models import model
 
 
 class EntirePlateWidget(QtGui.QWidget):

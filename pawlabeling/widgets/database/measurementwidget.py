@@ -5,9 +5,9 @@ import logging
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
-from pawlabeling.functions import io, gui, utility
-from pawlabeling.settings import settings
-from pawlabeling.models import model
+from ...functions import io, gui, utility
+from ...settings import settings
+from ...models import model
 
 class MeasurementWidget(QtGui.QWidget):
     def __init__(self, parent=None):

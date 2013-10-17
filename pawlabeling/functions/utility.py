@@ -4,8 +4,8 @@ from itertools import izip
 from PySide import QtGui, QtCore
 import numpy as np
 from pubsub import pub
-from pawlabeling.functions import calculations
-from pawlabeling.settings import settings
+from ..functions import calculations
+from ..settings import settings
 
 
 logger = logging.getLogger("logger")

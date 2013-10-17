@@ -1,6 +1,6 @@
-from pawlabeling.models import table
-from pawlabeling.functions import io
-from pawlabeling.settings import settings
+from ..models import table
+from ..functions import io
+from ..settings import settings
 
 class Measurements(object):
     def __init__(self, subject_id, session_id):

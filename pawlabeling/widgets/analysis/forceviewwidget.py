@@ -4,9 +4,9 @@ from PySide import QtGui
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from pubsub import pub
-from pawlabeling.functions import utility, calculations
-from pawlabeling.settings import settings
-from pawlabeling.models import model
+from ...functions import utility, calculations
+from ...settings import settings
+from ...models import model
 
 
 class ForceViewWidget(QtGui.QWidget):

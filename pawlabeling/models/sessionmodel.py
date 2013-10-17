@@ -3,9 +3,9 @@ from collections import defaultdict
 from itertools import izip
 import numpy as np
 from pubsub import pub
-from pawlabeling.models import table
-from pawlabeling.settings import settings
-from pawlabeling.functions import calculations, utility
+from ..models import table
+from ..settings import settings
+from ..functions import calculations, utility
 
 
 class Sessions(object):

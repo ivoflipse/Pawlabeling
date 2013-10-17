@@ -2,9 +2,9 @@ from collections import defaultdict
 import logging
 import numpy as np
 from pubsub import pub
-from pawlabeling.functions import utility, io, tracking, calculations
-from pawlabeling.settings import settings
-from pawlabeling.models import table, subjectmodel, sessionmodel, measurementmodel, contactmodel, platemodel
+from ..functions import utility, io, tracking, calculations
+from ..settings import settings
+from ..models import table, subjectmodel, sessionmodel, measurementmodel, contactmodel, platemodel
 #from memory_profiler import profile
 
 

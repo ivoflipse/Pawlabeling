@@ -3,8 +3,8 @@ import os
 import numpy as np
 import shutil
 import logging
-from pawlabeling.functions import io
-from pawlabeling.settings import settings
+from ..functions import io
+from ..settings import settings
 
 logger = logging.getLogger("logger")
 logger.disabled = True

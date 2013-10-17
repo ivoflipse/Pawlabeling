@@ -9,13 +9,13 @@ import matplotlib
 matplotlib.use("Qt4Agg")
 matplotlib.rcParams["backend.qt4"] ="PySide"
 
-from pawlabeling.settings import settings
-from pawlabeling.functions.qsingleapplication import QtSingleApplication
-from pawlabeling.models import model
-from pawlabeling.widgets.analysis import analysiswidget
-from pawlabeling.widgets.processing import processingwidget
-from pawlabeling.widgets.database import databasewidget
-from pawlabeling.widgets.settings import settingswidget
+from ..settings import settings
+from ..functions.qsingleapplication import QtSingleApplication
+from ..models import model
+from ..widgets.analysis import analysiswidget
+from ..widgets.processing import processingwidget
+from ..widgets.database import databasewidget
+from ..widgets.settings import settingswidget
 
 
 class MainWindow(QtGui.QMainWindow):

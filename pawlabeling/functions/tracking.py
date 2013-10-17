@@ -3,8 +3,8 @@ import cv2
 
 import numpy as np
 
-from pawlabeling.functions.utility import update_bounding_box
-from pawlabeling.settings import settings
+from ..functions.utility import update_bounding_box
+from ..settings import settings
 
 
 def closest_contact(contact1, contact2, center1, euclidean_distance):
