@@ -5,10 +5,18 @@ import numpy as np
 from PySide import QtGui, QtCore
 from PySide.QtCore import Qt
 from pubsub import pub
+from pawlabeling.models import model
+from pawlabeling.settings import settings
 
 class MeasurementTree(QtGui.QWidget):
     def __init__(self, parent=None):
         super(MeasurementTree, self).__init__(parent)
+        self.logger = logging.getLogger("logger")
+        self.model = model.model
+        self.settings = settings.settings
+        self.colors = self.settings.colors
+        self.contact_dict = self.settings.contact_dict
+
         # Create a list widget
         self.measurement_tree = QtGui.QTreeWidget(self)
         self.measurement_tree.setMaximumWidth(300)
@@ -103,7 +111,6 @@ class MeasurementTree(QtGui.QWidget):
         self.model.current_measurement_index = self.measurement_tree.indexOfTopLevelItem(current_item)
         # Notify the model to update the subject_name + measurement_name if necessary
         measurement_name = current_item.text(0)
-        self.measurement_name_label.setText("Measurement name: {}".format(measurement_name))
         self.model.put_measurement(measurement_name=measurement_name)
 
     def put_contact(self):
@@ -121,9 +128,6 @@ class MeasurementTree(QtGui.QWidget):
                 self.model.current_contact_index = index
 
         self.update_current_contact()
-
-    def get_current_measurement_item(self):
-        return self.measurement_tree.topLevelItem(self.model.current_measurement_index)
 
     # TODO Can't this function call update_measurements_tree or something?
     # Or rather, make one function that refreshes the tree and call that from both functions
@@ -149,4 +153,10 @@ class MeasurementTree(QtGui.QWidget):
 
             self.model.update_current_contact()
 
-measurement_tree = MeasurementTree()
+instances = []
+
+def get_measurement_tree():
+    if not instances:
+        measurement_tree = MeasurementTree()
+        instances.append(measurement_tree)
+    return instances[0]

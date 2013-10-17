@@ -38,7 +38,7 @@ class ProcessingWidget(QtGui.QWidget):
         # Create all the toolbar actions
         self.create_toolbar_actions()
 
-        self.measurement_tree = measurementtree.measurement_tree
+        self.measurement_tree = measurementtree.get_measurement_tree()
 
         self.entire_plate_widget = entireplatewidget.EntirePlateWidget(self)
         self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
@@ -60,16 +60,10 @@ class ProcessingWidget(QtGui.QWidget):
         self.main_layout.addLayout(self.horizontal_layout)
         self.setLayout(self.main_layout)
 
-        self.subscribe()
         pub.subscribe(self.put_subject, "put_subject")
         pub.subscribe(self.put_session, "put_session")
+        pub.subscribe(self.put_measurement, "put_measurement")
         pub.subscribe(self.changed_settings, "changed_settings")
-
-    def changed_settings(self):
-        self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
-        self.entire_plate_widget.setMaximumHeight(self.settings.entire_plate_widget_height())
-        for contact in self.contacts_widget.contacts_list:
-            contact.setMinimumHeight(self.settings.contacts_widget_height())
 
     def put_subject(self):
         subject_name = "{} {}".format(self.model.subject.first_name, self.model.subject.last_name)
@@ -77,6 +71,9 @@ class ProcessingWidget(QtGui.QWidget):
 
     def put_session(self):
         self.session_name_label.setText("Session: {}\t".format(self.model.session.session_name))
+
+    def put_measurement(self):
+        self.measurement_name_label.setText("Measurement name: {}".format(self.model.measurement.measurement_name))
 
     def undo_label(self):
         self.previous_contact()
@@ -103,6 +100,9 @@ class ProcessingWidget(QtGui.QWidget):
         self.get_current_contact()
         # Update the screen
         self.update_current_contact()
+
+    def get_current_measurement_item(self):
+        return self.measurement_tree.topLevelItem(self.model.current_measurement_index)
 
     def get_current_contact(self):
         current_contact = self.model.contacts[self.model.measurement_name][self.model.current_contact_index]
@@ -184,6 +184,11 @@ class ProcessingWidget(QtGui.QWidget):
         self.model.store_contacts()
 
     def changed_settings(self):
+        self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
+        self.entire_plate_widget.setMaximumHeight(self.settings.entire_plate_widget_height())
+        for contact in self.contacts_widget.contacts_list:
+            contact.setMinimumHeight(self.settings.contacts_widget_height())
+
         # Update all the keyboard shortcuts
         self.left_front_action.setShortcut(self.settings.left_front())
         self.left_hind_action.setShortcut(self.settings.left_hind())

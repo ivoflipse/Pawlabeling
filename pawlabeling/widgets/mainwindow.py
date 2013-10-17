@@ -95,13 +95,11 @@ class MainWindow(QtGui.QMainWindow):
         current_index = self.tab_widget.currentIndex()
         pub.sendMessage("update_statusbar", status="Changing tabs to the {} tab".format(self.tab_dict[current_index]))
         if self.tab_widget.currentIndex() == 0:
-            self.processing_widget.subscribe()
+            pass
         elif self.tab_widget.currentIndex() == 1:
-            self.processing_widget.subscribe()
-            self.processing_widget.put_measurement()
+            self.processing_widget.measurement_tree.put_measurement()
         elif self.tab_widget.currentIndex() == 2:
-            self.processing_widget.unsubscribe()
-            self.analysis_widget.select_initial_measurement()
+            self.analysis_widget.measurement_tree.select_initial_measurement()
             # Calculate the results if it hasn't been done already
             self.model.calculate_results()
         elif self.tab_widget.currentIndex() == 3:
