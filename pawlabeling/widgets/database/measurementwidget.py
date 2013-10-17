@@ -75,6 +75,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.files_tree.setColumnWidth(0, 40)
         self.files_tree.setColumnWidth(1, 130)
         self.files_tree.itemActivated.connect(self.select_file)
+        self.files_tree.setSortingEnabled(True)
 
         self.measurement_tree_label = QtGui.QLabel("Measurements")
         self.measurement_tree_label.setFont(label_font)
@@ -82,6 +83,7 @@ class MeasurementWidget(QtGui.QWidget):
         #self.measurement_tree.setMinimumWidth(300)
         self.measurement_tree.setColumnCount(1)
         self.measurement_tree.setHeaderLabels(["Name"])
+        self.measurement_tree.setSortingEnabled(True)
 
         self.measurement_layout = QtGui.QVBoxLayout()
         self.measurement_layout.addWidget(self.files_tree_label)
@@ -138,11 +140,10 @@ class MeasurementWidget(QtGui.QWidget):
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
 
-        self.measurements = {}
         for index, measurement in enumerate(self.model.measurements.values()):
-            self.measurements[index] = measurement
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree)
             measurement_item.setText(0, measurement.measurement_name)
+            measurement_item.setText(1, measurement.measurement_id)
 
             # If several contacts have been labeled, marked the measurement
             if measurement.processed:
@@ -173,10 +174,7 @@ class MeasurementWidget(QtGui.QWidget):
         if self.file_dialog.exec_():
             measurement_folder = self.file_dialog.selectedFiles()[0]
 
-        # I'm no longer overwriting the settings, that wasn't very user friendly
-        #self.settings.write_value("folders/measurement_folder", measurement_folder)
         self.model.measurement_folder = measurement_folder
-
         self.measurement_folder.setText(measurement_folder)
         # Update the files tree
         self.update_files_tree()
@@ -191,21 +189,11 @@ class MeasurementWidget(QtGui.QWidget):
         self.files_tree.clear()
 
         self.file_paths = io.get_file_paths(measurement_folder=self.model.measurement_folder)
-        sort_list = []
         for file_name, file_path in self.file_paths.iteritems():
-            if not os.path.isfile(file_path):
-                sort_list.append((0, file_name))
-            else:
-                sort_list.append((1, file_name))
-
-        # I want it sorted by type and name
-        sort_list = sorted(sort_list, key=lambda x: (x[0], x[1]))
-
-        for file_type, file_name in sort_list:
             file_path = self.file_paths[file_name]
             root_item = QtGui.QTreeWidgetItem(self.files_tree)
             # If its not a measurement, give it a directory icon
-            if not file_type:
+            if not os.path.isfile(file_path):
                 root_item.setIcon(0, QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                               "../images/folder.png")))
             else:
@@ -221,6 +209,7 @@ class MeasurementWidget(QtGui.QWidget):
             creation_date = time.strftime("%Y-%m-%d", time.gmtime(creation_date))
             # DAMNIT Why can't I use a locale on this?
             root_item.setText(3, creation_date)
+            root_item.setText(4, file_path)
 
     def select_file(self):
          # Check if the tree aint empty!
@@ -228,21 +217,11 @@ class MeasurementWidget(QtGui.QWidget):
             return
 
         current_item = self.files_tree.currentItem()
-        file_name = current_item.text(1)
-        file_path = self.file_paths[file_name]
+        file_path = current_item.text(4)
         # Check if its a directory
         if os.path.isdir(file_path):
             # Update the text in self.measurement_folder
             self.measurement_folder.setText(file_path)
-
-    def move_folder_up(self):
-        measurement_folder = self.measurement_folder.text()
-        parent_directory = os.path.dirname(measurement_folder)
-        self.measurement_folder.setText(parent_directory)
-
-    def reset_measurement_folder(self):
-        measurement_folder = self.settings.measurement_folder()
-        self.measurement_folder.setText(measurement_folder)
 
     def move_folder_up(self):
         measurement_folder = self.measurement_folder.text()

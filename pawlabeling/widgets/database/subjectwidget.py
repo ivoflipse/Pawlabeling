@@ -96,8 +96,8 @@ class SubjectWidget(QtGui.QWidget):
 
     def delete_subject(self):
         current_item = self.subject_tree.currentItem()
-        index = self.subject_tree.indexFromItem(current_item).row()
-        subject = self.subjects[index]
+        subject_id = current_item.text(3)
+        subject = self.model.subjects[subject_id]
         message = "Are you sure you want to delete subject: {} {}?".format(subject.first_name, subject.last_name)
 
         self.dialog = gui.Dialog(message=message, title="Delete subject?", parent=self)
@@ -131,17 +131,12 @@ class SubjectWidget(QtGui.QWidget):
     def update_subjects_tree(self):
         # Clear any existing contacts
         self.subject_tree.clear()
-        self.subjects = {}
 
         if not self.model.subjects.values():
             return
 
-        # TODO Sort this however you want, I can always retrieve this data anyway
         # Add the subjects to the subject_tree
-        subject_list = sorted(self.model.subjects.values(), key=lambda subject: (subject.first_name, subject.last_name))
-
-        for index, subject in enumerate(subject_list):
-            self.subjects[index] = subject
+        for index, subject in enumerate(self.model.subjects.values()):
             rootItem = QtGui.QTreeWidgetItem(self.subject_tree)
             rootItem.setText(0, subject.first_name)
             rootItem.setText(1, subject.last_name)

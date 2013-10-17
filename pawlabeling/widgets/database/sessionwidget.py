@@ -39,6 +39,7 @@ class SessionWidget(QtGui.QWidget):
         #self.session_tree.setMaximumWidth(400)
         self.session_tree.setColumnCount(3)
         self.session_tree.setHeaderLabels(["Name", "Date", "Time"])
+        self.session_tree.setSortingEnabled(True)
 
         self.session_tree.itemActivated.connect(self.put_session)
 
@@ -82,8 +83,8 @@ class SessionWidget(QtGui.QWidget):
 
     def delete_session(self):
         current_item = self.session_tree.currentItem()
-        index = self.session_tree.indexFromItem(current_item).row()
-        session = self.sessions[index]
+        session_id = current_item.text(3)
+        session = self.model.sessions[session_id]
         message = "Are you sure you want to delete session: {}?".format(session.session_name)
         self.dialog = gui.Dialog(message=message, title="Delete session?", parent=self)
         response = self.dialog.exec_()
@@ -100,29 +101,23 @@ class SessionWidget(QtGui.QWidget):
         return session
 
     def put_session(self, evt=None):
-        #print "sessionwidget.put_session"
         current_item = self.session_tree.currentItem()
-        # Get the index
-        index = self.session_tree.indexFromItem(current_item).row()
-        session = self.sessions[index]
+        session_id = current_item.text(3)
+        session = self.model.sessions[session_id]
         self.model.put_session(session=session)
 
     def update_sessions_tree(self):
         self.session_tree.clear()
-        self.sessions = {}
 
         if not self.model.sessions.values():
             return
 
-        session_list = sorted(self.model.sessions.values(),
-                              key=lambda session: (session.session_date, session.session_time))
-
         for index, session in enumerate(self.model.sessions.values()):
-            self.sessions[index] = session
             rootItem = QtGui.QTreeWidgetItem(self.session_tree)
             rootItem.setText(0, session.session_name)
             rootItem.setText(1, session.session_date)
             rootItem.setText(2, session.session_time)
+            rootItem.setText(3, session.session_id)
 
         # Select the first item
         item = self.session_tree.topLevelItem(0)
