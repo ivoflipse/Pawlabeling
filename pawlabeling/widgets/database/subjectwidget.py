@@ -21,11 +21,12 @@ class SubjectWidget(QtGui.QWidget):
         self.subject_tree_label = QtGui.QLabel("Subjects")
         self.subject_tree_label.setFont(label_font)
         self.subject_tree = QtGui.QTreeWidget(self)
-        self.subject_tree.setMinimumWidth(300)
-        self.subject_tree.setMaximumWidth(400)
+        #self.subject_tree.setMinimumWidth(300)
+        #self.subject_tree.setMaximumWidth(400)
         self.subject_tree.setColumnCount(3)
         self.subject_tree.setHeaderLabels(["First Name", "Last Name", "Mass"])
         self.subject_tree.itemActivated.connect(self.put_subject)
+        self.subject_tree.setSortingEnabled(True)
 
         self.subject_label = QtGui.QLabel("Subject")
         self.subject_label.setFont(label_font)
@@ -135,6 +136,7 @@ class SubjectWidget(QtGui.QWidget):
         if not self.model.subjects.values():
             return
 
+        # TODO Sort this however you want, I can always retrieve this data anyway
         # Add the subjects to the subject_tree
         subject_list = sorted(self.model.subjects.values(), key=lambda subject: (subject.first_name, subject.last_name))
 
@@ -144,20 +146,17 @@ class SubjectWidget(QtGui.QWidget):
             rootItem.setText(0, subject.first_name)
             rootItem.setText(1, subject.last_name)
             rootItem.setText(2, str(subject.mass))  # Note 1.0 is the default value, sorry!
+            rootItem.setText(3, subject.subject_id)
 
         # Select the first subject
         item = self.subject_tree.topLevelItem(0)
         self.subject_tree.setCurrentItem(item)
         self.put_subject()
-        self.subject_tree.clear()
 
     def put_subject(self, evt=None):
         current_item = self.subject_tree.currentItem()
-        # Get the index
-        index = self.subject_tree.indexFromItem(current_item).row()
-        subject = self.subjects[index]
-        # Should we broadcast which user is currently selected?
-        # So the model can update itself?
+        subject_id = current_item.text(3)
+        subject = self.model.subjects[subject_id]
         self.model.put_subject(subject=subject)
 
     def get_subjects(self):

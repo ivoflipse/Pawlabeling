@@ -48,9 +48,6 @@ class MeasurementWidget(QtGui.QWidget):
         self.plate_label = QtGui.QLabel("Plate")
         self.plate = QtGui.QComboBox(self)
         self.plate.activated.connect(self.change_plate)
-        self.plate_label = QtGui.QLabel("Plate")
-        self.plate = QtGui.QComboBox(self)
-        self.plate.activated.connect(self.change_plate)
 
         self.frequency_label = QtGui.QLabel("Frequency")
         self.frequency = QtGui.QComboBox(self)
