@@ -12,6 +12,7 @@ class Table(object):
         # Make this configurable
         self.table = tables.openFile(database_file, mode="a", title="Data")
         self.table_name = "table"
+        self.filters = tables.Filters(complib="blosc", complevel=9)
 
     def create_row(self, table, **kwargs):
         row = table.row
@@ -110,7 +111,7 @@ class SubjectsTable(Table):
         # Check if table has subjects table
         if 'subjects' not in self.table.root:
             self.subjects_table = self.table.createTable(where="/", name="subjects", description=SubjectsTable.Subjects,
-                                                         title="Subjects", complib="blosc", complevel=9)
+                                                         title="Subjects", filters=self.filters)
         else:
             self.subjects_table = self.table.root.subjects
 
@@ -171,10 +172,10 @@ class SessionsTable(Table):
 
         if 'sessions' not in self.subject_group:
             self.table.createTable(where=self.subject_group, name="sessions", description=SessionsTable.Sessions,
-                                   title="Sessions", complib="blosc", complevel=9)
+                                   title="Sessions", filters=self.filters)
             self.table.createTable(where=self.subject_group, name="session_labels",
                                    description=SessionsTable.SessionLabels, title="Session Labels",
-                                   complib="blosc", complevel=9)
+                                   filters=self.filters)
 
         self.sessions_table = self.subject_group.sessions
         self.column_names = self.sessions_table.colnames
@@ -232,12 +233,12 @@ class MeasurementsTable(Table):
         if 'measurements' not in self.session_group:
             self.measurements_table = self.table.createTable(where=self.session_group, name="measurements",
                                                              description=MeasurementsTable.Measurements,
-                                                             title="Measurements", complib="blosc", complevel=9)
+                                                             title="Measurements", filters=self.filters)
 
         if 'contacts' not in self.session_group:
             self.contacts_table = self.table.createTable(where=self.session_group, name="contacts",
                                                          description=SessionDataTable.Contacts,
-                                                         title="Contacts", complib="blosc", complevel=9)
+                                                         title="Contacts", filters=self.filters)
 
         self.contacts_table = self.session_group.contacts
         self.measurements_table = self.session_group.measurements
@@ -308,7 +309,7 @@ class ContactsTable(Table):
         if 'contacts' not in self.measurement_group:
             self.contacts_table = self.table.createTable(where=self.measurement_group, name="contacts",
                                                          description=ContactsTable.Contacts,
-                                                         title="Contacts", complib="blosc", complevel=9)
+                                                         title="Contacts", filters=self.filters)
 
         self.contacts_table = self.measurement_group.contacts
         self.column_names = self.contacts_table.colnames
@@ -424,7 +425,7 @@ class PlatesTable(Table):
 
         if 'plates' not in self.table.root:
             self.plates_table = self.table.createTable(where="/", name="plates", description=PlatesTable.Plates,
-                                                       title="Plates", complib="blosc", complevel=9)
+                                                       title="Plates", filters=self.filters)
         else:
             self.plates_table = self.table.root.plates
 
