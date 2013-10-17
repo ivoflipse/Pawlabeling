@@ -13,6 +13,7 @@ class Table(object):
         self.table = tables.openFile(database_file, mode="a", title="Data")
         self.table_name = "table"
         self.filters = tables.Filters(complib="blosc", complevel=9)
+        self.table.filters = self.filters
 
     def create_row(self, table, **kwargs):
         row = table.row
