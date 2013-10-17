@@ -19,9 +19,8 @@ class MeasurementTree(QtGui.QWidget):
 
         # Create a list widget
         self.measurement_tree = QtGui.QTreeWidget(self)
-        self.measurement_tree.setMaximumWidth(300)
         self.measurement_tree.setMinimumWidth(300)
-        #self.measurement_tree.setMaximumHeight(200)
+        self.measurement_tree.setMaximumWidth(300)
         self.measurement_tree.setColumnCount(5)
         self.measurement_tree.setHeaderLabels(["Name", "Label", "Length", "Surface", "Force"])
         self.measurement_tree.itemActivated.connect(self.item_activated)
@@ -37,6 +36,25 @@ class MeasurementTree(QtGui.QWidget):
         self.setLayout(self.layout)
 
         pub.subscribe(self.update_measurements_tree, "update_measurement_status")
+
+    def select_initial_measurement(self):
+        self.current_measurement_index = 0
+        measurement_item = self.measurement_tree.topLevelItem(self.current_measurement_index)
+        self.measurement_tree.setCurrentItem(measurement_item, True)
+        # We need to set a measurement name, before we can get contacts from it
+        self.put_measurement()
+        # For the current measurement, select the first of each contact labels (if available)
+        self.select_initial_contacts()
+
+    def select_initial_contacts(self):
+        measurement_item = self.measurement_tree.currentItem()
+        measurement_name = measurement_item.text(0)
+        lookup = {0:0, 1:0, 2:0, 3:0}
+        for index in range(measurement_item.childCount()):
+            contact = self.model.contacts[measurement_name][index]
+            if contact.contact_label in lookup and not lookup[contact.contact_label]:
+                self.model.put_contact(contact_id=contact.contact_id)
+                lookup[contact.contact_label] = 1
 
     # TODO I should split this function up, such that reloading the tree is independent of setting indices and such
     def update_measurements_tree(self):
@@ -136,10 +154,10 @@ class MeasurementTree(QtGui.QWidget):
     def get_current_measurement_item(self):
         return self.measurement_tree.topLevelItem(self.model.current_measurement_index)
 
-
-
 instances = []
 
+# This function makes sure only one instance of the measurement tree is created
+# that way it can be shared between different widgets
 def get_measurement_tree():
     if not instances:
         measurement_tree = MeasurementTree()
