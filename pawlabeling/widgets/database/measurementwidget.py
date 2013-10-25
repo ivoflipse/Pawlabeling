@@ -277,6 +277,9 @@ class MeasurementWidget(QtGui.QWidget):
         progress = 100
         pub.sendMessage("update_progress", progress=progress)
 
+        # Make sure the model reloads the session
+        self.model.put_session(session=self.model.sessions[self.model.session_id])
+
     def find_plate(self, brand, model):
         for plate_id, plate in self.model.plates.iteritems():
             if plate.brand == brand and plate.model == model:

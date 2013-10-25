@@ -29,7 +29,7 @@ class Model():
         self.measurement_name = ""
         self.measurement = {}
         self.measurements = {}
-        self.contact = {}
+        self.contact = None
         self.average_data = defaultdict()
         self.contacts = defaultdict(list)
         self.results = defaultdict(lambda: defaultdict(list))
@@ -320,7 +320,7 @@ class Model():
         #print "model.clear_cached_values"
         self.measurement_name = ""
         self.measurements = {}
-        self.contact.clear()
+        self.contact = None
         self.contacts.clear()
         self.average_data.clear()
         self.results.clear()
