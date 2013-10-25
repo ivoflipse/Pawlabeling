@@ -46,7 +46,7 @@ Screenshots
 
 ![COP](doc/images/COP.png)
 
-![Settings](doc/images/settings.png)
+![Settings](doc/images/Settings.png)
 
 Installation
 -----
