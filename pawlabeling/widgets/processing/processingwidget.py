@@ -213,7 +213,7 @@ class ProcessingWidget(QtGui.QWidget):
     def changed_settings(self):
         self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
         self.entire_plate_widget.setMaximumHeight(self.settings.entire_plate_widget_height())
-        for contact in self.contacts_widget.contacts_list:
+        for label, contact in self.contacts_widget.contacts_list.items():
             contact.setMinimumHeight(self.settings.contacts_widget_height())
 
         # Update all the keyboard shortcuts

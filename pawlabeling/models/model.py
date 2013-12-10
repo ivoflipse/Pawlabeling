@@ -294,6 +294,7 @@ class Model():
         self.shape = self.session_model.calculate_shape(contacts=self.contacts)
         self.average_data = self.session_model.calculate_average_data(contacts=self.contacts,
                                                                       shape=self.shape)
+        self.max_length = self.shape[2]
         pub.sendMessage("update_average")
 
     def calculate_results(self):

@@ -108,7 +108,7 @@ def load_rsscan(infile):
     for line in iter(infile.splitlines()):
         split_line = line.strip().split()
         # Skip the whole header thing
-        if split_line and split_line[0][:5] == "Frame":
+        if split_line and split_line[0][:5] in ["Frame", "Beeld"]:
             first_frame = True
             continue
 

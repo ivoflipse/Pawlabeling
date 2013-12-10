@@ -83,6 +83,7 @@ class AnalysisWidget(QtGui.QTabWidget):
 
     def set_max_length(self):
         if self.average_toggle:
+            self.max_length = self.model.max_length
             self.slider.setMaximum(self.max_length)
         else:
             max_length = 0
@@ -90,6 +91,8 @@ class AnalysisWidget(QtGui.QTabWidget):
                 if contact.length > max_length:
                     max_length = contact.length
             self.slider.setMaximum(max_length)
+
+        print self.slider.maximum()
 
     def create_toolbar_actions(self):
         self.filter_outliers_action = gui.create_action(text="&Track Contacts",

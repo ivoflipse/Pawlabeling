@@ -121,7 +121,7 @@ class ContactView(QtGui.QWidget):
             for contact in contacts:
                 # Skip contacts that have been filtered if the toggle is on
                 if self.outlier_toggle:
-                    if contact.filtered:
+                    if contact.filtered or contact.invalid:
                         continue
                 if contact.contact_label == self.contact_label:
                     pressure = np.pad(contact.pressure_over_time, 1, mode="constant", constant_values=0)
@@ -161,7 +161,7 @@ class ContactView(QtGui.QWidget):
         self.axes.plot(interpolated_time_line, mean_pressure - std_pressure, color="r", linewidth=1)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.vertical_line.set_xdata(self.frame)
-        self.axes.set_xlim([0, self.max_duration + 2])  # +2 because we padded the array
+        self.axes.set_xlim([0, self.model.max_length + 2])  # +2 because we padded the array
         self.axes.set_ylim([0, self.max_pressure * 1.2])
         self.canvas.draw()
 

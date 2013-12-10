@@ -103,7 +103,6 @@ class MainWindow(QtGui.QMainWindow):
             # Calculate the results if it hasn't been done already
             self.model.calculate_results()
         elif self.tab_widget.currentIndex() == 3:
-            self.processing_widget.unsubscribe()
             self.settings_widget.update_fields()
 
     def changed_settings(self):
