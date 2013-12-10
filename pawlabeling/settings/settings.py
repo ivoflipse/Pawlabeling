@@ -73,6 +73,14 @@ class Settings(QtCore.QSettings):
             QtGui.QColor(QtCore.Qt.yellow)
         ]
 
+        self.matplotlib_color = [
+            "#00FF00",
+            "#008000",
+            "#FF0000",
+            "#800000",
+            "w"
+        ]
+
     def plate(self):
         key = "plate/plate"
         default_value = ""

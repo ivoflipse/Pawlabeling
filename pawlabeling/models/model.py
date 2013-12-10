@@ -113,6 +113,7 @@ class Model():
 
     def get_measurement_data(self):
         self.measurement_data = self.measurement_model.get_measurement_data(self.measurement)
+        # TODO damn, I'm triggering events from the wrong place again...
         pub.sendMessage("get_measurement_data")
 
     def get_plates(self):
@@ -323,6 +324,7 @@ class Model():
         self.measurements = {}
         self.contact = None
         self.contacts.clear()
+        self.selected_contacts.clear()
         self.average_data.clear()
         self.results.clear()
         self.max_results.clear()

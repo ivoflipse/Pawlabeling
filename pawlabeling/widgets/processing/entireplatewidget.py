@@ -179,7 +179,7 @@ class EntirePlateWidget(QtGui.QWidget):
             self.data = self.measurement_data[:, :, self.frame].T
 
         # Update the pixmap
-        self.pixmap = utility.get_qpixmap(self.data, self.degree, self.n_max, self.color_table)
+        self.pixmap = utility.get_qpixmap(self.data, self.degree, self.model.n_max, self.color_table)
         self.image.setPixmap(self.pixmap)
         self.resizeEvent()
 

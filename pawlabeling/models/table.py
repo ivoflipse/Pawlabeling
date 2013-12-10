@@ -190,7 +190,15 @@ class SessionsTable(Table):
         return group
 
     def get_new_id(self):
-        return "{}_{}".format(self.table_name, len(self.sessions_table))
+        sessions = self.get_sessions()
+        max_id = len(sessions)
+        for session in sessions:
+            session_id = int(session["session_id"].split("_")[-1])
+            if session_id > max_id:
+                max_id = session_id
+
+        max_id += 1
+        return "{}_{}".format(self.table_name, max_id)
 
     def get_session(self, session_name=""):
         return self.search_table(self.sessions_table, session_name=session_name)
@@ -254,7 +262,15 @@ class MeasurementsTable(Table):
         return group
 
     def get_new_id(self):
-        return "{}_{}".format(self.table_name, len(self.measurements_table))
+        measurements = self.get_measurements()
+        max_id = len(measurements)
+        for measurement in measurements:
+            measurement_id = int(measurement["measurement_id"].split("_")[-1])
+            if measurement_id > max_id:
+                max_id = measurement_id
+
+        max_id += 1
+        return "{}_{}".format(self.table_name, max_id)
 
     def get_measurement(self, measurement_name=""):
         return self.search_table(self.measurements_table, measurement_name=measurement_name)
@@ -324,7 +340,15 @@ class ContactsTable(Table):
         return group
 
     def get_new_id(self):
-        return "{}_{}".format(self.table_name, len(self.contacts_table))
+        contacts = self.get_contacts()
+        max_id = len(contacts)
+        for contact in contacts:
+            contact_id = int(contact["contact_id"].split("_")[-1])
+            if contact_id > max_id:
+                max_id = contact_id
+
+        max_id += 1
+        return "{}_{}".format(self.table_name, max_id)
 
     def update_contact(self, **kwargs):
         for row in self.contacts_table:

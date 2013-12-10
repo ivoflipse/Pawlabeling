@@ -72,7 +72,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.outlier_toggle = not self.outlier_toggle
         pub.sendMessage("filter_outliers", toggle=self.outlier_toggle)
 
-    # TODO This will be problematic if called before the function that actually puts the contact
     def put_contact(self):
         self.set_max_length()
 
@@ -82,17 +81,19 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.set_max_length()
 
     def set_max_length(self):
-        if self.average_toggle:
+        if self.results_widget.current_widget == self.results_widget.gait_diagram_widget:
+            self.slider.setMaximum(self.model.measurement.number_of_frames)
+            return
+        elif self.average_toggle:
             self.max_length = self.model.max_length
             self.slider.setMaximum(self.max_length)
+            return
         else:
             max_length = 0
             for contact in self.model.selected_contacts.values():
                 if contact.length > max_length:
                     max_length = contact.length
             self.slider.setMaximum(max_length)
-
-        print self.slider.maximum()
 
     def create_toolbar_actions(self):
         self.filter_outliers_action = gui.create_action(text="&Track Contacts",
