@@ -26,6 +26,11 @@ class Table(object):
         # Flush the changes
         table.flush()
 
+    def check_availability(self, table, column_name, value):
+        for row in table:
+            if row[column_name] == value[column_name]:
+                raise AssertionError("Value in {} {} already taken!".format(table, column_name))
+
     def create_group(self, parent, item_id):
         group = self.table.createGroup(where=parent, name=item_id)
         self.table.flush()
@@ -123,6 +128,8 @@ class SubjectsTable(Table):
         if "first_name" not in kwargs and "last_name" not in kwargs and "birthday" not in kwargs:
             raise MissingIdentifier("I need at least a first name, last name and birthday")
 
+        self.check_availability(self.subjects_table, "subject_id", kwargs)
+
         self.create_row(self.subjects_table, **kwargs)
         group = self.create_group(parent=self.table.root, item_id=kwargs["subject_id"])
         return group
@@ -184,6 +191,8 @@ class SessionsTable(Table):
     def create_session(self, **kwargs):
         if "session_name" not in kwargs:
             raise MissingIdentifier("I need at least a session name")
+
+        self.check_availability(self.sessions_table, "session_id", kwargs)
 
         self.create_row(self.sessions_table, **kwargs)
         group = self.create_group(parent=self.subject_group, item_id=kwargs["session_id"])
@@ -256,6 +265,8 @@ class MeasurementsTable(Table):
     def create_measurement(self, **kwargs):
         if "measurement_name" not in kwargs:
             raise MissingIdentifier("I need at least a measurement name")
+
+        self.check_availability(self.measurements_table, "measurement_id", kwargs)
 
         self.create_row(self.measurements_table, **kwargs)
         group = self.create_group(parent=self.session_group, item_id=kwargs["measurement_id"])
@@ -334,6 +345,8 @@ class ContactsTable(Table):
     def create_contact(self, **kwargs):
         if "contact_id" not in kwargs:
             raise MissingIdentifier("I need at least a contact id")
+
+        self.check_availability(self.contacts_table, "contact_id", kwargs)
 
         self.create_row(self.contacts_table, **kwargs)
         group = self.create_group(parent=self.measurement_group, item_id=kwargs["contact_id"])

@@ -170,6 +170,7 @@ class EntirePlateWidget(QtGui.QWidget):
         # Set the frame
         self.frame = frame
         self.update_entire_plate()
+        pub.sendMessage("processing.change_frame", frame=self.frame)
 
     def update_entire_plate(self):
         if self.frame == -1:

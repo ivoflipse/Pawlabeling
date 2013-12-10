@@ -7,7 +7,7 @@ from PySide.QtCore import Qt
 from pubsub import pub
 from ...functions import io, gui
 from ...settings import settings
-from ...widgets.processing import contactswidget, entireplatewidget
+from ...widgets.processing import contactswidget, entireplatewidget, diagramwidget
 from ...widgets import measurementtree
 from ...models import model
 
@@ -45,11 +45,20 @@ class ProcessingWidget(QtGui.QWidget):
         self.entire_plate_widget.setMaximumHeight(self.settings.entire_plate_widget_height())
 
         self.contacts_widget = contactswidget.ContactWidgets(self)
+        self.diagram_widget = diagramwidget.DiagramWidget(self)
+
+        self.widgets = [self.contacts_widget, self.diagram_widget]
+        self.current_widget = self.widgets[0]
+
+        self.tab_widget = QtGui.QTabWidget(self)
+        self.tab_widget.addTab(self.contacts_widget, "2D view")
+        self.tab_widget.addTab(self.diagram_widget, "Pressure")
+        self.tab_widget.currentChanged.connect(self.update_active_widget)
 
         self.layout = QtGui.QVBoxLayout()
         self.layout.addLayout(self.label_layout)
         self.layout.addWidget(self.entire_plate_widget)
-        self.layout.addWidget(self.contacts_widget)
+        self.layout.addWidget(self.tab_widget)
         self.vertical_layout = QtGui.QVBoxLayout()
         self.vertical_layout.addWidget(self.measurement_tree)
         self.horizontal_layout = QtGui.QHBoxLayout()
@@ -66,6 +75,14 @@ class ProcessingWidget(QtGui.QWidget):
         pub.subscribe(self.put_contact, "put_contact")
         pub.subscribe(self.changed_settings, "changed_settings")
         pub.subscribe(self.select_contact, "select_contact")
+
+    def update_active_widget(self):
+        self.current_tab = self.tab_widget.currentIndex()
+        self.current_widget = self.widgets[self.current_tab]
+
+        # Tell the user we're calculating some results
+        pub.sendMessage("update_statusbar", status="Switching processing to {}".format(self.current_widget.label.text()))
+        pub.sendMessage("active_widget", widget=self.current_widget)
 
     def put_subject(self):
         subject_name = "{} {}".format(self.model.subject.first_name, self.model.subject.last_name)
