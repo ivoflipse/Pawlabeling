@@ -86,9 +86,10 @@ class Model():
                                                    session_id=self.session_id,
                                                    measurement_id=measurement.measurement_id)
 
-        self.contacts[measurement.measurement_name] = self.contact_model.create_contacts(measurement=measurement,
-                                                                                         measurement_data=measurement_data,
-                                                                                         plate=plate)
+        contacts = self.contact_model.track_contacts(measurement=measurement,
+                                                     measurement_data=measurement_data,
+                                                     plate=plate)
+        self.contacts[measurement.measurement_name] = self.contact_model.create_contacts(contacts)
         status = "Number of contacts found: {}".format(len(self.contacts[measurement.measurement_name]))
         pub.sendMessage("update_statusbar", status=status)
         self.logger.info("model.create_contact: {}".format(status))
@@ -187,19 +188,17 @@ class Model():
         pub.sendMessage("update_progress", progress=100)
 
     # TODO This function is messed up again!
-    def put_measurement(self, measurement_name):
-        for measurement in self.measurements.values():
-            if measurement.measurement_name == measurement_name:
-                self.measurement = measurement
-                self.measurement_id = measurement.measurement_id
-                self.measurement_name = measurement.measurement_name
-                break
+    def put_measurement(self, measurement_id):
+        measurement = self.measurements[measurement_id]
+        self.measurement = measurement
+        self.measurement_id = measurement.measurement_id
+        self.measurement_name = measurement.measurement_name
 
         self.logger.info("Measurement ID set to {}".format(self.measurement_id))
-        self.contacts_table = table.ContactsTable(database_file=self.database_file,
-                                                  subject_id=self.subject_id,
-                                                  session_id=self.session_id,
-                                                  measurement_id=self.measurement_id)
+        # self.contacts_table = table.ContactsTable(database_file=self.database_file,
+        #                                           subject_id=self.subject_id,
+        #                                           session_id=self.session_id,
+        #                                           measurement_id=self.measurement_id)
         self.contact_model = self.contact_models[measurement.measurement_name]
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
         pub.sendMessage("put_measurement")
@@ -207,8 +206,9 @@ class Model():
         # TODO Have this load the contacts and measurement data
         # Now get everything that belongs to the measurement, the contacts and the measurement_data
         self.get_measurement_data()
+        # TODO I turned off the assertion, though I'm intrigued by how its possible
         # Check that its not empty
-        assert self.contacts[self.measurement_name]
+        #assert self.contacts[self.measurement_name]
         # TODO get_contacts doesn't really do anything, but send a message, can't this be done differently?
         self.get_contacts()
 
@@ -250,8 +250,8 @@ class Model():
 
     # TODO Store every contact, from every measurement?
     def store_contacts(self):
-        self.contact_model.update_contacts(contacts=self.contacts, measurement_name=self.measurement_name)
-        self.logger.info("Model.update_contacts: Results for {} have been successfully saved".format(
+        self.contact_model.create_contacts(contacts=self.contacts[self.measurement_name])
+        self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
             self.measurement_name))
         pub.sendMessage("update_statusbar", status="Results saved")
         # Notify the measurement that it has been processed
@@ -306,7 +306,8 @@ class Model():
         for measurement_name, contacts in self.contacts.items():
             # Make sure to update on the right model
             contact_model = self.contact_models[measurement_name]
-            contact_model.update_contacts(measurement_name=measurement_name, contacts=self.contacts)
+            # TODO Why would I ever want to do this?
+            #contact_model.update_contacts(measurement_name=measurement_name, contacts=self.contacts)
 
     def update_n_max(self):
         self.n_max = self.measurement_model.update_n_max()

@@ -65,6 +65,7 @@ class MeasurementTree(QtGui.QWidget):
         for measurement in self.model.measurements.values():
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
             measurement_item.setText(0, measurement.measurement_name)
+            measurement_item.setText(1, measurement.measurement_id)
             measurement_item.setFirstColumnSpanned(True)
             measurement_item.setExpanded(True)
 
@@ -131,10 +132,11 @@ class MeasurementTree(QtGui.QWidget):
         if current_item.parent():
             return
 
+        # TODO what did I need this for again?
         self.model.current_measurement_index = self.measurement_tree.indexOfTopLevelItem(current_item)
         # Notify the model to update the subject_name + measurement_name if necessary
-        measurement_name = current_item.text(0)
-        self.model.put_measurement(measurement_name=measurement_name)
+        measurement_id = current_item.text(1)
+        self.model.put_measurement(measurement_id=measurement_id)
 
     def put_contact(self):
         # Check to make sure the measurement is selected first

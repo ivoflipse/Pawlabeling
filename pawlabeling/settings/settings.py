@@ -212,8 +212,8 @@ class Settings(QtCore.QSettings):
         key = "thresholds/start_force_percentage"
         default_value = 0.25
         setting_value = self.value(key)
-        if isinstance(setting_value, float):
-            return setting_value
+        if setting_value:
+            return float(setting_value)
         else:
             return default_value
 
@@ -221,8 +221,8 @@ class Settings(QtCore.QSettings):
         key = "thresholds/end_force_percentage"
         default_value = 0.25
         setting_value = self.value(key)
-        if isinstance(setting_value, float):
-            return setting_value
+        if setting_value:
+            return float(setting_value)
         else:
             return default_value
 
@@ -230,8 +230,8 @@ class Settings(QtCore.QSettings):
         key = "thresholds/tracking_temporal"
         default_value = 0.5
         setting_value = self.value(key)
-        if isinstance(setting_value, float):
-            return setting_value
+        if setting_value:
+            return float(setting_value)
         else:
             return default_value
 
@@ -239,8 +239,8 @@ class Settings(QtCore.QSettings):
         key = "thresholds/tracking_spatial"
         default_value = 1.25
         setting_value = self.value(key)
-        if isinstance(setting_value, float):
-            return setting_value
+        if setting_value:
+            return float(setting_value)
         else:
             return default_value
 
@@ -248,8 +248,8 @@ class Settings(QtCore.QSettings):
         key = "thresholds/tracking_surface"
         default_value = 0.25
         setting_value = self.value(key)
-        if isinstance(setting_value, float):
-            return setting_value
+        if setting_value:
+            return float(setting_value)
         else:
             return default_value
 
@@ -257,7 +257,7 @@ class Settings(QtCore.QSettings):
         key = "thresholds/padding_factor"
         default_value = 1
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
+        if setting_value:
             return int(setting_value)
         else:
             return default_value

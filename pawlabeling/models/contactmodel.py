@@ -24,24 +24,17 @@ class Contacts(object):
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
 
-    def create_contacts(self, measurement, measurement_data, plate):
+    def create_contacts(self, contacts):
         """
-        Create contacts works slightly different than the other models.
-        track_contacts returns a list of list of Contact instances
-        create_contact only takes care of the storing of the results in PyTables
         """
-        contacts = self.track_contacts(measurement, measurement_data, plate)
+        self.delete_contacts()
+
         for contact in contacts:
             self.create_contact(contact)
         return contacts
 
     # TODO Really it actually should never happen that I have to call create_contact when it already exists!
     def create_contact(self, contact):
-        # If the contact is already present, we update instead and return its ID
-        update = False
-        if self.contacts_table.get_contact(contact_id=contact.contact_id):
-            update = True
-
         # We store the results separately
         results = {"data": contact.data,
                    "max_of_max": contact.max_of_max,
@@ -54,11 +47,7 @@ class Contacts(object):
 
         # Convert the contact to a dict, like the table expects
         contact = contact.to_dict()
-        if update:
-            self.contact_group = self.contacts_table.update_contact(**contact)
-        else:
-            # If it doesn't already exist, we create the contact and store the data
-            self.contact_group = self.contacts_table.create_contact(**contact)
+        self.contact_group = self.contacts_table.create_contact(**contact)
 
         for item_id, data in results.iteritems():
             result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
@@ -77,6 +66,33 @@ class Contacts(object):
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
+
+    def delete_contacts(self):
+        # Drop any existing contacts before creating new ones
+        for contact in self.contacts_table.contacts_table:
+            try:
+                self.delete_contact(contact)
+            except NotImplementedError:
+                pass
+
+        # Now remove the table itself
+        self.contacts_table.remove_group(where="/{}/{}/{}".format(self.subject_id, self.session_id, self.measurement_id),
+                                         name="contacts",
+                                         recursive=True)
+        # And create it again
+        self.contacts_table = table.ContactsTable(database_file=self.database_file,
+                                                  subject_id=self.subject_id,
+                                                  session_id=self.session_id,
+                                                  measurement_id=self.measurement_id)
+
+
+    def delete_contact(self, contact):
+        self.contacts_table.remove_row(table=self.contacts_table.contacts_table,
+                                       name_id="contact_id",
+                                       item_id=contact["contact_id"])
+        self.contacts_table.remove_group(where="/{}/{}/{}".format(self.subject_id, self.session_id, self.measurement_id),
+                                         name=contact["contact_id"],
+                                         recursive=True)
 
     def get_contacts(self, measurement):
         new_contacts = []
@@ -139,14 +155,14 @@ class Contacts(object):
             contact.set_contact_id(contact_id)
         return contacts
 
-    def update_contact(self, contact):
-        self.contacts_table.update_contact(**contact)
+    # def update_contact(self, contact):
+    #     self.contacts_table.update_contact(**contact)
 
-    def update_contacts(self, contacts, measurement_name):
-        for contact in contacts[measurement_name]:
-            contact = contact.to_dict()  # This takes care of some of the book keeping for us
-            self.update_contact(contact)
-        self.contacts_table.contacts_table.flush()
+    # def update_contacts(self, contacts, measurement_name):
+    #     for contact in contacts[measurement_name]:
+    #         contact = contact.to_dict()  # This takes care of some of the book keeping for us
+    #         self.update_contact(contact)
+    #     self.contacts_table.contacts_table.flush()
 
     def get_contact_data(self, measurement):
         measurement_id = measurement.measurement_id

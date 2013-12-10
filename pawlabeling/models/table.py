@@ -32,7 +32,12 @@ class Table(object):
                 raise AssertionError("Value in {} {} already taken!".format(table, column_name))
 
     def create_group(self, parent, item_id):
-        group = self.table.createGroup(where=parent, name=item_id)
+        # If the group already exists, delete it
+        try:
+            group = self.table.createGroup(where=parent, name=item_id)
+        except:
+            self.table.removeNode(where=parent, name=item_id, recursive=True)
+            group = self.table.createGroup(where=parent, name=item_id)
         self.table.flush()
         return group
 

@@ -113,8 +113,8 @@ class MeasurementWidget(QtGui.QWidget):
 
     def delete_measurement(self):
         current_item = self.measurement_tree.currentItem()
-        index = self.measurement_tree.indexFromItem(current_item).row()
-        measurement = self.measurements[index]
+        measurement_id = current_item.text(1)
+        measurement = self.model.measurements[measurement_id]
         message = "Are you sure you want to delete measurement: {}?".format(measurement.measurement_name)
         self.dialog = gui.Dialog(message=message, title="Delete measurement?", parent=self)
         response = self.dialog.exec_()

@@ -177,8 +177,12 @@ class ProcessingWidget(QtGui.QWidget):
             # Get the currently selected measurement
             measurement_item = self.measurement_tree.get_current_measurement_item()
             for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
-                # Get the current row from the tree
+                # TODO how can this ever be empty, the tree should be filled with these contacts
                 contact_item = measurement_item.child(index)
+                # If there are no children, give up
+                if not contact_item:
+                    return
+
                 contact_item.setText(1, self.contact_dict[contact.contact_label])
 
                 if contact.invalid:
