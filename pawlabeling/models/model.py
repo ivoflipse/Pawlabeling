@@ -303,9 +303,9 @@ class Model():
         # This updates contacts in place
         self.session_model.calculate_results(contacts=self.contacts)
         # This might have changed self.contacts, so we should update it to be sure
-        for measurement_name, contacts in self.contacts.items():
+        #for measurement_name, contacts in self.contacts.items():
             # Make sure to update on the right model
-            contact_model = self.contact_models[measurement_name]
+            #contact_model = self.contact_models[measurement_name]
             # TODO Why would I ever want to do this?
             #contact_model.update_contacts(measurement_name=measurement_name, contacts=self.contacts)
 

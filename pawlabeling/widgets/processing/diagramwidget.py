@@ -74,6 +74,7 @@ class DiagramView(QtGui.QWidget):
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.draw, "put_measurement")
+        pub.subscribe(self.draw, "update_current_contact")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
     def draw(self):

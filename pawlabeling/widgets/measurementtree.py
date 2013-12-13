@@ -62,12 +62,17 @@ class MeasurementTree(QtGui.QWidget):
         # Create a green brush for coloring stored results
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
 
+        current_measurement_item = None
         for measurement in self.model.measurements.values():
             measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree, [measurement])
             measurement_item.setText(0, measurement.measurement_name)
             measurement_item.setText(1, measurement.measurement_id)
             measurement_item.setFirstColumnSpanned(True)
             measurement_item.setExpanded(True)
+
+            # If we reach the current measurement, store a reference to that measurement item
+            if measurement.measurement_name == self.model.measurement_name:
+                current_measurement_item = measurement_item
 
             for contact in self.model.contacts[measurement.measurement_name]:
                 contact_item = QtGui.QTreeWidgetItem(measurement_item)
@@ -96,11 +101,15 @@ class MeasurementTree(QtGui.QWidget):
                 for idx in xrange(measurement_item.columnCount()):
                     measurement_item.setForeground(idx, green_brush)
 
+        if current_measurement_item:
+            # Scroll the tree to the current measurement item
+            self.measurement_tree.scrollToItem(current_measurement_item, hint=QtGui.QAbstractItemView.PositionAtTop)
+
         # Sort the tree by measurement name
         self.measurement_tree.sortByColumn(0, Qt.AscendingOrder)
         # Initialize the current contact index, which we'll need for keep track of the labeling
         self.model.current_contact_index = 0
-        self.model.current_measurement_index = 0
+        #self.model.current_measurement_index = 0
 
         measurement_item = self.get_current_measurement_item()
         self.measurement_tree.setCurrentItem(measurement_item, True)

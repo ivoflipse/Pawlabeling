@@ -79,9 +79,6 @@ class ProcessingWidget(QtGui.QWidget):
     def update_active_widget(self):
         self.current_tab = self.tab_widget.currentIndex()
         self.current_widget = self.widgets[self.current_tab]
-
-        # Tell the user we're calculating some results
-        pub.sendMessage("update_statusbar", status="Switching processing to {}".format(self.current_widget.label.text()))
         pub.sendMessage("active_widget", widget=self.current_widget)
 
     def put_subject(self):

@@ -266,7 +266,7 @@ class Settings(QtCore.QSettings):
         key = "thresholds/padding_factor"
         default_value = 0
         setting_value = self.value(key)
-        if isinstance(setting_value, int):
+        if setting_value:
             return int(setting_value)
         else:
             return default_value
