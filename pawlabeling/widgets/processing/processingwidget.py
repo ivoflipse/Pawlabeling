@@ -80,6 +80,32 @@ class ProcessingWidget(QtGui.QWidget):
         self.current_widget = self.widgets[self.current_tab]
         pub.sendMessage("active_widget", widget=self.current_widget)
 
+    def thresholds_changed(self):
+        temporal_threshold = float(self.temporal_threshold.currentText())
+        spatial_threshold = float(self.spatial_threshold.currentText())
+        surface_threshold = float(self.surface_threshold.currentText())
+
+        settings.settings.beginGroup("thresholds")
+        settings.settings.setValue("tracking_temporal", temporal_threshold)
+        settings.settings.setValue("spatial_threshold", spatial_threshold)
+        settings.settings.setValue("surface_threshold", surface_threshold)
+        settings.settings.endGroup()
+
+    def load_thresholds(self):
+        # Set the combobox to the right index
+        temporal = settings.settings.tracking_temporal()
+        index = self.temporal_threshold.findText("{:.2f}".format(temporal))
+        self.temporal_threshold.setCurrentIndex(index)
+
+        spatial = settings.settings.tracking_spatial()
+        index = self.spatial_threshold.findText("{:.2f}".format(spatial))
+        self.spatial_threshold.setCurrentIndex(index)
+
+        surface = settings.settings.tracking_surface()
+        index = self.surface_threshold.findText("{:.2f}".format(surface))
+        self.surface_threshold.setCurrentIndex(index)
+
+
     def put_subject(self):
         subject_name = "{} {}".format(self.model.subject.first_name, self.model.subject.last_name)
         self.subject_name_label.setText("Subject: {}\t".format(subject_name))
@@ -255,47 +281,6 @@ class ProcessingWidget(QtGui.QWidget):
         # Reload the thresholds from the settings
         self.load_thresholds()
 
-    def set_temporal_threshold(self):
-        temporal_threshold = float(self.temporal_threshold.currentText())
-        settings.settings.write_value("thresholds/tracking_temporal", temporal_threshold)
-
-
-    def set_spatial_threshold(self):
-        spatial_threshold = float(self.spatial_threshold.currentText())
-        settings.settings.write_value("thresholds/spatial_threshold", spatial_threshold)
-
-    def set_surface_threshold(self):
-        surface_threshold = float(self.surface_threshold.currentText())
-        settings.settings.write_value("thresholds/surface_threshold", surface_threshold)
-
-        # settings.settings.beginGroup("thresholds")
-        # settings.settings.setValue("tracking_temporal", temporal_threshold)
-        # settings.settings.setValue("spatial_threshold", spatial_threshold)
-        # settings.settings.setValue("surface_threshold", surface_threshold)
-        # settings.settings.endGroup()
-        #pub.sendMessage("changed_settings")
-
-    def load_thresholds(self):
-        self.get_temporal_threshold()
-        self.get_spatial_threshold()
-        self.get_surface_threshold()
-
-    def get_temporal_threshold(self):
-        # Set the combobox to the right index
-        temporal = settings.settings.tracking_temporal()
-        index = self.temporal_threshold.findText("{:.2f}".format(temporal))
-        self.temporal_threshold.setCurrentIndex(index)
-
-    def get_spatial_threshold(self):
-        spatial = settings.settings.tracking_spatial()
-        index = self.spatial_threshold.findText("{:.2f}".format(spatial))
-        self.spatial_threshold.setCurrentIndex(index)
-
-    def get_surface_threshold(self):
-        surface = settings.settings.tracking_surface()
-        index = self.surface_threshold.findText("{:.2f}".format(surface))
-        self.surface_threshold.setCurrentIndex(index)
-
 
     def create_toolbar_actions(self):
         self.track_contacts_action = gui.create_action(text="&Track Contacts",
@@ -462,8 +447,8 @@ class ProcessingWidget(QtGui.QWidget):
 
         # Connect the combo boxes to a function that will update the settings
         # Changed this to activated from currentIndexChanged, because I couldn't trigger a refresh from the settings
-        self.temporal_threshold.activated.connect(self.set_temporal_threshold)
-        self.spatial_threshold.activated.connect(self.set_spatial_threshold)
-        self.surface_threshold.activated.connect(self.set_surface_threshold)
+        self.temporal_threshold.activated.connect(self.thresholds_changed)
+        self.spatial_threshold.activated.connect(self.thresholds_changed)
+        self.surface_threshold.activated.connect(self.thresholds_changed)
 
         self.load_thresholds()
