@@ -23,9 +23,7 @@ class Settings(QtCore.QSettings):
 
         super(Settings, self).__init__(self.settings_file, QtCore.QSettings.IniFormat)
         # System-wide settings will not be searched as a fallback
-        self.setFallbacksEnabled(False)
-        # Load everything we need
-        #self.read_settings()
+        #self.setFallbacksEnabled(False)
 
         # Lookup table for all the different settings
         self.lookup_table = {
@@ -92,12 +90,7 @@ class Settings(QtCore.QSettings):
 
     def frequency(self):
         key = "plate/frequency"
-        default_value = "100"
-        setting_value = self.value(key)
-        if setting_value:
-            return setting_value
-        else:
-            return default_value
+        return self.value(key, "100")
 
     def left_front(self):
         key = "keyboard_shortcuts/left_front"
@@ -178,10 +171,7 @@ class Settings(QtCore.QSettings):
         # Check if this folder even exists, else return the relative path
         if not os.path.exists(setting_value):
             return default_value
-        if isinstance(setting_value, str) or isinstance(setting_value, unicode):
-            return setting_value
-        else:
-            return default_value
+        return setting_value
 
     def database_folder(self):
         key = "folders/database_folder"
@@ -190,53 +180,28 @@ class Settings(QtCore.QSettings):
         # Check if this folder even exists, else return the relative path
         if not os.path.exists(setting_value):
             return default_value
-        if isinstance(setting_value, str) or isinstance(setting_value, unicode):
-            return setting_value
-        else:
-            return default_value
+        return setting_value
 
     def database_file(self):
         key = "folders/database_file"
         default_value = os.path.join(self.root_folder, "database\\data.h5")
         setting_value = str(self.value(key))
-        # Check if this folder even exists, else return the relative path
-        if not os.path.exists(setting_value):
+        # Check if this file even exists, else return the relative path
+        if not os.path.isfile(setting_value):
             return default_value
-        # TODO what if the default value doesn't exist either
-        if isinstance(setting_value, str) or isinstance(setting_value, unicode):
-            return setting_value
-        else:
-            return default_value
+        return setting_value
 
     def start_force_percentage(self):
         key = "thresholds/start_force_percentage"
-        default_value = 0.25
-        setting_value = self.value(key)
-        if setting_value:
-            return float(setting_value)
-        else:
-            return default_value
+        return float(self.value(key, 0.25))
 
     def end_force_percentage(self):
         key = "thresholds/end_force_percentage"
-        # default_value = 0.25
-        # setting_value = self.value(key)
-        # if setting_value:
-        #     return float(setting_value)
-        # else:
-        #     return default_value
         return float(self.value(key, 0.25))
 
 
     def tracking_temporal(self):
         key = "thresholds/tracking_temporal"
-        # default_value = 0.5
-        # setting_value = self.value(key)
-        # print "tracking_temporal", setting_value
-        # if setting_value:
-        #     return float(setting_value)
-        # else:
-        #     return default_value
         return float(self.value(key, 0.25))
 
     def tracking_spatial(self):
@@ -422,52 +387,56 @@ class Settings(QtCore.QSettings):
         else:
             return default_value
 
-    # def read_settings(self):
-    #     self.settings = defaultdict()
-    #     self.settings["plate/plate"] = self.plate()
-    #     self.settings["plate/frequency"] = self.frequency()
-    #
-    #     self.settings["keyboard_shortcuts/left_front"] = self.left_front()
-    #     self.settings["keyboard_shortcuts/left_hind"] = self.left_hind()
-    #     self.settings["keyboard_shortcuts/right_front"] = self.right_front()
-    #     self.settings["keyboard_shortcuts/right_hind"] = self.right_hind()
-    #     self.settings["keyboard_shortcuts/previous_contact"] = self.previous_contact()
-    #     self.settings["keyboard_shortcuts/next_contact"] = self.next_contact()
-    #     self.settings["keyboard_shortcuts/remove_label"] = self.remove_label()
-    #     self.settings["keyboard_shortcuts/invalid_contact"] = self.invalid_contact()
-    #
-    #     self.settings["folders/measurement_folder"] = self.measurement_folder()
-    #     self.settings["folders/database_folder"] = self.database_folder()
-    #     self.settings["folders/database_file"] = self.database_file()
-    #
-    #     self.settings["thresholds/start_force_percentage"] = self.start_force_percentage()
-    #     self.settings["thresholds/end_force_percentage"] = self.end_force_percentage()
-    #     self.settings["thresholds/tracking_temporal"] = self.tracking_temporal()
-    #     self.settings["thresholds/tracking_spatial"] = self.tracking_spatial()
-    #     self.settings["thresholds/tracking_surface"] = self.tracking_surface()
-    #     self.settings["thresholds/padding_factor"] = self.padding_factor()
-    #
-    #     self.settings["widgets/main_window_left"] = self.main_window_left()
-    #     self.settings["widgets/main_window_top"] = self.main_window_top()
-    #     self.settings["widgets/main_window_width"] = self.main_window_width()
-    #     self.settings["widgets/main_window_height"] = self.main_window_height()
-    #     self.settings["widgets/main_window_size"] = self.main_window_size()
-    #     self.settings["widgets/entire_plate_widget_width"] = self.entire_plate_widget_width()
-    #     self.settings["widgets/entire_plate_widget_height"] = self.entire_plate_widget_height()
-    #     self.settings["widgets/contacts_widget_height"] = self.contacts_widget_height()
-    #
-    #     self.settings["interpolation/interpolation_entire_plate"] = self.interpolation_entire_plate()
-    #     self.settings["interpolation/interpolation_contact_widgets"] = self.interpolation_contact_widgets()
-    #     self.settings["interpolation/interpolation_results"] = self.interpolation_results()
-    #
-    #     self.settings["application/zip_files"] = self.zip_files()
-    #     self.settings["application/show_maximized"] = self.show_maximized()
-    #     self.settings["application/application_font"] = self.application_font()
-    #     self.settings["application/label_font"] = self.label_font()
-    #     self.settings["application/date_format"] = self.date_format()
-    #     self.settings["application/restore_last_session"] = self.restore_last_session()
-    #
-    #     return self.settings
+    def read_settings(self):
+        """
+        This function is used by the settings widget to get information about all the keys available
+        and the type that their respective values have to be
+        """
+        self.settings = defaultdict()
+        self.settings["plate/plate"] = self.plate()
+        self.settings["plate/frequency"] = self.frequency()
+
+        self.settings["keyboard_shortcuts/left_front"] = self.left_front()
+        self.settings["keyboard_shortcuts/left_hind"] = self.left_hind()
+        self.settings["keyboard_shortcuts/right_front"] = self.right_front()
+        self.settings["keyboard_shortcuts/right_hind"] = self.right_hind()
+        self.settings["keyboard_shortcuts/previous_contact"] = self.previous_contact()
+        self.settings["keyboard_shortcuts/next_contact"] = self.next_contact()
+        self.settings["keyboard_shortcuts/remove_label"] = self.remove_label()
+        self.settings["keyboard_shortcuts/invalid_contact"] = self.invalid_contact()
+
+        self.settings["folders/measurement_folder"] = self.measurement_folder()
+        self.settings["folders/database_folder"] = self.database_folder()
+        self.settings["folders/database_file"] = self.database_file()
+
+        self.settings["thresholds/start_force_percentage"] = self.start_force_percentage()
+        self.settings["thresholds/end_force_percentage"] = self.end_force_percentage()
+        self.settings["thresholds/tracking_temporal"] = self.tracking_temporal()
+        self.settings["thresholds/tracking_spatial"] = self.tracking_spatial()
+        self.settings["thresholds/tracking_surface"] = self.tracking_surface()
+        self.settings["thresholds/padding_factor"] = self.padding_factor()
+
+        self.settings["widgets/main_window_left"] = self.main_window_left()
+        self.settings["widgets/main_window_top"] = self.main_window_top()
+        self.settings["widgets/main_window_width"] = self.main_window_width()
+        self.settings["widgets/main_window_height"] = self.main_window_height()
+        self.settings["widgets/main_window_size"] = self.main_window_size()
+        self.settings["widgets/entire_plate_widget_width"] = self.entire_plate_widget_width()
+        self.settings["widgets/entire_plate_widget_height"] = self.entire_plate_widget_height()
+        self.settings["widgets/contacts_widget_height"] = self.contacts_widget_height()
+
+        self.settings["interpolation/interpolation_entire_plate"] = self.interpolation_entire_plate()
+        self.settings["interpolation/interpolation_contact_widgets"] = self.interpolation_contact_widgets()
+        self.settings["interpolation/interpolation_results"] = self.interpolation_results()
+
+        self.settings["application/zip_files"] = self.zip_files()
+        self.settings["application/show_maximized"] = self.show_maximized()
+        self.settings["application/application_font"] = self.application_font()
+        self.settings["application/label_font"] = self.label_font()
+        self.settings["application/date_format"] = self.date_format()
+        self.settings["application/restore_last_session"] = self.restore_last_session()
+
+        return self.settings
 
     def save_settings(self, settings):
         """
@@ -484,7 +453,6 @@ class Settings(QtCore.QSettings):
         - `value`: the value we want to assign to the property
         """
         try:
-            print "write_value", key, value
             self.setValue(key, value)
             if self.status():
                 raise Exception(u'{0}={1}'.format(key, value))

@@ -288,7 +288,6 @@ class ProcessingWidget(QtGui.QWidget):
 
     def get_spatial_threshold(self):
         spatial = settings.settings.tracking_spatial()
-        print "spatial", spatial
         index = self.spatial_threshold.findText("{:.2f}".format(spatial))
         self.spatial_threshold.setCurrentIndex(index)
 
