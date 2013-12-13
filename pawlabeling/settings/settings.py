@@ -263,7 +263,7 @@ class Settings(QtCore.QSettings):
             return default_value
 
     def main_window_left(self):
-        key = "thresholds/padding_factor"
+        key = "widgets/main_window_left"
         default_value = 0
         setting_value = self.value(key)
         if setting_value:

@@ -8,7 +8,19 @@ from pubsub import pub
 from ..models import model
 from ..settings import settings
 
+
 class MeasurementTree(QtGui.QWidget):
+    __instance = None
+    # This class only serves to create a singleton instance of the MeasurementTree class
+    class MeasurementTreeSingleton():
+        def __call__(self, *args, **kwargs):
+            if MeasurementTreeSingleton.__instance is None:
+                MeasurementTreeSingleton.__instance = object
+
+            return MeasurementTreeSingleton.__instance
+
+    get_instance = MeasurementTreeSingleton()
+
     def __init__(self, parent=None):
         super(MeasurementTree, self).__init__(parent)
         self.logger = logging.getLogger("logger")
@@ -49,7 +61,7 @@ class MeasurementTree(QtGui.QWidget):
     def select_initial_contacts(self):
         measurement_item = self.measurement_tree.currentItem()
         measurement_name = measurement_item.text(0)
-        lookup = {0:0, 1:0, 2:0, 3:0}
+        lookup = {0: 0, 1: 0, 2: 0, 3: 0}
         for index in range(measurement_item.childCount()):
             contact = self.model.contacts[measurement_name][index]
             if contact.contact_label in lookup and not lookup[contact.contact_label]:
@@ -165,12 +177,3 @@ class MeasurementTree(QtGui.QWidget):
     def get_current_measurement_item(self):
         return self.measurement_tree.topLevelItem(self.model.current_measurement_index)
 
-#instances = []
-#
-## This function makes sure only one instance of the measurement tree is created
-## that way it can be shared between different widgets
-#def get_measurement_tree():
-#    if not instances:
-#        measurement_tree = MeasurementTree()
-#        instances.append(measurement_tree)
-#    return instances[0]

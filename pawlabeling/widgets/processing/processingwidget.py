@@ -81,6 +81,18 @@ class ProcessingWidget(QtGui.QWidget):
         self.current_widget = self.widgets[self.current_tab]
         pub.sendMessage("active_widget", widget=self.current_widget)
 
+    def thresholds_changed(self):
+        temporal_threshold = self.temporal_threshold.currentText()
+        self.settings.write_value(key="thresholds/tracking_temporal", value=temporal_threshold)
+
+        spatial_threshold = self.spatial_threshold.currentText()
+        self.settings.write_value(key="thresholds/spatial_threshold", value=spatial_threshold)
+
+        surface_threshold = self.surface_threshold.currentText()
+        self.settings.write_value(key="thresholds/surface_threshold", value=surface_threshold)
+
+        pub.sendMessage("changed_settings")
+
     def put_subject(self):
         subject_name = "{} {}".format(self.model.subject.first_name, self.model.subject.last_name)
         self.subject_name_label.setText("Subject: {}\t".format(subject_name))
@@ -347,13 +359,13 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.undo_label_action = gui.create_action(text="Undo Label From contact",
-                                                   shortcut=QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Z),
-                                                   icon=QtGui.QIcon(
-                                                       os.path.join(os.path.dirname(__file__),
-                                                                    "../images/undo.png")),
-                                                   tip="Delete the label from the contact",
-                                                   checkable=False,
-                                                   connection=self.undo_label
+                                                    shortcut=QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Z),
+                                                    icon=QtGui.QIcon(
+                                                        os.path.join(os.path.dirname(__file__),
+                                                                     "../images/undo.png")),
+                                                    tip="Delete the label from the contact",
+                                                    checkable=False,
+                                                    connection=self.undo_label
         )
 
         # TODO Not all actions are editable yet in the settings
@@ -372,4 +384,55 @@ class ProcessingWidget(QtGui.QWidget):
             else:
                 self.toolbar.addAction(action)
 
+        self.toolbar.addSeparator()
 
+        self.temporal_widget = QtGui.QWidget(self.toolbar)
+        self.temporal_threshold_label = QtGui.QLabel()
+        self.temporal_threshold_label.setText("Temporal Threshold")
+        self.temporal_threshold = QtGui.QComboBox()
+        self.temporal_threshold.insertItems(1, ["{:.2f}".format(0.1*i) for i in range(20)])
+        self.temporal_layout = QtGui.QVBoxLayout()
+        self.temporal_layout.addWidget(self.temporal_threshold_label)
+        self.temporal_layout.addWidget(self.temporal_threshold)
+        self.temporal_widget.setLayout(self.temporal_layout)
+        self.toolbar.addWidget(self.temporal_widget)
+
+        # Set the combobox to the right index
+        temporal = self.settings.tracking_temporal()
+        index = self.temporal_threshold.findText("{:.2f}".format(temporal))
+        self.temporal_threshold.setCurrentIndex(index)
+
+        self.spatial_widget = QtGui.QWidget(self.toolbar)
+        self.spatial_threshold_label = QtGui.QLabel()
+        self.spatial_threshold_label.setText("Spatial Threshold")
+        self.spatial_threshold = QtGui.QComboBox()
+        self.spatial_threshold.insertItems(1, ["{:.2f}".format(0.1*i) for i in range(20)])
+        self.spatial_layout = QtGui.QVBoxLayout()
+        self.spatial_layout.addWidget(self.spatial_threshold_label)
+        self.spatial_layout.addWidget(self.spatial_threshold)
+        self.spatial_widget.setLayout(self.spatial_layout)
+        self.toolbar.addWidget(self.spatial_widget)
+
+        spatial = self.settings.tracking_spatial()
+        index = self.spatial_threshold.findText("{:.2f}".format(spatial))
+        self.spatial_threshold.setCurrentIndex(index)
+
+        self.surface_widget = QtGui.QWidget(self.toolbar)
+        self.surface_threshold_label = QtGui.QLabel()
+        self.surface_threshold_label.setText("Surface Threshold")
+        self.surface_threshold = QtGui.QComboBox()
+        self.surface_threshold.insertItems(1, ["{:.2f}".format(0.05*i) for i in range(42)])
+        self.surface_layout = QtGui.QVBoxLayout()
+        self.surface_layout.addWidget(self.surface_threshold_label)
+        self.surface_layout.addWidget(self.surface_threshold)
+        self.surface_widget.setLayout(self.surface_layout)
+        self.toolbar.addWidget(self.surface_widget)
+
+        surface = self.settings.tracking_surface()
+        index = self.surface_threshold.findText("{:.2f}".format(surface))
+        self.surface_threshold.setCurrentIndex(index)
+
+        # Connect the combo boxes to a function that will update the settings
+        self.temporal_threshold.currentIndexChanged.connect(self.thresholds_changed)
+        self.spatial_threshold.currentIndexChanged.connect(self.thresholds_changed)
+        self.surface_threshold.currentIndexChanged.connect(self.thresholds_changed)
