@@ -21,9 +21,8 @@ class MeasurementTree(QtGui.QWidget, Singleton):
         super(MeasurementTree, self).__init__(parent)
         self.logger = logging.getLogger("logger")
         self.model = model.model
-        self.settings = settings.settings
-        self.colors = self.settings.colors
-        self.contact_dict = self.settings.contact_dict
+        self.colors = settings.settings.colors
+        self.contact_dict = settings.settings.contact_dict
 
         # Create a list widget
         self.measurement_tree = QtGui.QTreeWidget(self)

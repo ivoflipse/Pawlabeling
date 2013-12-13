@@ -11,8 +11,7 @@ from ..functions import calculations, utility
 class Sessions(object):
     def __init__(self, subject_id):
         self.subject_id = subject_id
-        self.settings = settings.settings
-        self.database_file = self.settings.database_file()
+        self.database_file = settings.settings.database_file()
         self.sessions_table = table.SessionsTable(database_file=self.database_file, subject_id=subject_id)
         self.logger = logging.getLogger("logger")
 

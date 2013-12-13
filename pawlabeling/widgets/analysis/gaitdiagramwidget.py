@@ -49,9 +49,8 @@ class GaitDiagramView(QtGui.QWidget):
         self.label = QtGui.QLabel(label)
         self.parent = parent
         self.model = model.model
-        self.settings = settings.settings
-        self.degree = self.settings.interpolation_results()
-        self.colors = self.settings.colors
+        self.degree = settings.settings.interpolation_results()
+        self.colors = settings.settings.colors
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
 
@@ -134,7 +133,7 @@ class GaitDiagramView(QtGui.QWidget):
                 na = True
 
             self.axes.barh(bottom=contact_label, left=float(min_z), width=length, height=0.5,
-                           align='center', color=self.settings.matplotlib_color[contact_label])
+                           align='center', color=settings.settings.matplotlib_color[contact_label])
 
         self.axes.set_xlim([0, self.model.measurement.number_of_frames])
         if na:

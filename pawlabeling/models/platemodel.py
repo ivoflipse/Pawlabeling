@@ -5,8 +5,7 @@ from ..settings import settings
 
 class Plates(object):
     def __init__(self):
-        self.settings = settings.settings
-        self.database_file = self.settings.database_file()
+        self.database_file = settings.settings.database_file()
         self.plates_table = table.PlatesTable(database_file=self.database_file)
         self.logger = logging.getLogger("logger")
 
@@ -20,7 +19,7 @@ class Plates(object):
         return self.plates
 
     def create_plates(self):
-        for plate in self.settings.setup_plates():
+        for plate in settings.settings.setup_plates():
             self.create_plate(plate)
 
     def create_plate(self, plate):

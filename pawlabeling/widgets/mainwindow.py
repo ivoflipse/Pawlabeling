@@ -21,23 +21,22 @@ from ..widgets.settings import settingswidget
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__()
-        self.settings = settings.settings
         # Set up the logger before anything else
-        self.logger = self.settings.logger
+        self.logger = settings.settings.logger
         # Set the screen dimensions, useful for when its not being run full screen
         # self.setGeometry(settings.main_window_size)
-        # self.setGeometry(self.settings.value("widgets/main_window_size"))
+        # self.setGeometry(settings.settings.value("widgets/main_window_size"))
         # Apparently its better to do it like this
-        width = self.settings.main_window_width()
-        height = self.settings.main_window_height()
+        width = settings.settings.main_window_width()
+        height = settings.settings.main_window_height()
         self.resize(width, height)
-        x = self.settings.main_window_left()
-        y = self.settings.main_window_top()
+        x = settings.settings.main_window_left()
+        y = settings.settings.main_window_top()
         self.move(x, y)
 
         # This will simply set the screen size to whatever is maximally possible,
         # while leaving the menubar + taskbar visible
-        if self.settings.show_maximized():
+        if settings.settings.show_maximized():
             self.showMaximized()
 
         self.setObjectName("MainWindow")
@@ -52,7 +51,7 @@ class MainWindow(QtGui.QMainWindow):
         self.database_widget = databasewidget.DatabaseWidget(self)
         self.processing_widget = processingwidget.ProcessingWidget(self)
         self.analysis_widget = analysiswidget.AnalysisWidget(self)
-        self.settings_widget = settingswidget.SettingsWidget(self)
+        settings.settings_widget = settingswidget.SettingsWidget(self)
 
         self.tab_dict = {0:"Database", 1:"Processing",
                          2:"Analysis", 3:"Settings"}
@@ -71,7 +70,7 @@ class MainWindow(QtGui.QMainWindow):
         self.tab_widget.addTab(self.database_widget, "Database")
         self.tab_widget.addTab(self.processing_widget, "Processing")
         self.tab_widget.addTab(self.analysis_widget, "Analysis")
-        self.tab_widget.addTab(self.settings_widget, "Settings")
+        self.tab_widget.addTab(settings.settings_widget, "Settings")
         self.tab_widget.currentChanged.connect(self.change_tabs)
 
         self.setCentralWidget(self.tab_widget)
@@ -103,14 +102,14 @@ class MainWindow(QtGui.QMainWindow):
             # Calculate the results if it hasn't been done already
             self.model.calculate_results()
         elif self.tab_widget.currentIndex() == 3:
-            self.settings_widget.update_fields()
+            settings.settings_widget.update_fields()
 
     def changed_settings(self):
-        width = self.settings.main_window_width()
-        height = self.settings.main_window_height()
+        width = settings.settings.main_window_width()
+        height = settings.settings.main_window_height()
         self.resize(width, height)
-        x = self.settings.main_window_left()
-        y = self.settings.main_window_top()
+        x = settings.settings.main_window_left()
+        y = settings.settings.main_window_top()
         self.move(x, y)
 
     def change_status(self, status):
@@ -152,13 +151,13 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         # Write the current configurations to the settings file
-        if self.settings.restore_last_session():
+        if settings.settings.restore_last_session():
             size = self.size()
             pos = self.pos()
-            self.settings.write_value("widgets/main_window_width", size.width())
-            self.settings.write_value("widgets/main_window_height", size.height())
-            self.settings.write_value("widgets/main_window_left", pos.x())
-            self.settings.write_value("widgets/main_window_top", pos.y())
+            settings.settings.write_value("widgets/main_window_width", size.width())
+            settings.settings.write_value("widgets/main_window_height", size.height())
+            settings.settings.write_value("widgets/main_window_left", pos.x())
+            settings.settings.write_value("widgets/main_window_top", pos.y())
 
         self.logger = logging.getLogger("logger")
         self.logger.info("Application Shutdown\n")

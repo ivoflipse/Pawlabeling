@@ -32,8 +32,7 @@ class ContactWidgets(QtGui.QWidget):
         }
 
         self.logger = logging.getLogger("logger")
-        self.settings = settings.settings
-        self.contact_dict = self.settings.contact_dict
+        self.contact_dict = settings.settings.contact_dict
 
         self.left_contacts_layout = QtGui.QVBoxLayout()
         self.left_contacts_layout.addWidget(self.left_front)
@@ -134,8 +133,8 @@ class ContactWidget(QtGui.QWidget):
         super(ContactWidget, self).__init__(parent)
         self.parent = parent
         self.model = model.model
-        self.settings = settings.settings
-        self.degree = self.settings.interpolation_contact_widgets()
+        settings.settings = settings.settings
+        self.degree = settings.settings.interpolation_contact_widgets()
         self.n_max = 0
         self.label = label
         self.contact_label = contact_label
@@ -181,7 +180,7 @@ class ContactWidget(QtGui.QWidget):
         self.main_layout.addWidget(self.view)
         self.main_layout.addLayout(self.number_layout)
 
-        self.setMinimumHeight(self.settings.contacts_widget_height())
+        self.setMinimumHeight(settings.settings.contacts_widget_height())
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.update_n_max, "update_n_max")

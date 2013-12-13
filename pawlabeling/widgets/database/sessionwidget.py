@@ -13,9 +13,9 @@ class SessionWidget(QtGui.QWidget):
 
         self.logger = logging.getLogger("logger")
         self.model = model.model
-        self.settings = settings.settings
-        label_font = self.settings.label_font()
-        date_format = self.settings.date_format()
+        settings.settings = settings.settings
+        label_font = settings.settings.label_font()
+        date_format = settings.settings.date_format()
 
         self.session_label = QtGui.QLabel("Session")
         self.session_label.setFont(label_font)

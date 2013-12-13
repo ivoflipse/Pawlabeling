@@ -6,8 +6,7 @@ class Measurements(object):
     def __init__(self, subject_id, session_id):
         self.subject_id = subject_id
         self.session_id = session_id
-        self.settings = settings.settings
-        self.database_file = self.settings.database_file()
+        self.database_file = settings.settings.database_file()
         self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)

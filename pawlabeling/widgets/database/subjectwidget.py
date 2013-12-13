@@ -14,9 +14,8 @@ class SubjectWidget(QtGui.QWidget):
 
         self.logger = logging.getLogger("logger")
         self.model = model.model
-        self.settings = settings.settings
-        label_font = self.settings.label_font()
-        date_format = self.settings.date_format()
+        label_font = settings.settings.label_font()
+        date_format = settings.settings.date_format()
 
         self.subject_tree_label = QtGui.QLabel("Subjects")
         self.subject_tree_label.setFont(label_font)

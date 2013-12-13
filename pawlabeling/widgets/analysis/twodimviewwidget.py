@@ -69,8 +69,7 @@ class ContactView(QtGui.QWidget):
         self.contact_label = contact_label
         self.parent = parent
         self.model = model.model
-        self.settings = settings.settings
-        self.degree = self.settings.interpolation_results()
+        self.degree = settings.settings.interpolation_results()
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
         self.mx = 1
@@ -97,7 +96,7 @@ class ContactView(QtGui.QWidget):
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addWidget(self.label)
         self.main_layout.addWidget(self.view)
-        height = self.settings.contacts_widget_height()
+        height = settings.settings.contacts_widget_height()
         self.setMinimumHeight(height)
         self.setLayout(self.main_layout)
 

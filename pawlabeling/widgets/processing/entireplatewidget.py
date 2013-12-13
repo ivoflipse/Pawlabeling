@@ -31,12 +31,11 @@ class EntirePlateWidget(QtGui.QWidget):
         self.gait_lines = []
         self.measurement_name = ""
 
-        self.settings = settings.settings
-        self.colors = self.settings.colors
-        self.degree = self.settings.interpolation_entire_plate()
+        self.colors = settings.settings.colors
+        self.degree = settings.settings.interpolation_entire_plate()
         self.image_color_table = utility.ImageColorTable()
         self.color_table = self.image_color_table.create_color_table()
-        self.setMinimumHeight(self.settings.entire_plate_widget_height())
+        self.setMinimumHeight(settings.settings.entire_plate_widget_height())
 
         # Create a slider
         self.slider = QtGui.QSlider(self)

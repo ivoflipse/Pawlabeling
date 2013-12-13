@@ -25,7 +25,7 @@ class Settings(QtCore.QSettings):
         # System-wide settings will not be searched as a fallback
         self.setFallbacksEnabled(False)
         # Load everything we need
-        self.read_settings()
+        #self.read_settings()
 
         # Lookup table for all the different settings
         self.lookup_table = {
@@ -422,52 +422,52 @@ class Settings(QtCore.QSettings):
         else:
             return default_value
 
-    def read_settings(self):
-        self.settings = defaultdict()
-        self.settings["plate/plate"] = self.plate()
-        self.settings["plate/frequency"] = self.frequency()
-
-        self.settings["keyboard_shortcuts/left_front"] = self.left_front()
-        self.settings["keyboard_shortcuts/left_hind"] = self.left_hind()
-        self.settings["keyboard_shortcuts/right_front"] = self.right_front()
-        self.settings["keyboard_shortcuts/right_hind"] = self.right_hind()
-        self.settings["keyboard_shortcuts/previous_contact"] = self.previous_contact()
-        self.settings["keyboard_shortcuts/next_contact"] = self.next_contact()
-        self.settings["keyboard_shortcuts/remove_label"] = self.remove_label()
-        self.settings["keyboard_shortcuts/invalid_contact"] = self.invalid_contact()
-
-        self.settings["folders/measurement_folder"] = self.measurement_folder()
-        self.settings["folders/database_folder"] = self.database_folder()
-        self.settings["folders/database_file"] = self.database_file()
-
-        self.settings["thresholds/start_force_percentage"] = self.start_force_percentage()
-        self.settings["thresholds/end_force_percentage"] = self.end_force_percentage()
-        self.settings["thresholds/tracking_temporal"] = self.tracking_temporal()
-        self.settings["thresholds/tracking_spatial"] = self.tracking_spatial()
-        self.settings["thresholds/tracking_surface"] = self.tracking_surface()
-        self.settings["thresholds/padding_factor"] = self.padding_factor()
-
-        self.settings["widgets/main_window_left"] = self.main_window_left()
-        self.settings["widgets/main_window_top"] = self.main_window_top()
-        self.settings["widgets/main_window_width"] = self.main_window_width()
-        self.settings["widgets/main_window_height"] = self.main_window_height()
-        self.settings["widgets/main_window_size"] = self.main_window_size()
-        self.settings["widgets/entire_plate_widget_width"] = self.entire_plate_widget_width()
-        self.settings["widgets/entire_plate_widget_height"] = self.entire_plate_widget_height()
-        self.settings["widgets/contacts_widget_height"] = self.contacts_widget_height()
-
-        self.settings["interpolation/interpolation_entire_plate"] = self.interpolation_entire_plate()
-        self.settings["interpolation/interpolation_contact_widgets"] = self.interpolation_contact_widgets()
-        self.settings["interpolation/interpolation_results"] = self.interpolation_results()
-
-        self.settings["application/zip_files"] = self.zip_files()
-        self.settings["application/show_maximized"] = self.show_maximized()
-        self.settings["application/application_font"] = self.application_font()
-        self.settings["application/label_font"] = self.label_font()
-        self.settings["application/date_format"] = self.date_format()
-        self.settings["application/restore_last_session"] = self.restore_last_session()
-
-        return self.settings
+    # def read_settings(self):
+    #     self.settings = defaultdict()
+    #     self.settings["plate/plate"] = self.plate()
+    #     self.settings["plate/frequency"] = self.frequency()
+    #
+    #     self.settings["keyboard_shortcuts/left_front"] = self.left_front()
+    #     self.settings["keyboard_shortcuts/left_hind"] = self.left_hind()
+    #     self.settings["keyboard_shortcuts/right_front"] = self.right_front()
+    #     self.settings["keyboard_shortcuts/right_hind"] = self.right_hind()
+    #     self.settings["keyboard_shortcuts/previous_contact"] = self.previous_contact()
+    #     self.settings["keyboard_shortcuts/next_contact"] = self.next_contact()
+    #     self.settings["keyboard_shortcuts/remove_label"] = self.remove_label()
+    #     self.settings["keyboard_shortcuts/invalid_contact"] = self.invalid_contact()
+    #
+    #     self.settings["folders/measurement_folder"] = self.measurement_folder()
+    #     self.settings["folders/database_folder"] = self.database_folder()
+    #     self.settings["folders/database_file"] = self.database_file()
+    #
+    #     self.settings["thresholds/start_force_percentage"] = self.start_force_percentage()
+    #     self.settings["thresholds/end_force_percentage"] = self.end_force_percentage()
+    #     self.settings["thresholds/tracking_temporal"] = self.tracking_temporal()
+    #     self.settings["thresholds/tracking_spatial"] = self.tracking_spatial()
+    #     self.settings["thresholds/tracking_surface"] = self.tracking_surface()
+    #     self.settings["thresholds/padding_factor"] = self.padding_factor()
+    #
+    #     self.settings["widgets/main_window_left"] = self.main_window_left()
+    #     self.settings["widgets/main_window_top"] = self.main_window_top()
+    #     self.settings["widgets/main_window_width"] = self.main_window_width()
+    #     self.settings["widgets/main_window_height"] = self.main_window_height()
+    #     self.settings["widgets/main_window_size"] = self.main_window_size()
+    #     self.settings["widgets/entire_plate_widget_width"] = self.entire_plate_widget_width()
+    #     self.settings["widgets/entire_plate_widget_height"] = self.entire_plate_widget_height()
+    #     self.settings["widgets/contacts_widget_height"] = self.contacts_widget_height()
+    #
+    #     self.settings["interpolation/interpolation_entire_plate"] = self.interpolation_entire_plate()
+    #     self.settings["interpolation/interpolation_contact_widgets"] = self.interpolation_contact_widgets()
+    #     self.settings["interpolation/interpolation_results"] = self.interpolation_results()
+    #
+    #     self.settings["application/zip_files"] = self.zip_files()
+    #     self.settings["application/show_maximized"] = self.show_maximized()
+    #     self.settings["application/application_font"] = self.application_font()
+    #     self.settings["application/label_font"] = self.label_font()
+    #     self.settings["application/date_format"] = self.date_format()
+    #     self.settings["application/restore_last_session"] = self.restore_last_session()
+    #
+    #     return self.settings
 
     def save_settings(self, settings):
         """

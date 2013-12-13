@@ -15,14 +15,13 @@ class SettingsWidget(QtGui.QWidget):
 
         # Set up the logger
         self.logger = logging.getLogger("logger")
-        self.settings = settings.settings
         self.model = model.model
-        label_font = self.settings.label_font()
+        label_font = settings.settings.label_font()
 
         self.toolbar = gui.Toolbar(self)
 
-        self.settings_label = QtGui.QLabel("Settings")
-        self.settings_label.setFont(label_font)
+        settings.settings_label = QtGui.QLabel("Settings")
+        settings.settings_label.setFont(label_font)
 
         self.measurement_folder_label = QtGui.QLabel("Measurements folder")
         self.measurement_folder = QtGui.QLineEdit()
@@ -134,23 +133,23 @@ class SettingsWidget(QtGui.QWidget):
 
         ]
 
-        self.settings_layout = QtGui.QGridLayout()
-        self.settings_layout.setSpacing(10)
+        settings.settings_layout = QtGui.QGridLayout()
+        settings.settings_layout.setSpacing(10)
 
         # This neatly fills the QGridLayout for us
         for row, widgets in enumerate(self.widgets):
             for column, widget_name in enumerate(widgets):
                 if widget_name:
                     widget = getattr(self, widget_name)
-                    self.settings_layout.addWidget(widget, row, column)
+                    settings.settings_layout.addWidget(widget, row, column)
 
         self.main_layout = QtGui.QVBoxLayout()
         self.main_layout.addWidget(self.toolbar)
-        self.main_layout.addWidget(self.settings_label)
+        self.main_layout.addWidget(settings.settings_label)
         bar_1 = QtGui.QFrame(self)
         bar_1.setFrameShape(QtGui.QFrame.Shape.HLine)
         self.main_layout.addWidget(bar_1)
-        self.main_layout.addLayout(self.settings_layout)
+        self.main_layout.addLayout(settings.settings_layout)
         self.main_layout.addStretch(1)
 
         self.setLayout(self.main_layout)
@@ -164,36 +163,36 @@ class SettingsWidget(QtGui.QWidget):
         This function is called by __init__ and when the tab is switched to settings.
         That way it'll always display the current values of the settings
         """
-        self.measurement_folder.setText(self.settings.measurement_folder())
-        self.database_folder.setText(self.settings.database_folder())
-        self.database_file.setText(self.settings.database_file())
+        self.measurement_folder.setText(settings.settings.measurement_folder())
+        self.database_folder.setText(settings.settings.database_folder())
+        self.database_file.setText(settings.settings.database_file())
 
-        self.left_front.setText(self.settings.left_front().toString())
-        self.left_hind.setText(self.settings.left_hind().toString())
-        self.right_front.setText(self.settings.right_front().toString())
-        self.right_hind.setText(self.settings.right_hind().toString())
+        self.left_front.setText(settings.settings.left_front().toString())
+        self.left_hind.setText(settings.settings.left_hind().toString())
+        self.right_front.setText(settings.settings.right_front().toString())
+        self.right_hind.setText(settings.settings.right_hind().toString())
 
-        self.main_window_height.setText(str(self.settings.main_window_height()))
-        self.main_window_width.setText(str(self.settings.main_window_width()))
-        self.main_window_top.setText(str(self.settings.main_window_top()))
-        self.main_window_left.setText(str(self.settings.main_window_left()))
+        self.main_window_height.setText(str(settings.settings.main_window_height()))
+        self.main_window_width.setText(str(settings.settings.main_window_width()))
+        self.main_window_top.setText(str(settings.settings.main_window_top()))
+        self.main_window_left.setText(str(settings.settings.main_window_left()))
 
-        self.entire_plate_widget_height.setText(str(self.settings.entire_plate_widget_height()))
-        self.entire_plate_widget_width.setText(str(self.settings.entire_plate_widget_width()))
-        self.contacts_widget_height.setText(str(self.settings.contacts_widget_height()))
+        self.entire_plate_widget_height.setText(str(settings.settings.entire_plate_widget_height()))
+        self.entire_plate_widget_width.setText(str(settings.settings.entire_plate_widget_width()))
+        self.contacts_widget_height.setText(str(settings.settings.contacts_widget_height()))
 
-        self.interpolation_entire_plate.setText(str(self.settings.interpolation_entire_plate()))
-        self.interpolation_contact_widgets.setText(str(self.settings.interpolation_contact_widgets()))
-        self.interpolation_results.setText(str(self.settings.interpolation_results()))
+        self.interpolation_entire_plate.setText(str(settings.settings.interpolation_entire_plate()))
+        self.interpolation_contact_widgets.setText(str(settings.settings.interpolation_contact_widgets()))
+        self.interpolation_results.setText(str(settings.settings.interpolation_results()))
 
-        self.start_force_percentage.setText(str(self.settings.start_force_percentage()))
-        self.end_force_percentage.setText(str(self.settings.end_force_percentage()))
-        self.tracking_temporal.setText(str(self.settings.tracking_temporal()))
-        self.tracking_spatial.setText(str(self.settings.tracking_spatial()))
-        self.tracking_surface.setText(str(self.settings.tracking_surface()))
+        self.start_force_percentage.setText(str(settings.settings.start_force_percentage()))
+        self.end_force_percentage.setText(str(settings.settings.end_force_percentage()))
+        self.tracking_temporal.setText(str(settings.settings.tracking_temporal()))
+        self.tracking_spatial.setText(str(settings.settings.tracking_spatial()))
+        self.tracking_surface.setText(str(settings.settings.tracking_surface()))
 
         # Check the settings for which plate to set as default
-        frequency = self.settings.frequency()
+        frequency = settings.settings.frequency()
         index = self.frequency.findText(frequency)
         self.frequency.setCurrentIndex(index)
 
@@ -202,7 +201,7 @@ class SettingsWidget(QtGui.QWidget):
         Store the changes to the widgets to the settings.ini file
         This function should probably do some validation
         """
-        settings_dict = self.settings.read_settings()
+        settings_dict = settings.settings.read_settings()
         for key, old_value in settings_dict.iteritems():
             # This will help skip settings we don't change anyway
             group, item = key.split("/")
@@ -226,14 +225,14 @@ class SettingsWidget(QtGui.QWidget):
                 if old_value != new_value:
                     settings_dict[key] = new_value
 
-        self.settings.save_settings(settings_dict)
+        settings.settings.save_settings(settings_dict)
 
         # Notify the rest of the application that the settings have changed
         # TODO: changes here should propagate to the rest of the application (like the database screen)
         pub.sendMessage("changed_settings")
 
     def change_measurement_folder(self, evt=None):
-        measurement_folder = self.settings.measurement_folder()
+        measurement_folder = settings.settings.measurement_folder()
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your measurements",
@@ -247,11 +246,11 @@ class SettingsWidget(QtGui.QWidget):
         if self.file_dialog.exec_():
             measurement_folder = self.file_dialog.selectedFiles()[0]
 
-        #self.settings.write_value("folders/measurement_folder", measurement_folder)
+        #settings.settings.write_value("folders/measurement_folder", measurement_folder)
         self.measurement_folder.setText(measurement_folder)
 
     def change_database_folder(self, evt=None):
-        database_folder = self.settings.database_folder()
+        database_folder = settings.settings.database_folder()
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your database",
@@ -264,7 +263,7 @@ class SettingsWidget(QtGui.QWidget):
         if self.file_dialog.exec_():
             database_folder = self.file_dialog.selectedFiles()[0]
 
-        #self.settings.write_value("folders/database_folder", database_folder)
+        #settings.settings.write_value("folders/database_folder", database_folder)
         self.database_folder.setText(database_folder)
 
     def update_plates(self):
@@ -274,7 +273,7 @@ class SettingsWidget(QtGui.QWidget):
             self.plate.addItem("{} {}".format(plate.brand, plate.model))
 
         # Check the settings for which plate to set as default
-        plate = self.settings.plate()
+        plate = settings.settings.plate()
         index = self.plate.findText(plate)
         self.plate.setCurrentIndex(index)
 

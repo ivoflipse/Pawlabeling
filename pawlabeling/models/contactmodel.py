@@ -17,8 +17,7 @@ class Contacts(object):
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
-        self.settings = settings.settings
-        self.database_file = self.settings.database_file()
+        self.database_file = settings.settings.database_file()
         self.contacts_table = table.ContactsTable(database_file=self.database_file,
                                                   subject_id=self.subject_id,
                                                   session_id=self.session_id,
@@ -129,7 +128,7 @@ class Contacts(object):
         x = measurement.number_of_rows
         y = measurement.number_of_columns
         z = measurement.number_of_frames
-        padding_factor = self.settings.padding_factor()
+        padding_factor = settings.settings.padding_factor()
         data = np.zeros((x + 2 * padding_factor, y + 2 * padding_factor, z), np.float32)
         data[padding_factor:-padding_factor, padding_factor:-padding_factor, :] = measurement_data
         raw_contacts = tracking.track_contours_graph(data)
@@ -191,9 +190,9 @@ class Contact(object):
         self.orientation = False
         self.filtered = False  # This can be used to check if the contact should be filtered or not
         self.contact_label = -2  # Contacts are labeled as -2 by default, this means unlabeled
-        self.settings = settings.settings
+        settings.settings = settings.settings
         self.contour_list = defaultdict(list)
-        self.padding = self.settings.padding_factor()
+        self.padding = settings.settings.padding_factor()
         self.frames = []
 
     def create_contact(self, contact, measurement_data, orientation):
@@ -320,9 +319,9 @@ class Contact(object):
         """
         force_over_time = calculations.force_over_time(self.data)
         max_force = np.max(force_over_time)
-        #print force_over_time[0], force_over_time[-1], max_force, self.settings.start_force_percentage()
-        if (force_over_time[0] > (self.settings.start_force_percentage() * max_force) or
-                    force_over_time[-1] > (self.settings.end_force_percentage() * max_force)):
+        #print force_over_time[0], force_over_time[-1], max_force, settings.settings.start_force_percentage()
+        if (force_over_time[0] > (settings.settings.start_force_percentage() * max_force) or
+                    force_over_time[-1] > (settings.settings.end_force_percentage() * max_force)):
             return True
         return False
 

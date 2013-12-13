@@ -15,8 +15,7 @@ class MeasurementWidget(QtGui.QWidget):
 
         self.logger = logging.getLogger("logger")
         self.model = model.model
-        self.settings = settings.settings
-        label_font = self.settings.label_font()
+        label_font = settings.settings.label_font()
 
         self.files_tree_label = QtGui.QLabel("Session folder")
         self.files_tree_label.setFont(label_font)
@@ -55,7 +54,7 @@ class MeasurementWidget(QtGui.QWidget):
             self.frequency.addItem(frequency)
         self.frequency.activated.connect(self.change_frequency)
         # Check the settings for which plate to set as default
-        frequency = self.settings.frequency()
+        frequency = settings.settings.frequency()
         index = self.frequency.findText(frequency)
         self.frequency.setCurrentIndex(index)
 
@@ -128,7 +127,7 @@ class MeasurementWidget(QtGui.QWidget):
             self.plate.addItem("{} {}".format(plate.brand, plate.model))
 
         # Check the settings for which plate to set as default
-        plate = self.settings.plate()
+        plate = settings.settings.plate()
         index = self.plate.findText(plate)
         self.plate.setCurrentIndex(index)
 
@@ -161,7 +160,7 @@ class MeasurementWidget(QtGui.QWidget):
     def change_file_location(self, evt=None):
         # We load the measurement folder from the settings, this is the base folder. Then we select the folder
         # we're interested in and set model.measurement_folder to that value
-        measurement_folder = self.settings.measurement_folder()
+        measurement_folder = settings.settings.measurement_folder()
         # Open a file dialog
         self.file_dialog = QtGui.QFileDialog(self,
                                              "Select the folder containing your measurements",
@@ -229,7 +228,7 @@ class MeasurementWidget(QtGui.QWidget):
         self.measurement_folder.setText(parent_directory)
 
     def reset_measurement_folder(self):
-        measurement_folder = self.settings.measurement_folder()
+        measurement_folder = settings.settings.measurement_folder()
         self.measurement_folder.setText(measurement_folder)
 
     # TODO Check whether there's even a session selected at the moment...
@@ -288,7 +287,7 @@ class MeasurementWidget(QtGui.QWidget):
     def change_plate(self, index):
         plate = self.plate.itemText(index)
         # Write the currently select plate to the settings
-        self.settings.write_value("plate/plate", plate)
+        settings.settings.write_value("plate/plate", plate)
         # Adjust the size in case the text is too big to fit
         self.plate.adjustSize()
         self.logger.info("measurementwidget.change_plate: Plate changed to {}".format(plate))
