@@ -11,10 +11,9 @@ from ..models import table, subjectmodel, sessionmodel, measurementmodel, contac
 class Model():
     def __init__(self):
         self.file_paths = defaultdict(dict)
-        self.settings = settings.settings
         # TODO change the models measurement folder instead of writing it to the settings
-        self.measurement_folder = self.settings.measurement_folder()
-        self.database_file = self.settings.database_file()
+        self.measurement_folder = settings.settings.measurement_folder()
+        self.database_file = settings.settings.database_file()
         self.plate_model = platemodel.Plates()
         # Create the plates if they do not yet exists
         self.plate_model.create_plates()
@@ -314,8 +313,8 @@ class Model():
         pub.sendMessage("update_n_max")
 
     def changed_settings(self):
-        self.measurement_folder = self.settings.measurement_folder()
-        self.database_file = self.settings.database_file()
+        self.measurement_folder = settings.settings.measurement_folder()
+        self.database_file = settings.settings.database_file()
 
     def clear_cached_values(self):
         # TODO Figure out what can be cleared and when, perhaps I can use an argument to check the level of clearing

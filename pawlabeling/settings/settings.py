@@ -219,39 +219,46 @@ class Settings(QtCore.QSettings):
 
     def end_force_percentage(self):
         key = "thresholds/end_force_percentage"
-        default_value = 0.25
-        setting_value = self.value(key)
-        if setting_value:
-            return float(setting_value)
-        else:
-            return default_value
+        # default_value = 0.25
+        # setting_value = self.value(key)
+        # if setting_value:
+        #     return float(setting_value)
+        # else:
+        #     return default_value
+        return float(self.value(key, 0.25))
+
 
     def tracking_temporal(self):
         key = "thresholds/tracking_temporal"
-        default_value = 0.5
-        setting_value = self.value(key)
-        if setting_value:
-            return float(setting_value)
-        else:
-            return default_value
+        # default_value = 0.5
+        # setting_value = self.value(key)
+        # print "tracking_temporal", setting_value
+        # if setting_value:
+        #     return float(setting_value)
+        # else:
+        #     return default_value
+        return float(self.value(key, 0.25))
 
     def tracking_spatial(self):
         key = "thresholds/tracking_spatial"
-        default_value = 1.25
-        setting_value = self.value(key)
-        if setting_value:
-            return float(setting_value)
-        else:
-            return default_value
+        # default_value = 1.25
+        # setting_value = self.value(key)
+        # print "tracking_spatial", setting_value
+        # if setting_value:
+        #     return float(setting_value)
+        # else:
+        #     return default_value
+        return float(self.value(key, 1.25))
 
     def tracking_surface(self):
         key = "thresholds/tracking_surface"
-        default_value = 0.25
-        setting_value = self.value(key)
-        if setting_value:
-            return float(setting_value)
-        else:
-            return default_value
+        # default_value = 0.25
+        # setting_value = self.value(key)
+        # if setting_value:
+        #     return float(setting_value)
+        # else:
+        #     return default_value
+        return float(self.value(key, 0.25))
 
     def padding_factor(self):
         key = "thresholds/padding_factor"
@@ -467,6 +474,7 @@ class Settings(QtCore.QSettings):
         """
         for key, value in settings.iteritems():
             self.write_value(key, value)
+        self.read_settings()
 
     def write_value(self, key, value):
         """
@@ -476,6 +484,7 @@ class Settings(QtCore.QSettings):
         - `value`: the value we want to assign to the property
         """
         try:
+            print "write_value", key, value
             self.setValue(key, value)
             if self.status():
                 raise Exception(u'{0}={1}'.format(key, value))

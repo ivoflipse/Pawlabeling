@@ -30,9 +30,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.label_layout.addWidget(self.measurement_name_label)
         self.label_layout.addStretch(1)
 
-        self.settings = settings.settings
-        self.colors = self.settings.colors
-        self.contact_dict = self.settings.contact_dict
+        self.colors = settings.settings.colors
+        self.contact_dict = settings.settings.contact_dict
 
         self.toolbar = gui.Toolbar(self)
         # Create all the toolbar actions
@@ -41,8 +40,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.measurement_tree = measurementtree.MeasurementTree()
 
         self.entire_plate_widget = entireplatewidget.EntirePlateWidget(self)
-        self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
-        self.entire_plate_widget.setMaximumHeight(self.settings.entire_plate_widget_height())
+        self.entire_plate_widget.setMinimumWidth(settings.settings.entire_plate_widget_width())
+        self.entire_plate_widget.setMaximumHeight(settings.settings.entire_plate_widget_height())
 
         self.contacts_widget = contactswidget.ContactWidgets(self)
         self.diagram_widget = diagramwidget.DiagramWidget(self)
@@ -80,34 +79,6 @@ class ProcessingWidget(QtGui.QWidget):
         self.current_tab = self.tab_widget.currentIndex()
         self.current_widget = self.widgets[self.current_tab]
         pub.sendMessage("active_widget", widget=self.current_widget)
-
-    def thresholds_changed(self):
-        temporal_threshold = self.temporal_threshold.currentText()
-        spatial_threshold = self.spatial_threshold.currentText()
-        surface_threshold = self.surface_threshold.currentText()
-
-        self.settings.save_settings({"thresholds/tracking_temporal": temporal_threshold,
-                                     "thresholds/spatial_threshold": spatial_threshold,
-                                     "thresholds/surface_threshold": surface_threshold})
-
-        print self.settings.tracking_surface(), self.settings.tracking_spatial()
-        pub.sendMessage("changed_settings")
-
-    def load_thresholds(self):
-        # Set the combobox to the right index
-        temporal = self.settings.tracking_temporal()
-        index = self.temporal_threshold.findText("{:.2f}".format(temporal))
-        self.temporal_threshold.setCurrentIndex(index)
-
-        spatial = self.settings.tracking_spatial()
-        index = self.spatial_threshold.findText("{:.2f}".format(spatial))
-        self.spatial_threshold.setCurrentIndex(index)
-
-        surface = self.settings.tracking_surface()
-        index = self.surface_threshold.findText("{:.2f}".format(surface))
-        self.surface_threshold.setCurrentIndex(index)
-
-        print "load_thresholds", temporal, spatial, surface
 
     def put_subject(self):
         subject_name = "{} {}".format(self.model.subject.first_name, self.model.subject.last_name)
@@ -266,23 +237,64 @@ class ProcessingWidget(QtGui.QWidget):
 
 
     def changed_settings(self):
-        self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
-        self.entire_plate_widget.setMaximumHeight(self.settings.entire_plate_widget_height())
+        self.entire_plate_widget.setMinimumWidth(settings.settings.entire_plate_widget_width())
+        self.entire_plate_widget.setMaximumHeight(settings.settings.entire_plate_widget_height())
         for label, contact in self.contacts_widget.contacts_list.items():
-            contact.setMinimumHeight(self.settings.contacts_widget_height())
+            contact.setMinimumHeight(settings.settings.contacts_widget_height())
 
         # Update all the keyboard shortcuts
-        self.left_front_action.setShortcut(self.settings.left_front())
-        self.left_hind_action.setShortcut(self.settings.left_hind())
-        self.right_front_action.setShortcut(self.settings.right_front())
-        self.right_hind_action.setShortcut(self.settings.right_hind())
-        self.previous_contact_action.setShortcut(self.settings.previous_contact())
-        self.next_contact_action.setShortcut(self.settings.next_contact())
-        self.invalid_contact_action.setShortcut(self.settings.invalid_contact())
-        self.remove_label_action.setShortcut(self.settings.remove_label())
+        self.left_front_action.setShortcut(settings.settings.left_front())
+        self.left_hind_action.setShortcut(settings.settings.left_hind())
+        self.right_front_action.setShortcut(settings.settings.right_front())
+        self.right_hind_action.setShortcut(settings.settings.right_hind())
+        self.previous_contact_action.setShortcut(settings.settings.previous_contact())
+        self.next_contact_action.setShortcut(settings.settings.next_contact())
+        self.invalid_contact_action.setShortcut(settings.settings.invalid_contact())
+        self.remove_label_action.setShortcut(settings.settings.remove_label())
 
         # Reload the thresholds from the settings
         self.load_thresholds()
+
+    def set_temporal_threshold(self):
+        temporal_threshold = float(self.temporal_threshold.currentText())
+        settings.settings.write_value("thresholds/tracking_temporal", temporal_threshold)
+
+
+    def set_spatial_threshold(self):
+        spatial_threshold = float(self.spatial_threshold.currentText())
+        settings.settings.write_value("thresholds/spatial_threshold", spatial_threshold)
+
+    def set_surface_threshold(self):
+        surface_threshold = float(self.surface_threshold.currentText())
+        settings.settings.write_value("thresholds/surface_threshold", surface_threshold)
+
+        # settings.settings.beginGroup("thresholds")
+        # settings.settings.setValue("tracking_temporal", temporal_threshold)
+        # settings.settings.setValue("spatial_threshold", spatial_threshold)
+        # settings.settings.setValue("surface_threshold", surface_threshold)
+        # settings.settings.endGroup()
+        #pub.sendMessage("changed_settings")
+
+    def load_thresholds(self):
+        self.get_temporal_threshold()
+        self.get_spatial_threshold()
+        self.get_surface_threshold()
+
+    def get_temporal_threshold(self):
+        # Set the combobox to the right index
+        temporal = settings.settings.tracking_temporal()
+        index = self.temporal_threshold.findText("{:.2f}".format(temporal))
+        self.temporal_threshold.setCurrentIndex(index)
+
+    def get_spatial_threshold(self):
+        spatial = settings.settings.tracking_spatial()
+        index = self.spatial_threshold.findText("{:.2f}".format(spatial))
+        self.spatial_threshold.setCurrentIndex(index)
+
+    def get_surface_threshold(self):
+        surface = settings.settings.tracking_surface()
+        index = self.surface_threshold.findText("{:.2f}".format(surface))
+        self.surface_threshold.setCurrentIndex(index)
 
 
     def create_toolbar_actions(self):
@@ -307,7 +319,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.left_front_action = gui.create_action(text="Select Left Front",
-                                                   shortcut=self.settings.left_front(),
+                                                   shortcut=settings.settings.left_front(),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
                                                                     "../images/LF.png")),
@@ -317,7 +329,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.left_hind_action = gui.create_action(text="Select Left Hind",
-                                                  shortcut=self.settings.left_hind(),
+                                                  shortcut=settings.settings.left_hind(),
                                                   icon=QtGui.QIcon(
                                                       os.path.join(os.path.dirname(__file__),
                                                                    "../images/LH.png")),
@@ -327,7 +339,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.right_front_action = gui.create_action(text="Select Right Front",
-                                                    shortcut=self.settings.right_front(),
+                                                    shortcut=settings.settings.right_front(),
                                                     icon=QtGui.QIcon(os.path.join(os.path.dirname(__file__),
                                                                                   "../images/RF.png")),
                                                     tip="Select the Right Front contact",
@@ -336,7 +348,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.right_hind_action = gui.create_action(text="Select Right Hind",
-                                                   shortcut=self.settings.right_hind(),
+                                                   shortcut=settings.settings.right_hind(),
                                                    icon=QtGui.QIcon(
                                                        os.path.join(os.path.dirname(__file__),
                                                                     "../images/RH.png")),
@@ -346,7 +358,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.previous_contact_action = gui.create_action(text="Select Previous contact",
-                                                         shortcut=[self.settings.previous_contact(),
+                                                         shortcut=[settings.settings.previous_contact(),
                                                                    QtGui.QKeySequence(QtCore.Qt.Key_Down)],
                                                          icon=QtGui.QIcon(
                                                              os.path.join(os.path.dirname(__file__),
@@ -357,7 +369,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.next_contact_action = gui.create_action(text="Select Next contact",
-                                                     shortcut=[self.settings.next_contact(),
+                                                     shortcut=[settings.settings.next_contact(),
                                                                QtGui.QKeySequence(QtCore.Qt.Key_Up)],
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
@@ -368,7 +380,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.remove_label_action = gui.create_action(text="Delete Label From contact",
-                                                     shortcut=self.settings.remove_label(),
+                                                     shortcut=settings.settings.remove_label(),
                                                      icon=QtGui.QIcon(
                                                          os.path.join(os.path.dirname(__file__),
                                                                       "../images/cancel.png")),
@@ -378,7 +390,7 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.invalid_contact_action = gui.create_action(text="Mark contact as Invalid",
-                                                        shortcut=self.settings.invalid_contact(),
+                                                        shortcut=settings.settings.invalid_contact(),
                                                         icon=QtGui.QIcon(
                                                             os.path.join(os.path.dirname(__file__),
                                                                          "../images/trash.png")),
@@ -450,8 +462,8 @@ class ProcessingWidget(QtGui.QWidget):
 
         # Connect the combo boxes to a function that will update the settings
         # Changed this to activated from currentIndexChanged, because I couldn't trigger a refresh from the settings
-        self.temporal_threshold.activated.connect(self.thresholds_changed)
-        self.spatial_threshold.activated.connect(self.thresholds_changed)
-        self.surface_threshold.activated.connect(self.thresholds_changed)
+        self.temporal_threshold.activated.connect(self.set_temporal_threshold)
+        self.spatial_threshold.activated.connect(self.set_spatial_threshold)
+        self.surface_threshold.activated.connect(self.set_surface_threshold)
 
         self.load_thresholds()
