@@ -9,23 +9,14 @@ from ..models import model
 from ..settings import settings
 
 
-class Singleton(type):
-    """
-    Taken from: http://stackoverflow.com/a/33201/77595
-    The goal is to only have one instance of the measurement tree in the whole application.
-    That way its always in sync between tabs
-    """
-    def __init__(cls, name, bases, dict):
-        super(Singleton, cls).__init__(name, bases, dict)
-        cls.instance = None
+class Singleton(object):
+    _instance = None
+    def __new__(class_, *args, **kwargs):
+        if not isinstance(class_._instance, class_):
+            class_._instance = object.__new__(class_, *args, **kwargs)
+        return class_._instance
 
-    def __call__(cls,*args,**kw):
-        if cls.instance is None:
-            cls.instance = super(Singleton, cls).__call__(*args, **kw)
-        return cls.instance
-
-class MeasurementTree(object, QtGui.QWidget):
-    __metaclass__ = Singleton
+class MeasurementTree(QtGui.QWidget, Singleton):
     def __init__(self, parent=None):
         super(MeasurementTree, self).__init__(parent)
         self.logger = logging.getLogger("logger")

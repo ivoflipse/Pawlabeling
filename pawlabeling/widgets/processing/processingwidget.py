@@ -51,8 +51,8 @@ class ProcessingWidget(QtGui.QWidget):
         self.current_widget = self.widgets[0]
 
         self.tab_widget = QtGui.QTabWidget(self)
-        self.tab_widget.addTab(self.contacts_widget, "2D view")
-        self.tab_widget.addTab(self.diagram_widget, "Pressure")
+        self.tab_widget.addTab(self.contacts_widget, "2D Views")
+        self.tab_widget.addTab(self.diagram_widget, "Gait Diagram")
         self.tab_widget.currentChanged.connect(self.update_active_widget)
 
         self.layout = QtGui.QVBoxLayout()
@@ -185,6 +185,11 @@ class ProcessingWidget(QtGui.QWidget):
                     len(self.model.contacts[self.model.measurement_name]) > 0):
             # Get the currently selected measurement
             measurement_item = self.measurement_tree.get_current_measurement_item()
+
+            self.check_invalid()
+            self.model.update_current_contact()
+            self.measurement_tree.update_current_contact()
+
             for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
                 # TODO how can this ever be empty, the tree should be filled with these contacts
                 contact_item = measurement_item.child(index)
@@ -203,33 +208,35 @@ class ProcessingWidget(QtGui.QWidget):
                 for idx in xrange(contact_item.columnCount()):
                     contact_item.setBackground(idx, color)
 
-            self.check_invalid()
-            self.model.update_current_contact()
-            self.measurement_tree.update_current_contact()
-
     def previous_contact(self):
         if not self.contacts_available():
             return
 
-        # We can't go to a previous contact
-        if self.model.current_contact_index == 0:
-            return
-
         self.model.current_contact_index -= 1
+
+        # Wrap around the index
+        num_contacts = len(self.model.contacts[self.model.measurement_name])
+        self.model.current_contact_index = self.model.current_contact_index % num_contacts
+
         self.update_current_contact()
 
     def next_contact(self):
         if not self.contacts_available():
             return
 
-        # We can't go further so return
-        if self.model.current_contact_index == len(self.model.contacts[self.model.measurement_name]) - 1:
-            return
-
-
         self.model.current_contact_index += 1
+
+        # Wrap around the index
+        num_contacts = len(self.model.contacts[self.model.measurement_name])
+        self.model.current_contact_index = self.model.current_contact_index % num_contacts
+
+        # # We can't go further so return
+        # if self.model.current_contact_index == len(self.model.contacts[self.model.measurement_name]) - 1:
+        #     self.model.current_contact_index = len(self.model.contacts[self.model.measurement_name]) - 1
+
         self.measurement_tree.update_current_contact()
         self.update_current_contact()
+
 
     def track_contacts(self, event=None):
         # Make the model track new contacts
@@ -237,8 +244,10 @@ class ProcessingWidget(QtGui.QWidget):
         # Make sure every widget gets updated
         self.update_current_contact()
 
+
     def store_status(self, event=None):
         self.model.store_contacts()
+
 
     def changed_settings(self):
         self.entire_plate_widget.setMinimumWidth(self.settings.entire_plate_widget_width())
@@ -255,6 +264,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.next_contact_action.setShortcut(self.settings.next_contact())
         self.invalid_contact_action.setShortcut(self.settings.invalid_contact())
         self.remove_label_action.setShortcut(self.settings.remove_label())
+
 
     def create_toolbar_actions(self):
         self.track_contacts_action = gui.create_action(text="&Track Contacts",
@@ -359,13 +369,13 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         self.undo_label_action = gui.create_action(text="Undo Label From contact",
-                                                    shortcut=QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Z),
-                                                    icon=QtGui.QIcon(
-                                                        os.path.join(os.path.dirname(__file__),
-                                                                     "../images/undo.png")),
-                                                    tip="Delete the label from the contact",
-                                                    checkable=False,
-                                                    connection=self.undo_label
+                                                   shortcut=QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_Z),
+                                                   icon=QtGui.QIcon(
+                                                       os.path.join(os.path.dirname(__file__),
+                                                                    "../images/undo.png")),
+                                                   tip="Delete the label from the contact",
+                                                   checkable=False,
+                                                   connection=self.undo_label
         )
 
         # TODO Not all actions are editable yet in the settings
@@ -390,7 +400,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.temporal_threshold_label = QtGui.QLabel()
         self.temporal_threshold_label.setText("Temporal Threshold")
         self.temporal_threshold = QtGui.QComboBox()
-        self.temporal_threshold.insertItems(1, ["{:.2f}".format(0.1*i) for i in range(20)])
+        self.temporal_threshold.insertItems(1, ["{:.2f}".format(0.1 * i) for i in range(20)])
         self.temporal_layout = QtGui.QVBoxLayout()
         self.temporal_layout.addWidget(self.temporal_threshold_label)
         self.temporal_layout.addWidget(self.temporal_threshold)
@@ -406,7 +416,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.spatial_threshold_label = QtGui.QLabel()
         self.spatial_threshold_label.setText("Spatial Threshold")
         self.spatial_threshold = QtGui.QComboBox()
-        self.spatial_threshold.insertItems(1, ["{:.2f}".format(0.1*i) for i in range(20)])
+        self.spatial_threshold.insertItems(1, ["{:.2f}".format(0.1 * i) for i in range(20)])
         self.spatial_layout = QtGui.QVBoxLayout()
         self.spatial_layout.addWidget(self.spatial_threshold_label)
         self.spatial_layout.addWidget(self.spatial_threshold)
@@ -421,7 +431,7 @@ class ProcessingWidget(QtGui.QWidget):
         self.surface_threshold_label = QtGui.QLabel()
         self.surface_threshold_label.setText("Surface Threshold")
         self.surface_threshold = QtGui.QComboBox()
-        self.surface_threshold.insertItems(1, ["{:.2f}".format(0.05*i) for i in range(42)])
+        self.surface_threshold.insertItems(1, ["{:.2f}".format(0.05 * i) for i in range(42)])
         self.surface_layout = QtGui.QVBoxLayout()
         self.surface_layout.addWidget(self.surface_threshold_label)
         self.surface_layout.addWidget(self.surface_threshold)
