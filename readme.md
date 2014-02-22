@@ -1,7 +1,7 @@
 Paw Labeling [![Build Status](https://travis-ci.org/ivoflipse/Pawlabeling.png)](https://travis-ci.org/ivoflipse/Pawlabeling)
 ============
 
-![Paw labeling tool](doc/images/Pawlabeling.png)
+![Paw labeling tool](docs/images/Pawlabeling.png)
 
 Overview
 --------
@@ -34,19 +34,19 @@ Features
 Screenshots
 -----------
 
-![Database](doc/images/Database.png)
+![Database](docs/images/Database.png)
 
-![Processing](doc/images/Processing.png)
+![Processing](docs/images/Processing.png)
 
-![2D View](doc/images/2D_view.png)
+![2D View](docs/images/2D_view.png)
 
-![Pressure](doc/images/Pressure.png)
+![Pressure](docs/images/Pressure.png)
 
-![Force](doc/images/Force.png)
+![Force](docs/images/Force.png)
 
-![COP](doc/images/COP.png)
+![COP](docs/images/COP.png)
 
-![Settings](doc/images/Settings.png)
+![Settings](docs/images/Settings.png)
 
 Installation
 -----
