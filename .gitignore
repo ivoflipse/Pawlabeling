@@ -68,3 +68,8 @@ $RECYCLE.BIN/
 
 # Project specific files #
 *.ini
+
+# Documentation
+_build
+_static
+_templates

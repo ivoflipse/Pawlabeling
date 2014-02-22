@@ -31,9 +31,9 @@ before_install:
   - sudo apt-get install python-nose
 
 install:
-  - "pip install -q pypubsub==3.3.0 --index-url"
-  - "pip install -q numexpr==1.4.2 --index-url"
-  - "pip install -q cython --index-url"
-  - "pip install -q tables==2.4.0 --index-url"
+  - "pip install -q pypubsub==3.3.0"
+  - "pip install -q numexpr==1.4.2"
+  - "pip install -q cython"
+  - "pip install -q tables==2.4.0"
 
 script: nosetests

@@ -265,6 +265,8 @@ class Model():
                                                             measurement_data=self.measurement_data,
                                                             plate=self.plate)
         self.contacts[self.measurement_name] = contacts
+        # This notifies the other widgets that the contacts have been retrieved again
+        self.get_contacts()
 
     # TODO Make sure this function doesn't have to pass along data
     def load_contacts(self):
