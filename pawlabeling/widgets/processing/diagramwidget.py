@@ -104,10 +104,17 @@ class DiagramView(QtGui.QWidget):
         self.axes.set_xlim([0, self.length])
         if na:
             self.axes.set_yticks(range(0, 5))
-            self.axes.set_yticklabels(['Paw 1', 'Paw 2', 'Paw 3', 'Paw 4', 'NA'])
+            if settings.__human__:
+                # This won't work EXCATLY as intended...
+                self.axes.set_yticklabels(['Left', 'Right', 'NA'])
+            else:
+                self.axes.set_yticklabels(['Left Front', 'Left Hind', 'Right Front', 'Right Hind', 'NA'])
         else:
             self.axes.set_yticks(range(0, 4))
-            self.axes.set_yticklabels(['Paw 1', 'Paw 2', 'Paw 3', 'Paw 4'])
+            if settings.__human__:
+                self.axes.set_yticklabels(['Left', 'Right'])
+            else:
+                self.axes.set_yticklabels(['Left Front', 'Left Hind', 'Right Front', 'Right Hind'])
         self.axes.set_xlabel('Frames Since Beginning of Measurement')
         self.axes.yaxis.grid(True)
         self.axes.set_title('Periods of Contacts')
