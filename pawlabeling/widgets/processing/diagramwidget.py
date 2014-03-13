@@ -59,7 +59,8 @@ class DiagramView(QtGui.QWidget):
         self.ratio = 1
 
         self.dpi = 100
-        self.fig = Figure(figsize=(10.0, 5.0), dpi=self.dpi)
+        # This figsize may not always work out!
+        self.fig = Figure(dpi=self.dpi) # figsize=(10.0, 5.0)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self)
         self.axes = self.fig.add_subplot(111)
@@ -89,12 +90,14 @@ class DiagramView(QtGui.QWidget):
 
         for contact in self.model.contacts[self.model.measurement_name]:
             min_z = contact.min_z
-            max_z = contact.max_z
             length = contact.length
 
             contact_label = contact.contact_label
             if contact_label < 0:
-                contact_label = 4
+                if settings.__human__:
+                    contact_label = 2
+                else:
+                    contact_label = 4
                 na = True
 
             self.axes.barh(bottom=contact_label, left=float(min_z), width=length, height=0.5,
@@ -103,17 +106,19 @@ class DiagramView(QtGui.QWidget):
         self.length = self.model.measurement.number_of_frames
         self.axes.set_xlim([0, self.length])
         if na:
-            self.axes.set_yticks(range(0, 5))
             if settings.__human__:
-                # This won't work EXCATLY as intended...
+                self.axes.set_yticks(range(0, 2))
                 self.axes.set_yticklabels(['Left', 'Right', 'NA'])
             else:
+                self.axes.set_yticks(range(0, 5))
                 self.axes.set_yticklabels(['Left Front', 'Left Hind', 'Right Front', 'Right Hind', 'NA'])
         else:
-            self.axes.set_yticks(range(0, 4))
+
             if settings.__human__:
+                self.axes.set_yticks(range(0, 2))
                 self.axes.set_yticklabels(['Left', 'Right'])
             else:
+                self.axes.set_yticks(range(0, 4))
                 self.axes.set_yticklabels(['Left Front', 'Left Hind', 'Right Front', 'Right Hind'])
         self.axes.set_xlabel('Frames Since Beginning of Measurement')
         self.axes.yaxis.grid(True)

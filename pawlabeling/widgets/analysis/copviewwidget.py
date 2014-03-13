@@ -16,7 +16,7 @@ class CopViewWidget(QtGui.QWidget):
 
         if settings.__human__:
             self.left_front = ContactView(self, label="Left Front", contact_label=0)
-            self.right_front = ContactView(self, label="Right Front", contact_label=2)
+            self.right_front = ContactView(self, label="Right Front", contact_label=1)
             self.contacts_list = {
                 0: self.left_front,
                 1: self.right_front,
