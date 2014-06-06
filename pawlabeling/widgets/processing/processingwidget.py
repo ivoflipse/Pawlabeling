@@ -146,17 +146,26 @@ class ProcessingWidget(QtGui.QWidget):
 
     def select_left_hind(self):
         current_contact = self.get_current_contact()
-        current_contact.contact_label = 1
+        if settings.__human__:
+            current_contact.contact_label = 0
+        else:
+            current_contact.contact_label = 1
         self.next_contact()
 
     def select_right_front(self):
         current_contact = self.get_current_contact()
-        current_contact.contact_label = 2
+        if settings.__human__:
+            current_contact.contact_label = 1
+        else:
+            current_contact.contact_label = 2
         self.next_contact()
 
     def select_right_hind(self):
         current_contact = self.get_current_contact()
-        current_contact.contact_label = 3
+        if settings.__human__:
+            current_contact.contact_label = 1
+        else:
+            current_contact.contact_label = 3
         self.next_contact()
 
     def contacts_available(self):
@@ -217,10 +226,6 @@ class ProcessingWidget(QtGui.QWidget):
         num_contacts = len(self.model.contacts[self.model.measurement_name])
         self.model.current_contact_index = self.model.current_contact_index % num_contacts
 
-        # # We can't go further so return
-        # if self.model.current_contact_index == len(self.model.contacts[self.model.measurement_name]) - 1:
-        #     self.model.current_contact_index = len(self.model.contacts[self.model.measurement_name]) - 1
-
         self.measurement_tree.update_current_contact()
         self.update_current_contact()
 
@@ -273,7 +278,7 @@ class ProcessingWidget(QtGui.QWidget):
         # settings.settings.setValue("spatial_threshold", spatial_threshold)
         # settings.settings.setValue("surface_threshold", surface_threshold)
         # settings.settings.endGroup()
-        #pub.sendMessage("changed_settings")
+        #pub.sendMessage("changed_settings")  # Shouldn't this be turned on?
 
     def load_thresholds(self):
         self.get_temporal_threshold()
@@ -410,7 +415,16 @@ class ProcessingWidget(QtGui.QWidget):
         )
 
         # TODO Not all actions are editable yet in the settings
-        self.actions = [self.store_status_action, self.track_contacts_action,
+        if settings.__human__:
+            self.actions = [self.store_status_action, self.track_contacts_action,
+                            "separator",
+                            self.left_front_action, self.right_front_action,
+                            "separator",
+                            self.previous_contact_action, self.next_contact_action,
+                            "separator",
+                            self.remove_label_action, self.invalid_contact_action, self.undo_label_action]
+        else:
+                    self.actions = [self.store_status_action, self.track_contacts_action,
                         "separator",
                         self.left_front_action, self.left_hind_action,
                         self.right_front_action, self.right_hind_action,

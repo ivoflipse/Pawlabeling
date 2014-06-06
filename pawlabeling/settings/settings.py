@@ -6,6 +6,8 @@ from pubsub import pub
 import logging
 
 __version__ = '0.2'
+# Using a global for now
+__human__ = False
 
 
 class Settings(QtCore.QSettings):
@@ -42,6 +44,7 @@ class Settings(QtCore.QSettings):
             "application": ["zip_files", "show_maximized", "restore_last_session"],
         }
 
+        # Possibly I could provide a getter/setter such that you could change this on the fly
         self.create_contact_dict()
         self.create_colors()
 
@@ -50,34 +53,57 @@ class Settings(QtCore.QSettings):
 
     def create_contact_dict(self):
         # Lookup table for converting indices to labels
-        self.contact_dict = {
-            0: "LF",
-            1: "LH",
-            2: "RF",
-            3: "RH",
-            -2: "NA",
-            -1: "Current"
-        }
+        if __human__:
+            self.contact_dict = {
+                0: "Left",
+                1: "Right",
+                -2: "NA",
+                -1: "Current"
+            }
+        else:
+            self.contact_dict = {
+                0: "LF",
+                1: "LH",
+                2: "RF",
+                3: "RH",
+                -2: "NA",
+                -1: "Current"
+            }
 
     def create_colors(self):
         # Colors for displaying bounding boxes
-        self.colors = [
-            QtGui.QColor(QtCore.Qt.green),
-            QtGui.QColor(QtCore.Qt.darkGreen),
-            QtGui.QColor(QtCore.Qt.red),
-            QtGui.QColor(QtCore.Qt.darkRed),
-            QtGui.QColor(QtCore.Qt.gray),
-            QtGui.QColor(QtCore.Qt.white),
-            QtGui.QColor(QtCore.Qt.yellow)
-        ]
+        if __human__:
+            self.colors = [
+                QtGui.QColor(QtCore.Qt.green),
+                QtGui.QColor(QtCore.Qt.red),
+                QtGui.QColor(QtCore.Qt.gray),
+                QtGui.QColor(QtCore.Qt.white),
+                QtGui.QColor(QtCore.Qt.yellow)
+            ]
 
-        self.matplotlib_color = [
-            "#00FF00",
-            "#008000",
-            "#FF0000",
-            "#800000",
-            "w"
-        ]
+            self.matplotlib_color = [
+                "#00FF00",
+                "#FF0000",
+                "w"
+            ]
+        else:
+            self.colors = [
+                QtGui.QColor(QtCore.Qt.green),
+                QtGui.QColor(QtCore.Qt.darkGreen),
+                QtGui.QColor(QtCore.Qt.red),
+                QtGui.QColor(QtCore.Qt.darkRed),
+                QtGui.QColor(QtCore.Qt.gray),
+                QtGui.QColor(QtCore.Qt.white),
+                QtGui.QColor(QtCore.Qt.yellow)
+            ]
+
+            self.matplotlib_color = [
+                "#00FF00",
+                "#008000",
+                "#FF0000",
+                "#800000",
+                "w"
+            ]
 
     def plate(self):
         key = "plate/plate"

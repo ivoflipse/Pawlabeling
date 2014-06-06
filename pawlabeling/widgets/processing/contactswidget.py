@@ -15,28 +15,40 @@ class ContactWidgets(QtGui.QWidget):
         self.parent = parent
         self.model = model.model
 
-        self.left_front = ContactWidget(self, label="Left Front", contact_label=0)
-        self.left_hind = ContactWidget(self, label="Left Hind", contact_label=1)
-        self.right_front = ContactWidget(self, label="Right Front", contact_label=2)
-        self.right_hind = ContactWidget(self, label="Right Hind", contact_label=3)
-        self.current_contact = ContactWidget(self, label="", contact_label=-1)
+        if settings.__human__:
+            self.left_front = ContactWidget(self, label="Left Front", contact_label=0)
+            self.right_front = ContactWidget(self, label="Right Front", contact_label=1)
+            self.current_contact = ContactWidget(self, label="", contact_label=-1)
+
+            self.contacts_list = {
+                0: self.left_front,
+                1: self.right_front,
+                -1: self.current_contact
+            }
+        else:
+            self.left_front = ContactWidget(self, label="Left Front", contact_label=0)
+            self.left_hind = ContactWidget(self, label="Left Hind", contact_label=1)
+            self.right_front = ContactWidget(self, label="Right Front", contact_label=2)
+            self.right_hind = ContactWidget(self, label="Right Hind", contact_label=3)
+            self.current_contact = ContactWidget(self, label="", contact_label=-1)
+
+            self.contacts_list = {
+                0: self.left_front,
+                1: self.left_hind,
+                2: self.right_front,
+                3: self.right_hind,
+                -1: self.current_contact
+            }
 
         self.average_data = defaultdict(list)
-
-        self.contacts_list = {
-            0: self.left_front,
-            1: self.left_hind,
-            2: self.right_front,
-            3: self.right_hind,
-            -1: self.current_contact
-        }
 
         self.logger = logging.getLogger("logger")
         self.contact_dict = settings.settings.contact_dict
 
         self.left_contacts_layout = QtGui.QVBoxLayout()
         self.left_contacts_layout.addWidget(self.left_front)
-        self.left_contacts_layout.addWidget(self.left_hind)
+        if not settings.__human__:
+            self.left_contacts_layout.addWidget(self.left_hind)
         self.current_contact_layout = QtGui.QVBoxLayout()
         self.current_contact_layout.addStretch(1)
         self.current_contact_layout.addWidget(QtGui.QLabel("Current contact"))
@@ -45,7 +57,8 @@ class ContactWidgets(QtGui.QWidget):
         self.current_contact_layout.addStretch(1)
         self.right_contacts_layout = QtGui.QVBoxLayout()
         self.right_contacts_layout.addWidget(self.right_front)
-        self.right_contacts_layout.addWidget(self.right_hind)
+        if not settings.__human__:
+            self.right_contacts_layout.addWidget(self.right_hind)
 
         self.main_layout = QtGui.QHBoxLayout()
         self.main_layout.addLayout(self.left_contacts_layout)
