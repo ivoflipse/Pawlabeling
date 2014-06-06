@@ -218,6 +218,7 @@ def normalize(array, n_max):
     # If max_value is higher, the normalization won't work as intended
     # This might make the color scaling be an underestimation compared to images using n_max
     max_value = np.max(array)
+    print(max_value)
     if n_max < max_value:
         n_max = max_value
 

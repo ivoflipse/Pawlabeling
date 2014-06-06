@@ -122,6 +122,12 @@ def load_rsscan(infile):
                 data.append(split_line)
 
     result = np.dstack(data_slices)
+
+    # Check if the array contains any NaN, if so, throw an Exception
+    if np.isnan(result).any():
+        logger.error("Measurements should never contain NaN. Please report this measurement file on Github.")
+        raise Exception
+
     # Check if we didn't pass an empty array
     if result.shape[2] == 1:
         raise Exception
