@@ -7,7 +7,7 @@ import logging
 
 __version__ = '0.2'
 # Using a global for now
-__human__ = True
+__human__ = False
 
 
 class Settings(QtCore.QSettings):
@@ -55,15 +55,17 @@ class Settings(QtCore.QSettings):
         # Lookup table for converting indices to labels
         if __human__:
             self.contact_dict = {
-            0: "Left",
-            1: "Right",
-            -2: "NA",
-            -1: "Current"
+                0: "Left",
+                1: "Right",
+                -2: "NA",
+                -1: "Current"
             }
         else:
             self.contact_dict = {
                 0: "LF",
-                1: "RF",
+                1: "LH",
+                2: "RF",
+                3: "RH",
                 -2: "NA",
                 -1: "Current"
             }
