@@ -8,6 +8,7 @@ from pubsub import pub
 from ...functions import io, gui, utility
 from ...settings import settings
 from ...models import model
+from ..treewidgetitem import TreeWidgetItem
 
 class MeasurementWidget(QtGui.QWidget):
     def __init__(self, parent=None):
@@ -140,7 +141,7 @@ class MeasurementWidget(QtGui.QWidget):
         green_brush = QtGui.QBrush(QtGui.QColor(46, 139, 87))
 
         for index, measurement in enumerate(self.model.measurements.values()):
-            measurement_item = QtGui.QTreeWidgetItem(self.measurement_tree)
+            measurement_item = TreeWidgetItem(self.measurement_tree)
             measurement_item.setText(0, measurement.measurement_name)
             measurement_item.setText(1, measurement.measurement_id)
 
@@ -149,6 +150,7 @@ class MeasurementWidget(QtGui.QWidget):
                 for idx in xrange(measurement_item.columnCount()):
                     measurement_item.setForeground(idx, green_brush)
 
+        self.measurement_tree.sortByColumn(1, Qt.AscendingOrder)
         measurement_item = self.measurement_tree.topLevelItem(0)
         self.measurement_tree.setCurrentItem(measurement_item)
 
