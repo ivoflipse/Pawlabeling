@@ -2,6 +2,7 @@ from unittest import TestCase
 import os
 import numpy as np
 import logging
+from ...settings import settings
 from ...functions import calculations, io
 
 logger = logging.getLogger("logger")

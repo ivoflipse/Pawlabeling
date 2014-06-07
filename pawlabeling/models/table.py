@@ -1,6 +1,6 @@
-
 from collections import defaultdict
 import tables
+from ..settings.settings import settings
 
 
 class MissingIdentifier(Exception):
@@ -9,8 +9,10 @@ class MissingIdentifier(Exception):
 # I should add some helper function to check if something can be found, if not raise an exception or log something
 class Table(object):
     def __init__(self, database_file):
-        # Make this configurable
-        self.table = tables.open_file(database_file, mode="a", title="Data")
+        # TODO Make this part configurable
+        # The settings has a table connection, we just create a copy of that
+        # So not every subclass of this Table class will create its own copy
+        self.table = settings.table
         self.table_name = "table"
         self.filters = tables.Filters(complib="blosc", complevel=9)
         self.table.filters = self.filters

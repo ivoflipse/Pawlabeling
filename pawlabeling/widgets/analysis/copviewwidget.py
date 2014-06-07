@@ -198,7 +198,10 @@ class ContactView(QtGui.QWidget):
 
         # Create a strided index
         z = data.shape[2]
-        index = [x for x in xrange(0, z, int(z / self.x))]
+        if z < self.x:
+            index = [x for x in xrange(z)]
+        else:
+            index = [x for x in xrange(0, z, int(z / self.x))]
 
         for frame in xrange(len(self.cop_x)-1):
             x1 = self.cop_x[frame]
