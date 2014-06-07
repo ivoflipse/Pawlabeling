@@ -32,8 +32,8 @@ before_install:
 
 install:
   - "pip install -q pypubsub==3.3.0 --allow-external pypubsub --allow-unverified pypubsub"
-  - "pip install -q numexpr==1.4.2 --allow-external numexpr"
+  - "pip install -q numexpr==2.3.1 --allow-external numexpr"
   - "pip install -q cython --allow-external cython"
-  - "pip install -q tables==2.4.0 --allow-external tables"
+  - "pip install -q tables==3.1.1 --allow-external tables"
 
 script: nosetests
