@@ -3,6 +3,7 @@ import sys
 from collections import defaultdict
 from PySide import QtGui, QtCore
 from pubsub import pub
+import tables
 import logging
 
 __version__ = '0.2'
@@ -43,6 +44,10 @@ class Settings(QtCore.QSettings):
                            "tracking_surface"],
             "application": ["zip_files", "show_maximized", "restore_last_session"],
         }
+
+        # Create a database connection with PyTables
+        database_file = self.database_file()
+        self.table = tables.open_file(database_file, mode="a", title="Data")
 
         # Possibly I could provide a getter/setter such that you could change this on the fly
         self.create_contact_dict()
@@ -224,7 +229,6 @@ class Settings(QtCore.QSettings):
     def end_force_percentage(self):
         key = "thresholds/end_force_percentage"
         return float(self.value(key, 0.25))
-
 
     def tracking_temporal(self):
         key = "thresholds/tracking_temporal"
