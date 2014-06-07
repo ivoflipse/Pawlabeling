@@ -5,6 +5,7 @@ from pubsub import pub
 from ...functions import io, gui
 from ...settings import settings
 from ...models import model
+from ..treewidgetitem import TreeWidgetItem
 
 
 class SessionWidget(QtGui.QWidget):
@@ -39,6 +40,7 @@ class SessionWidget(QtGui.QWidget):
         #self.session_tree.setMaximumWidth(400)
         self.session_tree.setColumnCount(3)
         self.session_tree.setHeaderLabels(["Name", "Date", "Time"])
+        self.session_tree.sortByColumn(3, Qt.AscendingOrder)
         self.session_tree.setSortingEnabled(True)
 
         self.session_tree.itemActivated.connect(self.put_session)
@@ -113,12 +115,13 @@ class SessionWidget(QtGui.QWidget):
             return
 
         for index, session in enumerate(self.model.sessions.values()):
-            rootItem = QtGui.QTreeWidgetItem(self.session_tree)
+            rootItem = TreeWidgetItem(self.session_tree)
             rootItem.setText(0, session.session_name)
             rootItem.setText(1, session.session_date)
             rootItem.setText(2, session.session_time)
             rootItem.setText(3, session.session_id)
 
+        self.session_tree.sortByColumn(0, Qt.AscendingOrder)
         # Select the first item
         item = self.session_tree.topLevelItem(0)
         self.session_tree.setCurrentItem(item)
