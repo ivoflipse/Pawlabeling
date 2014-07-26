@@ -102,26 +102,31 @@ def load_zebris(infile):
 def load_rsscan(infile):
     """Reads all measurement_data in the datafile. Returns an array of times for each
     slice, and a 3D array of pressure measurement_data with shape (nx, ny, nz)."""
-    data_slices = []
-    data = []
-    first_frame = False
-    for line in iter(infile.splitlines()):
+    from StringIO import StringIO
+
+    width = 0
+    height = 0
+    frames = []
+
+    lines = infile.splitlines()
+
+    for index, line in enumerate(iter(lines)):
         split_line = line.strip().split()
-        # Skip the whole header thing
         if split_line and split_line[0][:5] in ["Frame", "Beeld"]:
-            first_frame = True
-            continue
+            frames.append(index)
 
-        line_length = len(split_line)
-        if first_frame:
-            if line_length == 0:
-                array_data = np.array(data, dtype=np.float32)
-                data_slices.append(array_data)
-                data = []
-            else:
-                data.append(split_line)
+        # We'll count the number of lines in the first frame
+        # and how long the first line is
+        if split_line and not width and frames and index != frames[-1]:
+            width = len(split_line)
 
-    result = np.dstack(data_slices)
+    height = frames[1] - frames[0] - 2
+    num_frames = len(frames)
+
+    result = np.zeros((height, width, num_frames), dtype=np.float32)
+    for frame, (start, stop) in enumerate(zip(frames[:-2], frames[1:])):
+        frame_string = StringIO("\n".join(lines[start+1:stop-1]))
+        result[:, :, frame] = np.loadtxt(frame_string, dtype=np.float32)  # unpack=True if we want to change the shape
 
     # Check if the array contains any NaN, if so, throw an Exception
     if np.isnan(result).any():

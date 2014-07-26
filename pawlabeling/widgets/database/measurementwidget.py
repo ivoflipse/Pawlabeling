@@ -271,7 +271,7 @@ class MeasurementWidget(QtGui.QWidget):
                 # Increment the progress
                 progress += step_work
                 pub.sendMessage("update_progress", progress=progress)
-            except settings.MissingIdentifier:
+            except Exception:  #settings.MissingIdentifier: Don't really recall why I used this
                 pass
 
         # When we're done, signal we've reached 100%

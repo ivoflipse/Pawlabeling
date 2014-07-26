@@ -73,3 +73,6 @@ $RECYCLE.BIN/
 _build
 _static
 _templates
+
+# Build folder
+build/
