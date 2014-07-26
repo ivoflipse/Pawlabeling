@@ -513,23 +513,50 @@ class Settings(QtCore.QSettings):
         self.logger.setLevel(logging_level)
         # create file handler which logs even debug messages
         log_folder = os.path.join(self.root_folder, "log")
-        log_file_path = os.path.join(log_folder, "pawlabeling_log.log")
-        file_handler = logging.FileHandler(log_file_path)
-        file_handler.setLevel(logging_level)
+        # If the folder doesn't exist, create it
+        if not os.path.exists(log_folder):
+            os.makedirs(log_folder)
 
-        # create console handler with a higher log debug_level
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(logging.WARNING)
+        log_file_path = os.path.join(log_folder, "pawlabeling_log.log")
+
+        # If the file doesn't exist, create it (if possible)
+        if not os.path.exists(log_file_path):
+            try:
+                open(log_file_path, "a+").close()
+            except:
+                pass
+                # TODO if this fails, we should create a file in the users profile folder
+                # This isn't very DRY!
+                user_profile = os.environ["USERPROFILE"]
+                # Create logger folder here
+                log_folder = os.path.join(user_profile, "log")
+                if not os.path.exists(log_folder):
+                    os.makedirs(log_folder)
+
+                log_file_path = os.path.join(log_folder, "pawlabeling_log.log")
+                if not os.path.exists(log_file_path):
+                    try:
+                        open(log_file_path, "a+").close()
+                    except:
+                        # I'll just try to fail silently, too bad!
+                        pass  #raise Exception
 
         # create formatter and add it to the handlers
         file_formatter = logging.Formatter('%(asctime)s - %(name)% - %(levelname)s - %(message)s')
         console_formatter = logging.Formatter('%(levelname)s - %(filename)s - Line: %(lineno)d - %(message)s')
-        console_handler.setFormatter(console_formatter)
-        file_handler.setFormatter(file_formatter)
 
-        # add the handlers to the logger
-        self.logger.addHandler(file_handler)
+        # create console handler with a higher log debug_level
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setLevel(logging.WARNING)
+        console_handler.setFormatter(console_formatter)
         self.logger.addHandler(console_handler)
+
+        if os.path.exists(log_file_path):
+            file_handler = logging.FileHandler(log_file_path)
+            file_handler.setLevel(logging_level)
+            file_handler.setFormatter(file_formatter)
+
+            self.logger.addHandler(file_handler)
 
         self.logger.info("-----------------------------------")
         self.logger.info("Log system successfully initialised")
