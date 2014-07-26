@@ -1,0 +1,13 @@
+2014-07-26 14:30:21,322 - % - INFO - -----------------------------------
+2014-07-26 14:30:21,322 - % - INFO - Log system successfully initialised
+2014-07-26 14:30:21,322 - % - INFO - -----------------------------------
+2014-07-26 14:30:21,555 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-26 14:30:21,996 - % - INFO - Subject ID set to subject_6
+2014-07-26 14:30:22,000 - % - INFO - Subject: Ivo Flipse
+2014-07-26 14:30:22,000 - % - INFO - Model.clear_cached_values
+2014-07-26 14:30:22,563 - % - INFO - Session ID set to session_1
+2014-07-26 14:30:22,565 - % - INFO - Session: voor
+2014-07-26 14:30:22,594 - % - INFO - Plate ID set to plate_2
+2014-07-26 14:30:22,594 - % - INFO - Model.load_contacts: Loading all measurements for subject: Ivo Flipse, session: voor
+2014-07-26 14:30:24,815 - % - INFO - Application Shutdown
+
