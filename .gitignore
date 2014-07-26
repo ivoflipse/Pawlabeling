@@ -50,7 +50,7 @@ _cache/
 # Logs and databases #
 ######################
 *.sqlite
-*.log
+#*.log  # This only causes problems
 *.sql
 
 # Windows #
@@ -60,14 +60,14 @@ Thumbs.db
 ehthumbs.db
 
 # Folder config file
-Desktop.ini
+#Desktop.ini  # I was testing for this
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 .idea/workspace.xml
 
 # Project specific files #
-*.ini
+#*.ini
 
 # Documentation
 _build
