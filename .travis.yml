@@ -28,7 +28,8 @@ before_install:
 
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pyside numpy scipy matplotlib
-                                                                      opencv pytables nose pypubsub
+                                                                      opencv pytables nose
+  - pip install -i https://pypi.binstar.org/pypi/simple pypubsub
   - source activate test-environment
   - python setup.py install
 
