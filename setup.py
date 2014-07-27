@@ -7,7 +7,7 @@ from distutils.core import Command
 
 DISTNAME = 'Pawlabeling'
 DESCRIPTION = 'A tool to process veterinary pressure measurements.'
-LONG_DESCRIPTION = open('README.md').read()
+LONG_DESCRIPTION = open('readme.md').read()
 MAINTAINER = 'Ivo Flipse'
 MAINTAINER_EMAIL = 'ivoflipse@gmail.com'
 URL = 'https://github.com/ivoflipse/Pawlabeling'
@@ -58,10 +58,11 @@ def setup_package():
                     license=LICENSE,
                     url=URL,
                     install_require=["numpy",
-                                     "dcipy",
+                                     "scipy",
                                      "PySide",
                                      "matplotlib",
                                      "opencv",
+                                     "pytables",
                                      "pypubsub"
                     ],
                     version=VERSION,
