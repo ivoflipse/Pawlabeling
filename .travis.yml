@@ -18,15 +18,14 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
-  - conda config --add channels pypi
+  - conda config --add channels https://binstar.org/pypi
   - conda update -q conda
   # Useful for debugging any issues with conda
   - conda info -a
-
-  - "pip install -q pypubsub==3.3.0 --allow-external pypubsub --allow-unverified pypubsub"
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pyside numpy scipy matplotlib
                                                                       opencv pytables nose pip pypubsub
   - source activate test-environment
+  #- "pip install -q pypubsub==3.3.0 --allow-external pypubsub --allow-unverified pypubsub"
   #- conda install --channel https://binstar.org/pypi/pypubsub pypubsub
   - python setup.py install
 
