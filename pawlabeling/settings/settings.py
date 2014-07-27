@@ -245,15 +245,18 @@ class Settings(QtCore.QSettings):
 
     def tracking_temporal(self):
         key = "thresholds/tracking_temporal"
-        return float(self.value(key, 0.25))
+        value = float(self.value(key, 0.25))
+        return value
 
     def tracking_spatial(self):
         key = "thresholds/tracking_spatial"
-        return float(self.value(key, 1.25))
+        value = float(self.value(key, 1.25))
+        return value
 
     def tracking_surface(self):
         key = "thresholds/tracking_surface"
-        return float(self.value(key, 0.25))
+        value = float(self.value(key, 0.25))
+        return value
 
     def padding_factor(self):
         key = "thresholds/padding_factor"
