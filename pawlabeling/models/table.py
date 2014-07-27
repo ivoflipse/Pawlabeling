@@ -1,6 +1,6 @@
-from itertools import izip
 from collections import defaultdict
 import tables
+from ..settings.settings import settings
 
 
 class MissingIdentifier(Exception):
@@ -9,8 +9,10 @@ class MissingIdentifier(Exception):
 # I should add some helper function to check if something can be found, if not raise an exception or log something
 class Table(object):
     def __init__(self, database_file):
-        # Make this configurable
-        self.table = tables.openFile(database_file, mode="a", title="Data")
+        # TODO Make this part configurable
+        # The settings has a table connection, we just create a copy of that
+        # So not every subclass of this Table class will create its own copy
+        self.table = settings.table
         self.table_name = "table"
         self.filters = tables.Filters(complib="blosc", complevel=9)
         self.table.filters = self.filters
@@ -18,7 +20,7 @@ class Table(object):
     def create_row(self, table, **kwargs):
         row = table.row
 
-        for attr, value in kwargs.iteritems():
+        for attr, value in kwargs.items():
             row[attr] = value
 
         # Append the row to the table
@@ -34,18 +36,18 @@ class Table(object):
     def create_group(self, parent, item_id):
         # If the group already exists, delete it
         try:
-            group = self.table.createGroup(where=parent, name=item_id)
+            group = self.table.create_group(where=parent, name=item_id)
         except:
-            self.table.removeNode(where=parent, name=item_id, recursive=True)
-            group = self.table.createGroup(where=parent, name=item_id)
+            self.table.remove_node(where=parent, name=item_id, recursive=True)
+            group = self.table.create_group(where=parent, name=item_id)
         self.table.flush()
         return group
 
     def search_table(self, table, **kwargs):
         # Create a query out of the kwargs
         query = " & ".join(
-            ["({} == '{}')".format(key, value) for key, value in kwargs.iteritems() if value != ""])
-        rows = table.readWhere(query)
+            ["({} == '{}')".format(key, value) for key, value in kwargs.items() if value != ""])
+        rows = table.read_where(query)
 
         results = []
         for row in rows:
@@ -66,7 +68,7 @@ class Table(object):
     def store_data(self, group, item_id, data):
         atom = tables.Atom.from_dtype(data.dtype)
         filters = tables.Filters(complib="blosc", complevel=9)
-        data_array = self.table.createCArray(where=group, name=item_id,
+        data_array = self.table.create_carray(where=group, name=item_id,
                                              atom=atom, shape=data.shape, filters=filters)
         data_array[:] = data
         self.table.flush()
@@ -81,7 +83,7 @@ class Table(object):
 
     def remove_group(self, where, name, recursive=True):
         # Recursive remove is on by default
-        self.table.removeNode(where=where, name=name, recursive=recursive)
+        self.table.remove_node(where=where, name=name, recursive=recursive)
         self.table.flush()
 
     def remove_row(self, table, name_id, item_id):
@@ -91,8 +93,8 @@ class Table(object):
         This should receive the index of the row to remove
         """
         condition = "({} == '{}')".format(name_id, item_id)
-        index = table.getWhereList(condition)[0]
-        table.removeRows(start=index, stop=index+1)
+        index = table.get_where_list(condition)[0]
+        table.remove_rows(start=index, stop=index+1)
         self.table.flush()
 
     def close_table(self):
@@ -121,7 +123,7 @@ class SubjectsTable(Table):
 
         # Check if table has subjects table
         if 'subjects' not in self.table.root:
-            self.subjects_table = self.table.createTable(where="/", name="subjects", description=SubjectsTable.Subjects,
+            self.subjects_table = self.table.create_table(where="/", name="subjects", description=SubjectsTable.Subjects,
                                                          title="Subjects", filters=self.filters)
         else:
             self.subjects_table = self.table.root.subjects
@@ -159,7 +161,7 @@ class SubjectsTable(Table):
         subjects = []
         for s in subject_list:
             subject = defaultdict()
-            for key, value in izip(self.column_names, s):
+            for key, value in zip(self.column_names, s):
                 subject[key] = value
             subjects.append(subject)
         return subjects
@@ -184,9 +186,9 @@ class SessionsTable(Table):
         self.subject_group = self.table.root.__getattr__(self.subject_id)
 
         if 'sessions' not in self.subject_group:
-            self.table.createTable(where=self.subject_group, name="sessions", description=SessionsTable.Sessions,
+            self.table.create_table(where=self.subject_group, name="sessions", description=SessionsTable.Sessions,
                                    title="Sessions", filters=self.filters)
-            self.table.createTable(where=self.subject_group, name="session_labels",
+            self.table.create_table(where=self.subject_group, name="session_labels",
                                    description=SessionsTable.SessionLabels, title="Session Labels",
                                    filters=self.filters)
 
@@ -222,7 +224,7 @@ class SessionsTable(Table):
         sessions = []
         for s in session_list:
             session = defaultdict()
-            for key, value in izip(self.column_names, s):
+            for key, value in zip(self.column_names, s):
                 session[key] = value
             sessions.append(session)
         return sessions
@@ -254,12 +256,12 @@ class MeasurementsTable(Table):
         self.session_group = self.table.root.__getattr__(self.subject_id).__getattr__(self.session_id)
 
         if 'measurements' not in self.session_group:
-            self.measurements_table = self.table.createTable(where=self.session_group, name="measurements",
+            self.measurements_table = self.table.create_table(where=self.session_group, name="measurements",
                                                              description=MeasurementsTable.Measurements,
                                                              title="Measurements", filters=self.filters)
 
         if 'contacts' not in self.session_group:
-            self.contacts_table = self.table.createTable(where=self.session_group, name="contacts",
+            self.contacts_table = self.table.create_table(where=self.session_group, name="contacts",
                                                          description=SessionDataTable.Contacts,
                                                          title="Contacts", filters=self.filters)
 
@@ -296,7 +298,7 @@ class MeasurementsTable(Table):
         measurements = []
         for m in measurement_list:
             measurement = defaultdict()
-            for column, value in izip(self.column_names, m):
+            for column, value in zip(self.column_names, m):
                 measurement[column] = value
             measurements.append(measurement)
         return measurements
@@ -304,7 +306,7 @@ class MeasurementsTable(Table):
     def update_measurement(self, item_id, **kwargs):
         for row in self.measurements_table:
             if row["measurement_id"] == item_id:
-                for attr, value in kwargs.iteritems():
+                for attr, value in kwargs.items():
                     row[attr] = value
                 row.update()
         self.measurements_table.flush()
@@ -340,7 +342,7 @@ class ContactsTable(Table):
         self.measurement_group = self.session_group.__getattr__(measurement_id)
 
         if 'contacts' not in self.measurement_group:
-            self.contacts_table = self.table.createTable(where=self.measurement_group, name="contacts",
+            self.contacts_table = self.table.create_table(where=self.measurement_group, name="contacts",
                                                          description=ContactsTable.Contacts,
                                                          title="Contacts", filters=self.filters)
 
@@ -372,7 +374,7 @@ class ContactsTable(Table):
         for row in self.contacts_table:
             if row["contact_id"] == kwargs["contact_id"]:
                 # Update any fields that have changed
-                for key, value in kwargs.iteritems():
+                for key, value in kwargs.items():
                     row[key] = value
                     row.update()
 
@@ -386,7 +388,7 @@ class ContactsTable(Table):
         contacts = []
         for c in contact_list:
             contact = defaultdict()
-            for column, value in izip(self.column_names, c):
+            for column, value in zip(self.column_names, c):
                 contact[column] = value
             contacts.append(contact)
         return contacts
@@ -467,7 +469,7 @@ class PlatesTable(Table):
         self.table_name = "plate"
 
         if 'plates' not in self.table.root:
-            self.plates_table = self.table.createTable(where="/", name="plates", description=PlatesTable.Plates,
+            self.plates_table = self.table.create_table(where="/", name="plates", description=PlatesTable.Plates,
                                                        title="Plates", filters=self.filters)
         else:
             self.plates_table = self.table.root.plates
@@ -492,7 +494,7 @@ class PlatesTable(Table):
         plates = []
         for s in plates_list:
             plate = defaultdict()
-            for key, value in izip(self.column_names, s):
+            for key, value in zip(self.column_names, s):
                 plate[key] = value
             plates.append(plate)
         return plates

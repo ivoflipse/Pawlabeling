@@ -307,7 +307,7 @@ class Contact(object):
         ny, nx, nt = data.shape
         x_touch = (self.min_x == 0) or (self.max_x == ny)
         y_touch = (self.min_y == 0) or (self.max_y == nx)
-        z_touch = (self.min_z == nt)
+        z_touch = (self.max_z == nt-1)
         #print x_touch, y_touch, z_touch
         return x_touch or y_touch or z_touch
 

@@ -7,6 +7,7 @@ from PySide.QtCore import Qt
 from pubsub import pub
 from ..models import model
 from ..settings import settings
+from treewidgetitem import TreeWidgetItem
 
 
 class Singleton(object):
@@ -82,14 +83,11 @@ class MeasurementTree(QtGui.QWidget, Singleton):
                 current_measurement_item = measurement_item
 
             for contact in self.model.contacts[measurement.measurement_name]:
-                contact_item = QtGui.QTreeWidgetItem(measurement_item)
+                contact_item = TreeWidgetItem(measurement_item)
                 contact_item.setText(0, str(contact.contact_id))
                 contact_item.setText(1, self.contact_dict[contact.contact_label])
                 contact_item.setText(2, str(contact.length))  # Sets the frame count
                 max_surface = np.max(contact.surface_over_time)
-                contact_item.setText(3, str(int(max_surface)))
-                max_force = np.max(contact.force_over_time)
-                contact_item.setText(4, str(int(max_force)))
                 contact_item.setText(3, str(int(max_surface)))
                 max_force = np.max(contact.force_over_time)
                 contact_item.setText(4, str(int(max_force)))
@@ -171,4 +169,18 @@ class MeasurementTree(QtGui.QWidget, Singleton):
 
     def get_current_measurement_item(self):
         return self.measurement_tree.topLevelItem(self.model.current_measurement_index)
+
+
+class TreeWidgetItem(QtGui.QTreeWidgetItem):
+    """
+    I want to sort based on the contact id as a number, not a string, so I am creating my own version
+    based on this SO answer:
+    http://stackoverflow.com/questions/21030719/sort-a-pyside-qtgui-qtreewidget-by-an-alpha-numeric-column
+    """
+    def __lt__(self, other):
+        column = self.treeWidget().sortColumn()
+        key_1 = self.text(column)
+        key_2 = other.text(column)
+        return int(key_1) < int(key_2)
+
 

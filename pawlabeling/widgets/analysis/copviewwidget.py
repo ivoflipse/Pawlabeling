@@ -14,24 +14,34 @@ class CopViewWidget(QtGui.QWidget):
         self.parent = parent
         self.active = False
 
-        self.left_front = ContactView(self, label="Left Front", contact_label=0)
-        self.left_hind = ContactView(self, label="Left Hind", contact_label=1)
-        self.right_front = ContactView(self, label="Right Front", contact_label=2)
-        self.right_hind = ContactView(self, label="Right Hind", contact_label=3)
+        if settings.__human__:
+            self.left_front = ContactView(self, label="Left Front", contact_label=0)
+            self.right_front = ContactView(self, label="Right Front", contact_label=1)
+            self.contacts_list = {
+                0: self.left_front,
+                1: self.right_front,
+                }
+        else:
+            self.left_front = ContactView(self, label="Left Front", contact_label=0)
+            self.left_hind = ContactView(self, label="Left Hind", contact_label=1)
+            self.right_front = ContactView(self, label="Right Front", contact_label=2)
+            self.right_hind = ContactView(self, label="Right Hind", contact_label=3)
 
-        self.contacts_list = {
-            0: self.left_front,
-            1: self.left_hind,
-            2: self.right_front,
-            3: self.right_hind,
-        }
+            self.contacts_list = {
+                0: self.left_front,
+                1: self.left_hind,
+                2: self.right_front,
+                3: self.right_hind,
+                }
 
         self.left_contacts_layout = QtGui.QVBoxLayout()
         self.left_contacts_layout.addWidget(self.left_front)
-        self.left_contacts_layout.addWidget(self.left_hind)
+        if not settings.__human__:
+            self.left_contacts_layout.addWidget(self.left_hind)
         self.right_contacts_layout = QtGui.QVBoxLayout()
         self.right_contacts_layout.addWidget(self.right_front)
-        self.right_contacts_layout.addWidget(self.right_hind)
+        if not settings.__human__:
+            self.right_contacts_layout.addWidget(self.right_hind)
 
         self.main_layout = QtGui.QHBoxLayout()
         self.main_layout.addLayout(self.left_contacts_layout)
@@ -188,7 +198,10 @@ class ContactView(QtGui.QWidget):
 
         # Create a strided index
         z = data.shape[2]
-        index = [x for x in xrange(0, z, int(z / self.x))]
+        if z < self.x:
+            index = [x for x in xrange(z)]
+        else:
+            index = [x for x in xrange(0, z, int(z / self.x))]
 
         for frame in xrange(len(self.cop_x)-1):
             x1 = self.cop_x[frame]

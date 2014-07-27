@@ -3,9 +3,14 @@ import sys
 from collections import defaultdict
 from PySide import QtGui, QtCore
 from pubsub import pub
+import pkg_resources
+pkg_resources.require("tables==3.1.1")
+import tables
 import logging
 
 __version__ = '0.2'
+# Using a global for now
+__human__ = False
 
 
 class Settings(QtCore.QSettings):
@@ -42,6 +47,11 @@ class Settings(QtCore.QSettings):
             "application": ["zip_files", "show_maximized", "restore_last_session"],
         }
 
+        # Create a database connection with PyTables
+        database_file = self.database_file()
+        self.table = tables.open_file(database_file, mode="a", title="Data")
+
+        # Possibly I could provide a getter/setter such that you could change this on the fly
         self.create_contact_dict()
         self.create_colors()
 
@@ -50,34 +60,57 @@ class Settings(QtCore.QSettings):
 
     def create_contact_dict(self):
         # Lookup table for converting indices to labels
-        self.contact_dict = {
-            0: "LF",
-            1: "LH",
-            2: "RF",
-            3: "RH",
-            -2: "NA",
-            -1: "Current"
-        }
+        if __human__:
+            self.contact_dict = {
+                0: "Left",
+                1: "Right",
+                -2: "NA",
+                -1: "Current"
+            }
+        else:
+            self.contact_dict = {
+                0: "LF",
+                1: "LH",
+                2: "RF",
+                3: "RH",
+                -2: "NA",
+                -1: "Current"
+            }
 
     def create_colors(self):
         # Colors for displaying bounding boxes
-        self.colors = [
-            QtGui.QColor(QtCore.Qt.green),
-            QtGui.QColor(QtCore.Qt.darkGreen),
-            QtGui.QColor(QtCore.Qt.red),
-            QtGui.QColor(QtCore.Qt.darkRed),
-            QtGui.QColor(QtCore.Qt.gray),
-            QtGui.QColor(QtCore.Qt.white),
-            QtGui.QColor(QtCore.Qt.yellow)
-        ]
+        if __human__:
+            self.colors = [
+                QtGui.QColor(QtCore.Qt.green),
+                QtGui.QColor(QtCore.Qt.red),
+                QtGui.QColor(QtCore.Qt.gray),
+                QtGui.QColor(QtCore.Qt.white),
+                QtGui.QColor(QtCore.Qt.yellow)
+            ]
 
-        self.matplotlib_color = [
-            "#00FF00",
-            "#008000",
-            "#FF0000",
-            "#800000",
-            "w"
-        ]
+            self.matplotlib_color = [
+                "#00FF00",
+                "#FF0000",
+                "w"
+            ]
+        else:
+            self.colors = [
+                QtGui.QColor(QtCore.Qt.green),
+                QtGui.QColor(QtCore.Qt.darkGreen),
+                QtGui.QColor(QtCore.Qt.red),
+                QtGui.QColor(QtCore.Qt.darkRed),
+                QtGui.QColor(QtCore.Qt.gray),
+                QtGui.QColor(QtCore.Qt.white),
+                QtGui.QColor(QtCore.Qt.yellow)
+            ]
+
+            self.matplotlib_color = [
+                "#00FF00",
+                "#008000",
+                "#FF0000",
+                "#800000",
+                "w"
+            ]
 
     def plate(self):
         key = "plate/plate"
@@ -198,7 +231,6 @@ class Settings(QtCore.QSettings):
     def end_force_percentage(self):
         key = "thresholds/end_force_percentage"
         return float(self.value(key, 0.25))
-
 
     def tracking_temporal(self):
         key = "thresholds/tracking_temporal"
@@ -481,23 +513,50 @@ class Settings(QtCore.QSettings):
         self.logger.setLevel(logging_level)
         # create file handler which logs even debug messages
         log_folder = os.path.join(self.root_folder, "log")
-        log_file_path = os.path.join(log_folder, "pawlabeling_log.log")
-        file_handler = logging.FileHandler(log_file_path)
-        file_handler.setLevel(logging_level)
+        # If the folder doesn't exist, create it
+        if not os.path.exists(log_folder):
+            os.makedirs(log_folder)
 
-        # create console handler with a higher log debug_level
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setLevel(logging.WARNING)
+        log_file_path = os.path.join(log_folder, "pawlabeling_log.log")
+
+        # If the file doesn't exist, create it (if possible)
+        if not os.path.exists(log_file_path):
+            try:
+                open(log_file_path, "a+").close()
+            except:
+                pass
+                # TODO if this fails, we should create a file in the users profile folder
+                # This isn't very DRY!
+                user_profile = os.environ["USERPROFILE"]
+                # Create logger folder here
+                log_folder = os.path.join(user_profile, "log")
+                if not os.path.exists(log_folder):
+                    os.makedirs(log_folder)
+
+                log_file_path = os.path.join(log_folder, "pawlabeling_log.log")
+                if not os.path.exists(log_file_path):
+                    try:
+                        open(log_file_path, "a+").close()
+                    except:
+                        # I'll just try to fail silently, too bad!
+                        pass  #raise Exception
 
         # create formatter and add it to the handlers
         file_formatter = logging.Formatter('%(asctime)s - %(name)% - %(levelname)s - %(message)s')
         console_formatter = logging.Formatter('%(levelname)s - %(filename)s - Line: %(lineno)d - %(message)s')
-        console_handler.setFormatter(console_formatter)
-        file_handler.setFormatter(file_formatter)
 
-        # add the handlers to the logger
-        self.logger.addHandler(file_handler)
+        # create console handler with a higher log debug_level
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setLevel(logging.WARNING)
+        console_handler.setFormatter(console_formatter)
         self.logger.addHandler(console_handler)
+
+        if os.path.exists(log_file_path):
+            file_handler = logging.FileHandler(log_file_path)
+            file_handler.setLevel(logging_level)
+            file_handler.setFormatter(file_formatter)
+
+            self.logger.addHandler(file_handler)
 
         self.logger.info("-----------------------------------")
         self.logger.info("Log system successfully initialised")

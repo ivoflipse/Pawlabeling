@@ -6,6 +6,7 @@ from ...functions import io, gui
 from ...settings import settings
 from ...models import model
 from ...functions import gui
+from ..treewidgetitem import TreeWidgetItem
 
 
 class SubjectWidget(QtGui.QWidget):
@@ -136,12 +137,13 @@ class SubjectWidget(QtGui.QWidget):
 
         # Add the subjects to the subject_tree
         for index, subject in enumerate(self.model.subjects.values()):
-            rootItem = QtGui.QTreeWidgetItem(self.subject_tree)
+            rootItem = TreeWidgetItem(self.subject_tree)
             rootItem.setText(0, subject.first_name)
             rootItem.setText(1, subject.last_name)
             rootItem.setText(2, str(subject.mass))  # Note 1.0 is the default value, sorry!
             rootItem.setText(3, subject.subject_id)
 
+        self.subject_tree.sortByColumn(0, Qt.AscendingOrder)
         # Select the first subject
         item = self.subject_tree.topLevelItem(0)
         self.subject_tree.setCurrentItem(item)

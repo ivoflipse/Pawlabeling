@@ -3,8 +3,8 @@ import os
 import numpy as np
 import shutil
 import logging
-from ...functions import io
 from ...settings import settings
+from ...functions import io
 
 logger = logging.getLogger("logger")
 logger.disabled = True
@@ -51,23 +51,15 @@ class TestLoad(TestCase):
 
     # TODO Add a test for loading Tekscan
 
-# This test is no longer necessary, since the files are in PyTables
-# class TestFindStoredFile(TestCase):
-#     def setUp(self):
-#         # Let's try and change the measurement folder
-#         root = os.path.dirname(os.path.abspath(__file__))
-#         file_name = os.path.join(root, "files/empty_folder")
-#         # Cache the old location so we can reset it
-#         self.old_folder = settings.store_results_folder
-#         # Change the settings's folder
-#         settings.store_results_folder = file_name
-#
-#     def test_find_stored_file(self):
-#         io.find_stored_file(subject_name="Dog1", file_name="fake_export_1")
-#
-#     def tearDown(self):
-#         # Restore it to the old folder
-#         settings.store_results_folder = self.old_folder
+class TestNonMeasurementFile(TestCase):
+    def test_loading_wrong_file(self):
+        parent_folder = os.path.dirname(os.path.abspath(__file__))
+        file_location = "files/incorrect_files/desktop.ini"
+        file_path = os.path.join(parent_folder, file_location)
+        with open(file_path, "r") as infile:
+            input_file = infile.read()
+        io.load(input_file, brand="rsscan")
+        self.assertRaises(io.load(input_file, brand="rsscan"))
 
 
 class TestFixOrientation(TestCase):
