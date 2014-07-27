@@ -37,6 +37,13 @@ class SettingsWidget(QtGui.QWidget):
                                                                      "../images/folder.png")))
         self.database_folder_button.clicked.connect(self.change_database_folder)
 
+        self.logging_folder_label = QtGui.QLabel("Logging folder")
+        self.logging_folder = QtGui.QLineEdit()
+        self.logging_folder_button = QtGui.QToolButton()
+        self.logging_folder_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__),
+                                                                     "../images/folder.png")))
+        self.logging_folder_button.clicked.connect(self.change_logging_folder)
+
         self.database_file_label = QtGui.QLabel("Database file")
         self.database_file = QtGui.QLineEdit()
 
@@ -111,6 +118,7 @@ class SettingsWidget(QtGui.QWidget):
         self.widgets = [["measurement_folder_label", "measurement_folder", "measurement_folder_button"],
                         ["database_folder_label", "database_folder", "database_folder_button"],
                         ["database_file_label", "database_file"],
+                        ["logging_folder_label", "logging_folder", "logging_folder_button"],
                         ["left_front_label", "left_front", "", "right_front_label", "right_front"],
                         ["left_hind_label", "left_hind", "", "right_hind_label", "right_hind"],
                         ["main_window_width_label", "main_window_width", "",
@@ -166,6 +174,7 @@ class SettingsWidget(QtGui.QWidget):
         self.measurement_folder.setText(settings.settings.measurement_folder())
         self.database_folder.setText(settings.settings.database_folder())
         self.database_file.setText(settings.settings.database_file())
+        self.logging_folder.setText(settings.settings.logging_folder())
 
         self.left_front.setText(settings.settings.left_front().toString())
         self.left_hind.setText(settings.settings.left_hind().toString())
@@ -265,6 +274,28 @@ class SettingsWidget(QtGui.QWidget):
 
         #settings.settings.write_value("folders/database_folder", database_folder)
         self.database_folder.setText(database_folder)
+
+    def change_logging_folder(self, evt=None):
+        logging_folder = settings.settings.logging_folder()
+        # Open a file dialog
+        self.file_dialog = QtGui.QFileDialog(self,
+                                             "Select where you want to place your logging file",
+                                             logging_folder)
+
+        self.file_dialog.setFileMode(QtGui.QFileDialog.Directory)
+        self.file_dialog.setViewMode(QtGui.QFileDialog.Detail)
+
+        # Change where settings.measurement_folder is pointing too
+        if self.file_dialog.exec_():
+            logging_folder = self.file_dialog.selectedFiles()[0]
+
+        # Create a logging file
+        log_file_path = os.path.join(logging_folder, "pawlabeling_log.log")
+        if not os.path.exists(log_file_path):
+            open(log_file_path, "a+").close()
+
+        #settings.settings.write_value("folders/database_folder", database_folder)
+        self.logging_folder.setText(logging_folder)
 
     def update_plates(self):
         # This sorts the plates by the number in their plate_id

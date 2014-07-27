@@ -34,7 +34,7 @@ class Settings(QtCore.QSettings):
         # Lookup table for all the different settings
         self.lookup_table = {
             "plate": ["plate", "frequency"],
-            "folders": ["measurement_folder", "database_file", "database_folder"],
+            "folders": ["measurement_folder", "database_file", "database_folder", "logging_folder"],
             "keyboard_shortcuts": ["left_front", "left_hind", "right_front", "right_hind",
                                    "previous_contact", "next_contact", "invalid_valid", "remove_label"],
             "interpolation_degree": ["interpolation_entire_plate",
@@ -223,6 +223,15 @@ class Settings(QtCore.QSettings):
         setting_value = str(self.value(key))
         # Check if this file even exists, else return the relative path
         if not os.path.isfile(setting_value):
+            return default_value
+        return setting_value
+
+    def logging_folder(self):
+        key = "folders/logging_folder"
+        default_value = os.path.join(self.root_folder, "log")
+        setting_value = str(self.value(key))
+        # Check if this file even exists, else return the relative path
+        if not os.path.exists(setting_value):
             return default_value
         return setting_value
 
@@ -424,6 +433,7 @@ class Settings(QtCore.QSettings):
         self.settings["folders/measurement_folder"] = self.measurement_folder()
         self.settings["folders/database_folder"] = self.database_folder()
         self.settings["folders/database_file"] = self.database_file()
+        self.settings["folders/logging_folder"] = self.logging_folder()
 
         self.settings["thresholds/start_force_percentage"] = self.start_force_percentage()
         self.settings["thresholds/end_force_percentage"] = self.end_force_percentage()
@@ -496,7 +506,8 @@ class Settings(QtCore.QSettings):
         # Add the lower check just in case
         self.logger.setLevel(logging_level)
         # create file handler which logs even debug messages
-        log_folder = os.path.join(self.root_folder, "log")
+        log_folder = self.logging_folder()
+
         # If the folder doesn't exist, create it
         if not os.path.exists(log_folder):
             os.makedirs(log_folder)
