@@ -27,6 +27,6 @@ install:
   - source activate test-environment
   - "pip install -q pypubsub==3.3.0 --allow-external pypubsub --allow-unverified pypubsub"
   #- conda install --channel https://binstar.org/pypi/pypubsub pypubsub
-  #- python setup.py install
+  - python setup.py install
 
 script: nosetests
