@@ -23,37 +23,7 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pyside numpy scipy matplotlib
-                                                                      opencv pytables nose
-  #- pip install -i https://pypi.binstar.org/pypi/simple pypubsub
+  - conda install pyside numpy scipy matplotlib opencv pytables nose
   - "pip install -q pypubsub==3.3.0 --allow-external pypubsub --allow-unverified pypubsub"
-  - source activate test-environment
-  #- python setup.py install  # I don't even think I want this
-
-  # For PySide
-  #- sudo apt-get install python-pyside
-  #- sudo apt-get install python-qt4
-  # For pytables
-  #- sudo apt-get install -qq libhdf5-serial-dev hdf5-tools python-numexpr cython
-  # For numpy/scipy
-  #- sudo apt-get install -qq gfortran swig liblapack-dev
-  #- sudo apt-get install -qq libatlas-base-dev libjpeg-dev libhdf5-serial-dev
-  #- sudo apt-get install -qq liblzo2-dev libsuitesparse-dev
-  # For matplotlib
-  #- sudo apt-get install -qq libpng12-dev libfreetype6-dev tk-dev
-  #- sudo apt-get install -qq python-numpy
-  #- sudo apt-get install -qq python-scipy
-  #- sudo apt-get install -qq python-matplotlib
-   #For OpenCV
-  #- sudo apt-get install python-opencv
-  # For testing
-  #- sudo apt-get install python-nose
-
-#install:
-  #- "pip install -q pypubsub==3.3.0 --allow-external pypubsub --allow-unverified pypubsub"
-  #- "pip install -q numexpr==2.3.1 --allow-external numexpr"
-  #- "pip install -q cython --allow-external cython"
-  #- "pip install -q tables==3.1.1 --allow-external tables"
 
 script: nosetests
