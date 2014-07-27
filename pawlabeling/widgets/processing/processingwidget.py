@@ -266,11 +266,11 @@ class ProcessingWidget(QtGui.QWidget):
 
     def set_spatial_threshold(self):
         spatial_threshold = float(self.spatial_threshold.currentText())
-        settings.settings.write_value("thresholds/spatial_threshold", spatial_threshold)
+        settings.settings.write_value("thresholds/tracking_spatial", spatial_threshold)
 
     def set_surface_threshold(self):
         surface_threshold = float(self.surface_threshold.currentText())
-        settings.settings.write_value("thresholds/surface_threshold", surface_threshold)
+        settings.settings.write_value("thresholds/tracking_surface", surface_threshold)
 
         # settings.settings.beginGroup("thresholds")
         # settings.settings.setValue("tracking_temporal", temporal_threshold)
