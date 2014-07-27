@@ -218,6 +218,7 @@ class Settings(QtCore.QSettings):
 
     def database_file(self):
         key = "folders/database_file"
+        # TODO Shouldn't this use the database folder if it doesn't exist?
         default_value = os.path.join(self.root_folder, "database\\data.h5")
         setting_value = str(self.value(key))
         # Check if this file even exists, else return the relative path
@@ -239,33 +240,15 @@ class Settings(QtCore.QSettings):
 
     def tracking_spatial(self):
         key = "thresholds/tracking_spatial"
-        # default_value = 1.25
-        # setting_value = self.value(key)
-        # print "tracking_spatial", setting_value
-        # if setting_value:
-        #     return float(setting_value)
-        # else:
-        #     return default_value
         return float(self.value(key, 1.25))
 
     def tracking_surface(self):
         key = "thresholds/tracking_surface"
-        # default_value = 0.25
-        # setting_value = self.value(key)
-        # if setting_value:
-        #     return float(setting_value)
-        # else:
-        #     return default_value
         return float(self.value(key, 0.25))
 
     def padding_factor(self):
         key = "thresholds/padding_factor"
-        default_value = 1
-        setting_value = self.value(key)
-        if setting_value:
-            return int(setting_value)
-        else:
-            return default_value
+        return int(self.value(key, 1))
 
     def main_window_left(self):
         key = "widgets/main_window_left"

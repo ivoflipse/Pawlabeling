@@ -264,7 +264,6 @@ class ProcessingWidget(QtGui.QWidget):
         temporal_threshold = float(self.temporal_threshold.currentText())
         settings.settings.write_value("thresholds/tracking_temporal", temporal_threshold)
 
-
     def set_spatial_threshold(self):
         spatial_threshold = float(self.spatial_threshold.currentText())
         settings.settings.write_value("thresholds/spatial_threshold", spatial_threshold)

@@ -379,3 +379,37 @@
 2014-07-27 12:55:45,842 - % - INFO - Session: c
 2014-07-27 12:56:10,532 - % - INFO - Application Shutdown
 
+2014-07-27 13:51:25,947 - % - INFO - -----------------------------------
+2014-07-27 13:51:25,947 - % - INFO - Log system successfully initialised
+2014-07-27 13:51:25,947 - % - INFO - -----------------------------------
+2014-07-27 13:51:26,184 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-27 13:51:30,456 - % - INFO - Subject ID set to subject_1
+2014-07-27 13:51:30,459 - % - INFO - Subject: Bink Verweij
+2014-07-27 13:51:30,460 - % - INFO - Model.clear_cached_values
+2014-07-27 13:51:31,066 - % - INFO - Session ID set to session_1
+2014-07-27 13:51:31,066 - % - INFO - Session: voor
+2014-07-27 13:51:31,125 - % - INFO - Plate ID set to plate_2
+2014-07-27 13:51:31,127 - % - INFO - Model.load_contacts: Loading all measurements for subject: Bink Verweij, session: voor
+2014-07-27 13:51:35,720 - % - INFO - Changing tabs to the Processing tab
+2014-07-27 13:51:35,763 - % - INFO - Measurement ID set to measurement_5
+2014-07-27 13:51:35,763 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-07-27 13:51:43,973 - % - INFO - Starting tracking
+2014-07-27 13:51:45,992 - % - INFO - Changing tabs to the Settings tab
+2014-07-27 13:51:49,568 - % - INFO - Changing tabs to the Processing tab
+2014-07-27 13:51:49,605 - % - INFO - Measurement ID set to measurement_5
+2014-07-27 13:51:49,605 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-07-27 13:51:54,372 - % - INFO - Starting tracking
+2014-07-27 13:51:55,302 - % - INFO - Changing tabs to the Settings tab
+2014-07-27 13:51:57,535 - % - INFO - Changing tabs to the Processing tab
+2014-07-27 13:51:57,575 - % - INFO - Measurement ID set to measurement_5
+2014-07-27 13:51:57,575 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-07-27 13:52:00,838 - % - INFO - Changing tabs to the Settings tab
+2014-07-27 13:52:05,519 - % - INFO - Changing tabs to the Processing tab
+2014-07-27 13:52:05,556 - % - INFO - Measurement ID set to measurement_5
+2014-07-27 13:52:05,556 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-07-27 13:52:09,104 - % - INFO - Changing tabs to the Settings tab
+2014-07-27 13:52:10,568 - % - INFO - Changing tabs to the Processing tab
+2014-07-27 13:52:10,605 - % - INFO - Measurement ID set to measurement_5
+2014-07-27 13:52:10,605 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-07-27 13:52:13,187 - % - INFO - Application Shutdown
+
