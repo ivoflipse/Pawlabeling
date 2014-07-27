@@ -262,15 +262,13 @@ class MeasurementWidget(QtGui.QWidget):
                            "plate_id": plate_id,
                            "frequency": frequency
             }
-            try:
-                self.model.create_measurement(measurement=measurement)
-                # Update the tree after a measurement has been created
-                self.get_measurements()
-                # Increment the progress
-                progress += step_work
-                pub.sendMessage("update_progress", progress=progress)
-            except settings.MissingIdentifier:
-                pass
+            self.model.create_measurement(measurement=measurement)
+            # Update the tree after a measurement has been created
+            self.get_measurements()
+            # Increment the progress
+            progress += step_work
+            pub.sendMessage("update_progress", progress=progress)
+
 
         # When we're done, signal we've reached 100%
         progress = 100

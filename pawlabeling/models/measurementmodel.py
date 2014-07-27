@@ -26,9 +26,13 @@ class Measurements(object):
 
         measurement_id = self.measurements_table.get_new_id()
         # Else we create a copy of our own
-        measurement_object.create_measurement(measurement_id=measurement_id,
-                                              measurement=measurement,
-                                              plates=plates)
+        # If create_measurement raises an error, we will fail silently
+        try:
+            measurement_object.create_measurement(measurement_id=measurement_id,
+                                                  measurement=measurement,
+                                                  plates=plates)
+        except Exception:
+            return
 
         measurement = measurement_object.to_dict()
         # Finally we create the contact
@@ -107,6 +111,10 @@ class Measurement(object):
 
         # Extract the measurement_data
         self.measurement_data = io.load(input_file, brand=self.plate.brand)
+        # io.load only logs when there's an exception and returns None
+        if self.measurement_data is None:
+            raise Exception
+
         self.number_of_rows, self.number_of_columns, self.number_of_frames = self.measurement_data.shape
         self.orientation = io.check_orientation(self.measurement_data)
         self.maximum_value = self.measurement_data.max()  # Perhaps round this and store it as an int?
