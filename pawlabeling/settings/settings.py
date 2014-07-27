@@ -218,8 +218,8 @@ class Settings(QtCore.QSettings):
 
     def database_file(self):
         key = "folders/database_file"
-        # TODO Shouldn't this use the database folder if it doesn't exist?
-        default_value = os.path.join(self.root_folder, "database\\data.h5")
+        database_folder = self.database_folder()
+        default_value = os.path.join(database_folder, "data.h5")
         setting_value = str(self.value(key))
         # Check if this file even exists, else return the relative path
         if not os.path.isfile(setting_value):

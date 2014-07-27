@@ -413,3 +413,10 @@
 2014-07-27 13:52:10,605 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
 2014-07-27 13:52:13,187 - % - INFO - Application Shutdown
 
+2014-07-27 14:01:09,042 - % - INFO - -----------------------------------
+2014-07-27 14:01:09,042 - % - INFO - Log system successfully initialised
+2014-07-27 14:01:09,042 - % - INFO - -----------------------------------
+2014-07-27 14:01:09,269 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-27 14:01:11,996 - % - INFO - Changing tabs to the Settings tab
+2014-07-27 14:01:15,806 - % - INFO - Application Shutdown
+
