@@ -2,38 +2,28 @@ language: python
 python:
   - "2.7"
 
-virtualenv:
-  system_site_packages: true
-
-before_install:
-    # workaround for travis ignoring system_site_packages in travis.yml
-  - SITE_PKG_DIR=$VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/site-packages
-  - rm -f $VIRTUAL_ENV/lib/python$TRAVIS_PYTHON_VERSION/no-global-site-packages.txt
-  - sudo add-apt-repository ppa:pyside --yes
-  - sudo apt-get update -qq
-  # For PySide
-  - sudo apt-get install python-pyside
-  - sudo apt-get install python-qt4
-  # For pytables
-  - sudo apt-get install -qq libhdf5-serial-dev hdf5-tools python-numexpr cython
-  # For numpy/scipy
-  - sudo apt-get install -qq gfortran swig liblapack-dev
-  - sudo apt-get install -qq libatlas-base-dev libjpeg-dev libhdf5-serial-dev
-  - sudo apt-get install -qq liblzo2-dev libsuitesparse-dev
-  # For matplotlib
-  - sudo apt-get install -qq libpng12-dev libfreetype6-dev tk-dev
-  - sudo apt-get install -qq python-numpy
-  - sudo apt-get install -qq python-scipy
-  - sudo apt-get install -qq python-matplotlib
-   #For OpenCV
-  - sudo apt-get install python-opencv
-  # For testing
-  - sudo apt-get install python-nose
-
 install:
+  - sudo apt-get update
+  # You may want to periodically update this, although the conda update
+  # conda line below will keep everything up-to-date.  We do this
+  # conditionally because it saves us some downloading if the version is
+  # the same.
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+      wget http://repo.continuum.io/miniconda/Miniconda-3.4.2-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget http://repo.continuum.io/miniconda/Miniconda3-3.4.2-Linux-x86_64.sh -O miniconda.sh;
+    fi
+
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
+  - conda info -a
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pyside numpy scipy matplotlib
+                                                                      opencv pytables nose pip
+  - source activate test-environment
   - "pip install -q pypubsub==3.3.0 --allow-external pypubsub --allow-unverified pypubsub"
-  - "pip install -q numexpr==2.3.1 --allow-external numexpr"
-  - "pip install -q cython --allow-external cython"
-  - "pip install -q tables==3.1.1 --allow-external tables"
+  - python setup.py install
 
 script: nosetests
