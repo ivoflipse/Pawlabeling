@@ -306,3 +306,76 @@
 2014-07-27 12:35:16,693 - % - INFO - io.get_file_paths: Searching for measurements...
 2014-07-27 12:35:18,967 - % - INFO - Application Shutdown
 
+2014-07-27 12:46:41,336 - % - INFO - -----------------------------------
+2014-07-27 12:46:41,338 - % - INFO - Log system successfully initialised
+2014-07-27 12:46:41,338 - % - INFO - -----------------------------------
+2014-07-27 12:46:41,568 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-27 12:46:43,313 - % - INFO - Application Shutdown
+
+2014-07-27 12:46:51,282 - % - INFO - -----------------------------------
+2014-07-27 12:46:51,282 - % - INFO - Log system successfully initialised
+2014-07-27 12:46:51,282 - % - INFO - -----------------------------------
+2014-07-27 12:46:51,509 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-27 12:46:55,734 - % - INFO - Model.create_subject: Subject created
+2014-07-27 12:46:55,736 - % - INFO - Subject ID set to subject_1
+2014-07-27 12:46:55,739 - % - INFO - Subject: a b
+2014-07-27 12:46:58,680 - % - INFO - Model.create_session: Session created
+2014-07-27 12:46:58,681 - % - INFO - Model.clear_cached_values
+2014-07-27 12:46:59,197 - % - INFO - Session ID set to session_1
+2014-07-27 12:46:59,197 - % - INFO - Session: c
+2014-07-27 12:48:24,249 - % - INFO - Application Shutdown
+
+2014-07-27 12:48:28,148 - % - INFO - -----------------------------------
+2014-07-27 12:48:28,148 - % - INFO - Log system successfully initialised
+2014-07-27 12:48:28,148 - % - INFO - -----------------------------------
+2014-07-27 12:48:36,480 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-27 12:48:51,207 - % - INFO - Model.create_subject: Subject created
+2014-07-27 12:49:02,176 - % - INFO - Subject ID set to subject_1
+2014-07-27 12:49:02,233 - % - INFO - Subject: a b
+2014-07-27 12:49:06,553 - % - INFO - Model.create_session: Session created
+2014-07-27 12:49:06,644 - % - INFO - Model.clear_cached_values
+2014-07-27 12:49:11,108 - % - INFO - Session ID set to session_1
+2014-07-27 12:49:11,109 - % - INFO - Session: c
+2014-07-27 12:50:36,036 - % - INFO - Model.create_subject: Subject created
+2014-07-27 12:50:39,611 - % - INFO - Subject ID set to subject_1
+2014-07-27 12:50:39,625 - % - INFO - Subject: a b
+2014-07-27 12:50:42,171 - % - INFO - Subject ID set to subject_1
+2014-07-27 12:50:42,174 - % - INFO - Subject: a b
+2014-07-27 12:50:43,555 - % - INFO - Model.create_session: Session created
+2014-07-27 12:50:43,561 - % - INFO - Model.clear_cached_values
+2014-07-27 12:50:47,851 - % - INFO - Session ID set to session_1
+2014-07-27 12:50:47,851 - % - INFO - Session: c
+2014-07-27 12:50:51,891 - % - INFO - Subject ID set to subject_1
+2014-07-27 12:50:51,897 - % - INFO - Subject: a b
+2014-07-27 12:50:51,901 - % - INFO - Model.clear_cached_values
+2014-07-27 12:50:55,960 - % - INFO - Session ID set to session_1
+2014-07-27 12:50:55,961 - % - INFO - Session: c
+2014-07-27 12:52:46,187 - % - INFO - -----------------------------------
+2014-07-27 12:52:46,187 - % - INFO - Log system successfully initialised
+2014-07-27 12:52:46,188 - % - INFO - -----------------------------------
+2014-07-27 12:52:46,447 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-27 12:52:50,355 - % - INFO - Model.create_subject: Subject created
+2014-07-27 12:52:50,357 - % - INFO - Subject ID set to subject_1
+2014-07-27 12:52:50,358 - % - INFO - Subject: a b
+2014-07-27 12:52:52,154 - % - INFO - Model.create_session: Session created
+2014-07-27 12:52:52,157 - % - INFO - Model.clear_cached_values
+2014-07-27 12:52:52,693 - % - INFO - Session ID set to session_1
+2014-07-27 12:52:52,693 - % - INFO - Session: c
+2014-07-27 12:55:36,227 - % - INFO - -----------------------------------
+2014-07-27 12:55:36,227 - % - INFO - Log system successfully initialised
+2014-07-27 12:55:36,227 - % - INFO - -----------------------------------
+2014-07-27 12:55:38,006 - % - INFO - Application Shutdown
+
+2014-07-27 12:55:39,693 - % - INFO - -----------------------------------
+2014-07-27 12:55:39,693 - % - INFO - Log system successfully initialised
+2014-07-27 12:55:39,693 - % - INFO - -----------------------------------
+2014-07-27 12:55:39,921 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-27 12:55:43,611 - % - INFO - Model.create_subject: Subject created
+2014-07-27 12:55:43,612 - % - INFO - Subject ID set to subject_1
+2014-07-27 12:55:43,615 - % - INFO - Subject: a b
+2014-07-27 12:55:45,319 - % - INFO - Model.create_session: Session created
+2014-07-27 12:55:45,322 - % - INFO - Model.clear_cached_values
+2014-07-27 12:55:45,841 - % - INFO - Session ID set to session_1
+2014-07-27 12:55:45,842 - % - INFO - Session: c
+2014-07-27 12:56:10,532 - % - INFO - Application Shutdown
+

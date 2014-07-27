@@ -230,13 +230,16 @@ class Model():
 
     def delete_subject(self, subject):
         self.subject_model.delete_subject(subject)
-        # Have all widgets refresh their view of the subjects by calling get_subjects
+        # Have all widgets refresh their trees, they might be empty
         self.get_subjects()
+        self.get_sessions()
+        self.get_measurements()
 
     def delete_session(self, session):
         self.session_model.delete_session(session)
         # Have all widgets refresh their view of the subjects by calling get_sessions
         self.get_sessions()
+        self.get_measurements()
 
     def delete_measurement(self, measurement):
         self.measurement_model.delete_measurement(measurement)

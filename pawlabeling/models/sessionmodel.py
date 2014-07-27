@@ -42,6 +42,11 @@ class Sessions(object):
 
     def get_sessions(self):
         sessions = defaultdict()
+        try:
+            self.sessions_table.get_sessions()
+        except settings.ClosedNodeError:
+            return sessions
+
         for session in self.sessions_table.get_sessions():
             session_object = Session(self.subject_id)
             session_object.restore(session)

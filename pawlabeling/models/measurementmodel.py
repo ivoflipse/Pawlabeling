@@ -56,6 +56,11 @@ class Measurements(object):
 
     def get_measurements(self):
         measurements = {}
+        try:
+            self.measurements_table.get_measurements()
+        except settings.ClosedNodeError:
+            return measurements
+
         for measurement in self.measurements_table.get_measurements():
             measurement_object = Measurement(subject_id=self.subject_id,
                                              session_id=self.session_id)
