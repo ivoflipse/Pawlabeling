@@ -23,9 +23,10 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pyside numpy scipy matplotlib opencv pytables nose
-  - source activate test-environment
   - "pip install -q pypubsub==3.3.0 --allow-external pypubsub --allow-unverified pypubsub"
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION pyside numpy scipy matplotlib
+                                                                      opencv pytables nose pip pypubsub
+  - source activate test-environment
   #- conda install --channel https://binstar.org/pypi/pypubsub pypubsub
   - python setup.py install
 
