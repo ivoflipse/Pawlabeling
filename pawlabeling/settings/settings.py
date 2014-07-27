@@ -519,22 +519,8 @@ class Settings(QtCore.QSettings):
             try:
                 open(log_file_path, "a+").close()
             except:
+                # If it doesn't work, touche, no logging for you!
                 pass
-                # TODO if this fails, we should create a file in the users profile folder
-                # This isn't very DRY!
-                user_profile = os.environ["USERPROFILE"]
-                # Create logger folder here
-                log_folder = os.path.join(user_profile, "log")
-                if not os.path.exists(log_folder):
-                    os.makedirs(log_folder)
-
-                log_file_path = os.path.join(log_folder, "pawlabeling_log.log")
-                if not os.path.exists(log_file_path):
-                    try:
-                        open(log_file_path, "a+").close()
-                    except:
-                        # I'll just try to fail silently, too bad!
-                        pass  #raise Exception
 
         # create formatter and add it to the handlers
         file_formatter = logging.Formatter('%(asctime)s - %(name)% - %(levelname)s - %(message)s')
