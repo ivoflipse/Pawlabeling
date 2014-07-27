@@ -11,7 +11,6 @@ class Subjects(object):
     def __init__(self):
         self.database_file = settings.settings.database_file()
         self.subjects_table = table.SubjectsTable(database_file=self.database_file)
-        self.logger = logging.getLogger("logger")
 
     def create_subject(self, subject):
         """

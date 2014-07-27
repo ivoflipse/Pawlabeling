@@ -13,8 +13,6 @@ class SettingsWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(SettingsWidget, self).__init__(parent)
 
-        # Set up the logger
-        self.logger = logging.getLogger("logger")
         self.model = model.model
         label_font = settings.settings.label_font()
 

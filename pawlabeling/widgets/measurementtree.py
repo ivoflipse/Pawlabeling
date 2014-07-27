@@ -20,7 +20,6 @@ class Singleton(object):
 class MeasurementTree(QtGui.QWidget, Singleton):
     def __init__(self, parent=None):
         super(MeasurementTree, self).__init__(parent)
-        self.logger = logging.getLogger("logger")
         self.model = model.model
         self.colors = settings.settings.colors
         self.contact_dict = settings.settings.contact_dict

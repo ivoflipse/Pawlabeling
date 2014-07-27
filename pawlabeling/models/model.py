@@ -1,5 +1,4 @@
 from collections import defaultdict
-import logging
 import numpy as np
 from pubsub import pub
 from ..functions import utility, io, tracking, calculations
@@ -36,8 +35,6 @@ class Model():
         self.max_results = defaultdict()
         self.n_max = 0
         self.current_measurement_index = 0
-
-        self.logger = logging.getLogger("logger")
 
         # Various
         pub.subscribe(self.changed_settings, "changed_settings")
@@ -91,7 +88,7 @@ class Model():
         self.contacts[measurement.measurement_name] = self.contact_model.create_contacts(contacts)
         status = "Number of contacts found: {}".format(len(self.contacts[measurement.measurement_name]))
         pub.sendMessage("update_statusbar", status=status)
-        self.logger.info("model.create_contact: {}".format(status))
+        settings.settings.logger.info("model.create_contact: {}".format(status))
 
     def get_subjects(self):
         self.subjects = self.subject_model.get_subjects()
@@ -134,7 +131,7 @@ class Model():
     def put_subject(self, subject):
         self.subject = subject
         self.subject_id = subject.subject_id
-        self.logger.info("Subject ID set to {}".format(self.subject_id))
+        settings.settings.logger.info("Subject ID set to {}".format(self.subject_id))
         # As soon as a subject is selected, we instantiate our sessions table
         self.sessions_table = table.SessionsTable(database_file=self.database_file,
                                                   subject_id=self.subject_id)
@@ -149,7 +146,7 @@ class Model():
         self.clear_cached_values()
         self.session = session
         self.session_id = session.session_id
-        self.logger.info("Session ID set to {}".format(self.session_id))
+        settings.settings.logger.info("Session ID set to {}".format(self.session_id))
         pub.sendMessage("update_statusbar", status="Session: {}".format(self.session.session_name))
 
         self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
@@ -193,7 +190,7 @@ class Model():
         self.measurement_id = measurement.measurement_id
         self.measurement_name = measurement.measurement_name
 
-        self.logger.info("Measurement ID set to {}".format(self.measurement_id))
+        settings.settings.logger.info("Measurement ID set to {}".format(self.measurement_id))
         # self.contacts_table = table.ContactsTable(database_file=self.database_file,
         #                                           subject_id=self.subject_id,
         #                                           session_id=self.session_id,
@@ -217,7 +214,7 @@ class Model():
             if contact.contact_id == contact_id:
                 self.contact = contact
                 self.contact_id = self.contact.contact_id
-                self.logger.info("Contact ID set to {}".format(self.contact_id))
+                settings.settings.logger.info("Contact ID set to {}".format(self.contact_id))
                 self.selected_contacts[self.contact.contact_label] = contact
                 pub.sendMessage("put_contact")
                 break
@@ -226,7 +223,7 @@ class Model():
         self.plate = plate
         self.plate_id = plate.plate_id
         self.sensor_surface = self.plate.sensor_surface
-        self.logger.info("Plate ID set to {}".format(self.plate_id))
+        settings.settings.logger.info("Plate ID set to {}".format(self.plate_id))
 
     def delete_subject(self, subject):
         self.subject_model.delete_subject(subject)
@@ -253,7 +250,7 @@ class Model():
     # TODO Store every contact, from every measurement?
     def store_contacts(self):
         self.contact_model.create_contacts(contacts=self.contacts[self.measurement_name])
-        self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
+        settings.settings.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
             self.measurement_name))
         pub.sendMessage("update_statusbar", status="Results saved")
         # Notify the measurement that it has been processed
@@ -277,7 +274,7 @@ class Model():
         Check if there if any measurements for this subject have already been processed
         If so, retrieve the measurement_data and convert them to a usable format
         """
-        self.logger.info("Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
+        settings.settings.logger.info("Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
             self.subject_name, self.session.session_name))
         self.contacts.clear()
 
@@ -335,7 +332,7 @@ class Model():
         self.max_results.clear()
         self.n_max = 0
 
-        self.logger.info("Model.clear_cached_values")
+        settings.settings.logger.info("Model.clear_cached_values")
         pub.sendMessage("clear_cached_values")
 
 

@@ -42,7 +42,6 @@ class ContactWidgets(QtGui.QWidget):
 
         self.average_data = defaultdict(list)
 
-        self.logger = logging.getLogger("logger")
         self.contact_dict = settings.settings.contact_dict
 
         self.left_contacts_layout = QtGui.QVBoxLayout()
@@ -94,7 +93,7 @@ class ContactWidgets(QtGui.QWidget):
         try:
             self.predict_label()
         except Exception as e:
-            self.logger.info("Couldn't predict the labels. Exception: {}".format(e))
+            settings.settings.logger.info("Couldn't predict the labels. Exception: {}".format(e))
 
     # TODO predict label should receive the average data and compute on that
     def predict_label(self):

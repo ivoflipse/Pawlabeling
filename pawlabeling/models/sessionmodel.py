@@ -13,7 +13,6 @@ class Sessions(object):
         self.subject_id = subject_id
         self.database_file = settings.settings.database_file()
         self.sessions_table = table.SessionsTable(database_file=self.database_file, subject_id=self.subject_id)
-        self.logger = logging.getLogger("logger")
 
     def create_session(self, session):
         session_object = Session(self.subject_id)

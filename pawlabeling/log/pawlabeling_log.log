@@ -498,3 +498,21 @@
 2014-07-27 14:14:44,733 - % - INFO - Changing tabs to the Settings tab
 2014-07-27 14:14:48,457 - % - INFO - Application Shutdown
 
+2014-07-27 16:37:54,457 - % - INFO - -----------------------------------
+2014-07-27 16:37:54,457 - % - INFO - Log system successfully initialised
+2014-07-27 16:37:54,457 - % - INFO - -----------------------------------
+2014-07-27 16:37:54,678 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-27 16:37:55,076 - % - INFO - Subject ID set to subject_1
+2014-07-27 16:37:55,079 - % - INFO - Subject: Bink Verweij
+2014-07-27 16:37:55,081 - % - INFO - Model.clear_cached_values
+2014-07-27 16:37:55,585 - % - INFO - Session ID set to session_1
+2014-07-27 16:37:55,585 - % - INFO - Session: voor
+2014-07-27 16:37:55,641 - % - INFO - Plate ID set to plate_2
+2014-07-27 16:37:55,641 - % - INFO - Model.load_contacts: Loading all measurements for subject: Bink Verweij, session: voor
+2014-07-27 16:37:57,673 - % - INFO - Changing tabs to the Processing tab
+2014-07-27 16:37:57,716 - % - INFO - Measurement ID set to measurement_5
+2014-07-27 16:37:57,717 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-07-27 16:37:58,614 - % - INFO - Starting tracking
+2014-07-27 16:37:59,825 - % - INFO - Changing tabs to the Settings tab
+2014-07-27 16:38:01,157 - % - INFO - Application Shutdown
+

@@ -16,7 +16,6 @@ class ProcessingWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(ProcessingWidget, self).__init__(parent)
 
-        self.logger = logging.getLogger("logger")
         self.model = model.model
 
         # Create a label to display the measurement name
@@ -271,13 +270,6 @@ class ProcessingWidget(QtGui.QWidget):
     def set_surface_threshold(self):
         surface_threshold = float(self.surface_threshold.currentText())
         settings.settings.write_value("thresholds/tracking_surface", surface_threshold)
-
-        # settings.settings.beginGroup("thresholds")
-        # settings.settings.setValue("tracking_temporal", temporal_threshold)
-        # settings.settings.setValue("spatial_threshold", spatial_threshold)
-        # settings.settings.setValue("surface_threshold", surface_threshold)
-        # settings.settings.endGroup()
-        #pub.sendMessage("changed_settings")  # Shouldn't this be turned on?
 
     def load_thresholds(self):
         self.get_temporal_threshold()
