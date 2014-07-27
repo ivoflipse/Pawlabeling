@@ -12,7 +12,7 @@ class Sessions(object):
     def __init__(self, subject_id):
         self.subject_id = subject_id
         self.database_file = settings.settings.database_file()
-        self.sessions_table = table.SessionsTable(database_file=self.database_file, subject_id=subject_id)
+        self.sessions_table = table.SessionsTable(database_file=self.database_file, subject_id=self.subject_id)
         self.logger = logging.getLogger("logger")
 
     def create_session(self, session):
@@ -34,6 +34,11 @@ class Sessions(object):
                                        item_id=session.session_id)
         self.sessions_table.remove_group(where="/{}".format(self.subject_id),
                                          name=session.session_id)
+        # If we've removed all the sessions, clean up after yourself
+        try:
+            self.sessions_table.get_sessions()
+        except settings.ClosedNodeError:
+            self.sessions_table = table.SessionsTable(database_file=self.database_file, subject_id=self.subject_id)
 
     def get_sessions(self):
         sessions = defaultdict()

@@ -176,6 +176,8 @@ def main():
     window.show()
     window.raise_()
     app.exec_()
+    # Remember to close the table when we're done
+    settings.settings.table.close()
 
 
 

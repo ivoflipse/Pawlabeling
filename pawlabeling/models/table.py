@@ -94,7 +94,12 @@ class Table(object):
         """
         condition = "({} == '{}')".format(name_id, item_id)
         index = table.get_where_list(condition)[0]
-        table.remove_rows(start=index, stop=index+1)
+        try:
+            table.remove_rows(start=index, stop=index+1)
+        except NotImplementedError:
+            # If we're removing the last row, we can just delete the whole table
+            self.table.remove_node(where=table, recursive=True)
+
         self.table.flush()
 
     def close_table(self):
@@ -188,6 +193,8 @@ class SessionsTable(Table):
         if 'sessions' not in self.subject_group:
             self.table.create_table(where=self.subject_group, name="sessions", description=SessionsTable.Sessions,
                                    title="Sessions", filters=self.filters)
+        # These are separated, because I sometimes remove one without the other (for now)
+        if "session_labels" not in self.subject_group:
             self.table.create_table(where=self.subject_group, name="session_labels",
                                    description=SessionsTable.SessionLabels, title="Session Labels",
                                    filters=self.filters)

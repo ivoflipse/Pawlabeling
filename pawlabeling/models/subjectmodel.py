@@ -39,6 +39,12 @@ class Subjects(object):
                                        item_id=subject.subject_id)
         self.subjects_table.remove_group(where="/", name=subject.subject_id)
 
+        # If we've removed all the sessions, clean up after yourself
+        try:
+            self.subjects_table.get_subjects()
+        except:
+            self.subjects_table = table.SubjectsTable(database_file=self.database_file)
+
     def get_subjects(self):
         subjects = {}
         for index, subject in enumerate(self.subjects_table.get_subjects()):

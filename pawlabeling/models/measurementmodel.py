@@ -46,6 +46,13 @@ class Measurements(object):
                                            item_id=measurement.measurement_id)
         self.measurements_table.remove_group(where="/{}/{}".format(self.subject_id, self.session_id),
                                              name=measurement.measurement_id)
+        # If we've removed all the sessions, clean up after yourself
+        try:
+            self.measurements_table.get_measurements()
+        except settings.ClosedNodeError:
+            self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
+                                                              subject_id=self.subject_id,
+                                                              session_id=self.session_id)
 
     def get_measurements(self):
         measurements = {}
