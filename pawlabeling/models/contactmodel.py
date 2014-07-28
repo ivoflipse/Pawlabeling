@@ -192,6 +192,9 @@ class Contact(object):
         self.measurement_id = measurement_id
         self.contact_id = None
         self.invalid = False
+        self.edge_contact = False
+        self.unfinished_contact = False
+        self.incomplete_contact = False
         self.orientation = False
         self.filtered = False  # This can be used to check if the contact should be filtered or not
         self.contact_label = -2  # Contacts are labeled as -2 by default, this means unlabeled
@@ -301,7 +304,18 @@ class Contact(object):
         Checks if the contact touches the edge of the plate and if the forces at the beginning or end of a contact
         aren't too high. If so, it will mark the contact as invalid
         """
-        if self.touches_edge(measurement_data) or self.incomplete_step:
+        self.edge_contact = False
+        self.unfinished_contact = False
+        self.incomplete_contact = False
+
+        if self.touches_edge(measurement_data):
+            self.edge_contact = True
+        if self.incomplete_step():
+            self.incomplete_contact = True
+        if self.unfinished(measurement_data):
+            self.unfinished_contact = True
+
+        if self.edge_contact or self.unfinished_contact:
             self.invalid = True
             self.filtered = True
 
@@ -313,21 +327,23 @@ class Contact(object):
         ny, nx, nt = data.shape
         x_touch = (self.min_x == 0) or (self.max_x == ny)
         y_touch = (self.min_y == 0) or (self.max_y == nx)
-        z_touch = (self.max_z == nt-1)
-        #print x_touch, y_touch, z_touch
-        return x_touch or y_touch or z_touch
+        return x_touch or y_touch
 
-    @property
+    def unfinished(self, data):
+        ny, nx, nt = data.shape
+        return self.max_z >= (nt - 1)
+
     def incomplete_step(self):
         """
         Checks if the force at the start or end of a contact aren't higher than a configurable threshold, in which case
         its likely the measurement didn't start fast enough or the measurement ended prematurely.
         """
+        # force_over_time as an attribute is not yet available when this function is called
         force_over_time = calculations.force_over_time(self.data)
         max_force = np.max(force_over_time)
         #print force_over_time[0], force_over_time[-1], max_force, settings.settings.start_force_percentage()
         if (force_over_time[0] > (settings.settings.start_force_percentage() * max_force) or
-                    force_over_time[-1] > (settings.settings.end_force_percentage() * max_force)):
+            force_over_time[-1] > (settings.settings.end_force_percentage() * max_force)):
             return True
         return False
 
@@ -355,6 +371,9 @@ class Contact(object):
         self.max_z = contact["max_z"]
         self.invalid = contact["invalid"]
         self.filtered = contact["filtered"]
+        self.edge_contact = contact["edge_contact"]
+        self.unfinished_contact = contact["unfinished_contact"]
+        self.incomplete_contact = contact["incomplete_contact"]
         self.orientation = contact["orientation"]
         self.data = contact["data"]
         self.force_over_time = contact["force_over_time"]
@@ -382,5 +401,8 @@ class Contact(object):
             "length": self.length,
             "invalid": self.invalid,
             "filtered": self.filtered,
+            "edge_contact": self.edge_contact,
+            "unfinished_contact": self.unfinished_contact,
+            "incomplete_contact": self.incomplete_contact,
             "orientation": self.orientation
         }

@@ -653,3 +653,129 @@
 2014-07-28 10:30:37,410 - % - INFO - Results saved
 2014-07-28 10:31:32,651 - % - INFO - Application Shutdown
 
+2014-07-28 12:00:08,711 - % - INFO - -----------------------------------
+2014-07-28 12:00:08,713 - % - INFO - Log system successfully initialised
+2014-07-28 12:00:08,713 - % - INFO - -----------------------------------
+2014-07-28 12:00:09,809 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-28 12:00:10,247 - % - INFO - Subject ID set to subject_1
+2014-07-28 12:00:10,250 - % - INFO - Subject: Bink Verweij
+2014-07-28 12:00:10,252 - % - INFO - Model.clear_cached_values
+2014-07-28 12:00:10,789 - % - INFO - Session ID set to session_1
+2014-07-28 12:00:10,790 - % - INFO - Session: voor
+2014-07-28 12:00:10,851 - % - INFO - Plate ID set to plate_2
+2014-07-28 12:00:10,851 - % - INFO - Model.load_contacts: Loading all measurements for subject: Bink Verweij, session: voor
+2014-07-28 12:00:48,921 - % - INFO - -----------------------------------
+2014-07-28 12:00:48,921 - % - INFO - Log system successfully initialised
+2014-07-28 12:00:48,921 - % - INFO - -----------------------------------
+2014-07-28 12:00:49,160 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-28 12:01:02,229 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-28 12:01:03,210 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-28 12:01:07,924 - % - INFO - Model.create_subject: Subject created
+2014-07-28 12:01:07,926 - % - INFO - Subject ID set to subject_1
+2014-07-28 12:01:07,927 - % - INFO - Subject: Mosi Teuwisse
+2014-07-28 12:01:11,062 - % - INFO - Model.create_session: Session created
+2014-07-28 12:01:11,063 - % - INFO - Model.clear_cached_values
+2014-07-28 12:01:11,588 - % - INFO - Session ID set to session_1
+2014-07-28 12:01:11,588 - % - INFO - Session: voor
+2014-07-28 12:01:16,009 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:01:16,171 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:01:16,176 - % - INFO - Starting tracking
+2014-07-28 12:03:44,030 - % - INFO - Application Shutdown
+
+2014-07-28 12:03:46,678 - % - INFO - -----------------------------------
+2014-07-28 12:03:46,678 - % - INFO - Log system successfully initialised
+2014-07-28 12:03:46,678 - % - INFO - -----------------------------------
+2014-07-28 12:03:46,917 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-28 12:03:47,346 - % - INFO - Subject ID set to subject_1
+2014-07-28 12:03:47,349 - % - INFO - Subject: Mosi Teuwisse
+2014-07-28 12:03:47,351 - % - INFO - Model.clear_cached_values
+2014-07-28 12:03:47,904 - % - INFO - Session ID set to session_1
+2014-07-28 12:03:47,904 - % - INFO - Session: voor
+2014-07-28 12:03:47,920 - % - INFO - Plate ID set to plate_2
+2014-07-28 12:03:47,920 - % - INFO - Model.load_contacts: Loading all measurements for subject: Mosi Teuwisse, session: voor
+2014-07-28 12:03:59,740 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-28 12:04:00,457 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-28 12:04:06,214 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:04:06,227 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:04:06,233 - % - INFO - Starting tracking
+2014-07-28 12:04:29,118 - % - INFO - Application Shutdown
+
+2014-07-28 12:04:31,391 - % - INFO - -----------------------------------
+2014-07-28 12:04:31,391 - % - INFO - Log system successfully initialised
+2014-07-28 12:04:31,391 - % - INFO - -----------------------------------
+2014-07-28 12:04:31,621 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-28 12:04:32,058 - % - INFO - Subject ID set to subject_1
+2014-07-28 12:04:32,061 - % - INFO - Subject: Mosi Teuwisse
+2014-07-28 12:04:32,061 - % - INFO - Model.clear_cached_values
+2014-07-28 12:04:32,598 - % - INFO - Session ID set to session_1
+2014-07-28 12:04:32,598 - % - INFO - Session: voor
+2014-07-28 12:04:32,614 - % - INFO - Plate ID set to plate_2
+2014-07-28 12:04:32,614 - % - INFO - Model.load_contacts: Loading all measurements for subject: Mosi Teuwisse, session: voor
+2014-07-28 12:04:38,660 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-28 12:04:39,618 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-28 12:04:43,191 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:04:43,204 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:04:43,210 - % - INFO - Starting tracking
+2014-07-28 12:04:44,144 - % - INFO - Number of contacts found: 10
+2014-07-28 12:04:44,144 - % - INFO - model.create_contact: Number of contacts found: 10
+2014-07-28 12:04:46,591 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:04:46,687 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:04:46,693 - % - INFO - Starting tracking
+2014-07-28 12:04:47,421 - % - INFO - Number of contacts found: 9
+2014-07-28 12:04:47,421 - % - INFO - model.create_contact: Number of contacts found: 9
+2014-07-28 12:04:47,427 - % - DEBUG - Loading with RSscan format failed. Exception: list index out of range
+2014-07-28 12:04:49,842 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:04:49,970 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:04:49,976 - % - INFO - Starting tracking
+2014-07-28 12:04:50,638 - % - INFO - Number of contacts found: 7
+2014-07-28 12:04:50,638 - % - INFO - model.create_contact: Number of contacts found: 7
+2014-07-28 12:04:53,160 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:04:53,213 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:04:53,219 - % - INFO - Starting tracking
+2014-07-28 12:04:53,832 - % - INFO - Number of contacts found: 9
+2014-07-28 12:04:53,832 - % - INFO - model.create_contact: Number of contacts found: 9
+2014-07-28 12:04:56,253 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:04:56,302 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:04:56,308 - % - INFO - Starting tracking
+2014-07-28 12:04:56,979 - % - INFO - Number of contacts found: 10
+2014-07-28 12:04:56,980 - % - INFO - model.create_contact: Number of contacts found: 10
+2014-07-28 12:04:59,381 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:04:59,486 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:04:59,492 - % - INFO - Starting tracking
+2014-07-28 12:05:00,109 - % - INFO - Number of contacts found: 9
+2014-07-28 12:05:00,109 - % - INFO - model.create_contact: Number of contacts found: 9
+2014-07-28 12:05:02,572 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:05:02,648 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:05:02,654 - % - INFO - Starting tracking
+2014-07-28 12:05:03,342 - % - INFO - Number of contacts found: 9
+2014-07-28 12:05:03,342 - % - INFO - model.create_contact: Number of contacts found: 9
+2014-07-28 12:05:05,744 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:05:05,796 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:05:05,802 - % - INFO - Starting tracking
+2014-07-28 12:05:06,377 - % - INFO - Number of contacts found: 7
+2014-07-28 12:05:06,377 - % - INFO - model.create_contact: Number of contacts found: 7
+2014-07-28 12:05:09,071 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:05:09,117 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:05:09,122 - % - INFO - Starting tracking
+2014-07-28 12:05:09,948 - % - INFO - Number of contacts found: 10
+2014-07-28 12:05:09,948 - % - INFO - model.create_contact: Number of contacts found: 10
+2014-07-28 12:05:12,423 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:05:12,543 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:05:12,549 - % - INFO - Starting tracking
+2014-07-28 12:05:13,312 - % - INFO - Number of contacts found: 9
+2014-07-28 12:05:13,312 - % - INFO - model.create_contact: Number of contacts found: 9
+2014-07-28 12:05:15,776 - % - INFO - Model.create_measurement: Measurement created
+2014-07-28 12:05:15,841 - % - INFO - Model.create_measurement: Measurement data created
+2014-07-28 12:05:15,845 - % - INFO - Starting tracking
+2014-07-28 12:05:16,473 - % - INFO - Number of contacts found: 9
+2014-07-28 12:05:16,473 - % - INFO - model.create_contact: Number of contacts found: 9
+2014-07-28 12:05:16,484 - % - INFO - Model.clear_cached_values
+2014-07-28 12:05:17,075 - % - INFO - Session ID set to session_1
+2014-07-28 12:05:17,075 - % - INFO - Session: voor
+2014-07-28 12:05:17,142 - % - INFO - Plate ID set to plate_2
+2014-07-28 12:05:17,142 - % - INFO - Model.load_contacts: Loading all measurements for subject: Mosi Teuwisse, session: voor
+2014-07-28 12:05:57,523 - % - INFO - Changing tabs to the Processing tab
+2014-07-28 12:05:57,571 - % - INFO - Measurement ID set to measurement_1
+2014-07-28 12:05:57,572 - % - INFO - Measurement: stappen_1 - 21-7-2014 - Entire Plate Roll Off
+2014-07-28 12:06:04,878 - % - INFO - Model.store_contacts: Results for stappen_1 - 21-7-2014 - Entire Plate Roll Off have been successfully saved
+2014-07-28 12:06:04,878 - % - INFO - Results saved

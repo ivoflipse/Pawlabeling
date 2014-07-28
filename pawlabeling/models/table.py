@@ -338,6 +338,9 @@ class ContactsTable(Table):
         length = tables.UInt16Col()
         invalid = tables.BoolCol()
         filtered = tables.BoolCol()
+        unfinished_contact = tables.BoolCol()
+        edge_contact = tables.BoolCol()
+        incomplete_contact = tables.BoolCol()
 
     def __init__(self, database_file, subject_id, session_id, measurement_id):
         super(ContactsTable, self).__init__(database_file=database_file)
