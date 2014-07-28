@@ -1,5 +1,5 @@
 from ..models import table
-from ..functions import io
+from ..functions import io, calculations
 from ..settings import settings
 
 class Measurements(object):
@@ -128,7 +128,7 @@ class Measurement(object):
             raise Exception
 
         self.number_of_rows, self.number_of_columns, self.number_of_frames = self.measurement_data.shape
-        self.orientation = io.check_orientation(self.measurement_data)
+        self.orientation = calculations.check_orientation(self.measurement_data)
         self.maximum_value = self.measurement_data.max()  # Perhaps round this and store it as an int?
         self.frequency = measurement["frequency"]
 

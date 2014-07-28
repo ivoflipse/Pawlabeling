@@ -79,109 +79,6 @@ def calculate_cop_scipy(data):
             cop_y[frame] = y
     return cop_x, cop_y
 
-
-def force_over_time(data):
-    """
-    Force over time calculates the total force for each frame.
-    It expects the last dimension to always be frames,
-    while the other two dimensions are the rows and columns
-    """
-    assert len(data.shape) == 3
-    return np.sum(np.sum(data, axis=0), axis=0)
-
-
-def pixel_count_over_time(data):
-    assert len(data.shape) == 3
-    x, y, z = data.shape
-    return np.array([np.count_nonzero(data[:, :, frame]) for frame in xrange(z)])
-
-
-def surface_over_time(data, sensor_surface):
-    assert len(data.shape) == 3
-    pixel_counts = pixel_count_over_time(data)
-    return np.array([p_c * sensor_surface for p_c in pixel_counts])  # Can't this be rewritten?
-
-
-def pressure_over_time(data, sensor_surface):
-    assert len(data.shape) == 3
-    force = force_over_time(data)
-    pixel_counts = pixel_count_over_time(data)
-    surface = [p_c * sensor_surface for p_c in pixel_counts]
-    return np.divide(force, surface)
-
-
-def time_of_peak_force(contact, frequency, relative=True):
-    """
-    Simply the argmax of the maximum value (assuming there is only one...).
-    I can either calculate this on the average or calculate this for each contact and then take an average over those values.
-    Though this should use the frequency of the measurement to express it in milliseconds.
-    """
-    location_peak = np.argmax(contact["force_over_time"])
-    duration = contact["length"]
-    if relative:
-        return (100. * location_peak) / duration
-    else:
-        return (location_peak * 1000) / frequency
-
-
-def stance_duration(contact, frequency):
-    """
-    Calculates the total time the contact makes contact with the plate
-    Returns the contact duration in ms
-    """
-    duration = contact["data"].read().shape[2]
-    return (duration * 1000) / frequency
-
-
-# I can't demo this now, because I don't have labeled contacts...
-def swing_duration(contact_1, contact_2, frequency):
-    """
-    Calculate the time between two contacts of the same paw.
-    This is calculated by taking the difference between the last frame
-    of contact_1 and the first frame of contact_2 and converting it to ms
-    """
-    # assert that the contacts are from the same measurement
-    assert contact_1["contact_label"] == contact_2["contact_label"]
-    # If contact_2 occurs before contact_1, switch them around.
-    if contact_1["min_z"] > contact_2["min_z"]:
-        contact_1, contact_2 = contact_2, contact_1
-    toe_off = contact_1["max_z"]
-    heel_strike = contact_2["min_z"]
-    difference = heel_strike - toe_off
-    return (difference * 1000) / frequency
-
-
-def step_duration(contact_1, contact_2, frequency):
-    difference = abs(contact_1["min_z"] - contact_2["min_z"])
-    return (difference * 1000) / frequency
-
-
-def stance_duration(contact, frequency):
-    """
-    Calculates the total time the contact makes contact with the plate
-    Returns the contact duration in ms
-    """
-    duration = contact["data"].read().shape[2]  # This could be replaced by "length"
-    return (duration * 1000) / frequency
-
-
-def swing_duration(contact_1, contact_2, frequency):
-    """
-    Calculate the time between two contacts of the same paw.
-    This is calculated by taking the difference between the last frame
-    of contact_1 and the first frame of contact_2 and converting it to ms
-    """
-    # assert that the contacts are from the same measurement
-    assert contact_1["contact_label"] == contact_2["contact_label"]
-    # If contact_2 occurs before contact_1, switch them around.
-    if contact_1["min_z"] > contact_2["min_z"]:
-        contact_1, contact_2 = contact_2, contact_1
-    toe_off = contact_1["max_z"]
-    heel_strike = contact_2["min_z"]
-    difference = abs(heel_strike - toe_off)
-    return (difference * 1000) / frequency
-
-
 # Given the size of the movement, it makes more sense to put this in mm/ms instead of ms/s
 def velocity_of_cop(contact, sensor_width, sensor_height, frequency):
     # contact_duration = stance_duration(contact, frequency)
@@ -217,12 +114,106 @@ def velocity_of_cop(contact, sensor_width, sensor_height, frequency):
         distances_y.append(dy)
     return distances, distances_x, distances_y
 
+def force_over_time(data):
+    """
+    Force over time calculates the total force for each frame.
+    It expects the last dimension to always be frames,
+    while the other two dimensions are the rows and columns
+    """
+    assert len(data.shape) == 3
+    return np.sum(np.sum(data, axis=0), axis=0)
 
-def temporal_spatial(contacts, sensor_width, sensor_height, frequency):
+
+def pixel_count_over_time(data):
+    assert len(data.shape) == 3
+    x, y, z = data.shape
+    return np.array([np.count_nonzero(data[:, :, frame]) for frame in xrange(z)])
+
+
+def surface_over_time(data, sensor_surface):
+    assert len(data.shape) == 3
+    pixel_counts = pixel_count_over_time(data)
+    return np.array([p_c * sensor_surface for p_c in pixel_counts])  # Can't this be rewritten?
+
+
+def pressure_over_time(data, sensor_surface):
+    assert len(data.shape) == 3
+    force = force_over_time(data)
+    pixel_counts = pixel_count_over_time(data)
+    surface = [p_c * sensor_surface for p_c in pixel_counts]
+    return np.divide(force, surface)
+
+def max_force(data):
+    return np.max(force_over_time(data))
+
+def max_pressure(data, sensor_surface):
+    return np.max(pressure_over_time(data, sensor_surface))
+
+
+def max_surface(data, sensor_surface):
+    return np.max(surface_over_time(data, sensor_surface))
+
+
+def time_of_peak_force(contact, frequency, relative=True):
+    """
+    Simply the argmax of the maximum value (assuming there is only one...).
+    I can either calculate this on the average or calculate this for each contact and then take an average over those values.
+    Though this should use the frequency of the measurement to express it in milliseconds.
+    """
+    location_peak = np.argmax(contact["force_over_time"])
+    duration = contact["length"]
+    if relative:
+        return (100. * location_peak) / duration
+    else:
+        return (location_peak * 1000) / frequency
+
+
+def vertical_impulse_method1(contact, frequency, mass=1.0):
+    """
+    From Oosterlinck:
+    Vertical impulse (VI) was calculated by time integration of the force-time curves and multiplied by time,
+    normalised by weight and expressed as Newton-seconds per kilogram (N s/kg)
+    So wouldn't that just be one value? Namely the surface under the entire force curve?
+    """
+    force_over_time = contact["force_over_time"]
+    # Normalize the force over time by mass
+    force_over_time = np.divide(force_over_time, mass * frequency)
+    sum_force = np.sum(force_over_time)
+    return sum_force
+
+# If you integrate with step size 1, you basically take the sum
+# You can use simps, but the difference is like 0.01-0.05 N*s
+def vertical_impulse_trapz(contact, frequency, mass=1.0):
+    """
+    From Oosterlinck:
+    Vertical impulse (VI) was calculated by time integration of the  force-time curves and multiplied by time,
+    normalised by weight and expressed as Newton-seconds per kilogram (N s/kg)
+    So wouldn't that just be one value? Namely the surface under the entire force curve?
+    """
+    from scipy.integrate import trapz  # simps is an alternative
+
+    force_over_time = contact["force_over_time"]
+    force_over_time = np.divide(force_over_time, mass)
+    sum_force = trapz(force_over_time, dx=1 / frequency)
+    return sum_force
+
+
+def vertical_impulse(contact, frequency, mass=1.0, version="1"):
+    """
+    Careful, I would recommend using mass in Newtons instead of kilograms
+    """
+    if version == "1":
+        return vertical_impulse_method1(contact, frequency, mass)
+    elif version == "2":
+        return vertical_impulse_trapz(contact, frequency, mass)
+
+##########################################################################################
+# Spatiotemporal functions
+def temporal_spatial(contacts, measurement_data, sensor_width, sensor_height, frequency):
     distances = defaultdict()
     label_lookup = defaultdict(dict)
     direction_modifier = 1.
-    if detect_direction(contacts):
+    if detect_direction(measurement_data):
         direction_modifier = -1.
     for index, contact in enumerate(contacts):
         lookup_table = defaultdict(int)
@@ -261,12 +252,6 @@ def temporal_spatial(contacts, sensor_width, sensor_height, frequency):
 
         distances[index] = distance
     return distances, label_lookup
-
-
-def detect_direction(contacts):
-    contact_1 = contacts[0]["min_x"]
-    contact_2 = contacts[-1]["min_x"]
-    return contact_2 < contact_1
 
 
 def gait_velocity(contacts, sensor_width, sensor_height, frequency):
@@ -342,61 +327,40 @@ def gait_velocity(contacts, sensor_width, sensor_height, frequency):
 #
 #     return speed
 
-
-def vertical_impulse_method1(contact, frequency, mass=1.0):
+def stance_duration(contact, frequency):
     """
-    From Oosterlinck:
-    Vertical impulse (VI) was calculated by time integration of the force-time curves and multiplied by time,
-    normalised by weight and expressed as Newton-seconds per kilogram (N s/kg)
-    So wouldn't that just be one value? Namely the surface under the entire force curve?
+    Calculates the total time the contact makes contact with the plate
+    Returns the contact duration in ms
     """
-    force_over_time = contact["force_over_time"]
-    # Normalize the force over time by mass
-    force_over_time = np.divide(force_over_time, mass * frequency)
-    sum_force = np.sum(force_over_time)
-    return sum_force
+    duration = contact["data"].read().shape[2]
+    return (duration * 1000) / frequency
 
 
-# If you integrate with step size 1, you basically take the sum
-# You can use simps, but the difference is like 0.01-0.05 N*s
-def vertical_impulse_trapz(contact, frequency, mass=1.0):
+# I can't demo this now, because I don't have labeled contacts...
+def swing_duration(contact_1, contact_2, frequency):
     """
-    From Oosterlinck:
-    Vertical impulse (VI) was calculated by time integration of the  force-time curves and multiplied by time,
-    normalised by weight and expressed as Newton-seconds per kilogram (N s/kg)
-    So wouldn't that just be one value? Namely the surface under the entire force curve?
+    Calculate the time between two contacts of the same paw.
+    This is calculated by taking the difference between the last frame
+    of contact_1 and the first frame of contact_2 and converting it to ms
     """
-    from scipy.integrate import trapz  # simps is an alternative
-
-    force_over_time = contact["force_over_time"]
-    force_over_time = np.divide(force_over_time, mass)
-    sum_force = trapz(force_over_time, dx=1 / frequency)
-    return sum_force
-
-
-def vertical_impulse(contact, frequency, mass=1.0, version="1"):
-    """
-    Careful, I would recommend using mass in Newtons instead of kilograms
-    """
-    if version == "1":
-        return vertical_impulse_method1(contact, frequency, mass)
-    elif version == "2":
-        return vertical_impulse_trapz(contact, frequency, mass)
+    # assert that the contacts are from the same measurement
+    assert contact_1["contact_label"] == contact_2["contact_label"]
+    # If contact_2 occurs before contact_1, switch them around.
+    if contact_1["min_z"] > contact_2["min_z"]:
+        contact_1, contact_2 = contact_2, contact_1
+    toe_off = contact_1["max_z"]
+    heel_strike = contact_2["min_z"]
+    difference = heel_strike - toe_off
+    return (difference * 1000) / frequency
 
 
-def max_force(contact, mass=1.0):
-    """
-    Perhaps you'd want this scaled to mass
-    """
-    return np.max(contact["force_over_time"])
+def step_duration(contact_1, contact_2, frequency):
+    difference = abs(contact_1["min_z"] - contact_2["min_z"])
+    return (difference * 1000) / frequency
 
 
-def max_pressure(contact):
-    return np.max(contact["pressure_over_time"])
 
 
-def max_surface(contact):
-    return np.max(contact["surface_over_time"])
 
 
 def get_percentile(data, percent=5):
@@ -509,3 +473,18 @@ def check_valid(contact_list, weight):
 
     return all_paws and no_acceleration and right_pattern and straight_line
 
+
+def check_orientation(measurement_data):
+    from scipy.ndimage.measurements import center_of_mass
+    # Find the first and last frame with nonzero measurement_data (from z)
+    x, y, z = np.nonzero(measurement_data)
+    # For some reason I was loading the file in such a way that it wasn't sorted
+    z = sorted(z)
+    start, end = z[0], z[-1]
+    # Get the COP for those two frames
+    start_x, start_y = center_of_mass(measurement_data[:, :, start])
+    end_x, end_y = center_of_mass(measurement_data[:, :, end])
+    # We've calculated the start and end point of the measurement (if at all)
+    x_distance = end_x - start_x
+    # If this distance is negative, the subject walked right to left
+    return True if x_distance < 0 else False
