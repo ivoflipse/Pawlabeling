@@ -74,24 +74,21 @@ class Contacts(object):
             except NotImplementedError:
                 pass
 
-        # Now remove the table itself
-        self.contacts_table.remove_group(where="/{}/{}/{}".format(self.subject_id, self.session_id, self.measurement_id),
-                                         name="contacts",
-                                         recursive=True)
+        try:
+            # Now remove the table itself
+            self.contacts_table.remove_group(where="/{}/{}/{}".format(self.subject_id, self.session_id, self.measurement_id),
+                                             name="contacts",
+                                             recursive=True)
+        except settings.NoSuchNodeError:
+            # If its already gone, we can just continue
+            pass
+
         # And create it again
         self.contacts_table = table.ContactsTable(database_file=self.database_file,
                                                   subject_id=self.subject_id,
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
 
-        # If we've removed all the sessions, clean up after yourself
-        try:
-            self.contacts_table.get_contacts()
-        except settings.ClosedNodeError:
-            self.contacts_table = table.ContactsTable(database_file=self.database_file,
-                                                  subject_id=self.subject_id,
-                                                  session_id=self.session_id,
-                                                  measurement_id=self.measurement_id)
 
     def delete_contact(self, contact):
         self.contacts_table.remove_row(table=self.contacts_table.contacts_table,
@@ -297,6 +294,7 @@ class Contact(object):
         """
         self.contact_id = contact_id
 
+    # TODO I should add more validation functions here, while splitting these out into multiple variables
     def validate_contact(self, measurement_data):
         """
         Input: measurement_data = 3D entire plate measurement_data array

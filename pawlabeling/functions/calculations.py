@@ -1,5 +1,24 @@
+from collections import defaultdict
 import numpy as np
 from ..settings import settings
+
+
+def asymmetry_index(left, right, absolute=False):
+    """
+    This function offers two versions, where the difference is in the numerator.
+    When absolute is True, the function will return the size of the difference between left and right
+    regardless of the direction of the difference.
+    The following equation is used:
+    (|XR - XL|/ |XR + XL| X 0.5) X 100
+    where XR is the mean of a given gait variable for right footfalls
+    during a 10-second recording and XL is the mean of a given gait variable
+    for left footfalls during a 10-second recording
+    See Oosterlinck et al. as a references.
+    """
+    if absolute:
+        return (100. * abs(left - right)) / (0.5 * abs(left + right))
+    else:
+        return (100. * (left - right)) / (0.5 * abs(left + right))
 
 
 def interpolate_time_series(data, length=100):
@@ -9,6 +28,7 @@ def interpolate_time_series(data, length=100):
     """
     assert len(data.shape) == 1
     from scipy import interpolate
+
     x = np.arange(0, len(data))
     f = interpolate.interp1d(x, data, bounds_error=False)
     x_new = np.linspace(0, len(data) - 1, num=length)
@@ -46,6 +66,7 @@ def calculate_cop_numpy(data):
 
 def calculate_cop_scipy(data):
     from scipy.ndimage.measurements import center_of_mass
+
     y, x, z = np.shape(data)
     cop_x = np.zeros(z, dtype=np.float32)
     cop_y = np.zeros(z, dtype=np.float32)
@@ -87,3 +108,404 @@ def pressure_over_time(data, sensor_surface):
     pixel_counts = pixel_count_over_time(data)
     surface = [p_c * sensor_surface for p_c in pixel_counts]
     return np.divide(force, surface)
+
+
+def time_of_peak_force(contact, frequency, relative=True):
+    """
+    Simply the argmax of the maximum value (assuming there is only one...).
+    I can either calculate this on the average or calculate this for each contact and then take an average over those values.
+    Though this should use the frequency of the measurement to express it in milliseconds.
+    """
+    location_peak = np.argmax(contact["force_over_time"])
+    duration = contact["length"]
+    if relative:
+        return (100. * location_peak) / duration
+    else:
+        return (location_peak * 1000) / frequency
+
+
+def stance_duration(contact, frequency):
+    """
+    Calculates the total time the contact makes contact with the plate
+    Returns the contact duration in ms
+    """
+    duration = contact["data"].read().shape[2]
+    return (duration * 1000) / frequency
+
+
+# I can't demo this now, because I don't have labeled contacts...
+def swing_duration(contact_1, contact_2, frequency):
+    """
+    Calculate the time between two contacts of the same paw.
+    This is calculated by taking the difference between the last frame
+    of contact_1 and the first frame of contact_2 and converting it to ms
+    """
+    # assert that the contacts are from the same measurement
+    assert contact_1["contact_label"] == contact_2["contact_label"]
+    # If contact_2 occurs before contact_1, switch them around.
+    if contact_1["min_z"] > contact_2["min_z"]:
+        contact_1, contact_2 = contact_2, contact_1
+    toe_off = contact_1["max_z"]
+    heel_strike = contact_2["min_z"]
+    difference = heel_strike - toe_off
+    return (difference * 1000) / frequency
+
+
+def step_duration(contact_1, contact_2, frequency):
+    difference = abs(contact_1["min_z"] - contact_2["min_z"])
+    return (difference * 1000) / frequency
+
+
+def stance_duration(contact, frequency):
+    """
+    Calculates the total time the contact makes contact with the plate
+    Returns the contact duration in ms
+    """
+    duration = contact["data"].read().shape[2]  # This could be replaced by "length"
+    return (duration * 1000) / frequency
+
+
+def swing_duration(contact_1, contact_2, frequency):
+    """
+    Calculate the time between two contacts of the same paw.
+    This is calculated by taking the difference between the last frame
+    of contact_1 and the first frame of contact_2 and converting it to ms
+    """
+    # assert that the contacts are from the same measurement
+    assert contact_1["contact_label"] == contact_2["contact_label"]
+    # If contact_2 occurs before contact_1, switch them around.
+    if contact_1["min_z"] > contact_2["min_z"]:
+        contact_1, contact_2 = contact_2, contact_1
+    toe_off = contact_1["max_z"]
+    heel_strike = contact_2["min_z"]
+    difference = abs(heel_strike - toe_off)
+    return (difference * 1000) / frequency
+
+
+# Given the size of the movement, it makes more sense to put this in mm/ms instead of ms/s
+def velocity_of_cop(contact, sensor_width, sensor_height, frequency):
+    # contact_duration = stance_duration(contact, frequency)
+    cop_x = contact["cop_x"]
+    cop_y = contact["cop_y"]
+    step_size = 1000. / frequency
+    distances = []
+    distances_x = []
+    distances_y = []
+    diagonal_distance = np.sqrt(sensor_width ** 2 + sensor_height ** 2)
+    for i in range(2, len(cop_x)):
+        x1 = cop_x[i - 1]
+        x2 = cop_x[i]
+        y1 = cop_y[i - 1]
+        y2 = cop_y[i]
+        #dx = np.linalg.norm(x1 - x2)
+        dx = x2 - x1
+        #dy = np.linalg.norm(y1 - y2)
+        dy = y2 - y1
+        #dxy = np.linalg.norm(np.array(x1, y1)-np.array(x2, y2))
+        #dxy = np.sqrt(dx**2 + dy**2)
+        dxy = dx + dy
+        # Convert to mm
+        dx *= sensor_width
+        dy *= sensor_height
+        dxy *= diagonal_distance
+        # Convert to mm/s
+        dx *= step_size
+        dy *= step_size
+        dxy *= step_size
+        distances.append(dxy)
+        distances_x.append(dx)
+        distances_y.append(dy)
+    return distances, distances_x, distances_y
+
+
+def temporal_spatial(contacts, sensor_width, sensor_height, frequency):
+    distances = defaultdict()
+    label_lookup = defaultdict(dict)
+    direction_modifier = 1.
+    if detect_direction(contacts):
+        direction_modifier = -1.
+    for index, contact in enumerate(contacts):
+        lookup_table = defaultdict(int)
+        distance = defaultdict()
+        for index2 in range(1, 5):
+            new_index = index + index2
+            # Don't bother if we're near the end
+            if new_index >= len(contacts):
+                continue
+
+            other_contact = contacts[new_index]
+            other_label = other_contact["contact_label"]
+            # If we hit a contact for the second time
+            if other_label in lookup_table:
+                break
+
+            label_lookup[index][other_label] = new_index
+
+            # Lets skip bad contacts mkay?
+            lookup_table[other_label] = 1
+            if other_contact["invalid"] or other_contact["filtered"] or other_contact["contact_label"] < 0:
+                continue
+
+            x_dist = ((other_contact["min_x"] + ((other_contact["min_x"] - other_contact["max_x"]) / 2.)) -
+                      (contact["min_x"] + ((contact["min_x"] - contact["max_x"]) / 2.)))
+            y_dist = ((other_contact["min_y"] + ((other_contact["min_y"] - other_contact["max_y"]) / 2.)) -
+                      (contact["min_y"] + ((contact["min_y"] - contact["max_y"]) / 2.)))
+            z_dist = other_contact["min_z"] - contact["min_z"]
+
+            # Flip directions is the measurement is the other way around
+            x_dist *= sensor_height * direction_modifier
+            y_dist *= sensor_width * direction_modifier
+            z_dist = (1000 * z_dist) / frequency
+
+            distance[other_label] = (x_dist, y_dist, z_dist)
+
+        distances[index] = distance
+    return distances, label_lookup
+
+
+def detect_direction(contacts):
+    contact_1 = contacts[0]["min_x"]
+    contact_2 = contacts[-1]["min_x"]
+    return contact_2 < contact_1
+
+
+def gait_velocity(contacts, sensor_width, sensor_height, frequency):
+    """
+    Calculate the velocity of the gait by dividing the average stride length
+    by the average swing time.
+
+    Can't this be calculated from taking steps between front paws for example?
+    """
+    sensor_width = 1.
+    sensor_height = 1.
+    frequency = 100.
+    distances = temporal_spatial(contacts, sensor_width, sensor_height, frequency)
+    step_lookup = {0: 2, 1: 3, 2: 0, 3: 1}
+    speed = []
+    contact_labels = {}
+    for index, contact in enumerate(contacts):
+        contact_labels[index] = contact["contact_label"]
+
+    step_size = 1. / frequency
+    # Loop through distances and check if we find the same contact in
+    # the embedded distance dictionary
+    for contact_id, distance in distances.items():
+        contact_label_1 = contact_labels[contact_id]
+        if contact_label_1 < 0:
+            continue
+        for contact_label_2, (x, y, z) in distance.items():
+            if contact_label_1 == contact_label_2:
+                if not z:
+                    continue
+                # The * 1000 is to turn it into meters/second
+                new_x = x * 1000.
+                new_z = z * 1000.
+                speed.append(new_x / new_z)
+            if contact_label_2 == step_lookup[contact_label_1]:
+                # How could this not be there? Because of defaultdict?
+                if not z:
+                    continue
+                # The * 1000 is to turn it into meters/second
+                new_x = x * 1000.
+                new_z = z * 1000.
+                speed.append(new_x / new_z)
+
+    return speed
+
+
+# I seem to have multiple versions of this code
+# def gait_velocity(contacts, sensor_width=sensor_width, sensor_height=sensor_height, frequency=frequency):
+# """
+#     Calculate the velocity of the gait by dividing the average stride length
+#     by the average swing time.
+#
+#     Can't this be calculated from taking steps between front paws for example?
+#     """
+#     distances = temporal_spatial(contacts)
+#     step_lookup = {0: 2, 1: 3, 2: 0, 3: 1}
+#     speed = []
+#     contact_labels = {}
+#     for index, contact in enumerate(contacts):
+#         contact_labels[index] = contact["contact_label"]
+#
+#     step_size = 1. / frequency
+#     for contact_id, distance in distances.items():
+#         contact_label_1 = contact_labels[contact_id]
+#         if contact_label_1 not in [0,2]:
+#             continue
+#         if contact_label_1 in distance:
+#             x, y, z = distance[contact_label_1]
+#             speed.append(x / (z+1))  # So we don't divide by zero
+#         if step_lookup[contact_label_1] in distance:
+#             x, y, z = distance[step_lookup[contact_label_1]]
+#             speed.append(x / (z+1))  # So we don't divide by zero
+#
+#     return speed
+
+
+def vertical_impulse_method1(contact, frequency, mass=1.0):
+    """
+    From Oosterlinck:
+    Vertical impulse (VI) was calculated by time integration of the force-time curves and multiplied by time,
+    normalised by weight and expressed as Newton-seconds per kilogram (N s/kg)
+    So wouldn't that just be one value? Namely the surface under the entire force curve?
+    """
+    force_over_time = contact["force_over_time"]
+    # Normalize the force over time by mass
+    force_over_time = np.divide(force_over_time, mass * frequency)
+    sum_force = np.sum(force_over_time)
+    return sum_force
+
+
+# If you integrate with step size 1, you basically take the sum
+# You can use simps, but the difference is like 0.01-0.05 N*s
+def vertical_impulse_trapz(contact, frequency, mass=1.0):
+    """
+    From Oosterlinck:
+    Vertical impulse (VI) was calculated by time integration of the  force-time curves and multiplied by time,
+    normalised by weight and expressed as Newton-seconds per kilogram (N s/kg)
+    So wouldn't that just be one value? Namely the surface under the entire force curve?
+    """
+    from scipy.integrate import trapz  # simps is an alternative
+
+    force_over_time = contact["force_over_time"]
+    force_over_time = np.divide(force_over_time, mass)
+    sum_force = trapz(force_over_time, dx=1 / frequency)
+    return sum_force
+
+
+def vertical_impulse(contact, frequency, mass=1.0, version="1"):
+    """
+    Careful, I would recommend using mass in Newtons instead of kilograms
+    """
+    if version == "1":
+        return vertical_impulse_method1(contact, frequency, mass)
+    elif version == "2":
+        return vertical_impulse_trapz(contact, frequency, mass)
+
+
+def max_force(contact, mass=1.0):
+    """
+    Perhaps you'd want this scaled to mass
+    """
+    return np.max(contact["force_over_time"])
+
+
+def max_pressure(contact):
+    return np.max(contact["pressure_over_time"])
+
+
+def max_surface(contact):
+    return np.max(contact["surface_over_time"])
+
+
+def get_percentile(data, percent=5):
+    cut_off = percent / 2.
+    low = np.percentile(data, cut_off)
+    high = np.percentile(data, 100 - cut_off)
+    return [x for x in data if x > low and x < high]
+
+
+def find_gait_pattern(pattern):
+    stride_patterns = {'0-2-1-3': ['0-2-1-3',
+                                   '0-2-1',
+                                   '2-1-3-0',
+                                   '2-1-3',
+                                   '1-3-0-2',
+                                   '1-3-0',
+                                   '3-0-2-1',
+                                   '3-0-2'],
+                       '0-2-3-1': ['0-2-3-1',
+                                   '0-2-3',
+                                   '2-3-1-0',
+                                   '2-3-1',
+                                   '3-1-0-2',
+                                   '3-1-0',
+                                   '1-0-2-3',
+                                   '1-0-2'],
+                       '0-3-2-1': ['0-3-2-1',
+                                   '0-3-2',
+                                   '3-2-1-0',
+                                   '3-2-1',
+                                   '2-1-0-3',
+                                   '2-1-0',
+                                   '1-0-3-2',
+                                   '1-0-3'],
+                       '2-0-1-3': ['2-0-1-3',
+                                   '2-0-1',
+                                   '0-1-3-2',
+                                   '0-1-3',
+                                   '1-3-2-0',
+                                   '1-3-2',
+                                   '3-2-0-1',
+                                   '3-2-0'],
+                       '2-0-3-1': ['2-0-3-1',
+                                   '2-0-3',
+                                   '0-3-1-2',
+                                   '0-3-1',
+                                   '3-1-2-0',
+                                   '3-1-2',
+                                   '1-2-0-3',
+                                   '1-2-0'],
+                       '2-3-0-1': ['2-3-0-1',
+                                   '2-3-0',
+                                   '3-0-1-2',
+                                   '3-0-1',
+                                   '0-1-2-3',
+                                   '0-1-2',
+                                   '1-2-3-0',
+                                   '1-2-3']}
+    matches = []
+    for i in range(len(pattern) - 4):
+        if pattern[i] != "-":
+            for j in [5, 7]:
+                pat = pattern[i:i + j]
+                for key, values in stride_patterns.items():
+                    if pat in values:
+                        matches.append(key)
+
+    if not matches:
+        return None
+    elif len(set(matches)) == 1:
+        return matches[0]
+    else:
+        most_common = None
+        most_count = 0
+        for match in set(matches):
+            c = matches.count(match)
+            if c > most_count:
+                most_count = c
+                most_common = match
+
+        return most_common
+
+
+#######################################################################################
+# Validation functions
+#######################################################################################
+
+def check_valid(contact_list, weight):
+    contact_order = [contact["contact_label"] for contact in contact_list]
+    pattern = "-".join([str(contact["contact_label"]) for contact in contact_list])
+    pattern = find_gait_pattern(pattern)
+
+    speed = gait_velocity(contact_list)[1:-1]
+    distances = temporal_spatial(contact_list)
+    widths = []
+    for index, distance in distances.items():
+        cl = contact_order[index]
+        if cl < 0:
+            continue
+        if cl in distance:
+            x, y, z = distance[cl]
+            widths.append(abs(y) / weight)
+
+    contact_order = [contact["contact_label"] for contact in contact_list if
+                     not contact["filtered"] and not contact["invalid"] and not contact["contact_label"] < 0]
+    all_paws = set(contact_order) == {0, 1, 2, 3}
+    no_acceleration = np.std(speed) < 0.2
+    right_pattern = pattern in ['2-3-0-1', '0-3-2-1']
+    straight_line = np.mean(widths) < 10
+
+    return all_paws and no_acceleration and right_pattern and straight_line
+
