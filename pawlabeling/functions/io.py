@@ -98,7 +98,7 @@ def load_rsscan(infile):
 
     for index, line in enumerate(iter(lines)):
         split_line = line.strip().split()
-        if split_line and split_line[0][:5] in ["Frame", "Beeld"]:
+        if split_line and split_line[-1] == "ms)":
             frames.append(index)
 
         # We'll count the number of lines in the first frame
@@ -110,8 +110,8 @@ def load_rsscan(infile):
     num_frames = len(frames)
 
     result = np.zeros((height, width, num_frames), dtype=np.float32)
-    for frame, (start, stop) in enumerate(zip(frames[:-2], frames[1:])):
-        frame_string = StringIO("\n".join(lines[start+1:stop-1]))
+    for frame, start in enumerate(frames):
+        frame_string = StringIO("\n".join(lines[start+1:start+1+height]))
         result[:, :, frame] = np.loadtxt(frame_string, dtype=np.float32)  # unpack=True if we want to change the shape
 
     # Check if the array contains any NaN, if so, throw an Exception

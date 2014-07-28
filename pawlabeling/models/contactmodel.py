@@ -137,10 +137,13 @@ class Contacts(object):
         data = np.zeros((x + 2 * padding_factor, y + 2 * padding_factor, z), np.float32)
         data[padding_factor:-padding_factor, padding_factor:-padding_factor, :] = measurement_data
         raw_contacts = tracking.track_contours_graph(data)
+        print measurement_data.shape
+        print np.sum(np.sum(measurement_data, axis=0), axis=0)[-10:]
 
         contacts = []
         # Convert them to class objects
         for index, raw_contact in enumerate(raw_contacts):
+            print index, sorted(raw_contact.keys())[-1]
             contact = Contact(subject_id=self.subject_id,
                               session_id=self.session_id,
                               measurement_id=self.measurement_id)
@@ -156,7 +159,7 @@ class Contacts(object):
         contacts = sorted(contacts, key=lambda contact: contact.min_z)
         # Update their index
         for contact_id, contact in enumerate(contacts):
-            contact.set_contact_id(contact_id)
+            contact.contact_id = contact_id
         return contacts
 
     # def update_contact(self, contact):
@@ -281,33 +284,6 @@ class Contact(object):
                                                               mass=1.0, version="2")
         self.max_of_max = np.max(self.data, axis=2)
 
-
-    def set_orientation(self, orientation):
-        """
-        If a contact is upside down, we set this boolean flag, so we can rotate it when we need to calculate averages
-        """
-        self.orientation = orientation
-
-    def set_filtered(self, filtered):
-        """
-        If a contact deviates too many standard deviations from the rest of the contacts, you can set it to filtered
-        which can be accessed by the results widgets to see if they should ignore it
-        """
-        self.filtered = filtered
-
-    def set_contact_label(self, contact_label):
-        """
-        Lets you set the contact_label. Only used, so I can log when/where this happens for bug tracking purposes.
-        """
-        self.contact_label = contact_label
-
-    def set_contact_id(self, contact_id):
-        """
-        Lets you set the contact_id. Only used, so I can log when/where this happens for bug tracking purposes.
-        """
-        self.contact_id = contact_id
-
-    # TODO I should add more validation functions here, while splitting these out into multiple variables
     def validate_contact(self, measurement_data):
         """
         Input: measurement_data = 3D entire plate measurement_data array

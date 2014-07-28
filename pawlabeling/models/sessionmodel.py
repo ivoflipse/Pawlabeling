@@ -157,9 +157,9 @@ class Sessions(object):
                                         lower_bound_force < force < upper_bound_force and
                                         lower_bound_surface < surface < upper_bound_surface and
                                         lower_bound_length < length < upper_bound_length):
-                        contact.set_filtered(filtered=True)
+                        contact.filtered = True
                     else:
-                        contact.set_filtered(filtered=False)
+                        contact.filtered = False
 
         return results, max_results
 
