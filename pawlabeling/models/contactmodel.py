@@ -84,6 +84,14 @@ class Contacts(object):
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
 
+        # If we've removed all the sessions, clean up after yourself
+        try:
+            self.contacts_table.get_contacts()
+        except settings.ClosedNodeError:
+            self.contacts_table = table.ContactsTable(database_file=self.database_file,
+                                                  subject_id=self.subject_id,
+                                                  session_id=self.session_id,
+                                                  measurement_id=self.measurement_id)
 
     def delete_contact(self, contact):
         self.contacts_table.remove_row(table=self.contacts_table.contacts_table,

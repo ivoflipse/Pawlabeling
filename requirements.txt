@@ -1,6 +1,6 @@
 numpy
 pyside
-opencv
+cv2
 scipy
 matplotlib
 pypubsub==3.3.0
