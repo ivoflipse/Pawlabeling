@@ -137,13 +137,10 @@ class Contacts(object):
         data = np.zeros((x + 2 * padding_factor, y + 2 * padding_factor, z), np.float32)
         data[padding_factor:-padding_factor, padding_factor:-padding_factor, :] = measurement_data
         raw_contacts = tracking.track_contours_graph(data)
-        print measurement_data.shape
-        print np.sum(np.sum(measurement_data, axis=0), axis=0)[-10:]
 
         contacts = []
         # Convert them to class objects
         for index, raw_contact in enumerate(raw_contacts):
-            print index, sorted(raw_contact.keys())[-1]
             contact = Contact(subject_id=self.subject_id,
                               session_id=self.session_id,
                               measurement_id=self.measurement_id)
