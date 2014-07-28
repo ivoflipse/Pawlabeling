@@ -15,6 +15,10 @@ def asymmetry_index(left, right, absolute=False):
     for left footfalls during a 10-second recording
     See Oosterlinck et al. as a references.
     """
+    # This function only accepts ints and floats
+    assert isinstance(left, int) or isinstance(left, float)
+    assert isinstance(right, int) or isinstance(right, float)
+
     if absolute:
         return (100. * abs(left - right)) / (0.5 * abs(left + right))
     else:
@@ -36,44 +40,43 @@ def interpolate_time_series(data, length=100):
     return data_new
 
 
-def calculate_cop(data, version="scipy"):
-    assert len(data.shape) == 3
+def calculate_cop(contact, version="scipy"):
+    assert len(contact.data.shape) == 3
     if version == "scipy":
-        return calculate_cop_scipy(data)
+        contact.cop_x, contact.cop_y = calculate_cop_scipy(contact)
     elif version == "numpy":
-        return calculate_cop_numpy(data)
+        contact.cop_x, contact.cop_y = calculate_cop_numpy(contact)
+    return contact.cop_x, contact.cop_y
 
-
-def calculate_cop_numpy(data):
-    y, x, z = np.shape(data)
+def calculate_cop_numpy(contact):
+    y, x, z = np.shape(contact.data)
     cop_x = np.zeros(z, dtype=np.float32)
     cop_y = np.zeros(z, dtype=np.float32)
 
     x_coordinate, y_coordinate = np.arange(x), np.arange(y)
     temp_x, temp_y = np.zeros(y), np.zeros(x)
     for frame in xrange(z):
-        if np.sum(data[:, :, frame]) > 0.0:  # Else divide by zero
+        if np.sum(contact.data[:, :, frame]) > 0.0:  # Else divide by zero
             # This can be rewritten as a vector calculation
             for col in xrange(y):
-                temp_x[col] = np.sum(data[col, :, frame] * x_coordinate)
+                temp_x[col] = np.sum(contact.data[col, :, frame] * x_coordinate)
             for row in xrange(x):
-                temp_y[row] = np.sum(data[:, row, frame] * y_coordinate)
+                temp_y[row] = np.sum(contact.data[:, row, frame] * y_coordinate)
             # np.divide should guard against divide by zero
-            cop_x[frame] = np.divide(np.sum(temp_x), np.sum(data[:, :, frame]))
-            cop_y[frame] = np.divide(np.sum(temp_y), np.sum(data[:, :, frame]))
+            cop_x[frame] = np.divide(np.sum(temp_x), np.sum(contact.data[:, :, frame]))
+            cop_y[frame] = np.divide(np.sum(temp_y), np.sum(contact.data[:, :, frame]))
     return cop_x, cop_y
 
-
-def calculate_cop_scipy(data):
+def calculate_cop_scipy(contact):
     from scipy.ndimage.measurements import center_of_mass
 
-    y, x, z = np.shape(data)
+    y, x, z = np.shape(contact.data)
     cop_x = np.zeros(z, dtype=np.float32)
     cop_y = np.zeros(z, dtype=np.float32)
     for frame in xrange(z):
-        if np.sum(data[:, :, frame]) > 0:
+        if np.sum(contact.data[:, :, frame]) > 0:
             # While it may seem odd, x and y are mixed up, must be my own fault
-            y, x = center_of_mass(data[:, :, frame])
+            y, x = center_of_mass(contact.data[:, :, frame])
             # This used to say + 1, but I can't image that's necessary
             cop_x[frame] = x
             cop_y[frame] = y
@@ -82,8 +85,8 @@ def calculate_cop_scipy(data):
 # Given the size of the movement, it makes more sense to put this in mm/ms instead of ms/s
 def velocity_of_cop(contact, sensor_width, sensor_height, frequency):
     # contact_duration = stance_duration(contact, frequency)
-    cop_x = contact["cop_x"]
-    cop_y = contact["cop_y"]
+    cop_x = contact.cop_x
+    cop_y = contact.cop_y
     step_size = 1000. / frequency
     distances = []
     distances_x = []
@@ -94,12 +97,8 @@ def velocity_of_cop(contact, sensor_width, sensor_height, frequency):
         x2 = cop_x[i]
         y1 = cop_y[i - 1]
         y2 = cop_y[i]
-        #dx = np.linalg.norm(x1 - x2)
         dx = x2 - x1
-        #dy = np.linalg.norm(y1 - y2)
         dy = y2 - y1
-        #dxy = np.linalg.norm(np.array(x1, y1)-np.array(x2, y2))
-        #dxy = np.sqrt(dx**2 + dy**2)
         dxy = dx + dy
         # Convert to mm
         dx *= sensor_width
@@ -114,45 +113,60 @@ def velocity_of_cop(contact, sensor_width, sensor_height, frequency):
         distances_y.append(dy)
     return distances, distances_x, distances_y
 
-def force_over_time(data):
+def force_over_time(contact):
     """
     Force over time calculates the total force for each frame.
     It expects the last dimension to always be frames,
     while the other two dimensions are the rows and columns
     """
-    assert len(data.shape) == 3
-    return np.sum(np.sum(data, axis=0), axis=0)
+    assert len(contact.data.shape) == 3
+    contact.force_over_time = np.sum(np.sum(contact.data, axis=0), axis=0)
+    return contact.force_over_time
 
 
-def pixel_count_over_time(data):
-    assert len(data.shape) == 3
-    x, y, z = data.shape
-    return np.array([np.count_nonzero(data[:, :, frame]) for frame in xrange(z)])
+def pixel_count_over_time(contact):
+    assert len(contact.data.shape) == 3
+    #x, y , z = np.transpose(np.count_nonzero(contact.data))
+    #contact.pixel_counts = z
+    #return contact.pixel_counts
+    x, y, z = contact.data.shape
+    contact.pixel_count_over_time = np.array([np.count_nonzero(contact.data[:, :, frame]) for frame in xrange(z)])
+    return contact.pixel_count_over_time
 
 
-def surface_over_time(data, sensor_surface):
-    assert len(data.shape) == 3
-    pixel_counts = pixel_count_over_time(data)
-    return np.array([p_c * sensor_surface for p_c in pixel_counts])  # Can't this be rewritten?
+def surface_over_time(contact, sensor_surface):
+    assert len(contact.data.shape) == 3
+    if not hasattr(contact, "pixel_count_over_time"):
+        pixel_count_over_time(contact)
+
+    contact.surface_over_time = np.dot(contact.pixel_count_over_time, sensor_surface)
+    return contact.surface_over_time
 
 
-def pressure_over_time(data, sensor_surface):
-    assert len(data.shape) == 3
-    force = force_over_time(data)
-    pixel_counts = pixel_count_over_time(data)
-    surface = [p_c * sensor_surface for p_c in pixel_counts]
-    return np.divide(force, surface)
+def pressure_over_time(contact, sensor_surface):
+    assert len(contact.data.shape) == 3
+    if not hasattr(contact, "force_over_time"):
+        force_over_time(contact)
+    if not hasattr(contact, "surface_over_time"):
+        surface_over_time(contact, sensor_surface)
 
-def max_force(data):
-    return np.max(force_over_time(data))
+    contact.pressure_over_time = np.divide(contact.force_over_time, contact.surface_over_time)
+    return contact.pressure_over_time
 
-def max_pressure(data, sensor_surface):
-    return np.max(pressure_over_time(data, sensor_surface))
+def max_force(contact):
+    if hasattr(contact, "force_over_time"):
+        force_over_time(contact)
+    return np.max(contact.force_over_time)
 
+def max_pressure(contact, sensor_surface):
+    if hasattr(contact, "pressure_over_time"):
+        pressure_over_time(contact)
+    return np.max(contact.pressure_over_time)
 
-def max_surface(data, sensor_surface):
-    return np.max(surface_over_time(data, sensor_surface))
-
+def max_surface(contact, sensor_surface):
+    if hasattr(contact, "surface_over_time"):
+        surface_over_time(contact, sensor_surface)
+    return np.max(contact.surface_over_time)
 
 def time_of_peak_force(contact, frequency, relative=True):
     """
@@ -160,24 +174,23 @@ def time_of_peak_force(contact, frequency, relative=True):
     I can either calculate this on the average or calculate this for each contact and then take an average over those values.
     Though this should use the frequency of the measurement to express it in milliseconds.
     """
-    location_peak = np.argmax(contact["force_over_time"])
-    duration = contact["length"]
+    location_peak = max_force(contact)
+    duration = contact.length
     if relative:
         return (100. * location_peak) / duration
     else:
         return (location_peak * 1000) / frequency
 
 
-def vertical_impulse_method1(contact, frequency, mass=1.0):
+def vertical_impulse_method1(contact, frequency, mass):
     """
     From Oosterlinck:
     Vertical impulse (VI) was calculated by time integration of the force-time curves and multiplied by time,
     normalised by weight and expressed as Newton-seconds per kilogram (N s/kg)
     So wouldn't that just be one value? Namely the surface under the entire force curve?
     """
-    force_over_time = contact["force_over_time"]
     # Normalize the force over time by mass
-    force_over_time = np.divide(force_over_time, mass * frequency)
+    force_over_time = np.divide(contact.force_over_time, mass * frequency)
     sum_force = np.sum(force_over_time)
     return sum_force
 
@@ -192,8 +205,7 @@ def vertical_impulse_trapz(contact, frequency, mass=1.0):
     """
     from scipy.integrate import trapz  # simps is an alternative
 
-    force_over_time = contact["force_over_time"]
-    force_over_time = np.divide(force_over_time, mass)
+    force_over_time = np.divide(contact.force_over_time, mass)
     sum_force = trapz(force_over_time, dx=1 / frequency)
     return sum_force
 

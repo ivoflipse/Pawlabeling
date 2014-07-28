@@ -147,7 +147,7 @@ class Contacts(object):
             contact.create_contact(contact=raw_contact,
                                    measurement_data=measurement_data,
                                    orientation=measurement.orientation)
-            contact.calculate_results(sensor_surface=plate.sensor_surface)
+            contact.calculate_results(plate=plate)
             # Skip contacts that have only been around for one frame
             if len(contact.frames) > 1:
                 contacts.append(contact)
@@ -186,7 +186,7 @@ class Contact(object):
     and the dimensions + center of the bounding box of the entire contact
     """
 
-    def __init__(self, subject_id, session_id, measurement_id, ):
+    def __init__(self, subject_id, session_id, measurement_id):
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
@@ -262,15 +262,24 @@ class Contact(object):
                         self.data[coordinate[0] - self.min_x, coordinate[1] - self.min_y, index] = measurement_data[
                             coordinate[0], coordinate[1], frame]
 
-    def calculate_results(self, sensor_surface):
+    def calculate_results(self, plate):
         """
         This function will calculate all the required results and store them in the contact object
         """
-        self.force_over_time = calculations.force_over_time(self.data)
-        self.pressure_over_time = calculations.pressure_over_time(self.data, sensor_surface=sensor_surface)
-        self.surface_over_time = calculations.surface_over_time(self.data, sensor_surface=sensor_surface)
-        self.cop_x, self.cop_y = calculations.calculate_cop(self.data)
+        # These assignments are all unnecessary
+        self.force_over_time = calculations.force_over_time(self)
+        self.pixel_count_over_time = calculations.pixel_count_over_time(self)
+        self.pressure_over_time = calculations.pressure_over_time(self, sensor_surface=plate.sensor_surface)
+        self.surface_over_time = calculations.surface_over_time(self, sensor_surface=plate.sensor_surface)
+        self.cop_x, self.cop_y = calculations.calculate_cop(self)
+        self.vcop_xy, self.vcop_x, self.vcop_y = calculations.velocity_of_cop(self, plate.sensor_width,
+                                                                              plate.sensor_height,
+                                                                              plate.frequency)
+        self.time_of_peak_force = calculations.time_of_peak_force(self, frequency=plate.frequency)
+        # Note vertical impluse is NOT normalized here!
+        self.vertical_impulse = calculations.vertical_impulse(self, mass=1.0, version="2")
         self.max_of_max = np.max(self.data, axis=2)
+
 
     def set_orientation(self, orientation):
         """
@@ -339,7 +348,7 @@ class Contact(object):
         its likely the measurement didn't start fast enough or the measurement ended prematurely.
         """
         # force_over_time as an attribute is not yet available when this function is called
-        force_over_time = calculations.force_over_time(self.data)
+        force_over_time = calculations.force_over_time(self)
         max_force = np.max(force_over_time)
         #print force_over_time[0], force_over_time[-1], max_force, settings.settings.start_force_percentage()
         if (force_over_time[0] > (settings.settings.start_force_percentage() * max_force) or

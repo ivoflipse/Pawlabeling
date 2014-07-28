@@ -206,7 +206,7 @@ class ContactWidget(QtGui.QWidget):
     def update(self, average_data):
         # Calculate an average contact from the list of arrays
         self.average_data = average_data
-        self.max_pressure = np.max(calculations.force_over_time(self.average_data))
+        self.max_pressure = np.max(np.sum(np.sum(self.average_data, axis=0), axis=0))
         x, y, z = np.nonzero(self.average_data)
         self.mean_duration = np.max(z)
         self.mean_surface = np.max(
