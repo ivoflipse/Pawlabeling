@@ -209,8 +209,9 @@ class ContactWidget(QtGui.QWidget):
         self.max_pressure = np.max(np.sum(np.sum(self.average_data, axis=0), axis=0))
         x, y, z = np.nonzero(self.average_data)
         self.mean_duration = np.max(z)
-        self.mean_surface = np.max(
-            calculations.pixel_count_over_time(self.average_data) * self.model.plate.sensor_surface)
+        length = self.average_data.shape[2]
+        pixel_counts_over_time = np.array([np.count_nonzero(self.average_data[:, :, frame]) for frame in xrange(length)])
+        self.mean_surface = np.max(pixel_counts_over_time * self.model.plate.sensor_surface)
 
         self.max_pressure_label.setText("{:3.1f} N".format(self.max_pressure))
         self.mean_duration_label.setText("{} frames".format(int(self.mean_duration)))

@@ -147,7 +147,7 @@ class Contacts(object):
             contact.create_contact(contact=raw_contact,
                                    measurement_data=measurement_data,
                                    orientation=measurement.orientation)
-            contact.calculate_results(plate=plate)
+            contact.calculate_results(plate=plate, measurement=measurement)
             # Skip contacts that have only been around for one frame
             if len(contact.frames) > 1:
                 contacts.append(contact)
@@ -262,7 +262,7 @@ class Contact(object):
                         self.data[coordinate[0] - self.min_x, coordinate[1] - self.min_y, index] = measurement_data[
                             coordinate[0], coordinate[1], frame]
 
-    def calculate_results(self, plate):
+    def calculate_results(self, plate, measurement):
         """
         This function will calculate all the required results and store them in the contact object
         """
@@ -274,10 +274,11 @@ class Contact(object):
         self.cop_x, self.cop_y = calculations.calculate_cop(self)
         self.vcop_xy, self.vcop_x, self.vcop_y = calculations.velocity_of_cop(self, plate.sensor_width,
                                                                               plate.sensor_height,
-                                                                              plate.frequency)
-        self.time_of_peak_force = calculations.time_of_peak_force(self, frequency=plate.frequency)
+                                                                              measurement.frequency)
+        self.time_of_peak_force = calculations.time_of_peak_force(self, frequency=measurement.frequency)
         # Note vertical impluse is NOT normalized here!
-        self.vertical_impulse = calculations.vertical_impulse(self, mass=1.0, version="2")
+        self.vertical_impulse = calculations.vertical_impulse(self, frequency=measurement.frequency,
+                                                              mass=1.0, version="2")
         self.max_of_max = np.max(self.data, axis=2)
 
 
