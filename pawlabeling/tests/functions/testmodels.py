@@ -3,27 +3,12 @@ import os
 import numpy as np
 import logging
 from ...settings import settings
-from ...functions import io
+from ...functions import io, calculations
 from ...models import contactmodel, measurementmodel, platemodel
 
 logger = logging.getLogger("logger")
 logger.disabled = True
 
-class MockMeasurement(object):
-    def __init__(self, measurement_id, data, frequency):
-        self.measurement_id = measurement_id
-        self.data = data
-        x, y, z = data.shape
-        self.number_of_rows = x
-        self.number_of_columns = y
-        self.number_of_frames = z
-        self.orientation = True
-        self.frequency = frequency
-
-class MockContact(object):
-    def __init__(self, contact_id, data):
-        self.contact_id = contact_id
-        self.data = data
 
 class TestContactTracking(TestCase):
     def setUp(self):
@@ -34,9 +19,9 @@ class TestContactTracking(TestCase):
         data = io.load(input_file, brand="rsscan")
 
         # We create a Mock measurement, so we don't have to go through everything
-        self.measurement = MockMeasurement(measurement_id="measurement_1",
-                                           data=data,
-                                           frequency=126)
+        self.measurement = calculations.MockMeasurement(measurement_id="measurement_1",
+                                                        data=data,
+                                                        frequency=126)
         self.subject_id = "subject_1"
         self.session_id = "session_1"
 
@@ -50,9 +35,10 @@ class TestContactTracking(TestCase):
                                                    session_id=self.session_id,
                                                    measurement_id=self.measurement.measurement_id)
         self.contacts = self.contact_model.track_contacts(measurement=self.measurement,
-                                                     measurement_data=self.measurement.data,
-                                                     plate=self.plate, )
+                                                          measurement_data=self.measurement.data,
+                                                          plate=self.plate, )
         self.assertEqual(len(self.contacts), 9)
+
 
 class TestContactValidation(TestCase):
     def setUp(self):
@@ -63,9 +49,9 @@ class TestContactValidation(TestCase):
         data = io.load(input_file, brand="rsscan")
 
         # We create a Mock measurement, so we don't have to go through everything
-        self.measurement = MockMeasurement(measurement_id="measurement_1",
-                                           data=data,
-                                           frequency=126)
+        self.measurement = calculations.MockMeasurement(measurement_id="measurement_1",
+                                                        data=data,
+                                                        frequency=126)
         self.subject_id = "subject_1"
         self.session_id = "session_1"
 
@@ -78,8 +64,8 @@ class TestContactValidation(TestCase):
                                                    session_id=self.session_id,
                                                    measurement_id=self.measurement.measurement_id)
         self.contacts = self.contact_model.track_contacts(measurement=self.measurement,
-                                                     measurement_data=self.measurement.data,
-                                                     plate=self.plate, )
+                                                          measurement_data=self.measurement.data,
+                                                          plate=self.plate, )
 
     def test_edge_contact(self):
         edge_count = 0

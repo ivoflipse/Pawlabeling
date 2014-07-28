@@ -149,7 +149,7 @@ class Contacts(object):
                                    orientation=measurement.orientation)
             contact.calculate_results(plate=plate, measurement=measurement)
             # Skip contacts that have only been around for one frame
-            if len(contact.frames) > 1:
+            if contact.length > 1:
                 contacts.append(contact)
 
         # Sort the contacts based on their position along the first dimension
@@ -201,12 +201,11 @@ class Contact(object):
         settings.settings = settings.settings
         self.contour_list = defaultdict(list)
         self.padding = settings.settings.padding_factor()
-        self.frames = []
 
     def create_contact(self, contact, measurement_data, orientation):
         self.orientation = orientation  # True means the contact is upside down
-        self.frames = sorted(contact.keys())
-        for frame in self.frames:
+        frames = sorted(contact.keys())
+        for frame in frames:
             # Adjust the contour for the padding
             contours = contact[frame]
             self.contour_list[frame] = []
@@ -227,10 +226,10 @@ class Contact(object):
             max_y -= self.padding
         self.width = int(abs(max_x - min_x))
         self.height = int(abs(max_y - min_y))
-        self.length = len(self.frames)
+        self.length = len(frames)
         self.min_x, self.max_x = int(min_x), int(max_x)
         self.min_y, self.max_y = int(min_y), int(max_y)
-        self.min_z, self.max_z = self.frames[0], self.frames[-1]
+        self.min_z, self.max_z = frames[0], frames[-1]
 
         # Create self.measurement_data from the measurement_data
         self.convert_contour_to_slice(measurement_data)
@@ -337,12 +336,13 @@ class Contact(object):
         This function takes a dictionary of the stored_results (the result of contact_to_dict) and recreates all the
         attributes.
         """
+        # TODO fix this so it just takes the key, value pairs and sets these as attributes
+
         self.subject_id = contact["subject_id"]
         self.session_id = contact["session_id"]
         self.measurement_id = contact["measurement_id"]
         self.contact_id = int(contact["contact_id"].split("_")[1])  # Convert it back
         self.contact_label = contact["contact_label"]
-        self.frames = [x for x in xrange(contact["min_z"], contact["max_z"] + 1)]
         self.width = contact["width"]
         self.height = contact["height"]
         self.length = contact["length"]
@@ -360,11 +360,17 @@ class Contact(object):
         self.orientation = contact["orientation"]
         self.data = contact["data"]
         self.force_over_time = contact["force_over_time"]
+        self.pixel_count_over_time = contact["pixel_count_over_time"]
         self.pressure_over_time = contact["pressure_over_time"]
         self.surface_over_time = contact["surface_over_time"]
+        self.vertical_impulse = contact["vertical_impulse"]
         self.cop_x = contact["cop_x"]
         self.cop_y = contact["cop_y"]
+        self.vcop_xy = contact["vcop_xy"]
+        self.vcop_x = contact["vcop_x"]
+        self.vcop_y = contact["vcop_y"]
         self.max_of_max = contact["max_of_max"]
+        self.time_of_peak_force = contact["time_of_peak_force"]
 
     def to_dict(self):
         return {
@@ -387,5 +393,5 @@ class Contact(object):
             "edge_contact": self.edge_contact,
             "unfinished_contact": self.unfinished_contact,
             "incomplete_contact": self.incomplete_contact,
-            "orientation": self.orientation
+            "orientation": self.orientation,
         }

@@ -414,7 +414,8 @@ class ContactDataTable(Table):
         self.session_group = self.table.root.__getattr__(self.subject_id).__getattr__(self.session_id)
         self.measurement_group = self.session_group.__getattr__(measurement_id)
         self.item_ids = ["data", "max_of_max", "pressure_over_time", "force_over_time", "surface_over_time",
-                         "cop_x", "cop_y"]
+                         "pixel_count_over_time", "time_of_peak_force", "vertical_impulse",
+                         "cop_x", "cop_y", "vcop_xy", "vcop_x", "vcop_y",]
 
     def get_contact_data(self):
         contacts = []
@@ -423,7 +424,11 @@ class ContactDataTable(Table):
             group = self.measurement_group.__getattr__(contact_id)
             contact_data = defaultdict()
             for item_id in self.item_ids:
-                contact_data[item_id] = group.__getattr__(item_id).read()
+                # We try to retrieve what's available, if its not available, it should be computed later on
+                try:
+                    contact_data[item_id] = group.__getattr__(item_id).read()
+                except tables.exceptions.NoSuchNodeError:
+                    contact_data[item_id] = None
             contacts.append(contact_data)
         return contacts
 

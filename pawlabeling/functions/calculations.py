@@ -2,6 +2,22 @@ from collections import defaultdict
 import numpy as np
 from ..settings import settings
 
+class MockMeasurement(object):
+    def __init__(self, measurement_id, data, frequency):
+        self.measurement_id = measurement_id
+        self.data = data
+        x, y, z = data.shape
+        self.number_of_rows = x
+        self.number_of_columns = y
+        self.number_of_frames = z
+        self.orientation = True
+        self.frequency = frequency
+
+class MockContact(object):
+    def __init__(self, contact_id, data):
+        self.contact_id = contact_id
+        self.data = data
+
 
 def asymmetry_index(left, right, absolute=False):
     """
