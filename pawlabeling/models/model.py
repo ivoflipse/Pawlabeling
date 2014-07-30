@@ -280,7 +280,8 @@ class Model():
         measurements = {}
         for measurement_id, measurement in self.measurements.iteritems():
             contact_model = self.contact_models[measurement.measurement_name]
-            contacts = contact_model.get_contacts(measurement)
+            plate = self.plates[measurement.plate_id]
+            contacts = contact_model.get_contacts(plate, measurement)
             if contacts:
                 self.contacts[measurement.measurement_name] = contacts
 

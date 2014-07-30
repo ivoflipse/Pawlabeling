@@ -127,6 +127,10 @@ def velocity_of_cop(contact, sensor_width, sensor_height, frequency):
         distances.append(dxy)
         distances_x.append(dx)
         distances_y.append(dy)
+
+    distances = np.array(distances)
+    distances_x = np.array(distances_x)
+    distances_y = np.array(distances_y)
     return distances, distances_x, distances_y
 
 def force_over_time(contact):
@@ -193,9 +197,11 @@ def time_of_peak_force(contact, frequency, relative=True):
     location_peak = max_force(contact)
     duration = contact.length
     if relative:
-        contact.time_of_peak_force = (100. * location_peak) / duration
+        time_of_peak = (100. * location_peak) / duration
     else:
-        contact.time_of_peak_force = (location_peak * 1000) / frequency
+        time_of_peak = (location_peak * 1000) / frequency
+
+    contact.time_of_peak_force = time_of_peak
     return contact.time_of_peak_force
 
 
@@ -227,14 +233,18 @@ def vertical_impulse_trapz(contact, frequency, mass=1.0):
     return sum_force
 
 
-def vertical_impulse(contact, frequency, mass=1.0, version="1"):
+def vertical_impulse(contact, frequency, mass=1.0, version=1):
     """
     Careful, I would recommend using mass in Newtons instead of kilograms
     """
-    if version == "1":
-        return vertical_impulse_method1(contact, frequency, mass)
-    elif version == "2":
-        return vertical_impulse_trapz(contact, frequency, mass)
+    assert version in [1, 2]
+    vi = None
+    if version == 1:
+        vi = vertical_impulse_method1(contact, frequency, mass)
+    elif version == 2:
+        vi = vertical_impulse_trapz(contact, frequency, mass)
+    contact.vertical_impulse = vi
+    return contact.vertical_impulse
 
 ##########################################################################################
 # Spatiotemporal functions
@@ -242,7 +252,8 @@ def temporal_spatial(contacts, measurement_data, sensor_width, sensor_height, fr
     distances = defaultdict()
     label_lookup = defaultdict(dict)
     direction_modifier = 1.
-    if detect_direction(measurement_data):
+    # TODO check whether this should be True or False
+    if check_orientation(measurement_data):
         direction_modifier = -1.
     for index, contact in enumerate(contacts):
         lookup_table = defaultdict(int)

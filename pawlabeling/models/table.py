@@ -404,6 +404,20 @@ class ContactsTable(Table):
         return contacts
 
 
+class ContactResultsTable(Table):
+    class ContactResults(tables.IsDescription):
+        contact_id = tables.StringCol(16)
+        contact_label = tables.Int16Col()
+        vertical_impulse = tables.FloatCol()
+        time_of_peak_force = tables.FloatCol()
+        gait_pattern = tables.StringCol(16)
+        gait_velocity = tables.FloatCol()
+        stance_duration = tables.FloatCol()
+        swing_duration = tables.FloatCol()
+
+        # How to encode the temporal spatial info?
+
+
 class ContactDataTable(Table):
     def __init__(self, database_file, subject_id, session_id, measurement_id):
         super(ContactDataTable, self).__init__(database_file=database_file)
@@ -414,8 +428,7 @@ class ContactDataTable(Table):
         self.session_group = self.table.root.__getattr__(self.subject_id).__getattr__(self.session_id)
         self.measurement_group = self.session_group.__getattr__(measurement_id)
         self.item_ids = ["data", "max_of_max", "pressure_over_time", "force_over_time", "surface_over_time",
-                         "pixel_count_over_time", "time_of_peak_force", "vertical_impulse",
-                         "cop_x", "cop_y", "vcop_xy", "vcop_x", "vcop_y",]
+                         "pixel_count_over_time", "cop_x", "cop_y", "vcop_xy", "vcop_x", "vcop_y",]
 
     def get_contact_data(self):
         contacts = []

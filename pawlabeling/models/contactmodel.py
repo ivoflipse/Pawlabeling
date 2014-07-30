@@ -58,6 +58,7 @@ class Contacts(object):
             if not result:
                 if data is None:
                     data = getattr(self, item_id)
+                print item_id, data
                 # TODO If it doesn't exist, we have to create it
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
@@ -105,7 +106,7 @@ class Contacts(object):
                                          name=contact["contact_id"],
                                          recursive=True)
 
-    def get_contacts(self, measurement):
+    def get_contacts(self, plate, measurement):
         new_contacts = []
         measurement_id = measurement.measurement_id
         contact_data_table = table.ContactDataTable(database_file=self.database_file,
@@ -126,7 +127,8 @@ class Contacts(object):
                               measurement_id=self.measurement_id)
             # Restore it from the dictionary object
             # http://stackoverflow.com/questions/38987/how-can-i-merge-union-two-python-dictionaries-in-a-single-expression
-            contact.restore(dict(x, **y))  # This basically merges the two dicts into one
+            # This basically merges the two dicts into one
+            contact.restore(dict(x, **y), plate=plate, measurement=measurement)
             new_contacts.append(contact)
         return new_contacts
 
@@ -276,7 +278,7 @@ class Contact(object):
                                                                   relative=False)
         # Note vertical impluse is NOT normalized here!
         self.vertical_impulse = calculations.vertical_impulse(self, frequency=measurement.frequency,
-                                                              mass=1.0, version="2")
+                                                              mass=1.0, version=2)
         self.max_of_max = np.max(self.data, axis=2)
 
     def validate_contact(self, measurement_data):
@@ -330,7 +332,7 @@ class Contact(object):
 
     # TODO This should be converted to a @classmethod
     # http://scipy-lectures.github.io/advanced/advanced_python/#id11
-    def restore(self, contact):
+    def restore(self, contact, plate, measurement):
         """
         This function takes a dictionary of the stored_results (the result of contact_to_dict) and recreates all the
         attributes.
@@ -338,18 +340,15 @@ class Contact(object):
         for key, value in contact.items():
             setattr(self, key, value)
 
-        self.table_attributes = ["subject_id","session_id","measurement_id","contact_id","contact_label",
-                        "min_x", "max_x","min_y","max_y","min_z","max_z","width","height","length",
-                        "invalid","filtered","edge_contact", "unfinished_contact","incomplete_contact",
-                        "orientation"]
+        # self.table_attributes = ["subject_id","session_id","measurement_id","contact_id","contact_label",
+        #                 "min_x", "max_x","min_y","max_y","min_z","max_z","width","height","length",
+        #                 "invalid","filtered","edge_contact", "unfinished_contact","incomplete_contact",
+        #                 "orientation"]
+        #
+        # self.data_attributes = ["data","force_over_time","pixel_count_over_time","surface_over_time","pressure_over_time",
+        #                         "cop_x","cop_y","vcop_xy","vcop_x","vcop_y","max_of_max","time_of_peak_force"]
 
-        self.data_attributes = ["force_over_time","pixel_count_over_time","surface_over_time","pressure_over_time",
-                                "cop_x","cop_y","vcop_xy","vcop_x","vcop_y","max_of_max","time_of_peak_force"]
-
-        for attribute in self.data_attributes:
-            if not hasattr(self, attribute):
-                # Call the function from calculations on self
-                getattr(calculations, attribute)(self)
+        self.calculate_results(plate=plate, measurement=measurement)
 
 
 
