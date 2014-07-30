@@ -6,7 +6,7 @@ import numpy as np
 from pubsub import pub
 from ...functions import utility, calculations
 from ...settings import settings
-from ...models import model
+from ...models import model, contactmodel
 
 
 class ContactWidgets(QtGui.QWidget):
@@ -209,7 +209,7 @@ class ContactWidget(QtGui.QWidget):
         self.max_pressure = np.max(np.sum(np.sum(self.average_data, axis=0), axis=0))
         x, y, z = np.nonzero(self.average_data)
         self.mean_duration = np.max(z)
-        contact = calculations.MockContact("contact_1", self.average_data)
+        contact = contactmodel.MockContact("contact_1", self.average_data)
         pixel_counts_over_time = calculations.pixel_count_over_time(contact)
         self.mean_surface = np.max(pixel_counts_over_time * self.model.plate.sensor_surface)
 

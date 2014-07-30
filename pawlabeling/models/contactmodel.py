@@ -9,7 +9,7 @@ from ..functions import utility, calculations, tracking
 from ..settings import settings
 from ..models import table
 
-#from memory_profiler import profile
+# from memory_profiler import profile
 
 class Contacts(object):
     def __init__(self, subject_id, session_id, measurement_id):
@@ -29,7 +29,7 @@ class Contacts(object):
 
         for contact in contacts:
             self.create_contact(contact)
-        #return contacts  ## I don't see how contacts get created here :/
+            #return contacts  ## I don't see how contacts get created here :/
 
     def create_contact(self, contact):
         # We store the results separately
@@ -80,9 +80,10 @@ class Contacts(object):
 
         try:
             # Now remove the table itself
-            self.contacts_table.remove_group(where="/{}/{}/{}".format(self.subject_id, self.session_id, self.measurement_id),
-                                             name="contacts",
-                                             recursive=True)
+            self.contacts_table.remove_group(
+                where="/{}/{}/{}".format(self.subject_id, self.session_id, self.measurement_id),
+                name="contacts",
+                recursive=True)
         except table.NoSuchNodeError:
             # If its already gone, we can just continue
             pass
@@ -98,9 +99,10 @@ class Contacts(object):
         self.contacts_table.remove_row(table=self.contacts_table.contacts_table,
                                        name_id="contact_id",
                                        item_id=contact["contact_id"])
-        self.contacts_table.remove_group(where="/{}/{}/{}".format(self.subject_id, self.session_id, self.measurement_id),
-                                         name=contact["contact_id"],
-                                         recursive=True)
+        self.contacts_table.remove_group(
+            where="/{}/{}/{}".format(self.subject_id, self.session_id, self.measurement_id),
+            name=contact["contact_id"],
+            recursive=True)
 
     def get_contacts(self, plate, measurement):
         new_contacts = []
@@ -169,7 +171,7 @@ class Contacts(object):
         Returns True if the contacts are up to date, returns False else
         """
         if all([contacts[0].stance_duration == 0.0, contacts[0].gait_velocity == 0.0,
-               contacts[0].peak_force == 0.0, contacts[0].peak_surface == 0.0]):
+                contacts[0].peak_force == 0.0, contacts[0].peak_surface == 0.0]):
             return True
         return False
 
@@ -179,15 +181,17 @@ class Contacts(object):
         """
         for contact in contacts:
             # Backup some values we want to keep
-            backup = {"contact_id":contact.contact_id,
-                      "contact_label":contact.contact_label,
-                      "invalid":contact.invalid}
+            backup = {"contact_id": contact.contact_id,
+                      "contact_label": contact.contact_label,
+                      "invalid": contact.invalid}
 
             contact.calculate_results(plate, measurement)
             contact.validate_contact(measurement_data)
 
             for key, value in backup.items():
                 setattr(contact, key, value)
+
+        contacts = self.calculate_multi_contact_results(contacts, plate, measurement)
 
         return contacts
 
@@ -200,6 +204,55 @@ class Contacts(object):
 
         # Get the rows from the table and their corresponding data
         return contact_data_table.get_contact_data()
+
+    def calculate_multi_contact_results(self, contacts, plate, measurement):
+        """
+        These calculations have require contacts to be compared with one another and can't be performed on single
+        contacts.
+        """
+
+        other_contact_lookup = {
+            0: {"stride": 0, "step": 2, "ipsi": 1, "diag": 3},
+            1: {"stride": 1, "step": 3, "ipsi": 0, "diag": 2},
+            2: {"stride": 2, "step": 0, "ipsi": 3, "diag": 1},
+            3: {"stride": 3, "step": 1, "ipsi": 2, "diag": 0},
+        }
+
+        # These results require multiple contacts...
+        distances, label_lookup = calculations.temporal_spatial(contacts,
+                                                                plate.sensor_width, plate.sensor_height,
+                                                                measurement.frequency)
+        for index, contact in enumerate(contacts):
+            distance = distances[index]
+            contact_label = contact.contact_label
+            stride_duration = distance[contact_label][-1]
+            contact.swing_duration = stride_duration - contact.stance_duration
+            contact.stance_percentage = (contact.stance_duration * 100.) / stride_duration
+            contact.gait_velocity = calculations.gait_velocity()
+            pattern = "-".join([str(contact["contact_label"]) for contact in contacts])
+            contact.gait_pattern = calculations.find_gait_pattern(pattern=pattern)
+
+            stride_contact = distance[other_contact_lookup[contact_label]["stride"]]
+            contact.stride_width = stride_contact[0]
+            contact.stride_length = stride_contact[1]
+            contact.stride_duration = stride_contact[2]
+
+            step_contact = distance[other_contact_lookup[contact_label]["step"]]
+            contact.step_width = step_contact[0]
+            contact.step_length = step_contact[1]
+            contact.step_duration = step_contact[2]
+
+            ipsi_contact = distance[other_contact_lookup[contact_label]["ipsi"]]
+            contact.ipsi_width = ipsi_contact[0]
+            contact.ipsi_length = ipsi_contact[1]
+            contact.ipsi_duration = ipsi_contact[2]
+
+            diag_contact = distance[other_contact_lookup[contact_label]["diag"]]
+            contact.diag_width = diag_contact[0]
+            contact.diag_length = diag_contact[1]
+            contact.diag_duration = diag_contact[2]
+
+        return contacts
 
 
 class Contact(object):
@@ -274,16 +327,21 @@ class Contact(object):
         self.contour_list = defaultdict(list)
         self.padding = settings.settings.padding_factor()
 
-        self.table_attributes = ["subject_id","session_id","measurement_id","contact_id","contact_label",
-                        "min_x", "max_x","min_y","max_y","min_z","max_z","width","height","length",
-                        "invalid","filtered","edge_contact", "unfinished_contact","incomplete_contact",
-                        "orientation", "vertical_impulse","time_of_peak_force","peak_force","peak_pressure", "peak_surface",
-                        "gait_pattern","gait_velocity","stance_duration","swing_duration", "stance_percentage",
-                        "stride_duration","stride_length","stride_width", "step_duration","step_length","step_width",
-                        "ipsi_duration","ipsi_length","ipsi_width","diag_duration","diag_length","diag_width"]
+        self.table_attributes = ["subject_id", "session_id", "measurement_id", "contact_id", "contact_label",
+                                 "min_x", "max_x", "min_y", "max_y", "min_z", "max_z", "width", "height", "length",
+                                 "invalid", "filtered", "edge_contact", "unfinished_contact", "incomplete_contact",
+                                 "orientation", "vertical_impulse", "time_of_peak_force", "peak_force", "peak_pressure",
+                                 "peak_surface",
+                                 "gait_pattern", "gait_velocity", "stance_duration", "swing_duration",
+                                 "stance_percentage",
+                                 "stride_duration", "stride_length", "stride_width", "step_duration", "step_length",
+                                 "step_width",
+                                 "ipsi_duration", "ipsi_length", "ipsi_width", "diag_duration", "diag_length",
+                                 "diag_width"]
 
-        self.data_attributes = ["data","force_over_time","pixel_count_over_time","surface_over_time","pressure_over_time",
-                                "cop_x","cop_y","vcop_xy","vcop_x","vcop_y","max_of_max"]
+        self.data_attributes = ["data", "force_over_time", "pixel_count_over_time", "surface_over_time",
+                                "pressure_over_time",
+                                "cop_x", "cop_y", "vcop_xy", "vcop_x", "vcop_y", "max_of_max"]
 
     def create_contact(self, contact, measurement_data, orientation):
         self.orientation = orientation  # True means the contact is upside down
@@ -366,18 +424,6 @@ class Contact(object):
 
         self.stance_duration = calculations.stance_duration(self, frequency=measurement.frequency)
 
-        # These results require multiple contacts...
-        #distances, label_lookup = calculations.temporal_spatial(contacts, sensor_width, sensor_height, frequency)
-        #distance = distances[index1]
-        #stride_duration = distance[contact_label][-1]
-        #self.swing_duration = stride_duration - self.stance_duration
-        #self.stance_percentage = (self.stance_duration * 100.) / stride_duration
-        #self.gait_velocity = calculations.gait_velocity()
-        #pattern = "-".join([str(contact["contact_label"]) for contact in contact_list])
-        #self.gait_pattern = calculations.find_gait_pattern(pattern=pattern)
-
-
-
 
     def validate_contact(self, measurement_data):
         """
@@ -424,7 +470,7 @@ class Contact(object):
         max_force = np.max(force_over_time)
         #print force_over_time[0], force_over_time[-1], max_force, settings.settings.start_force_percentage()
         if (force_over_time[0] > (settings.settings.start_force_percentage() * max_force) or
-            force_over_time[-1] > (settings.settings.end_force_percentage() * max_force)):
+                    force_over_time[-1] > (settings.settings.end_force_percentage() * max_force)):
             return True
         return False
 
@@ -439,7 +485,6 @@ class Contact(object):
             setattr(self, key, value)
 
         self.calculate_results(plate=plate, measurement=measurement)
-
 
 
     def to_dict(self):
@@ -466,8 +511,18 @@ class Contact(object):
             "orientation": self.orientation,
         }
 
+
 class MockContacts(Contacts):
     def __init__(self, subject_id, session_id, measurement_id):
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
+
+class MockContact(Contact):
+    def __init__(self, contact_id, data):
+        self.contact_id = contact_id
+        subject_id = "subject_1"
+        session_id = "session_1"
+        measurement_id = "measurement_1"
+        self.data = data
+        super(MockContact, self).__init__(subject_id, session_id, measurement_id)
