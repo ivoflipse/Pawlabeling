@@ -184,6 +184,56 @@ class Contact(object):
     This class has only one real function and that's to take a contact and create some
     attributes that my viewer depends upon. These are a contour_list that contains all the contours
     and the dimensions + center of the bounding box of the entire contact
+
+    measurement_id = tables.StringCol(64)
+    session_id = tables.StringCol(64)
+    subject_id = tables.StringCol(64)
+    contact_id = tables.StringCol(16)
+    contact_label = tables.Int16Col()
+    orientation = tables.BoolCol()
+    min_x = tables.UInt16Col()
+    max_x = tables.UInt16Col()
+    min_y = tables.UInt16Col()
+    max_y = tables.UInt16Col()
+    min_z = tables.UInt16Col()
+    max_z = tables.UInt16Col()
+    width = tables.UInt16Col()
+    height = tables.UInt16Col()
+    length = tables.UInt16Col()
+    invalid = tables.BoolCol()
+    filtered = tables.BoolCol()
+    unfinished_contact = tables.BoolCol()
+    edge_contact = tables.BoolCol()
+    incomplete_contact = tables.BoolCol()
+
+    vertical_impulse = tables.FloatCol()
+    time_of_peak_force = tables.FloatCol()
+    peak_force = tables.FloatCol()
+    peak_pressure = tables.FloatCol()
+    peak_surface = tables.FloatCol()
+
+    # Spatiotemporal results
+    gait_pattern = tables.StringCol(16)
+    gait_velocity = tables.FloatCol()
+    stance_duration = tables.FloatCol()
+    swing_duration = tables.FloatCol()
+    stance_percentage = tables.FloatCol()
+
+    stride_duration = tables.FloatCol()
+    stride_length = tables.FloatCol()
+    stride_width = tables.FloatCol()
+
+    step_duration = tables.FloatCol()
+    step_length = tables.FloatCol()
+    step_width = tables.FloatCol()
+
+    ipsi_duration = tables.FloatCol()
+    ipsi_length = tables.FloatCol()
+    ipsi_width = tables.FloatCol()
+
+    diag_duration = tables.FloatCol()
+    diag_length = tables.FloatCol()
+    diag_width = tables.FloatCol()
     """
 
     def __init__(self, subject_id, session_id, measurement_id):

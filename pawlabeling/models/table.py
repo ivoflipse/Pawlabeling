@@ -325,7 +325,7 @@ class ContactsTable(Table):
         session_id = tables.StringCol(64)
         subject_id = tables.StringCol(64)
         contact_id = tables.StringCol(16)
-        contact_label = tables.Int16Col()  # These might also be negative...
+        contact_label = tables.Int16Col()
         orientation = tables.BoolCol()
         min_x = tables.UInt16Col()
         max_x = tables.UInt16Col()
@@ -341,6 +341,35 @@ class ContactsTable(Table):
         unfinished_contact = tables.BoolCol()
         edge_contact = tables.BoolCol()
         incomplete_contact = tables.BoolCol()
+
+        vertical_impulse = tables.FloatCol()
+        time_of_peak_force = tables.FloatCol()
+        peak_force = tables.FloatCol()
+        peak_pressure = tables.FloatCol()
+        peak_surface = tables.FloatCol()
+
+        # Spatiotemporal results
+        gait_pattern = tables.StringCol(16)
+        gait_velocity = tables.FloatCol()
+        stance_duration = tables.FloatCol()
+        swing_duration = tables.FloatCol()
+        stance_percentage = tables.FloatCol()
+
+        stride_duration = tables.FloatCol()
+        stride_length = tables.FloatCol()
+        stride_width = tables.FloatCol()
+
+        step_duration = tables.FloatCol()
+        step_length = tables.FloatCol()
+        step_width = tables.FloatCol()
+
+        ipsi_duration = tables.FloatCol()
+        ipsi_length = tables.FloatCol()
+        ipsi_width = tables.FloatCol()
+
+        diag_duration = tables.FloatCol()
+        diag_length = tables.FloatCol()
+        diag_width = tables.FloatCol()
 
     def __init__(self, database_file, subject_id, session_id, measurement_id):
         super(ContactsTable, self).__init__(database_file=database_file)
@@ -402,20 +431,6 @@ class ContactsTable(Table):
                 contact[column] = value
             contacts.append(contact)
         return contacts
-
-
-class ContactResultsTable(Table):
-    class ContactResults(tables.IsDescription):
-        contact_id = tables.StringCol(16)
-        contact_label = tables.Int16Col()
-        vertical_impulse = tables.FloatCol()
-        time_of_peak_force = tables.FloatCol()
-        gait_pattern = tables.StringCol(16)
-        gait_velocity = tables.FloatCol()
-        stance_duration = tables.FloatCol()
-        swing_duration = tables.FloatCol()
-
-        # How to encode the temporal spatial info?
 
 
 class ContactDataTable(Table):
