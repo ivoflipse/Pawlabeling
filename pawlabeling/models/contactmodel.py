@@ -331,6 +331,8 @@ class Contact(object):
                                                               mass=1.0, version=2)
         self.max_of_max = np.max(self.data, axis=2)
 
+
+
     def validate_contact(self, measurement_data):
         """
         Input: measurement_data = 3D entire plate measurement_data array

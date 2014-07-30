@@ -542,70 +542,117 @@ class PlatesTable(Table):
 
 
 def verify_tables(table):
-    #print PlatesTable.Plates
-    #print SubjectsTable.Subjects.columns
-    #print table.root.subjects.description._v_dtypes
-
-    # TODO if the tables don't yet exist, awesome, no need to verify anything
+    # If there isn't even a subjects table, no need to do anything
+    if not hasattr(table.root,  "subjects"):
+        return
 
     # Check SubjectsTable
-    if not hasattr(table.root,  "subjects"):
-        return True
-
-    subjects_table = table.root.subjects.description._v_dtypes
+    subjects_description = table.root.subjects.description._v_dtypes
     subject_difference = False
-    # for key, value in subjects_table.items():
-    #     if value != SubjectsTable.Subjects.columns[key].dtype:
-    #         subject_difference = True
-    #         print "subject", key, value, SubjectsTable.Subjects.columns[key].dtype
-
     for key, value in SubjectsTable.Subjects.columns.items():
-        if value.dtype != subjects_table[key]:
+        if value.dtype != subjects_description.get(key):
             subject_difference = True
-            print "subject", key, value, subjects_table[key]
+
+    # If there are any differences, copy over the content to a new table and then replace the old table with the new one
+    if subject_difference:
+        root_group = table.root
+        new_subjects_table = table.createTable(where="/", name="subjects2",
+                                               description=SubjectsTable.Subjects,
+                                               title="Subjects", filters=table.filters)
+        subjects_table = table.root.subjects
+        subjects_table.attrs._f_copy(new_subjects_table)
+        for i in xrange(subjects_table.nrows):
+            new_subjects_table.row.append()
+        new_subjects_table.flush()
+
+        description = table.description._v_colObjects
+        for col in description:
+            getattr(new_subjects_table.cols, col)[:] = getattr(subjects_table.cols, col)[:]
+
+        subjects_table.remove()
+        new_subjects_table.move(root_group, "subjects")
 
     # Check SessionsTable
-    session_difference = False
     for subject in table.root.subjects:
+        session_difference = False
         subject_id = subject["subject_id"]
-        sessions_table = table.root.__getattr__(subject_id).sessions.description._v_dtypes
-        # for key, value in sessions_table.items():
-        #     if value != SessionsTable.Sessions.columns[key].dtype:
-        #         session_difference = True
-        #         print "session", key, value, SessionsTable.Sessions.columns[key].dtype
-
+        subject_group = table.root.__getattr__(subject_id)
+        sessions_description = subject_group.sessions.description._v_dtypes
         for key, value in SessionsTable.Sessions.columns.items():
-            if value.dtype != sessions_table[key]:
+            if value.dtype != sessions_description.get(key):
                 session_difference = True
-                print "session", key, value, sessions_table[key]
 
+        if session_difference:
+            new_sessions_table = table.createTable(where="/", name="sessions2",
+                                                   description=SessionsTable.Sessions,
+                                                   title="Sessions", filters=table.filters)
+            sessions_table = subject_group.sessions
+            sessions_table.attrs._f_copy(new_sessions_table)
+            for i in xrange(sessions_table.nrows):
+                new_sessions_table.row.append()
+            new_sessions_table.flush()
 
-    # Check the MeasurementsTable
-    measurement_difference = False
-    for session in table.root.__getattr__(subject_id).sessions:
-        session_id = session["session_id"]
-        measurements_table = table.root.__getattr__(subject_id).__getattr__(session_id).measurements.description._v_dtypes
-        # for key, value in measurements_table.items():
-        #     if value != MeasurementsTable.Measurements.columns[key].dtype:
-        #         measurement_difference = True
-        #         print "measurements", key, value, MeasurementsTable.Measurements.columns[key].dtype
+            description = sessions_table.description._v_colObjects
+            for col in description:
+                getattr(new_sessions_table.cols, col)[:] = getattr(sessions_table.cols, col)[:]
 
-        for key, value in measurements_table.items():
-            if value != MeasurementsTable.Measurements.columns[key].dtype:
-                measurement_difference = True
-                print "measurements", key, value, MeasurementsTable.Measurements.columns[key].dtype
+            sessions_table.remove()
+            new_sessions_table.move(subject_group, "sessions")
 
-    contact_difference = False
-    for measurement in table.root.__getattr__(subject_id).__getattr__(session_id).measurements:
-        measurement_id = measurement["measurement_id"]
-        contacts_table = table.root.__getattr__(subject_id).__getattr__(session_id).__getattr__(measurement_id).contacts.description._v_dtypes
-        for key, value in contacts_table.items():
-            if value != ContactsTable.Contacts.columns[key].dtype:
-                contact_difference = True
-                print "measurements", key, value, ContactsTable.Contacts.columns[key].dtype
+        # Check the MeasurementsTable
+        for session in table.root.__getattr__(subject_id).sessions:
+            measurement_difference = False
+            session_id = session["session_id"]
+            session_group = table.root.__getattr__(subject_id).__getattr__(session_id)
+            measurements_description = session_group.measurements.description._v_dtypes
+            for key, value in MeasurementsTable.Measurements.columns.items():
+                if value.dtype != measurements_description.get(key):
+                    measurement_difference = True
 
-    raise Exception
+            if measurement_difference:
+                new_measurements_table = table.createTable(where="/", name="measurements2",
+                                                           description=MeasurementsTable.Measurements,
+                                                           title="Measurements", filters=table.filters)
+                measurements_table = session_group.measurements
+                measurements_table.attrs._f_copy(new_measurements_table)
+                for i in xrange(measurements_table.nrows):
+                    new_measurements_table.row.append()
+                new_measurements_table.flush()
 
+                description = measurements_table.description._v_colObjects
+                for col in description:
+                    getattr(new_measurements_table.cols, col)[:] = getattr(measurements_table.cols, col)[:]
+
+                measurements_table.remove()
+                new_measurements_table.move(session_group, "measurements")
+
+            for measurement in table.root.__getattr__(subject_id).__getattr__(session_id).measurements:
+                contact_difference = False
+                measurement_id = measurement["measurement_id"]
+                measurement_group = table.root.__getattr__(subject_id).__getattr__(session_id).__getattr__(measurement_id)
+                contacts_description = measurement_group.contacts.description._v_dtypes
+                for key, value in ContactsTable.Contacts.columns.items():
+                    if value.dtype != contacts_description.get(key):
+                        contact_difference = True
+
+                if contact_difference:
+                    new_contacts_table = table.createTable(where="/", name="contacts2",
+                                                               description=ContactsTable.Contacts,
+                                                               title="Contacts", filters=table.filters)
+                    contacts_table = measurement_group.contacts
+                    contacts_table.attrs._f_copy(new_contacts_table)
+                    for i in xrange(contacts_table.nrows):
+                        new_contacts_table.row.append()
+                    new_contacts_table.flush()
+
+                    description = contacts_table.description._v_colObjects
+                    for col in description:
+                        getattr(new_contacts_table.cols, col)[:] = getattr(contacts_table.cols, col)[:]
+
+                    contacts_table.remove()
+                    new_contacts_table.move(measurement_group, "contacts")
+
+    return True
 
 def load_table(database_file):
     return tables.open_file(database_file, mode="a", title="Data")
