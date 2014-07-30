@@ -11,8 +11,8 @@ from ..functions import calculations, utility
 class Sessions(object):
     def __init__(self, subject_id):
         self.subject_id = subject_id
-        self.database_file = settings.settings.database_file()
-        self.sessions_table = table.SessionsTable(database_file=self.database_file, subject_id=self.subject_id)
+        self.table = settings.settings.table
+        self.sessions_table = table.SessionsTable(table=self.table, subject_id=self.subject_id)
 
     def create_session(self, session):
         session_object = Session(self.subject_id)
@@ -36,14 +36,14 @@ class Sessions(object):
         # If we've removed all the sessions, clean up after yourself
         try:
             self.sessions_table.get_sessions()
-        except settings.ClosedNodeError:
-            self.sessions_table = table.SessionsTable(database_file=self.database_file, subject_id=self.subject_id)
+        except table.ClosedNodeError:
+            self.sessions_table = table.SessionsTable(table=self.table, subject_id=self.subject_id)
 
     def get_sessions(self):
         sessions = defaultdict()
         try:
             self.sessions_table.get_sessions()
-        except settings.ClosedNodeError:
+        except table.ClosedNodeError:
             return sessions
 
         for session in self.sessions_table.get_sessions():

@@ -1,18 +1,16 @@
 from collections import defaultdict
 import tables
-from ..settings.settings import settings
-
+from tables.exceptions import ClosedNodeError, NoSuchNodeError
 
 class MissingIdentifier(Exception):
     pass
 
 # I should add some helper function to check if something can be found, if not raise an exception or log something
 class Table(object):
-    def __init__(self, database_file):
-        # TODO Make this part configurable
+    def __init__(self, table):
         # The settings has a table connection, we just create a copy of that
         # So not every subclass of this Table class will create its own copy
-        self.table = settings.table
+        self.table = table
         self.table_name = "table"
         self.filters = tables.Filters(complib="blosc", complevel=9)
         self.table.filters = self.filters
@@ -122,8 +120,8 @@ class SubjectsTable(Table):
         birthday = tables.StringCol(32)
         mass = tables.FloatCol()
 
-    def __init__(self, database_file):
-        super(SubjectsTable, self).__init__(database_file=database_file)
+    def __init__(self, table):
+        super(SubjectsTable, self).__init__(table=table)
         self.table_name = "subject"
 
         # Check if table has subjects table
@@ -184,8 +182,8 @@ class SessionsTable(Table):
         session_id = tables.StringCol(64)
         session_label = tables.StringCol(64)
 
-    def __init__(self, database_file, subject_id):
-        super(SessionsTable, self).__init__(database_file=database_file)
+    def __init__(self, table, subject_id):
+        super(SessionsTable, self).__init__(table=table)
         self.table_name = "session"
         self.subject_id = subject_id
         self.subject_group = self.table.root.__getattr__(self.subject_id)
@@ -254,8 +252,8 @@ class MeasurementsTable(Table):
         time = tables.StringCol(32)
         processed = tables.BoolCol()
 
-    def __init__(self, database_file, subject_id, session_id):
-        super(MeasurementsTable, self).__init__(database_file=database_file)
+    def __init__(self, table, subject_id, session_id):
+        super(MeasurementsTable, self).__init__(table=table)
         self.table_name = "measurement"
         self.subject_id = subject_id
         self.session_id = session_id
@@ -371,8 +369,8 @@ class ContactsTable(Table):
         diag_length = tables.FloatCol()
         diag_width = tables.FloatCol()
 
-    def __init__(self, database_file, subject_id, session_id, measurement_id):
-        super(ContactsTable, self).__init__(database_file=database_file)
+    def __init__(self, table, subject_id, session_id, measurement_id):
+        super(ContactsTable, self).__init__(table=table)
         self.table_name = "contact"
         self.subject_id = subject_id
         self.session_id = session_id
@@ -434,8 +432,8 @@ class ContactsTable(Table):
 
 
 class ContactDataTable(Table):
-    def __init__(self, database_file, subject_id, session_id, measurement_id):
-        super(ContactDataTable, self).__init__(database_file=database_file)
+    def __init__(self, table, subject_id, session_id, measurement_id):
+        super(ContactDataTable, self).__init__(table=table)
         self.table_name = "contact_data"
         self.subject_id = subject_id
         self.session_id = session_id
@@ -455,7 +453,7 @@ class ContactDataTable(Table):
                 # We try to retrieve what's available, if its not available, it should be computed later on
                 try:
                     contact_data[item_id] = group.__getattr__(item_id).read()
-                except tables.exceptions.NoSuchNodeError:
+                except NoSuchNodeError:
                     contact_data[item_id] = None
             contacts.append(contact_data)
         return contacts
@@ -476,8 +474,8 @@ class SessionDataTable(Table):
         height = tables.UInt16Col()
         length = tables.UInt16Col()
 
-    def __init__(self, database_file, subject_id, session_id):
-        super(SessionDataTable, self).__init__(database_file=database_file)
+    def __init__(self, table, subject_id, session_id):
+        super(SessionDataTable, self).__init__(table=table)
         self.table_name = "session_data"
         self.subject_id = subject_id
         self.session_id = session_id
@@ -507,8 +505,8 @@ class PlatesTable(Table):
         sensor_height = tables.FloatCol()
         sensor_surface = tables.FloatCol()
 
-    def __init__(self, database_file):
-        super(PlatesTable, self).__init__(database_file=database_file)
+    def __init__(self, table):
+        super(PlatesTable, self).__init__(table=table)
         self.table_name = "plate"
 
         if 'plates' not in self.table.root:
@@ -541,3 +539,73 @@ class PlatesTable(Table):
                 plate[key] = value
             plates.append(plate)
         return plates
+
+
+def verify_tables(table):
+    #print PlatesTable.Plates
+    #print SubjectsTable.Subjects.columns
+    #print table.root.subjects.description._v_dtypes
+
+    # TODO if the tables don't yet exist, awesome, no need to verify anything
+
+    # Check SubjectsTable
+    if not hasattr(table.root,  "subjects"):
+        return True
+
+    subjects_table = table.root.subjects.description._v_dtypes
+    subject_difference = False
+    # for key, value in subjects_table.items():
+    #     if value != SubjectsTable.Subjects.columns[key].dtype:
+    #         subject_difference = True
+    #         print "subject", key, value, SubjectsTable.Subjects.columns[key].dtype
+
+    for key, value in SubjectsTable.Subjects.columns.items():
+        if value.dtype != subjects_table[key]:
+            subject_difference = True
+            print "subject", key, value, subjects_table[key]
+
+    # Check SessionsTable
+    session_difference = False
+    for subject in table.root.subjects:
+        subject_id = subject["subject_id"]
+        sessions_table = table.root.__getattr__(subject_id).sessions.description._v_dtypes
+        # for key, value in sessions_table.items():
+        #     if value != SessionsTable.Sessions.columns[key].dtype:
+        #         session_difference = True
+        #         print "session", key, value, SessionsTable.Sessions.columns[key].dtype
+
+        for key, value in SessionsTable.Sessions.columns.items():
+            if value.dtype != sessions_table[key]:
+                session_difference = True
+                print "session", key, value, sessions_table[key]
+
+
+    # Check the MeasurementsTable
+    measurement_difference = False
+    for session in table.root.__getattr__(subject_id).sessions:
+        session_id = session["session_id"]
+        measurements_table = table.root.__getattr__(subject_id).__getattr__(session_id).measurements.description._v_dtypes
+        # for key, value in measurements_table.items():
+        #     if value != MeasurementsTable.Measurements.columns[key].dtype:
+        #         measurement_difference = True
+        #         print "measurements", key, value, MeasurementsTable.Measurements.columns[key].dtype
+
+        for key, value in measurements_table.items():
+            if value != MeasurementsTable.Measurements.columns[key].dtype:
+                measurement_difference = True
+                print "measurements", key, value, MeasurementsTable.Measurements.columns[key].dtype
+
+    contact_difference = False
+    for measurement in table.root.__getattr__(subject_id).__getattr__(session_id).measurements:
+        measurement_id = measurement["measurement_id"]
+        contacts_table = table.root.__getattr__(subject_id).__getattr__(session_id).__getattr__(measurement_id).contacts.description._v_dtypes
+        for key, value in contacts_table.items():
+            if value != ContactsTable.Contacts.columns[key].dtype:
+                contact_difference = True
+                print "measurements", key, value, ContactsTable.Contacts.columns[key].dtype
+
+    raise Exception
+
+
+def load_table(database_file):
+    return tables.open_file(database_file, mode="a", title="Data")

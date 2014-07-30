@@ -17,8 +17,8 @@ class Contacts(object):
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
-        self.database_file = settings.settings.database_file()
-        self.contacts_table = table.ContactsTable(database_file=self.database_file,
+        self.table = settings.settings.table
+        self.contacts_table = table.ContactsTable(table=self.table,
                                                   subject_id=self.subject_id,
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
@@ -87,12 +87,12 @@ class Contacts(object):
             self.contacts_table.remove_group(where="/{}/{}/{}".format(self.subject_id, self.session_id, self.measurement_id),
                                              name="contacts",
                                              recursive=True)
-        except settings.NoSuchNodeError:
+        except table.NoSuchNodeError:
             # If its already gone, we can just continue
             pass
 
         # And create it again
-        self.contacts_table = table.ContactsTable(database_file=self.database_file,
+        self.contacts_table = table.ContactsTable(table=self.table,
                                                   subject_id=self.subject_id,
                                                   session_id=self.session_id,
                                                   measurement_id=self.measurement_id)
@@ -109,11 +109,11 @@ class Contacts(object):
     def get_contacts(self, plate, measurement):
         new_contacts = []
         measurement_id = measurement.measurement_id
-        contact_data_table = table.ContactDataTable(database_file=self.database_file,
+        contact_data_table = table.ContactDataTable(table=self.table,
                                                     subject_id=self.subject_id,
                                                     session_id=self.session_id,
                                                     measurement_id=measurement_id)
-        contacts_table = table.ContactsTable(database_file=self.database_file,
+        contacts_table = table.ContactsTable(table=self.table,
                                              subject_id=self.subject_id,
                                              session_id=self.session_id,
                                              measurement_id=measurement_id)
@@ -170,7 +170,7 @@ class Contacts(object):
 
     def get_contact_data(self, measurement):
         measurement_id = measurement.measurement_id
-        contact_data_table = table.ContactDataTable(database_file=self.database_file,
+        contact_data_table = table.ContactDataTable(table=self.table,
                                                     subject_id=self.subject_id,
                                                     session_id=self.session_id,
                                                     measurement_id=measurement_id)

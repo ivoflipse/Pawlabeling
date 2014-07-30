@@ -6,8 +6,8 @@ class Measurements(object):
     def __init__(self, subject_id, session_id):
         self.subject_id = subject_id
         self.session_id = session_id
-        self.database_file = settings.settings.database_file()
-        self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
+        self.table = settings.settings.table
+        self.measurements_table = table.MeasurementsTable(table=self.table,
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)
 
@@ -49,8 +49,8 @@ class Measurements(object):
         # If we've removed all the sessions, clean up after yourself
         try:
             self.measurements_table.get_measurements()
-        except settings.ClosedNodeError:
-            self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
+        except table.ClosedNodeError:
+            self.measurements_table = table.MeasurementsTable(table=self.table,
                                                               subject_id=self.subject_id,
                                                               session_id=self.session_id)
 
@@ -58,7 +58,7 @@ class Measurements(object):
         measurements = {}
         try:
             self.measurements_table.get_measurements()
-        except settings.ClosedNodeError:
+        except table.ClosedNodeError:
             return measurements
 
         for measurement in self.measurements_table.get_measurements():

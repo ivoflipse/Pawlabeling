@@ -5,8 +5,7 @@ from PySide import QtGui, QtCore
 from pubsub import pub
 import pkg_resources
 pkg_resources.require("tables==3.1.1")
-import tables
-from tables.exceptions import ClosedNodeError, NoSuchNodeError
+from ..models import table
 import logging
 
 __version__ = '0.2'
@@ -50,7 +49,9 @@ class Settings(QtCore.QSettings):
 
         # Create a database connection with PyTables
         database_file = self.database_file()
-        self.table = tables.open_file(database_file, mode="a", title="Data")
+        self.table = table.load_table(database_file)
+        # Verify the table layout and if its not up to date, update it (though perhaps ask the user?)
+        table.verify_tables(self.table)
 
         # Possibly I could provide a getter/setter such that you could change this on the fly
         self.create_contact_dict()

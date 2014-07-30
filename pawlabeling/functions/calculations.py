@@ -399,10 +399,6 @@ def step_duration(contact_1, contact_2, frequency):
     return (difference * 1000) / frequency
 
 
-
-
-
-
 def get_percentile(data, percent=5):
     cut_off = percent / 2.
     low = np.percentile(data, cut_off)

@@ -11,7 +11,7 @@ class Model():
     def __init__(self):
         self.file_paths = defaultdict(dict)
         self.measurement_folder = settings.settings.measurement_folder()
-        self.database_file = settings.settings.database_file()
+        self.table = settings.settings.table
         self.plate_model = platemodel.Plates()
         # Create the plates if they do not yet exists
         self.plate_model.create_plates()
@@ -132,7 +132,7 @@ class Model():
         self.subject_id = subject.subject_id
         settings.settings.logger.info("Subject ID set to {}".format(self.subject_id))
         # As soon as a subject is selected, we instantiate our sessions table
-        self.sessions_table = table.SessionsTable(database_file=self.database_file,
+        self.sessions_table = table.SessionsTable(table=self.table,
                                                   subject_id=self.subject_id)
         self.session_model = sessionmodel.Sessions(subject_id=self.subject_id)
         pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject.first_name,
@@ -148,7 +148,7 @@ class Model():
         settings.settings.logger.info("Session ID set to {}".format(self.session_id))
         pub.sendMessage("update_statusbar", status="Session: {}".format(self.session.session_name))
 
-        self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
+        self.measurements_table = table.MeasurementsTable(table=self.table,
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)
         self.measurement_model = measurementmodel.Measurements(subject_id=self.subject_id,
@@ -190,10 +190,6 @@ class Model():
         self.measurement_name = measurement.measurement_name
 
         settings.settings.logger.info("Measurement ID set to {}".format(self.measurement_id))
-        # self.contacts_table = table.ContactsTable(database_file=self.database_file,
-        #                                           subject_id=self.subject_id,
-        #                                           session_id=self.session_id,
-        #                                           measurement_id=self.measurement_id)
         self.contact_model = self.contact_models[measurement.measurement_name]
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
         pub.sendMessage("put_measurement")
@@ -316,7 +312,6 @@ class Model():
 
     def changed_settings(self):
         self.measurement_folder = settings.settings.measurement_folder()
-        self.database_file = settings.settings.database_file()
 
     def clear_cached_values(self):
         # TODO Figure out what can be cleared and when, perhaps I can use an argument to check the level of clearing
