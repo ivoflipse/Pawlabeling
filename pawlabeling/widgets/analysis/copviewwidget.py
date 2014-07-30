@@ -4,7 +4,7 @@ from PySide import QtGui, QtCore
 from pubsub import pub
 from ...functions import utility, calculations
 from ...settings import settings
-from ...models import model
+from ...models import model, contactmodel
 
 
 class CopViewWidget(QtGui.QWidget):
@@ -193,7 +193,7 @@ class ContactView(QtGui.QWidget):
         # For some reason I can't do the slicing in the above call
         data = data[:,::-1,:]
 
-        contact = calculations.MockContact("contact_1", data[:,:, :np.max(z)])
+        contact = contactmodel.MockContact("contact_1", data[:,:, :np.max(z)])
         # Only calculate the COP until we still have data in the frame
         self.cop_x, self.cop_y = calculations.calculate_cop(contact)
 

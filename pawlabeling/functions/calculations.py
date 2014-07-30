@@ -245,7 +245,7 @@ def temporal_spatial(contacts, sensor_width, sensor_height, frequency):
                 continue
 
             other_contact = contacts[new_index]
-            other_label = other_contact["contact_label"]
+            other_label = other_contact.contact_label
             # If we hit a contact for the second time
             if other_label in lookup_table:
                 break
@@ -254,14 +254,14 @@ def temporal_spatial(contacts, sensor_width, sensor_height, frequency):
 
             # Lets skip bad contacts mkay?
             lookup_table[other_label] = 1
-            if other_contact["invalid"] or other_contact["filtered"] or other_contact["contact_label"] < 0:
+            if other_contact.invalid or other_contact.filtered or other_contact.contact_label < 0:
                 continue
 
-            x_dist = ((other_contact["min_x"] + ((other_contact["min_x"] - other_contact["max_x"]) / 2.)) -
-                      (contact["min_x"] + ((contact["min_x"] - contact["max_x"]) / 2.)))
-            y_dist = ((other_contact["min_y"] + ((other_contact["min_y"] - other_contact["max_y"]) / 2.)) -
-                      (contact["min_y"] + ((contact["min_y"] - contact["max_y"]) / 2.)))
-            z_dist = other_contact["min_z"] - contact["min_z"]
+            x_dist = ((other_contact.min_x + ((other_contact.max_x - other_contact.min_x) / 2.)) -
+                      (contact.min_x + ((contact.max_x - contact.min_x) / 2.)))
+            y_dist = ((other_contact.min_y + ((other_contact.max_y - other_contact.min_y) / 2.)) -
+                      (contact.min_y + ((contact.max_y - contact.min_y) / 2.)))
+            z_dist = other_contact.min_z - contact.min_z
 
             # Flip directions is the measurement is the other way around
             x_dist *= sensor_height * direction_modifier
@@ -274,7 +274,7 @@ def temporal_spatial(contacts, sensor_width, sensor_height, frequency):
     return distances, label_lookup
 
 
-def gait_velocity(contacts, sensor_width, sensor_height, frequency):
+def gait_velocity(contacts, distances, frequency):
     """
     Calculate the velocity of the gait by dividing the average stride length
     by the average swing time.
@@ -284,12 +284,11 @@ def gait_velocity(contacts, sensor_width, sensor_height, frequency):
     sensor_width = 1.
     sensor_height = 1.
     frequency = 100.
-    distances = temporal_spatial(contacts, sensor_width, sensor_height, frequency)
     step_lookup = {0: 2, 1: 3, 2: 0, 3: 1}
     speed = []
     contact_labels = {}
     for index, contact in enumerate(contacts):
-        contact_labels[index] = contact["contact_label"]
+        contact_labels[index] = contact.contact_label
 
     step_size = 1. / frequency
     # Loop through distances and check if we find the same contact in
@@ -315,7 +314,10 @@ def gait_velocity(contacts, sensor_width, sensor_height, frequency):
                 new_z = z * 1000.
                 speed.append(new_x / new_z)
 
-    return speed
+    if speed:
+        return np.mean(speed)
+    else:
+        return np.nan
 
 
 # I seem to have multiple versions of this code
@@ -362,18 +364,18 @@ def swing_duration(contact_1, contact_2, frequency):
     of contact_1 and the first frame of contact_2 and converting it to ms
     """
     # assert that the contacts are from the same measurement
-    assert contact_1["contact_label"] == contact_2["contact_label"]
+    assert contact_1.contact_label == contact_2.contact_label
     # If contact_2 occurs before contact_1, switch them around.
-    if contact_1["min_z"] > contact_2["min_z"]:
+    if contact_1.min_z > contact_2.min_z:
         contact_1, contact_2 = contact_2, contact_1
-    toe_off = contact_1["max_z"]
-    heel_strike = contact_2["min_z"]
+    toe_off = contact_1.max_z
+    heel_strike = contact_2.min_z
     difference = heel_strike - toe_off
     return (difference * 1000) / frequency
 
 
 def step_duration(contact_1, contact_2, frequency):
-    difference = abs(contact_1["min_z"] - contact_2["min_z"])
+    difference = abs(contact_1.min_z - contact_2.min_z)
     return (difference * 1000) / frequency
 
 
@@ -443,7 +445,7 @@ def find_gait_pattern(pattern):
                         matches.append(key)
 
     if not matches:
-        return None
+        return ""
     elif len(set(matches)) == 1:
         return matches[0]
     else:
@@ -463,8 +465,8 @@ def find_gait_pattern(pattern):
 #######################################################################################
 
 def check_valid(contact_list, weight):
-    contact_order = [contact["contact_label"] for contact in contact_list]
-    pattern = "-".join([str(contact["contact_label"]) for contact in contact_list])
+    contact_order = [contact.contact_label for contact in contact_list]
+    pattern = "-".join([str(contact.contact_label) for contact in contact_list])
     pattern = find_gait_pattern(pattern)
 
     speed = gait_velocity(contact_list)[1:-1]
@@ -478,8 +480,8 @@ def check_valid(contact_list, weight):
             x, y, z = distance[cl]
             widths.append(abs(y) / weight)
 
-    contact_order = [contact["contact_label"] for contact in contact_list if
-                     not contact["filtered"] and not contact["invalid"] and not contact["contact_label"] < 0]
+    contact_order = [contact.contact_label for contact in contact_list if
+                     not contact.filtered and not contact.invalid and not contact.contact_label < 0]
     all_paws = set(contact_order) == {0, 1, 2, 3}
     no_acceleration = np.std(speed) < 0.2
     right_pattern = pattern in ['2-3-0-1', '0-3-2-1']

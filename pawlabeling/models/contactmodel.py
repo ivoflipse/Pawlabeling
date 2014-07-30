@@ -25,11 +25,13 @@ class Contacts(object):
     def create_contacts(self, contacts):
         """
         """
+        # Doesn't this line mean I always store the data as new?
         self.delete_contacts()
 
         for contact in contacts:
             self.create_contact(contact)
-            # return contacts  ## I don't see how contacts get created here :/
+
+        return contacts
 
     def create_contact(self, contact):
         # We store the results separately
@@ -54,9 +56,6 @@ class Contacts(object):
         for item_id, data in array_results.iteritems():
             result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
             if not result:
-                if data is None:
-                    data = getattr(self, item_id)
-                # TODO If it doesn't exist, we have to create it
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
@@ -70,7 +69,6 @@ class Contacts(object):
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
-
 
 
     def delete_contacts(self):
@@ -228,33 +226,64 @@ class Contacts(object):
         for index, contact in enumerate(contacts):
             distance = distances[index]
             contact_label = contact.contact_label
-            stride_duration = distance[contact_label][-1]
-            contact.swing_duration = stride_duration - contact.stance_duration
-            contact.stance_percentage = (contact.stance_duration * 100.) / stride_duration
-            contact.gait_velocity = calculations.gait_velocity()
-            pattern = "-".join([str(contact["contact_label"]) for contact in contacts])
+            contact.gait_velocity = calculations.gait_velocity(contacts, distances, measurement.frequency)
+            pattern = "-".join([str(contact.contact_label) for contact in contacts])
             contact.gait_pattern = calculations.find_gait_pattern(pattern=pattern)
 
-            stride_contact = distance[other_contact_lookup[contact_label]["stride"]]
-            contact.stride_width = stride_contact[0]
-            contact.stride_length = stride_contact[1]
-            contact.stride_duration = stride_contact[2]
+            # Set all the unavailable data to NaN
+            contact.stride_width = np.nan
+            contact.stride_length = np.nan
+            contact.stride_duration = np.nan
+            contact.stride_width = np.nan
+            contact.stride_length = np.nan
+            contact.stride_duration = np.nan
+            contact.step_width = np.nan
+            contact.step_length = np.nan
+            contact.step_duration = np.nan
+            contact.ipsi_width = np.nan
+            contact.ipsi_length = np.nan
+            contact.ipsi_duration = np.nan
+            contact.diag_width = np.nan
+            contact.diag_length = np.nan
+            contact.diag_duration = np.nan
+            contact.swing_duration = np.nan
+            contact.stance_percentage = np.nan
 
-            step_contact = distance[other_contact_lookup[contact_label]["step"]]
-            contact.step_width = step_contact[0]
-            contact.step_length = step_contact[1]
-            contact.step_duration = step_contact[2]
+            if contact_label < 0:
+                continue
 
-            ipsi_contact = distance[other_contact_lookup[contact_label]["ipsi"]]
-            contact.ipsi_width = ipsi_contact[0]
-            contact.ipsi_length = ipsi_contact[1]
-            contact.ipsi_duration = ipsi_contact[2]
+            stride_label = other_contact_lookup[contact_label]["stride"]
+            stride_contact = distance.get(stride_label)
+            if stride_contact:
+                stride_duration = distance[contact_label][-1]
+                contact.swing_duration = stride_duration - contact.stance_duration
+                contact.stance_percentage = (contact.stance_duration * 100.) / stride_duration
+                contact.stride_width = stride_contact[0]
+                contact.stride_length = stride_contact[1]
+                contact.stride_duration = stride_contact[2]
 
-            diag_contact = distance[other_contact_lookup[contact_label]["diag"]]
-            contact.diag_width = diag_contact[0]
-            contact.diag_length = diag_contact[1]
-            contact.diag_duration = diag_contact[2]
+            step_label = other_contact_lookup[contact_label]["step"]
+            step_contact = distance.get(step_label)
+            if step_contact:
+                contact.step_width = step_contact[0]
+                contact.step_length = step_contact[1]
+                contact.step_duration = step_contact[2]
 
+            ipsi_label = other_contact_lookup[contact_label]["ipsi"]
+            ipsi_contact = distance.get(ipsi_label)
+            if ipsi_contact:
+                contact.ipsi_width = ipsi_contact[0]
+                contact.ipsi_length = ipsi_contact[1]
+                contact.ipsi_duration = ipsi_contact[2]
+
+            diag_label = other_contact_lookup[contact_label]["diag"]
+            diag_contact = distance.get(diag_label)
+            if diag_contact:
+                contact.diag_width = diag_contact[0]
+                contact.diag_length = diag_contact[1]
+                contact.diag_duration = diag_contact[2]
+
+        # TODO make the app deal with the nan's
         return contacts
 
 
@@ -476,7 +505,6 @@ class Contact(object):
         # force_over_time as an attribute is not yet available when this function is called
         force_over_time = calculations.force_over_time(self)
         max_force = np.max(force_over_time)
-        #print force_over_time[0], force_over_time[-1], max_force, settings.settings.start_force_percentage()
         if (force_over_time[0] > (settings.settings.start_force_percentage() * max_force) or
                     force_over_time[-1] > (settings.settings.end_force_percentage() * max_force)):
             return True
