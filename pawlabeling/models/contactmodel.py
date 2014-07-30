@@ -30,18 +30,23 @@ class Contacts(object):
 
         for contact in contacts:
             self.create_contact(contact)
-        return contacts
+        #return contacts  ## I don't see how contacts get created here :/
 
-    # TODO Really it actually should never happen that I have to call create_contact when it already exists!
     def create_contact(self, contact):
         # We store the results separately
         results = {"data": contact.data,
                    "max_of_max": contact.max_of_max,
                    "force_over_time": contact.force_over_time,
+                   "pixel_count_over_time": contact.pixel_count_over_time,
                    "pressure_over_time": contact.pressure_over_time,
                    "surface_over_time": contact.surface_over_time,
+                   "vertical_impulse": contact.vertical_impulse,
+                   "time_of_peak_force": contact.time_of_peak_force,
                    "cop_x": contact.cop_x,
-                   "cop_y": contact.cop_y
+                   "cop_y": contact.cop_y,
+                   "vcop_xy": contact.vcop_xy,
+                   "vcop_x": contact.vcop_x,
+                   "vcop_y": contact.vcop_y,
         }
 
         # Convert the contact to a dict, like the table expects
@@ -51,12 +56,14 @@ class Contacts(object):
         for item_id, data in results.iteritems():
             result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
             if not result:
+                if data is None:
+                    data = getattr(self, item_id)
+                # TODO If it doesn't exist, we have to create it
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
                 # If the arrays are not equal, drop the old one and write the new data
             elif not np.array_equal(result, data):
-                # TODO I can't really test this this without changing my tracking
                 print "Item: {} is not equal to the stored version".format(item_id)
                 # Let's hope this will simply replace the old values
                 # http://hdf-forum.184993.n3.nabble.com/hdf-forum-Reset-data-in-pytables-array-td193311.html
@@ -156,17 +163,8 @@ class Contacts(object):
         contacts = sorted(contacts, key=lambda contact: contact.min_z)
         # Update their index
         for contact_id, contact in enumerate(contacts):
-            contact.contact_id = contact_id
+            contact.contact_id = "contact_".format(contact_id)
         return contacts
-
-    # def update_contact(self, contact):
-    #     self.contacts_table.update_contact(**contact)
-
-    # def update_contacts(self, contacts, measurement_name):
-    #     for contact in contacts[measurement_name]:
-    #         contact = contact.to_dict()  # This takes care of some of the book keeping for us
-    #         self.update_contact(contact)
-    #     self.contacts_table.contacts_table.flush()
 
     def get_contact_data(self, measurement):
         measurement_id = measurement.measurement_id
@@ -274,7 +272,8 @@ class Contact(object):
         self.vcop_xy, self.vcop_x, self.vcop_y = calculations.velocity_of_cop(self, plate.sensor_width,
                                                                               plate.sensor_height,
                                                                               measurement.frequency)
-        self.time_of_peak_force = calculations.time_of_peak_force(self, frequency=measurement.frequency)
+        self.time_of_peak_force = calculations.time_of_peak_force(self, frequency=measurement.frequency,
+                                                                  relative=False)
         # Note vertical impluse is NOT normalized here!
         self.vertical_impulse = calculations.vertical_impulse(self, frequency=measurement.frequency,
                                                               mass=1.0, version="2")
@@ -339,12 +338,27 @@ class Contact(object):
         for key, value in contact.items():
             setattr(self, key, value)
 
+        self.table_attributes = ["subject_id","session_id","measurement_id","contact_id","contact_label",
+                        "min_x", "max_x","min_y","max_y","min_z","max_z","width","height","length",
+                        "invalid","filtered","edge_contact", "unfinished_contact","incomplete_contact",
+                        "orientation"]
+
+        self.data_attributes = ["force_over_time","pixel_count_over_time","surface_over_time","pressure_over_time",
+                                "cop_x","cop_y","vcop_xy","vcop_x","vcop_y","max_of_max","time_of_peak_force"]
+
+        for attribute in self.data_attributes:
+            if not hasattr(self, attribute):
+                # Call the function from calculations on self
+                getattr(calculations, attribute)(self)
+
+
+
     def to_dict(self):
         return {
             "subject_id": self.subject_id,
             "session_id": self.session_id,
             "measurement_id": self.measurement_id,
-            "contact_id": "contact_{}".format(self.contact_id),
+            "contact_id": self.contact_id,
             "contact_label": self.contact_label,
             "min_x": self.min_x,
             "max_x": self.max_x,

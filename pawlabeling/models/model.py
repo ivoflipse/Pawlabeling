@@ -10,7 +10,6 @@ from ..models import table, subjectmodel, sessionmodel, measurementmodel, contac
 class Model():
     def __init__(self):
         self.file_paths = defaultdict(dict)
-        # TODO change the models measurement folder instead of writing it to the settings
         self.measurement_folder = settings.settings.measurement_folder()
         self.database_file = settings.settings.database_file()
         self.plate_model = platemodel.Plates()

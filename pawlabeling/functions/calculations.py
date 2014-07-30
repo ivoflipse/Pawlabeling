@@ -193,9 +193,10 @@ def time_of_peak_force(contact, frequency, relative=True):
     location_peak = max_force(contact)
     duration = contact.length
     if relative:
-        return (100. * location_peak) / duration
+        contact.time_of_peak_force = (100. * location_peak) / duration
     else:
-        return (location_peak * 1000) / frequency
+        contact.time_of_peak_force = (location_peak * 1000) / frequency
+    return contact.time_of_peak_force
 
 
 def vertical_impulse_method1(contact, frequency, mass):
