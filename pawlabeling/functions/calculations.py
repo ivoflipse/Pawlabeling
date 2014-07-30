@@ -156,17 +156,17 @@ def pressure_over_time(contact, sensor_surface):
     contact.pressure_over_time = np.divide(contact.force_over_time, contact.surface_over_time)
     return contact.pressure_over_time
 
-def max_force(contact):
+def peak_force(contact):
     if hasattr(contact, "force_over_time"):
         force_over_time(contact)
     return np.max(contact.force_over_time)
 
-def max_pressure(contact, sensor_surface):
+def peak_pressure(contact, sensor_surface):
     if hasattr(contact, "pressure_over_time"):
-        pressure_over_time(contact)
+        pressure_over_time(contact, sensor_surface)
     return np.max(contact.pressure_over_time)
 
-def max_surface(contact, sensor_surface):
+def peak_surface(contact, sensor_surface):
     if hasattr(contact, "surface_over_time"):
         surface_over_time(contact, sensor_surface)
     return np.max(contact.surface_over_time)
@@ -177,7 +177,7 @@ def time_of_peak_force(contact, frequency, relative=True):
     I can either calculate this on the average or calculate this for each contact and then take an average over those values.
     Though this should use the frequency of the measurement to express it in milliseconds.
     """
-    location_peak = max_force(contact)
+    location_peak = np.argmax(force_over_time(contact))
     duration = contact.length
     if relative:
         time_of_peak = (100. * location_peak) / duration

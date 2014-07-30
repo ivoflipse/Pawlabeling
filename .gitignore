@@ -68,6 +68,8 @@ $RECYCLE.BIN/
 
 # Project specific files #
 #*.ini
+# Ignore my own settings
+settings.ini
 
 # Documentation
 _build

@@ -2319,3 +2319,130 @@
 2014-07-30 16:27:06,512 - % - INFO - Measurement: _2voor 24=7 - 24-07-2013 - Entire Plate Roll Off
 2014-07-30 16:27:09,325 - % - INFO - Application Shutdown
 
+2014-07-30 16:43:31,076 - % - INFO - -----------------------------------
+2014-07-30 16:43:31,076 - % - INFO - Log system successfully initialised
+2014-07-30 16:43:31,076 - % - INFO - -----------------------------------
+2014-07-30 16:43:31,302 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 16:43:31,719 - % - INFO - Subject ID set to subject_2
+2014-07-30 16:43:31,720 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 16:43:31,721 - % - INFO - Model.clear_cached_values
+2014-07-30 16:43:32,289 - % - INFO - Session ID set to session_0
+2014-07-30 16:43:32,290 - % - INFO - Session: voor
+2014-07-30 16:43:32,430 - % - INFO - Plate ID set to plate_2
+2014-07-30 16:43:32,430 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 16:43:36,914 - % - INFO - Changing tabs to the Processing tab
+2014-07-30 16:43:36,960 - % - INFO - Measurement ID set to measurement_1
+2014-07-30 16:43:36,960 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:43:37,362 - % - INFO - Contact ID set to contact_0
+2014-07-30 16:43:37,519 - % - INFO - Contact ID set to contact_1
+2014-07-30 16:43:37,671 - % - INFO - Contact ID set to contact_2
+2014-07-30 16:43:37,821 - % - INFO - Contact ID set to contact_4
+2014-07-30 16:43:39,163 - % - INFO - Model.store_contacts: Results for _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:43:39,163 - % - INFO - Results saved
+2014-07-30 16:43:42,463 - % - INFO - Measurement ID set to measurement_9
+2014-07-30 16:43:42,463 - % - INFO - Measurement: _1voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:43:43,588 - % - INFO - Model.store_contacts: Results for _1voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:43:43,588 - % - INFO - Results saved
+2014-07-30 16:43:44,951 - % - INFO - Measurement ID set to measurement_3
+2014-07-30 16:43:44,953 - % - INFO - Measurement: _2voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:43:58,357 - % - INFO - Model.store_contacts: Results for _2voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:43:58,357 - % - INFO - Results saved
+2014-07-30 16:43:59,696 - % - INFO - Measurement ID set to measurement_0
+2014-07-30 16:43:59,696 - % - INFO - Measurement: _3voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:44:05,875 - % - INFO - Model.store_contacts: Results for _3voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:44:05,875 - % - INFO - Results saved
+2014-07-30 16:44:07,160 - % - INFO - Measurement ID set to measurement_8
+2014-07-30 16:44:07,160 - % - INFO - Measurement: _4voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:44:12,183 - % - INFO - Model.store_contacts: Results for _4voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:44:12,183 - % - INFO - Results saved
+2014-07-30 16:44:14,391 - % - INFO - Measurement ID set to measurement_6
+2014-07-30 16:44:14,391 - % - INFO - Measurement: _5voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:44:21,529 - % - INFO - Model.store_contacts: Results for _5voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:44:21,530 - % - INFO - Results saved
+2014-07-30 16:44:22,792 - % - INFO - Measurement ID set to measurement_4
+2014-07-30 16:44:22,792 - % - INFO - Measurement: _6voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:44:37,440 - % - INFO - Model.store_contacts: Results for _6voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:44:37,440 - % - INFO - Results saved
+2014-07-30 16:44:39,543 - % - INFO - Measurement ID set to measurement_2
+2014-07-30 16:44:39,543 - % - INFO - Measurement: _7voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:44:45,384 - % - INFO - Model.store_contacts: Results for _7voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:44:45,384 - % - INFO - Results saved
+2014-07-30 16:44:46,503 - % - INFO - Measurement ID set to measurement_7
+2014-07-30 16:44:46,503 - % - INFO - Measurement: _8voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:44:56,427 - % - INFO - Model.store_contacts: Results for _8voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:44:56,427 - % - INFO - Results saved
+2014-07-30 16:44:57,615 - % - INFO - Measurement ID set to measurement_5
+2014-07-30 16:44:57,615 - % - INFO - Measurement: _9voor 24=71 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:45:01,864 - % - INFO - Model.store_contacts: Results for _9voor 24=71 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:45:01,864 - % - INFO - Results saved
+2014-07-30 16:45:03,756 - % - INFO - Application Shutdown
+
+2014-07-30 16:59:02,918 - % - INFO - -----------------------------------
+2014-07-30 16:59:02,918 - % - INFO - Log system successfully initialised
+2014-07-30 16:59:02,918 - % - INFO - -----------------------------------
+2014-07-30 16:59:03,147 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 16:59:03,611 - % - INFO - Subject ID set to subject_2
+2014-07-30 16:59:03,614 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 16:59:03,615 - % - INFO - Model.clear_cached_values
+2014-07-30 16:59:04,178 - % - INFO - Session ID set to session_0
+2014-07-30 16:59:04,178 - % - INFO - Session: voor
+2014-07-30 16:59:04,326 - % - INFO - Plate ID set to plate_2
+2014-07-30 16:59:04,328 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 16:59:27,868 - % - INFO - -----------------------------------
+2014-07-30 16:59:27,868 - % - INFO - Log system successfully initialised
+2014-07-30 16:59:27,868 - % - INFO - -----------------------------------
+2014-07-30 16:59:28,131 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 16:59:28,628 - % - INFO - Subject ID set to subject_2
+2014-07-30 16:59:28,631 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 16:59:28,631 - % - INFO - Model.clear_cached_values
+2014-07-30 16:59:29,290 - % - INFO - Session ID set to session_0
+2014-07-30 16:59:29,290 - % - INFO - Session: voor
+2014-07-30 16:59:29,417 - % - INFO - Plate ID set to plate_2
+2014-07-30 16:59:29,417 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 16:59:39,444 - % - INFO - Changing tabs to the Processing tab
+2014-07-30 16:59:39,487 - % - INFO - Measurement ID set to measurement_1
+2014-07-30 16:59:39,487 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:59:39,890 - % - INFO - Contact ID set to contact_0
+2014-07-30 16:59:40,052 - % - INFO - Contact ID set to contact_1
+2014-07-30 16:59:40,201 - % - INFO - Contact ID set to contact_2
+2014-07-30 16:59:40,349 - % - INFO - Contact ID set to contact_4
+2014-07-30 16:59:41,598 - % - INFO - Model.store_contacts: Results for _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:59:41,598 - % - INFO - Results saved
+2014-07-30 16:59:42,296 - % - INFO - Measurement ID set to measurement_9
+2014-07-30 16:59:42,296 - % - INFO - Measurement: _1voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:59:43,217 - % - INFO - Model.store_contacts: Results for _1voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:59:43,217 - % - INFO - Results saved
+2014-07-30 16:59:43,615 - % - INFO - Measurement ID set to measurement_0
+2014-07-30 16:59:43,615 - % - INFO - Measurement: _3voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:59:44,332 - % - INFO - Model.store_contacts: Results for _3voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:59:44,332 - % - INFO - Results saved
+2014-07-30 16:59:46,904 - % - INFO - Measurement ID set to measurement_3
+2014-07-30 16:59:46,904 - % - INFO - Measurement: _2voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:59:47,394 - % - INFO - Model.store_contacts: Results for _2voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:59:47,394 - % - INFO - Results saved
+2014-07-30 16:59:48,776 - % - INFO - Measurement ID set to measurement_6
+2014-07-30 16:59:48,776 - % - INFO - Measurement: _5voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:59:49,470 - % - INFO - Model.store_contacts: Results for _5voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:59:49,470 - % - INFO - Results saved
+2014-07-30 16:59:50,872 - % - INFO - Measurement ID set to measurement_2
+2014-07-30 16:59:50,872 - % - INFO - Measurement: _7voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:59:51,391 - % - INFO - Model.store_contacts: Results for _7voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:59:51,391 - % - INFO - Results saved
+2014-07-30 16:59:53,088 - % - INFO - Measurement ID set to measurement_4
+2014-07-30 16:59:53,088 - % - INFO - Measurement: _6voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:59:53,648 - % - INFO - Model.store_contacts: Results for _6voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:59:53,648 - % - INFO - Results saved
+2014-07-30 16:59:55,177 - % - INFO - Measurement ID set to measurement_7
+2014-07-30 16:59:55,177 - % - INFO - Measurement: _8voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:59:56,102 - % - INFO - Model.store_contacts: Results for _8voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:59:56,102 - % - INFO - Results saved
+2014-07-30 16:59:56,839 - % - INFO - Measurement ID set to measurement_5
+2014-07-30 16:59:56,839 - % - INFO - Measurement: _9voor 24=71 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 16:59:57,519 - % - INFO - Model.store_contacts: Results for _9voor 24=71 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 16:59:57,520 - % - INFO - Results saved
+2014-07-30 16:59:59,528 - % - INFO - Measurement ID set to measurement_2
+2014-07-30 16:59:59,528 - % - INFO - Measurement: _7voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 17:00:00,312 - % - INFO - Model.store_contacts: Results for _7voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 17:00:00,312 - % - INFO - Results saved
+2014-07-30 17:00:03,628 - % - INFO - Application Shutdown
+

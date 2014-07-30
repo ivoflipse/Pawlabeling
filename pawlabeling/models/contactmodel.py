@@ -29,28 +29,29 @@ class Contacts(object):
 
         for contact in contacts:
             self.create_contact(contact)
-            #return contacts  ## I don't see how contacts get created here :/
+            # return contacts  ## I don't see how contacts get created here :/
 
     def create_contact(self, contact):
         # We store the results separately
-        results = {"data": contact.data,
-                   "max_of_max": contact.max_of_max,
-                   "force_over_time": contact.force_over_time,
-                   "pixel_count_over_time": contact.pixel_count_over_time,
-                   "pressure_over_time": contact.pressure_over_time,
-                   "surface_over_time": contact.surface_over_time,
-                   "cop_x": contact.cop_x,
-                   "cop_y": contact.cop_y,
-                   "vcop_xy": contact.vcop_xy,
-                   "vcop_x": contact.vcop_x,
-                   "vcop_y": contact.vcop_y,
+        array_results = {
+            "data": contact.data,
+            "max_of_max": contact.max_of_max,
+            "force_over_time": contact.force_over_time,
+            "pixel_count_over_time": contact.pixel_count_over_time,
+            "pressure_over_time": contact.pressure_over_time,
+            "surface_over_time": contact.surface_over_time,
+            "cop_x": contact.cop_x,
+            "cop_y": contact.cop_y,
+            "vcop_xy": contact.vcop_xy,
+            "vcop_x": contact.vcop_x,
+            "vcop_y": contact.vcop_y,
         }
 
         # Convert the contact to a dict, like the table expects
-        contact = contact.to_dict()
-        self.contact_group = self.contacts_table.create_contact(**contact)
+        contact_dict = contact.to_dict()
+        self.contact_group = self.contacts_table.create_contact(**contact_dict)
 
-        for item_id, data in results.iteritems():
+        for item_id, data in array_results.iteritems():
             result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
             if not result:
                 if data is None:
@@ -69,6 +70,8 @@ class Contacts(object):
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
+
+
 
     def delete_contacts(self):
         # Drop any existing contacts before creating new ones
@@ -133,7 +136,7 @@ class Contacts(object):
     def repeat_track_contacts(self, measurement, measurement_data, plate):
         return self.track_contacts(measurement, measurement_data, plate)
 
-    #@profile
+    # @profile
     def track_contacts(self, measurement, measurement_data, plate):
         pub.sendMessage("update_statusbar", status="Starting tracking")
         # Add padding to the measurement
@@ -380,7 +383,7 @@ class Contact(object):
         if orientation:
             self.data = np.rot90(np.rot90(self.data))
 
-    #@profile
+    # @profile
     def convert_contour_to_slice(self, measurement_data):
         """
         Creates self.measurement_data which contains the pixels that are enclosed by the contour
@@ -423,6 +426,11 @@ class Contact(object):
         self.max_of_max = np.max(self.data, axis=2)
 
         self.stance_duration = calculations.stance_duration(self, frequency=measurement.frequency)
+
+        self.peak_force = calculations.peak_force(self)
+        self.peak_pressure = calculations.peak_pressure(self, plate.sensor_surface)
+        self.peak_surface = calculations.peak_surface(self, plate.sensor_surface)
+
 
 
     def validate_contact(self, measurement_data):
@@ -484,10 +492,11 @@ class Contact(object):
         for key, value in contact.items():
             setattr(self, key, value)
 
-        self.calculate_results(plate=plate, measurement=measurement)
+        #self.calculate_results(plate=plate, measurement=measurement)
 
 
     def to_dict(self):
+        # TODO convert this to a list of strings and a bunch of getattr calls
         return {
             "subject_id": self.subject_id,
             "session_id": self.session_id,
@@ -509,6 +518,28 @@ class Contact(object):
             "unfinished_contact": self.unfinished_contact,
             "incomplete_contact": self.incomplete_contact,
             "orientation": self.orientation,
+            "vertical_impulse": self.vertical_impulse,
+            "time_of_peak_force": self.time_of_peak_force,
+            "peak_force": self.peak_force,
+            "peak_pressure": self.peak_pressure,
+            "peak_surface": self.peak_surface,
+            "gait_pattern": self.gait_pattern,
+            "gait_velocity": self.gait_velocity,
+            "stance_duration": self.stance_duration,
+            "swing_duration": self.swing_duration,
+            "stance_percentage": self.stance_percentage,
+            "stride_duration": self.stride_duration,
+            "stride_length": self.stride_length,
+            "stride_width": self.stride_width,
+            "step_duration": self.step_duration,
+            "step_length": self.step_length,
+            "step_width": self.step_width,
+            "ipsi_duration": self.ipsi_duration,
+            "ipsi_length": self.ipsi_length,
+            "ipsi_width": self.ipsi_width,
+            "diag_duration": self.diag_duration,
+            "diag_length": self.diag_length,
+            "diag_width": self.diag_width,
         }
 
 
@@ -517,6 +548,7 @@ class MockContacts(Contacts):
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
+
 
 class MockContact(Contact):
     def __init__(self, contact_id, data):

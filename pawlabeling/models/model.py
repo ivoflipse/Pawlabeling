@@ -281,6 +281,7 @@ class Model():
             if contact_model.verify_contacts(contacts):
                 measurement_data = self.measurement_model.get_measurement_data(measurement)
                 contacts = contact_model.recalculate_results(contacts, plate, measurement, measurement_data)
+                contacts = contact_model.calculate_multi_contact_results(contacts, plate, measurement)
             if contacts:
                 self.contacts[measurement.measurement_name] = contacts
 
