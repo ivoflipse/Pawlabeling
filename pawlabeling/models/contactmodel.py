@@ -11,7 +11,6 @@ from ..models import table
 
 #from memory_profiler import profile
 
-
 class Contacts(object):
     def __init__(self, subject_id, session_id, measurement_id):
         self.subject_id = subject_id
@@ -272,7 +271,6 @@ class Contact(object):
         self.orientation = False
         self.filtered = False  # This can be used to check if the contact should be filtered or not
         self.contact_label = -2  # Contacts are labeled as -2 by default, this means unlabeled
-        settings.settings = settings.settings
         self.contour_list = defaultdict(list)
         self.padding = settings.settings.padding_factor()
 
@@ -467,3 +465,9 @@ class Contact(object):
             "incomplete_contact": self.incomplete_contact,
             "orientation": self.orientation,
         }
+
+class MockContacts(Contacts):
+    def __init__(self, subject_id, session_id, measurement_id):
+        self.subject_id = subject_id
+        self.session_id = session_id
+        self.measurement_id = measurement_id
