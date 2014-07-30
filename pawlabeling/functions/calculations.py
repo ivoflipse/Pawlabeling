@@ -248,13 +248,10 @@ def vertical_impulse(contact, frequency, mass=1.0, version=1):
 
 ##########################################################################################
 # Spatiotemporal functions
-def temporal_spatial(contacts, measurement_data, sensor_width, sensor_height, frequency):
+def temporal_spatial(contacts, sensor_width, sensor_height, frequency):
     distances = defaultdict()
     label_lookup = defaultdict(dict)
-    direction_modifier = 1.
-    # TODO check whether this should be True or False
-    if check_orientation(measurement_data):
-        direction_modifier = -1.
+    direction_modifier = -1. if contacts[0].orientation else 1.
     for index, contact in enumerate(contacts):
         lookup_table = defaultdict(int)
         distance = defaultdict()
@@ -372,9 +369,7 @@ def stance_duration(contact, frequency):
     Calculates the total time the contact makes contact with the plate
     Returns the contact duration in ms
     """
-    duration = contact["data"].read().shape[2]
-    return (duration * 1000) / frequency
-
+    return (contact.length * 1000) / frequency
 
 # I can't demo this now, because I don't have labeled contacts...
 def swing_duration(contact_1, contact_2, frequency):

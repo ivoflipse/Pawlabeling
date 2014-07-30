@@ -133,19 +133,20 @@ class ContactView(QtGui.QWidget):
                 if self.outlier_toggle:
                     if contact.filtered or contact.invalid:
                         continue
-                if contact.contact_label == self.contact_label:
-                    pressure = np.pad(contact.pressure_over_time, 1, mode="constant", constant_values=0)
-                    if len(pressure) > self.max_duration:
-                        self.max_duration = len(pressure)
-                    if np.max(pressure) > self.max_pressure:
-                        self.max_pressure = np.max(pressure)
 
+                pressure = np.pad(contact.pressure_over_time, 1, mode="constant", constant_values=0)
+                if contact.contact_label == self.contact_label:
                     lengths.append(len(pressure))
                     interpolated_pressure = calculations.interpolate_time_series(pressure, interpolate_length)
                     pressure_over_time.append(interpolated_pressure)
                     time_line = calculations.interpolate_time_series(np.arange(np.max(len(pressure))),
                                                                      interpolate_length)
                     self.axes.plot(time_line, interpolated_pressure, alpha=0.5)
+
+                if len(pressure) > self.max_duration:
+                    self.max_duration = len(pressure)
+                if np.max(pressure) > self.max_pressure:
+                    self.max_pressure = np.max(pressure)
 
         # If there's a contact selected, plot that too
         if self.contact_label in self.model.selected_contacts:
@@ -172,7 +173,7 @@ class ContactView(QtGui.QWidget):
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.vertical_line.set_xdata(self.frame)
         self.axes.set_xlim([0, self.model.max_length + 2])  # +2 because we padded the array
-        self.axes.set_ylim([0, self.max_pressure * 1.2])
+        self.axes.set_ylim([0, self.max_pressure * 1.1])
         self.canvas.draw()
 
     def change_frame(self, frame):

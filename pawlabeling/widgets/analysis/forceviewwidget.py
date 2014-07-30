@@ -134,19 +134,20 @@ class ContactView(QtGui.QWidget):
                 if self.outlier_toggle:
                     if contact.filtered or contact.invalid:
                         continue
-                if contact.contact_label == self.contact_label:
-                    force = np.pad(contact.force_over_time, 1, mode="constant", constant_values=0)
-                    if len(force) > self.max_duration:
-                        self.max_duration = len(force)
-                    if np.max(force) > self.max_force:
-                        self.max_force = np.max(force)
 
+                force = np.pad(contact.force_over_time, 1, mode="constant", constant_values=0)
+                if contact.contact_label == self.contact_label:
                     lengths.append(len(force))
                     interpolated_force = calculations.interpolate_time_series(force, interpolate_length)
                     force_over_time.append(interpolated_force)
                     time_line = calculations.interpolate_time_series(np.arange(np.max(len(force))),
                                                                      interpolate_length)
                     self.axes.plot(time_line, interpolated_force, alpha=0.5)
+
+                if len(force) > self.max_duration:
+                    self.max_duration = len(force)
+                if np.max(force) > self.max_force:
+                    self.max_force = np.max(force)
 
         # If there's a contact selected, plot that too
         if self.contact_label in self.model.selected_contacts:
@@ -174,7 +175,7 @@ class ContactView(QtGui.QWidget):
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.vertical_line.set_xdata(self.frame)
         self.axes.set_xlim([0, self.model.max_length + 2])  # +2 because we padded the array
-        self.axes.set_ylim([0, self.max_force * 1.2])
+        self.axes.set_ylim([0, self.max_force * 1.1])
         self.canvas.draw()
 
 

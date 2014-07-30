@@ -1947,3 +1947,187 @@
 2014-07-30 14:11:08,346 - % - INFO - Contact ID set to contact_4
 2014-07-30 14:11:09,197 - % - INFO - Application Shutdown
 
+2014-07-30 14:19:29,858 - % - INFO - -----------------------------------
+2014-07-30 14:19:29,858 - % - INFO - Log system successfully initialised
+2014-07-30 14:19:29,858 - % - INFO - -----------------------------------
+2014-07-30 14:19:30,089 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 14:19:30,517 - % - INFO - Subject ID set to subject_2
+2014-07-30 14:19:30,520 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 14:19:30,522 - % - INFO - Model.clear_cached_values
+2014-07-30 14:19:31,095 - % - INFO - Session ID set to session_0
+2014-07-30 14:19:31,095 - % - INFO - Session: voor
+2014-07-30 14:19:31,217 - % - INFO - Plate ID set to plate_2
+2014-07-30 14:19:31,217 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 14:19:33,319 - % - INFO - Application Shutdown
+
+2014-07-30 14:48:35,834 - % - INFO - -----------------------------------
+2014-07-30 14:48:35,835 - % - INFO - Log system successfully initialised
+2014-07-30 14:48:35,835 - % - INFO - -----------------------------------
+2014-07-30 14:48:36,068 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 14:48:36,522 - % - INFO - Subject ID set to subject_2
+2014-07-30 14:48:36,526 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 14:48:36,526 - % - INFO - Model.clear_cached_values
+2014-07-30 14:48:37,095 - % - INFO - Session ID set to session_0
+2014-07-30 14:48:37,095 - % - INFO - Session: voor
+2014-07-30 14:48:37,220 - % - INFO - Plate ID set to plate_2
+2014-07-30 14:48:37,220 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 14:48:50,528 - % - INFO - -----------------------------------
+2014-07-30 14:48:50,528 - % - INFO - Log system successfully initialised
+2014-07-30 14:48:50,528 - % - INFO - -----------------------------------
+2014-07-30 14:48:50,851 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 14:48:51,423 - % - INFO - Subject ID set to subject_2
+2014-07-30 14:48:51,424 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 14:48:51,426 - % - INFO - Model.clear_cached_values
+2014-07-30 14:48:52,046 - % - INFO - Session ID set to session_0
+2014-07-30 14:48:52,048 - % - INFO - Session: voor
+2014-07-30 14:48:52,180 - % - INFO - Plate ID set to plate_2
+2014-07-30 14:48:52,180 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 14:49:43,177 - % - INFO - -----------------------------------
+2014-07-30 14:49:43,177 - % - INFO - Log system successfully initialised
+2014-07-30 14:49:43,177 - % - INFO - -----------------------------------
+2014-07-30 14:49:43,403 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 14:49:43,818 - % - INFO - Subject ID set to subject_2
+2014-07-30 14:49:43,819 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 14:49:43,821 - % - INFO - Model.clear_cached_values
+2014-07-30 14:49:44,398 - % - INFO - Session ID set to session_0
+2014-07-30 14:49:44,398 - % - INFO - Session: voor
+2014-07-30 14:49:44,520 - % - INFO - Plate ID set to plate_2
+2014-07-30 14:49:44,520 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 14:51:44,805 - % - INFO - -----------------------------------
+2014-07-30 14:51:44,805 - % - INFO - Log system successfully initialised
+2014-07-30 14:51:44,805 - % - INFO - -----------------------------------
+2014-07-30 14:51:45,033 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 14:51:45,447 - % - INFO - Subject ID set to subject_2
+2014-07-30 14:51:45,450 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 14:51:45,450 - % - INFO - Model.clear_cached_values
+2014-07-30 14:51:46,006 - % - INFO - Session ID set to session_0
+2014-07-30 14:51:46,007 - % - INFO - Session: voor
+2014-07-30 14:51:46,131 - % - INFO - Plate ID set to plate_2
+2014-07-30 14:51:46,131 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 14:51:50,470 - % - INFO - Subject ID set to subject_5
+2014-07-30 14:51:50,471 - % - INFO - Subject: Stefie Amtyi
+2014-07-30 14:51:50,476 - % - INFO - Model.clear_cached_values
+2014-07-30 14:51:50,994 - % - INFO - Session ID set to session_2
+2014-07-30 14:51:50,994 - % - INFO - Session: Stefie Amtyi na behandeling
+2014-07-30 14:51:51,180 - % - INFO - Plate ID set to plate_2
+2014-07-30 14:51:51,180 - % - INFO - Model.load_contacts: Loading all measurements for subject: Stefie Amtyi, session: Stefie Amtyi na behandeling
+2014-07-30 14:51:54,463 - % - INFO - Changing tabs to the Processing tab
+2014-07-30 14:51:54,510 - % - INFO - Measurement ID set to measurement_6
+2014-07-30 14:51:54,510 - % - INFO - Measurement: stappen na_1 - 30-07-2014 - Entire Plate Roll Off
+2014-07-30 14:51:54,914 - % - INFO - Contact ID set to contact_0
+2014-07-30 14:51:55,073 - % - INFO - Contact ID set to contact_1
+2014-07-30 14:51:55,230 - % - INFO - Contact ID set to contact_2
+2014-07-30 14:51:55,430 - % - INFO - Contact ID set to contact_3
+2014-07-30 14:51:59,493 - % - INFO - Measurement ID set to measurement_4
+2014-07-30 14:51:59,493 - % - INFO - Measurement: stappen na_10 - 30-07-2014 - Entire Plate Roll Off
+2014-07-30 14:52:01,276 - % - INFO - Measurement ID set to measurement_1
+2014-07-30 14:52:01,276 - % - INFO - Measurement: stappen na_11 - 30-07-2014 - Entire Plate Roll Off
+2014-07-30 14:52:08,394 - % - INFO - Starting tracking
+2014-07-30 14:52:12,411 - % - INFO - Measurement ID set to measurement_14
+2014-07-30 14:52:12,411 - % - INFO - Measurement: stappen na_12 - 30-07-2014 - Entire Plate Roll Off
+2014-07-30 14:53:09,717 - % - INFO - Changing tabs to the Analysis tab
+2014-07-30 14:53:09,763 - % - INFO - Measurement ID set to measurement_6
+2014-07-30 14:53:09,763 - % - INFO - Measurement: stappen na_1 - 30-07-2014 - Entire Plate Roll Off
+2014-07-30 14:53:10,157 - % - INFO - Contact ID set to contact_0
+2014-07-30 14:53:10,311 - % - INFO - Contact ID set to contact_1
+2014-07-30 14:53:10,464 - % - INFO - Contact ID set to contact_2
+2014-07-30 14:53:10,660 - % - INFO - Contact ID set to contact_3
+2014-07-30 14:53:13,805 - % - INFO - Switching results to Pressure View
+2014-07-30 14:53:15,292 - % - INFO - Switching results to Force View
+2014-07-30 14:53:22,828 - % - INFO - Measurement ID set to measurement_6
+2014-07-30 14:53:22,828 - % - INFO - Measurement: stappen na_1 - 30-07-2014 - Entire Plate Roll Off
+2014-07-30 14:53:23,217 - % - INFO - Contact ID set to contact_5
+2014-07-30 14:53:24,348 - % - INFO - Measurement ID set to measurement_6
+2014-07-30 14:53:24,348 - % - INFO - Measurement: stappen na_1 - 30-07-2014 - Entire Plate Roll Off
+2014-07-30 14:53:24,746 - % - INFO - Contact ID set to contact_8
+2014-07-30 14:53:37,017 - % - INFO - Application Shutdown
+
+2014-07-30 14:55:16,256 - % - INFO - -----------------------------------
+2014-07-30 14:55:16,256 - % - INFO - Log system successfully initialised
+2014-07-30 14:55:16,256 - % - INFO - -----------------------------------
+2014-07-30 14:55:16,474 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 14:55:16,875 - % - INFO - Subject ID set to subject_2
+2014-07-30 14:55:16,878 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 14:55:16,878 - % - INFO - Model.clear_cached_values
+2014-07-30 14:55:17,451 - % - INFO - Session ID set to session_0
+2014-07-30 14:55:17,451 - % - INFO - Session: voor
+2014-07-30 14:55:17,572 - % - INFO - Plate ID set to plate_2
+2014-07-30 14:55:17,573 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 15:05:24,647 - % - INFO - -----------------------------------
+2014-07-30 15:05:24,648 - % - INFO - Log system successfully initialised
+2014-07-30 15:05:24,648 - % - INFO - -----------------------------------
+2014-07-30 15:05:24,874 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 15:05:25,290 - % - INFO - Subject ID set to subject_2
+2014-07-30 15:05:25,293 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 15:05:25,295 - % - INFO - Model.clear_cached_values
+2014-07-30 15:05:25,831 - % - INFO - Session ID set to session_0
+2014-07-30 15:05:25,832 - % - INFO - Session: voor
+2014-07-30 15:05:25,950 - % - INFO - Plate ID set to plate_2
+2014-07-30 15:05:25,950 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 15:05:37,562 - % - INFO - -----------------------------------
+2014-07-30 15:05:37,562 - % - INFO - Log system successfully initialised
+2014-07-30 15:05:37,562 - % - INFO - -----------------------------------
+2014-07-30 15:05:37,772 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 15:05:38,167 - % - INFO - Subject ID set to subject_2
+2014-07-30 15:05:38,170 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 15:05:38,171 - % - INFO - Model.clear_cached_values
+2014-07-30 15:05:38,723 - % - INFO - Session ID set to session_0
+2014-07-30 15:05:38,723 - % - INFO - Session: voor
+2014-07-30 15:05:38,848 - % - INFO - Plate ID set to plate_2
+2014-07-30 15:05:38,849 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 15:05:41,944 - % - INFO - Changing tabs to the Analysis tab
+2014-07-30 15:05:41,986 - % - INFO - Measurement ID set to measurement_1
+2014-07-30 15:05:41,986 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 15:05:42,367 - % - INFO - Contact ID set to contact_0
+2014-07-30 15:05:42,513 - % - INFO - Contact ID set to contact_1
+2014-07-30 15:05:42,664 - % - INFO - Contact ID set to contact_2
+2014-07-30 15:05:42,809 - % - INFO - Contact ID set to contact_4
+2014-07-30 15:05:44,911 - % - INFO - Changing tabs to the Database tab
+2014-07-30 15:05:46,214 - % - INFO - Subject ID set to subject_5
+2014-07-30 15:05:46,217 - % - INFO - Subject: Stefie Amtyi
+2014-07-30 15:05:46,220 - % - INFO - Model.clear_cached_values
+2014-07-30 15:05:46,733 - % - INFO - Session ID set to session_2
+2014-07-30 15:05:46,733 - % - INFO - Session: Stefie Amtyi na behandeling
+2014-07-30 15:05:46,954 - % - INFO - Plate ID set to plate_2
+2014-07-30 15:05:46,956 - % - INFO - Model.load_contacts: Loading all measurements for subject: Stefie Amtyi, session: Stefie Amtyi na behandeling
+2014-07-30 15:05:49,023 - % - INFO - Changing tabs to the Analysis tab
+2014-07-30 15:05:49,065 - % - INFO - Measurement ID set to measurement_6
+2014-07-30 15:05:49,065 - % - INFO - Measurement: stappen na_1 - 30-07-2014 - Entire Plate Roll Off
+2014-07-30 15:05:49,473 - % - INFO - Contact ID set to contact_0
+2014-07-30 15:05:49,640 - % - INFO - Contact ID set to contact_1
+2014-07-30 15:05:49,792 - % - INFO - Contact ID set to contact_2
+2014-07-30 15:05:49,947 - % - INFO - Contact ID set to contact_3
+2014-07-30 15:05:51,062 - % - INFO - Switching results to Pressure View
+2014-07-30 15:05:53,128 - % - INFO - Switching results to Force View
+2014-07-30 15:06:05,279 - % - INFO - Measurement ID set to measurement_6
+2014-07-30 15:06:05,279 - % - INFO - Measurement: stappen na_1 - 30-07-2014 - Entire Plate Roll Off
+2014-07-30 15:06:05,680 - % - INFO - Contact ID set to contact_5
+2014-07-30 15:06:06,607 - % - INFO - Measurement ID set to measurement_6
+2014-07-30 15:06:06,607 - % - INFO - Measurement: stappen na_1 - 30-07-2014 - Entire Plate Roll Off
+2014-07-30 15:06:07,068 - % - INFO - Contact ID set to contact_8
+2014-07-30 15:06:10,042 - % - INFO - Application Shutdown
+
+2014-07-30 15:06:36,881 - % - INFO - -----------------------------------
+2014-07-30 15:06:36,881 - % - INFO - Log system successfully initialised
+2014-07-30 15:06:36,881 - % - INFO - -----------------------------------
+2014-07-30 15:06:37,098 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-07-30 15:06:37,510 - % - INFO - Subject ID set to subject_2
+2014-07-30 15:06:37,513 - % - INFO - Subject: Berdi van Breggen
+2014-07-30 15:06:37,515 - % - INFO - Model.clear_cached_values
+2014-07-30 15:06:38,055 - % - INFO - Session ID set to session_0
+2014-07-30 15:06:38,055 - % - INFO - Session: voor
+2014-07-30 15:06:38,180 - % - INFO - Plate ID set to plate_2
+2014-07-30 15:06:38,180 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-07-30 15:06:40,799 - % - INFO - Changing tabs to the Processing tab
+2014-07-30 15:06:40,844 - % - INFO - Measurement ID set to measurement_1
+2014-07-30 15:06:40,844 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 15:06:41,234 - % - INFO - Contact ID set to contact_0
+2014-07-30 15:06:41,381 - % - INFO - Contact ID set to contact_1
+2014-07-30 15:06:41,525 - % - INFO - Contact ID set to contact_2
+2014-07-30 15:06:41,668 - % - INFO - Contact ID set to contact_4
+2014-07-30 15:06:42,470 - % - INFO - Measurement ID set to measurement_9
+2014-07-30 15:06:42,470 - % - INFO - Measurement: _1voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-07-30 15:06:48,963 - % - INFO - Model.store_contacts: Results for _1voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-07-30 15:06:48,964 - % - INFO - Results saved
+2014-07-30 15:07:04,019 - % - INFO - Application Shutdown
+

@@ -40,8 +40,6 @@ class Contacts(object):
                    "pixel_count_over_time": contact.pixel_count_over_time,
                    "pressure_over_time": contact.pressure_over_time,
                    "surface_over_time": contact.surface_over_time,
-                   "vertical_impulse": contact.vertical_impulse,
-                   "time_of_peak_force": contact.time_of_peak_force,
                    "cop_x": contact.cop_x,
                    "cop_y": contact.cop_y,
                    "vcop_xy": contact.vcop_xy,
@@ -58,7 +56,6 @@ class Contacts(object):
             if not result:
                 if data is None:
                     data = getattr(self, item_id)
-                print item_id, data
                 # TODO If it doesn't exist, we have to create it
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
@@ -168,6 +165,33 @@ class Contacts(object):
             contact.contact_id = "contact_".format(contact_id)
         return contacts
 
+    def verify_contacts(self, contacts):
+        """
+        Returns True if the contacts are up to date, returns False else
+        """
+        if all([contacts[0].stance_duration == 0.0, contacts[0].gait_velocity == 0.0,
+               contacts[0].peak_force == 0.0, contacts[0].peak_surface == 0.0]):
+            return True
+        return False
+
+    def recalculate_results(self, contacts, plate, measurement, measurement_data):
+        """
+        We'll recalculate all the results except for the tracking or labeling
+        """
+        for contact in contacts:
+            # Backup some values we want to keep
+            backup = {"contact_id":contact.contact_id,
+                      "contact_label":contact.contact_label,
+                      "invalid":contact.invalid}
+
+            contact.calculate_results(plate, measurement)
+            contact.validate_contact(measurement_data)
+
+            for key, value in backup.items():
+                setattr(contact, key, value)
+
+        return contacts
+
     def get_contact_data(self, measurement):
         measurement_id = measurement.measurement_id
         contact_data_table = table.ContactDataTable(table=self.table,
@@ -252,6 +276,17 @@ class Contact(object):
         self.contour_list = defaultdict(list)
         self.padding = settings.settings.padding_factor()
 
+        self.table_attributes = ["subject_id","session_id","measurement_id","contact_id","contact_label",
+                        "min_x", "max_x","min_y","max_y","min_z","max_z","width","height","length",
+                        "invalid","filtered","edge_contact", "unfinished_contact","incomplete_contact",
+                        "orientation", "vertical_impulse","time_of_peak_force","peak_force","peak_pressure", "peak_surface",
+                        "gait_pattern","gait_velocity","stance_duration","swing_duration", "stance_percentage",
+                        "stride_duration","stride_length","stride_width", "step_duration","step_length","step_width",
+                        "ipsi_duration","ipsi_length","ipsi_width","diag_duration","diag_length","diag_width"]
+
+        self.data_attributes = ["data","force_over_time","pixel_count_over_time","surface_over_time","pressure_over_time",
+                                "cop_x","cop_y","vcop_xy","vcop_x","vcop_y","max_of_max"]
+
     def create_contact(self, contact, measurement_data, orientation):
         self.orientation = orientation  # True means the contact is upside down
         frames = sorted(contact.keys())
@@ -331,6 +366,19 @@ class Contact(object):
                                                               mass=1.0, version=2)
         self.max_of_max = np.max(self.data, axis=2)
 
+        self.stance_duration = calculations.stance_duration(self, frequency=measurement.frequency)
+
+        # These results require multiple contacts...
+        #distances, label_lookup = calculations.temporal_spatial(contacts, sensor_width, sensor_height, frequency)
+        #distance = distances[index1]
+        #stride_duration = distance[contact_label][-1]
+        #self.swing_duration = stride_duration - self.stance_duration
+        #self.stance_percentage = (self.stance_duration * 100.) / stride_duration
+        #self.gait_velocity = calculations.gait_velocity()
+        #pattern = "-".join([str(contact["contact_label"]) for contact in contact_list])
+        #self.gait_pattern = calculations.find_gait_pattern(pattern=pattern)
+
+
 
 
     def validate_contact(self, measurement_data):
@@ -391,14 +439,6 @@ class Contact(object):
         """
         for key, value in contact.items():
             setattr(self, key, value)
-
-        # self.table_attributes = ["subject_id","session_id","measurement_id","contact_id","contact_label",
-        #                 "min_x", "max_x","min_y","max_y","min_z","max_z","width","height","length",
-        #                 "invalid","filtered","edge_contact", "unfinished_contact","incomplete_contact",
-        #                 "orientation"]
-        #
-        # self.data_attributes = ["data","force_over_time","pixel_count_over_time","surface_over_time","pressure_over_time",
-        #                         "cop_x","cop_y","vcop_xy","vcop_x","vcop_y","max_of_max","time_of_peak_force"]
 
         self.calculate_results(plate=plate, measurement=measurement)
 
