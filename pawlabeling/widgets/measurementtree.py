@@ -55,6 +55,9 @@ class MeasurementTree(QtGui.QWidget, Singleton):
 
     def select_initial_contacts(self):
         measurement_item = self.measurement_tree.currentItem()
+        # If the tree is empty, there's nothing to select
+        if measurement_item is None:
+            return
         measurement_name = measurement_item.text(0)
         lookup = {0: 0, 1: 0, 2: 0, 3: 0}
         for index in range(measurement_item.childCount()):

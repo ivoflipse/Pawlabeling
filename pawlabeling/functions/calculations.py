@@ -234,8 +234,8 @@ def vertical_impulse(contact, frequency, mass=1.0, version=1):
 def temporal_spatial(contacts, sensor_width, sensor_height, frequency):
     distances = defaultdict()
     label_lookup = defaultdict(dict)
-    direction_modifier = -1. if contacts[0].orientation else 1.
     for index, contact in enumerate(contacts):
+        direction_modifier = -1. if contact.orientation else 1.
         lookup_table = defaultdict(int)
         distance = defaultdict()
         for index2 in range(1, 5):
@@ -254,7 +254,7 @@ def temporal_spatial(contacts, sensor_width, sensor_height, frequency):
 
             # Lets skip bad contacts mkay?
             lookup_table[other_label] = 1
-            if other_contact.invalid or other_contact.filtered or other_contact.contact_label < 0:
+            if other_contact.contact_label < 0:
                 continue
 
             x_dist = ((other_contact.min_x + ((other_contact.max_x - other_contact.min_x) / 2.)) -
@@ -274,23 +274,19 @@ def temporal_spatial(contacts, sensor_width, sensor_height, frequency):
     return distances, label_lookup
 
 
-def gait_velocity(contacts, distances, frequency):
+def gait_velocity(contacts, distances):
     """
     Calculate the velocity of the gait by dividing the average stride length
     by the average swing time.
 
     Can't this be calculated from taking steps between front paws for example?
     """
-    sensor_width = 1.
-    sensor_height = 1.
-    frequency = 100.
     step_lookup = {0: 2, 1: 3, 2: 0, 3: 1}
     speed = []
     contact_labels = {}
     for index, contact in enumerate(contacts):
         contact_labels[index] = contact.contact_label
 
-    step_size = 1. / frequency
     # Loop through distances and check if we find the same contact in
     # the embedded distance dictionary
     for contact_id, distance in distances.items():

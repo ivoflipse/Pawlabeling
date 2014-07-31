@@ -279,12 +279,13 @@ class Model():
             contact_model = self.contact_models[measurement.measurement_name]
             plate = self.plates[measurement.plate_id]
             contacts = contact_model.get_contacts(plate, measurement)
-            if contact_model.verify_contacts(contacts):
+            if True:#contact_model.verify_contacts(contacts):
                 measurement_data = self.measurement_model.get_measurement_data(measurement)
                 contacts = contact_model.recalculate_results(contacts, plate, measurement, measurement_data)
                 contacts = contact_model.calculate_multi_contact_results(contacts, plate, measurement)
                 # Given the stored data is dirty, store it
                 contact_model.create_contacts(contacts)
+
             if contacts:
                 self.contacts[measurement.measurement_name] = contacts
 

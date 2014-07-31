@@ -28,12 +28,20 @@ class Contacts(object):
         # Doesn't this line mean I always store the data as new?
         self.delete_contacts()
 
+        # Make sure all the results are up to date
         for contact in contacts:
             self.create_contact(contact)
 
         return contacts
 
     def create_contact(self, contact):
+        # Convert the contact to a dict, like the table expects
+        contact_dict = contact.to_dict()
+        # This doesn't seem to have an effect, because we just deleted everything (which is stupid)
+        updated = self.contacts_table.update_contact(**contact_dict)
+        if not updated:
+            self.contact_group = self.contacts_table.create_contact(**contact_dict)
+
         # We store the results separately
         array_results = {
             "data": contact.data,
@@ -49,13 +57,9 @@ class Contacts(object):
             "vcop_y": contact.vcop_y,
         }
 
-        # Convert the contact to a dict, like the table expects
-        contact_dict = contact.to_dict()
-        self.contact_group = self.contacts_table.create_contact(**contact_dict)
-
         for item_id, data in array_results.iteritems():
             result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
-            if not result:
+            if result is None:
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
@@ -162,6 +166,9 @@ class Contacts(object):
 
         # Sort the contacts based on their position along the first dimension
         contacts = sorted(contacts, key=lambda contact: contact.min_z)
+        # Calculate the spatialtemporal results
+        contacts = self.calculate_multi_contact_results(contacts, plate, measurement)
+
         # Update their index
         for contact_id, contact in enumerate(contacts):
             contact.contact_id = "contact_".format(contact_id)
@@ -226,7 +233,7 @@ class Contacts(object):
         for index, contact in enumerate(contacts):
             distance = distances[index]
             contact_label = contact.contact_label
-            contact.gait_velocity = calculations.gait_velocity(contacts, distances, measurement.frequency)
+            contact.gait_velocity = calculations.gait_velocity(contacts, distances)
             pattern = "-".join([str(contact.contact_label) for contact in contacts])
             contact.gait_pattern = calculations.find_gait_pattern(pattern=pattern)
 
@@ -358,6 +365,7 @@ class Contact(object):
         self.contact_label = -2  # Contacts are labeled as -2 by default, this means unlabeled
         self.contour_list = defaultdict(list)
         self.padding = settings.settings.padding_factor()
+        self.gait_pattern = ""
 
         self.table_attributes = ["subject_id", "session_id", "measurement_id", "contact_id", "contact_label",
                                  "min_x", "max_x", "min_y", "max_y", "min_z", "max_z", "width", "height", "length",

@@ -1,6 +1,6 @@
 from collections import defaultdict
 import tables
-from tables.exceptions import ClosedNodeError, NoSuchNodeError
+from tables.exceptions import ClosedNodeError, NoSuchNodeError, NodeError
 
 class MissingIdentifier(Exception):
     pass
@@ -408,14 +408,18 @@ class ContactsTable(Table):
         return "{}_{}".format(self.table_name, max_id)
 
     def update_contact(self, **kwargs):
+        found = False
         for row in self.contacts_table:
             if row["contact_id"] == kwargs["contact_id"]:
+                found = True
                 # Update any fields that have changed
                 for key, value in kwargs.items():
                     row[key] = value
                     row.update()
-
-        self.contacts_table.flush()
+        if found:
+            self.contacts_table.flush()
+            return True
+        return False
 
     def get_contact(self, contact_id=""):
         return self.search_table(self.contacts_table, contact_id=contact_id)
