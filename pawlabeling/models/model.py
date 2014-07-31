@@ -84,8 +84,8 @@ class Model():
         contacts = self.contact_model.track_contacts(measurement=measurement,
                                                      measurement_data=measurement_data,
                                                      plate=plate)
-        # TODO This line seems REALLY weird
-        self.contacts[measurement.measurement_name] = self.contact_model.create_contacts(contacts)
+        self.contact_model.create_contacts(contacts)
+        self.contacts[measurement.measurement_name] = contacts
         status = "Number of contacts found: {}".format(len(self.contacts[measurement.measurement_name]))
         pub.sendMessage("update_statusbar", status=status)
         settings.settings.logger.info("model.create_contact: {}".format(status))
@@ -281,7 +281,7 @@ class Model():
             contacts = contact_model.get_contacts(plate, measurement)
             if True: #contact_model.verify_contacts(contacts):
                 measurement_data = self.measurement_model.get_measurement_data(measurement)
-                contacts = contact_model.recalculate_results(contacts, plate, measurement, measurement_data)
+                contact_model.recalculate_results(contacts, plate, measurement, measurement_data)
                 # Given the stored data is dirty, store it
                 contact_model.create_contacts(contacts)
 

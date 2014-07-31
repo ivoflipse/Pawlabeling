@@ -31,8 +31,6 @@ class Contacts(object):
         for contact in contacts:
             self.create_contact(contact)
 
-        return contacts
-
     def create_contact(self, contact):
         # Convert the contact to a dict, like the table expects
         contact_dict = contact.to_dict()
@@ -205,9 +203,7 @@ class Contacts(object):
             for key, value in backup.items():
                 setattr(contact, key, value)
 
-        contacts = self.calculate_multi_contact_results(contacts, plate, measurement)
-
-        return contacts
+        self.calculate_multi_contact_results(contacts, plate, measurement)
 
     def get_contact_data(self, measurement):
         measurement_id = measurement.measurement_id
@@ -237,7 +233,6 @@ class Contacts(object):
                                                                 plate.sensor_width, plate.sensor_height,
                                                                 measurement.frequency)
         for index, contact in enumerate(contacts):
-            print index, contact.contact_id, id(contact)
             distance = distances[index]
             contact_label = contact.contact_label
             contact.gait_velocity = calculations.gait_velocity(contacts, distances)
@@ -250,12 +245,14 @@ class Contacts(object):
             stride_label = other_contact_lookup[contact_label]["stride"]
             stride_contact = distance.get(stride_label)
             if stride_contact:
-                stride_duration = distance[contact_label][-1]
-                contact.swing_duration = stride_duration - contact.stance_duration
-                contact.stance_percentage = (contact.stance_duration * 100.) / stride_duration
                 contact.stride_width = stride_contact[0]
                 contact.stride_length = stride_contact[1]
                 contact.stride_duration = stride_contact[2]
+                contact.swing_duration = contact.stride_duration - contact.stance_duration
+                # The stride duration can never be shorter than the stance time itself
+                if contact.stride_duration > contact.stance_duration:
+                    contact.stance_percentage = (contact.stance_duration * 100.) / contact.stride_duration
+
 
             step_label = other_contact_lookup[contact_label]["step"]
             step_contact = distance.get(step_label)
@@ -277,9 +274,6 @@ class Contacts(object):
                 contact.diag_width = diag_contact[0]
                 contact.diag_length = diag_contact[1]
                 contact.diag_duration = diag_contact[2]
-
-        return contacts
-
 
 class Contact(object):
     """
