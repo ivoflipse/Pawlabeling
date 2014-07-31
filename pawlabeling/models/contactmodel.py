@@ -183,7 +183,7 @@ class Contacts(object):
         if not contacts:
             return False
 
-        if all([contacts[0].stance_duration == np.nan, contacts[0].gait_velocity == np.nan]):
+        if all([contact.stance_percentage == np.nan for contact in contacts]):
             return True
         return False
 

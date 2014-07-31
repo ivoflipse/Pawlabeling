@@ -1,5 +1,6 @@
 from collections import defaultdict
 #import numpy as np
+import pandas as pd
 from pubsub import pub
 #from ..functions import utility, io, tracking, calculations
 from ..settings import settings
@@ -180,8 +181,10 @@ class Model():
         self.load_contacts()
         pub.sendMessage("update_progress", progress=75)
         self.update_n_max()
-        self.update_average()
+        # Pray this doesn't have side-effects
+        self.calculate_results()
         pub.sendMessage("update_progress", progress=100)
+
 
     # TODO This function is messed up again!
     def put_measurement(self, measurement_id):
@@ -285,7 +288,7 @@ class Model():
             contact_model = self.contact_models[measurement.measurement_name]
             plate = self.plates[measurement.plate_id]
             contacts = contact_model.get_contacts(plate, measurement)
-            if True: #contact_model.verify_contacts(contacts):
+            if contact_model.verify_contacts(contacts):
                 measurement_data = self.measurement_model.get_measurement_data(measurement)
                 contact_model.recalculate_results(contacts, plate, measurement, measurement_data)
                 # Given the stored data is dirty, store it
@@ -312,12 +315,18 @@ class Model():
         self.update_average()
         # This updates contacts in place
         self.session_model.calculate_results(contacts=self.contacts)
-        # This might have changed self.contacts, so we should update it to be sure
-        #for measurement_name, contacts in self.contacts.items():
-            # Make sure to update on the right model
-            #contact_model = self.contact_models[measurement_name]
-            # TODO Why would I ever want to do this?
-            #contact_model.update_contacts(measurement_name=measurement_name, contacts=self.contacts)
+        results = []
+        for measurement_id, contacts in self.contacts.items():
+            for contact in contacts:
+                row = [measurement_id, contact.contact_id, contact.contact_label, contact.invalid,
+                       contact.peak_force, contact.peak_pressure, contact.peak_surface, contact.vertical_impulse,
+                       contact.stance_duration, contact.stance_percentage, contact.step_duration, contact.step_length]
+                results.append(row)
+        self.dataframe = pd.DataFrame(results, columns=["measurement_id","contact_id","contact_label","invalid",
+                                                        "peak_force","peak_pressure","peak_surface","vertical_impulse",
+                                                        "stance_duration","stance_percentage","step_duration","step_length",
+        ])
+
 
     def update_n_max(self):
         self.n_max = self.measurement_model.update_n_max()
