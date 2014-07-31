@@ -25,7 +25,6 @@ class Contacts(object):
     def create_contacts(self, contacts):
         """
         """
-        # Doesn't this line mean I always store the data as new?
         self.delete_contacts()
 
         # Make sure all the results are up to date
@@ -59,17 +58,23 @@ class Contacts(object):
 
         for item_id, data in array_results.iteritems():
             result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
-            if result is None:
+            if not result: #result is None:
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
                 # If the arrays are not equal, drop the old one and write the new data
             elif not np.array_equal(result, data):
-                print "Item: {} is not equal to the stored version".format(item_id)
+                #print "Item: {} is not equal to the stored version".format(item_id)
                 # Let's hope this will simply replace the old values
                 # http://hdf-forum.184993.n3.nabble.com/hdf-forum-Reset-data-in-pytables-array-td193311.html
                 # Supposedly I should use arr.__set__item(key, value)
                 # But I reckon that assumes the shapes stay the same
+                # Delete the old one
+                self.contacts_table.remove_group(
+                    where="/{}/{}/{}/{}".format(self.subject_id, self.session_id,
+                                                self.measurement_id, contact.contact_id),
+                    name=item_id)
+                # And store the new one
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
@@ -166,20 +171,21 @@ class Contacts(object):
 
         # Sort the contacts based on their position along the first dimension
         contacts = sorted(contacts, key=lambda contact: contact.min_z)
-        # Calculate the spatialtemporal results
-        contacts = self.calculate_multi_contact_results(contacts, plate, measurement)
+        # We don't calculate the spatiotemporal results, because there are no labels yet to do so
 
         # Update their index
         for contact_id, contact in enumerate(contacts):
-            contact.contact_id = "contact_".format(contact_id)
+            contact.contact_id = "contact_{}".format(contact_id)
         return contacts
 
     def verify_contacts(self, contacts):
         """
         Returns True if the contacts are up to date, returns False else
         """
-        if all([contacts[0].stance_duration == 0.0, contacts[0].gait_velocity == 0.0,
-                contacts[0].peak_force == 0.0, contacts[0].peak_surface == 0.0]):
+        if not contacts:
+            return False
+
+        if all([contacts[0].stance_duration == np.nan, contacts[0].gait_velocity == np.nan]):
             return True
         return False
 
@@ -231,30 +237,12 @@ class Contacts(object):
                                                                 plate.sensor_width, plate.sensor_height,
                                                                 measurement.frequency)
         for index, contact in enumerate(contacts):
+            print index, contact.contact_id, id(contact)
             distance = distances[index]
             contact_label = contact.contact_label
             contact.gait_velocity = calculations.gait_velocity(contacts, distances)
             pattern = "-".join([str(contact.contact_label) for contact in contacts])
             contact.gait_pattern = calculations.find_gait_pattern(pattern=pattern)
-
-            # Set all the unavailable data to NaN
-            contact.stride_width = np.nan
-            contact.stride_length = np.nan
-            contact.stride_duration = np.nan
-            contact.stride_width = np.nan
-            contact.stride_length = np.nan
-            contact.stride_duration = np.nan
-            contact.step_width = np.nan
-            contact.step_length = np.nan
-            contact.step_duration = np.nan
-            contact.ipsi_width = np.nan
-            contact.ipsi_length = np.nan
-            contact.ipsi_duration = np.nan
-            contact.diag_width = np.nan
-            contact.diag_length = np.nan
-            contact.diag_duration = np.nan
-            contact.swing_duration = np.nan
-            contact.stance_percentage = np.nan
 
             if contact_label < 0:
                 continue
@@ -290,7 +278,6 @@ class Contacts(object):
                 contact.diag_length = diag_contact[1]
                 contact.diag_duration = diag_contact[2]
 
-        # TODO make the app deal with the nan's
         return contacts
 
 
@@ -365,7 +352,26 @@ class Contact(object):
         self.contact_label = -2  # Contacts are labeled as -2 by default, this means unlabeled
         self.contour_list = defaultdict(list)
         self.padding = settings.settings.padding_factor()
+        # We'll initialize these values so they'll always have a default
         self.gait_pattern = ""
+        self.stride_width = np.nan
+        self.stride_length = np.nan
+        self.stride_duration = np.nan
+        self.stride_width = np.nan
+        self.stride_length = np.nan
+        self.stride_duration = np.nan
+        self.step_width = np.nan
+        self.step_length = np.nan
+        self.step_duration = np.nan
+        self.ipsi_width = np.nan
+        self.ipsi_length = np.nan
+        self.ipsi_duration = np.nan
+        self.diag_width = np.nan
+        self.diag_length = np.nan
+        self.diag_duration = np.nan
+        self.swing_duration = np.nan
+        self.stance_percentage = np.nan
+        self.gait_velocity = np.nan
 
         self.table_attributes = ["subject_id", "session_id", "measurement_id", "contact_id", "contact_label",
                                  "min_x", "max_x", "min_y", "max_y", "min_z", "max_z", "width", "height", "length",

@@ -608,6 +608,9 @@ def verify_tables(table):
             measurement_difference = False
             session_id = session["session_id"]
             session_group = table.root.__getattr__(subject_id).__getattr__(session_id)
+            # If an attribute is missing, skip it
+            if not hasattr(session_group, "measurements"):
+                continue
             measurements_description = session_group.measurements.description._v_dtypes
             for key, value in MeasurementsTable.Measurements.columns.items():
                 if value.dtype != measurements_description.get(key):
@@ -634,6 +637,9 @@ def verify_tables(table):
                 contact_difference = False
                 measurement_id = measurement["measurement_id"]
                 measurement_group = table.root.__getattr__(subject_id).__getattr__(session_id).__getattr__(measurement_id)
+                # If an attribute is missing, skip it
+                if not hasattr(measurement_group, "contacts"):
+                    continue
                 contacts_description = measurement_group.contacts.description._v_dtypes
                 for key, value in ContactsTable.Contacts.columns.items():
                     if value.dtype != contacts_description.get(key):
