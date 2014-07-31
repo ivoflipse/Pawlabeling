@@ -134,7 +134,7 @@ class Contacts(object):
             # Restore it from the dictionary object
             # http://stackoverflow.com/questions/38987/how-can-i-merge-union-two-python-dictionaries-in-a-single-expression
             # This basically merges the two dicts into one
-            contact.restore(dict(x, **y), plate=plate, measurement=measurement)
+            contact.restore(dict(x, **y))
             new_contacts.append(contact)
         return new_contacts
 
@@ -232,11 +232,12 @@ class Contacts(object):
         distances, label_lookup = calculations.temporal_spatial(contacts,
                                                                 plate.sensor_width, plate.sensor_height,
                                                                 measurement.frequency)
+        gait_velocity = calculations.gait_velocity(contacts, distances)
+        pattern = "-".join([str(contact.contact_label) for contact in contacts])
         for index, contact in enumerate(contacts):
             distance = distances[index]
             contact_label = contact.contact_label
-            contact.gait_velocity = calculations.gait_velocity(contacts, distances)
-            pattern = "-".join([str(contact.contact_label) for contact in contacts])
+            contact.gait_velocity = gait_velocity
             contact.gait_pattern = calculations.find_gait_pattern(pattern=pattern)
 
             if contact_label < 0:
@@ -520,7 +521,7 @@ class Contact(object):
 
     # TODO This should be converted to a @classmethod
     # http://scipy-lectures.github.io/advanced/advanced_python/#id11
-    def restore(self, contact, plate, measurement):
+    def restore(self, contact):
         """
         This function takes a dictionary of the stored_results (the result of contact_to_dict) and recreates all the
         attributes.
@@ -584,6 +585,8 @@ class MockContacts(Contacts):
         self.subject_id = subject_id
         self.session_id = session_id
         self.measurement_id = measurement_id
+        # We don't want to call super, because we don't want a table connection
+        #super(MockContacts, self).__init__(subject_id, session_id, measurement_id)
 
 
 class MockContact(Contact):

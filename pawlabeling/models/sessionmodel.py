@@ -256,8 +256,5 @@ class Session(object):
         return session
 
     def restore(self, session):
-        self.subject_id = session["subject_id"]
-        self.session_id = session["session_id"]
-        self.session_name = session["session_name"]
-        self.session_date = session["session_date"]
-        self.session_time = session["session_time"]
+        for key, value in session.items():
+            setattr(self, key, value)

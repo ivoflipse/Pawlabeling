@@ -1,7 +1,7 @@
 from collections import defaultdict
-import numpy as np
+#import numpy as np
 from pubsub import pub
-from ..functions import utility, io, tracking, calculations
+#from ..functions import utility, io, tracking, calculations
 from ..settings import settings
 from ..models import table, subjectmodel, sessionmodel, measurementmodel, contactmodel, platemodel
 #from memory_profiler import profile
@@ -21,10 +21,10 @@ class Model():
         self.subject_id = ""
         self.subject_name = ""
         self.session_id = ""
-        self.session = {}
+        self.session = None
         self.sessions = {}
         self.measurement_name = ""
-        self.measurement = {}
+        self.measurement = None
         self.measurements = {}
         self.contact = None
         self.average_data = defaultdict()
@@ -245,6 +245,12 @@ class Model():
 
     # TODO Store every contact, from every measurement?
     def store_contacts(self):
+        measurement_data = self.measurement_model.get_measurement_data(self.measurement)
+        # Make sure the results are up to date
+        self.contact_model.recalculate_results(self.contacts[self.measurement_name],
+                                               self.plate,
+                                               self.measurement,
+                                               measurement_data)
         self.contact_model.create_contacts(contacts=self.contacts[self.measurement_name])
         settings.settings.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
             self.measurement_name))
