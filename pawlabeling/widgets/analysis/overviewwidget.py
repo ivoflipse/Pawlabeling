@@ -12,24 +12,26 @@ from ...models import model
 
 
 
-class AsymmetryWidget(QtGui.QWidget):
+class OverviewWidget(QtGui.QWidget):
     def __init__(self, parent):
-        super(AsymmetryWidget, self).__init__(parent)
+        super(OverviewWidget, self).__init__(parent)
         self.label = QtGui.QLabel("Asymmetry")
         self.parent = parent
         self.active = False
 
-        self.asymmetry_front = AsymmetryView(self, "Asymmetry Front", compare=[[0],[2]])
-        self.asymmetry_hind = AsymmetryView(self, "Asymmetry Hind", compare=[[1],[3]])
-        self.asymmetry_pt = AsymmetryView(self, "Asymmetry PT", compare=[[0,2],[1,3]])
+        self.left_front = OverviewView(self, "Left Front")
+        self.left_hind = OverviewView(self, "Left Hind")
+        self.right_front = OverviewView(self, "Right Front")
+        self.right_hind = OverviewView(self, "Right Hind")
 
-        self.asymmetry_list = [self.asymmetry_front,
-                               self.asymmetry_hind,
+
+        self.asymmetry_list = [self.overview_front,
+                               self.overview_hind,
                                self.asymmetry_pt]
 
         self.asymmetry_layout = QtGui.QHBoxLayout()
-        self.asymmetry_layout.addWidget(self.asymmetry_front)
-        self.asymmetry_layout.addWidget(self.asymmetry_hind)
+        self.asymmetry_layout.addWidget(self.overview_front)
+        self.asymmetry_layout.addWidget(self.overview_hind)
         self.asymmetry_layout.addWidget(self.asymmetry_pt)
 
         self.main_layout = QtGui.QHBoxLayout()
@@ -49,13 +51,12 @@ class AsymmetryWidget(QtGui.QWidget):
             pub.sendMessage("update_progress", progress=100)
 
 
-class AsymmetryView(QtGui.QWidget):
-    def __init__(self, parent, label, compare):
-        super(AsymmetryView, self).__init__(parent)
+class OverviewView(QtGui.QWidget):
+    def __init__(self, parent, label):
+        super(OverviewView, self).__init__(parent)
         self.label = QtGui.QLabel(label)
         self.parent = parent
         self.model = model.model
-        self.compare = compare
 
         self.frame = -1
         self.length = 0
@@ -97,19 +98,6 @@ class AsymmetryView(QtGui.QWidget):
         # I probably should calculate this in the model as well
         for measurement_id, measurement_group in self.model.dataframe.groupby("measurement_id"):
             contact_group = measurement_group.groupby("contact_label")
-
-            # Check if all the compare contacts are present
-            present = True
-            for l in self.compare[0]:
-                if l not in contact_group.groups:
-                    present = False
-            for r in self.compare[1]:
-                if r not in contact_group.groups:
-                    present = False
-
-            if not present:
-                continue
-
             for column in self.columns:
                 left = 0.
                 right = 0.
@@ -124,9 +112,7 @@ class AsymmetryView(QtGui.QWidget):
                 if column == "step_length":
                     left = abs(left)
                     right = abs(right)
-                # Only calculate the ASI if we've progressed from the default
-                if left > 0 and right > 0:
-                    asi[column].append(calculations.asymmetry_index(left, right))
+                asi[column].append(calculations.asymmetry_index(left, right))
 
         for column in self.columns:
             #print column, asi[column]

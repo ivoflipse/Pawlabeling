@@ -318,11 +318,12 @@ class Model():
         results = []
         for measurement_id, contacts in self.contacts.items():
             for contact in contacts:
-                row = [measurement_id, contact.contact_id, contact.contact_label, contact.invalid,
+                row = [measurement_id, contact.contact_id, contact.contact_label, contact.invalid, contact.filtered,
                        contact.peak_force, contact.peak_pressure, contact.peak_surface, contact.vertical_impulse,
                        contact.stance_duration, contact.stance_percentage, contact.step_duration, contact.step_length]
                 results.append(row)
-        self.dataframe = pd.DataFrame(results, columns=["measurement_id","contact_id","contact_label","invalid",
+
+        self.dataframe = pd.DataFrame(results, columns=["measurement_id","contact_id","contact_label","invalid", "filtered",
                                                         "peak_force","peak_pressure","peak_surface","vertical_impulse",
                                                         "stance_duration","stance_percentage","step_duration","step_length",
        ])

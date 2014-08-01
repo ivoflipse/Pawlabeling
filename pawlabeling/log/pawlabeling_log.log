@@ -5080,3 +5080,634 @@
 2014-08-01 07:34:24,463 - % - INFO - Switching results to Asymmetry
 2014-08-01 07:35:01,729 - % - INFO - Application Shutdown
 
+2014-08-01 08:47:37,739 - % - INFO - -----------------------------------
+2014-08-01 08:47:37,740 - % - INFO - Log system successfully initialised
+2014-08-01 08:47:37,740 - % - INFO - -----------------------------------
+2014-08-01 08:47:38,309 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 08:47:38,727 - % - INFO - Subject ID set to subject_2
+2014-08-01 08:47:38,730 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 08:47:38,732 - % - INFO - Model.clear_cached_values
+2014-08-01 08:47:39,295 - % - INFO - Session ID set to session_0
+2014-08-01 08:47:39,295 - % - INFO - Session: voor
+2014-08-01 08:47:39,421 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:47:39,421 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 08:47:43,755 - % - INFO - Changing tabs to the Processing tab
+2014-08-01 08:47:43,803 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 08:47:43,803 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:47:44,197 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:47:44,391 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:47:44,536 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:47:44,684 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:47:52,263 - % - INFO - Model.store_contacts: Results for _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:47:52,263 - % - INFO - Results saved
+2014-08-01 08:47:53,137 - % - INFO - Measurement ID set to measurement_9
+2014-08-01 08:47:53,137 - % - INFO - Measurement: _1voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:47:58,424 - % - INFO - Model.store_contacts: Results for _1voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:47:58,424 - % - INFO - Results saved
+2014-08-01 08:48:02,046 - % - INFO - Model.store_contacts: Results for _1voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:48:02,046 - % - INFO - Results saved
+2014-08-01 08:48:03,137 - % - INFO - Measurement ID set to measurement_3
+2014-08-01 08:48:03,137 - % - INFO - Measurement: _2voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:48:09,519 - % - INFO - Model.store_contacts: Results for _2voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:48:09,519 - % - INFO - Results saved
+2014-08-01 08:48:11,200 - % - INFO - Measurement ID set to measurement_0
+2014-08-01 08:48:11,201 - % - INFO - Measurement: _3voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:48:15,530 - % - INFO - Model.store_contacts: Results for _3voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:48:15,530 - % - INFO - Results saved
+2014-08-01 08:48:17,096 - % - INFO - Measurement ID set to measurement_8
+2014-08-01 08:48:17,096 - % - INFO - Measurement: _4voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:48:22,335 - % - INFO - Model.store_contacts: Results for _4voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:48:22,335 - % - INFO - Results saved
+2014-08-01 08:48:24,144 - % - INFO - Measurement ID set to measurement_6
+2014-08-01 08:48:24,144 - % - INFO - Measurement: _5voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:48:28,561 - % - INFO - Model.store_contacts: Results for _5voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:48:28,561 - % - INFO - Results saved
+2014-08-01 08:48:30,002 - % - INFO - Measurement ID set to measurement_4
+2014-08-01 08:48:30,002 - % - INFO - Measurement: _6voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:48:40,158 - % - INFO - Model.store_contacts: Results for _6voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:48:40,158 - % - INFO - Results saved
+2014-08-01 08:48:41,792 - % - INFO - Measurement ID set to measurement_2
+2014-08-01 08:48:41,792 - % - INFO - Measurement: _7voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:48:46,661 - % - INFO - Model.store_contacts: Results for _7voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:48:46,661 - % - INFO - Results saved
+2014-08-01 08:48:48,000 - % - INFO - Measurement ID set to measurement_7
+2014-08-01 08:48:48,002 - % - INFO - Measurement: _8voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:48:57,078 - % - INFO - Model.store_contacts: Results for _8voor 24=7 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:48:57,078 - % - INFO - Results saved
+2014-08-01 08:48:58,193 - % - INFO - Measurement ID set to measurement_5
+2014-08-01 08:48:58,194 - % - INFO - Measurement: _9voor 24=71 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:49:03,221 - % - INFO - Model.store_contacts: Results for _9voor 24=71 - 24-07-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:49:03,221 - % - INFO - Results saved
+2014-08-01 08:49:04,839 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 08:49:04,878 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 08:49:04,878 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:49:05,312 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:49:05,467 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:49:05,618 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:49:05,769 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:49:07,250 - % - INFO - Switching results to Pressure View
+2014-08-01 08:49:08,112 - % - INFO - Switching results to 2D View
+2014-08-01 08:49:08,993 - % - INFO - Switching results to Pressure View
+2014-08-01 08:49:10,039 - % - INFO - Switching results to Force View
+2014-08-01 08:49:15,681 - % - INFO - Switching results to Gait Diagram
+2014-08-01 08:49:16,578 - % - INFO - Switching results to Asymmetry
+2014-08-01 08:49:24,970 - % - INFO - Changing tabs to the Database tab
+2014-08-01 08:49:26,167 - % - INFO - Subject ID set to subject_4
+2014-08-01 08:49:26,171 - % - INFO - Subject: Bink Verweij
+2014-08-01 08:49:26,176 - % - INFO - Model.clear_cached_values
+2014-08-01 08:49:26,815 - % - INFO - Session ID set to session_1
+2014-08-01 08:49:26,815 - % - INFO - Session: Voor
+2014-08-01 08:49:26,941 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:49:26,941 - % - INFO - Model.load_contacts: Loading all measurements for subject: Bink Verweij, session: Voor
+2014-08-01 08:49:27,937 - % - INFO - Changing tabs to the Processing tab
+2014-08-01 08:49:27,983 - % - INFO - Measurement ID set to measurement_10
+2014-08-01 08:49:27,984 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:49:28,388 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:49:28,535 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:49:28,678 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:49:28,825 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:49:34,289 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 08:49:34,332 - % - INFO - Measurement ID set to measurement_10
+2014-08-01 08:49:34,332 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:49:34,723 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:49:34,875 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:49:35,025 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:49:35,171 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:49:39,528 - % - INFO - Switching results to Gait Diagram
+2014-08-01 08:49:43,257 - % - INFO - Changing tabs to the Processing tab
+2014-08-01 08:49:43,301 - % - INFO - Measurement ID set to measurement_10
+2014-08-01 08:49:43,301 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:49:43,711 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:49:43,867 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:49:44,016 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:49:44,163 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:49:45,308 - % - INFO - Model.store_contacts: Results for stappen_1 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:49:45,308 - % - INFO - Results saved
+2014-08-01 08:49:46,471 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 08:49:46,471 - % - INFO - Measurement: stappen_10 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:49:47,783 - % - INFO - Model.store_contacts: Results for stappen_10 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:49:47,783 - % - INFO - Results saved
+2014-08-01 08:49:49,247 - % - INFO - Measurement ID set to measurement_6
+2014-08-01 08:49:49,247 - % - INFO - Measurement: stappen_2 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:49:50,631 - % - INFO - Model.store_contacts: Results for stappen_2 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:49:50,631 - % - INFO - Results saved
+2014-08-01 08:49:52,305 - % - INFO - Measurement ID set to measurement_4
+2014-08-01 08:49:52,305 - % - INFO - Measurement: stappen_3 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:49:54,233 - % - INFO - Model.store_contacts: Results for stappen_3 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:49:54,233 - % - INFO - Results saved
+2014-08-01 08:49:55,440 - % - INFO - Measurement ID set to measurement_9
+2014-08-01 08:49:55,440 - % - INFO - Measurement: stappen_4 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:49:56,890 - % - INFO - Model.store_contacts: Results for stappen_4 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:49:56,890 - % - INFO - Results saved
+2014-08-01 08:49:59,447 - % - INFO - Measurement ID set to measurement_8
+2014-08-01 08:49:59,447 - % - INFO - Measurement: stappen_5 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:50:00,858 - % - INFO - Model.store_contacts: Results for stappen_5 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:50:00,858 - % - INFO - Results saved
+2014-08-01 08:50:02,648 - % - INFO - Measurement ID set to measurement_5
+2014-08-01 08:50:02,648 - % - INFO - Measurement: stappen_6 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:50:04,315 - % - INFO - Model.store_contacts: Results for stappen_6 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:50:04,315 - % - INFO - Results saved
+2014-08-01 08:50:05,767 - % - INFO - Measurement ID set to measurement_3
+2014-08-01 08:50:05,769 - % - INFO - Measurement: stappen_7 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:51:19,711 - % - INFO - Measurement ID set to measurement_7
+2014-08-01 08:51:19,711 - % - INFO - Measurement: stappen_8 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:51:22,450 - % - INFO - Model.store_contacts: Results for stappen_8 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:51:22,450 - % - INFO - Results saved
+2014-08-01 08:51:23,256 - % - INFO - Measurement ID set to measurement_2
+2014-08-01 08:51:23,256 - % - INFO - Measurement: stappen_9 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:51:25,147 - % - INFO - Model.store_contacts: Results for stappen_9 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:51:25,147 - % - INFO - Results saved
+2014-08-01 08:51:30,641 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 08:51:30,683 - % - INFO - Measurement ID set to measurement_10
+2014-08-01 08:51:30,683 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:51:31,096 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:51:31,246 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:51:31,394 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:51:31,540 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:51:31,832 - % - INFO - Switching results to Asymmetry
+2014-08-01 08:51:35,240 - % - INFO - Changing tabs to the Database tab
+2014-08-01 08:51:36,351 - % - INFO - Subject ID set to subject_2
+2014-08-01 08:51:36,354 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 08:51:36,355 - % - INFO - Model.clear_cached_values
+2014-08-01 08:51:36,997 - % - INFO - Session ID set to session_0
+2014-08-01 08:51:36,997 - % - INFO - Session: voor
+2014-08-01 08:51:37,131 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:51:37,131 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 08:51:39,246 - % - INFO - Subject ID set to subject_4
+2014-08-01 08:51:39,250 - % - INFO - Subject: Bink Verweij
+2014-08-01 08:51:39,252 - % - INFO - Model.clear_cached_values
+2014-08-01 08:51:39,835 - % - INFO - Session ID set to session_1
+2014-08-01 08:51:39,836 - % - INFO - Session: Voor
+2014-08-01 08:51:39,960 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:51:39,960 - % - INFO - Model.load_contacts: Loading all measurements for subject: Bink Verweij, session: Voor
+2014-08-01 08:51:40,641 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 08:51:40,683 - % - INFO - Measurement ID set to measurement_10
+2014-08-01 08:51:40,683 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:51:41,092 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:51:41,242 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:51:41,390 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:51:41,536 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:51:42,368 - % - INFO - Switching results to Gait Diagram
+2014-08-01 08:51:43,223 - % - INFO - Switching results to Asymmetry
+2014-08-01 08:51:49,796 - % - INFO - Application Shutdown
+
+2014-08-01 08:52:09,769 - % - INFO - -----------------------------------
+2014-08-01 08:52:09,769 - % - INFO - Log system successfully initialised
+2014-08-01 08:52:09,769 - % - INFO - -----------------------------------
+2014-08-01 08:52:10,362 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 08:52:10,788 - % - INFO - Subject ID set to subject_2
+2014-08-01 08:52:10,790 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 08:52:10,792 - % - INFO - Model.clear_cached_values
+2014-08-01 08:52:11,371 - % - INFO - Session ID set to session_0
+2014-08-01 08:52:11,371 - % - INFO - Session: voor
+2014-08-01 08:52:11,505 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:52:11,505 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 08:52:14,055 - % - INFO - Subject ID set to subject_4
+2014-08-01 08:52:14,058 - % - INFO - Subject: Bink Verweij
+2014-08-01 08:52:14,059 - % - INFO - Model.clear_cached_values
+2014-08-01 08:52:14,618 - % - INFO - Session ID set to session_1
+2014-08-01 08:52:14,618 - % - INFO - Session: Voor
+2014-08-01 08:52:14,752 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:52:14,752 - % - INFO - Model.load_contacts: Loading all measurements for subject: Bink Verweij, session: Voor
+2014-08-01 08:52:15,266 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 08:52:15,306 - % - INFO - Measurement ID set to measurement_10
+2014-08-01 08:52:15,306 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:52:15,697 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:52:15,849 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:52:15,997 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:52:16,147 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:52:17,377 - % - INFO - Switching results to Asymmetry
+2014-08-01 08:54:09,339 - % - INFO - Application Shutdown
+
+2014-08-01 08:54:12,631 - % - INFO - -----------------------------------
+2014-08-01 08:54:12,631 - % - INFO - Log system successfully initialised
+2014-08-01 08:54:12,632 - % - INFO - -----------------------------------
+2014-08-01 08:54:13,201 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 08:54:13,625 - % - INFO - Subject ID set to subject_2
+2014-08-01 08:54:13,628 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 08:54:13,630 - % - INFO - Model.clear_cached_values
+2014-08-01 08:54:14,176 - % - INFO - Session ID set to session_0
+2014-08-01 08:54:14,176 - % - INFO - Session: voor
+2014-08-01 08:54:14,296 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:54:14,298 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 08:54:16,989 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 08:54:17,030 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 08:54:17,030 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 08:54:17,456 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:54:17,670 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:54:17,828 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:54:17,982 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:54:18,187 - % - INFO - Changing tabs to the Database tab
+2014-08-01 08:54:19,055 - % - INFO - Subject ID set to subject_4
+2014-08-01 08:54:19,056 - % - INFO - Subject: Bink Verweij
+2014-08-01 08:54:19,059 - % - INFO - Model.clear_cached_values
+2014-08-01 08:54:19,591 - % - INFO - Session ID set to session_1
+2014-08-01 08:54:19,591 - % - INFO - Session: Voor
+2014-08-01 08:54:19,721 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:54:19,721 - % - INFO - Model.load_contacts: Loading all measurements for subject: Bink Verweij, session: Voor
+2014-08-01 08:54:20,279 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 08:54:20,319 - % - INFO - Measurement ID set to measurement_10
+2014-08-01 08:54:20,319 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:54:20,724 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:54:20,878 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:54:21,023 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:54:21,171 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:54:21,887 - % - INFO - Switching results to Asymmetry
+2014-08-01 08:54:31,371 - % - INFO - Application Shutdown
+
+2014-08-01 08:54:37,403 - % - INFO - -----------------------------------
+2014-08-01 08:54:37,403 - % - INFO - Log system successfully initialised
+2014-08-01 08:54:37,404 - % - INFO - -----------------------------------
+2014-08-01 08:54:37,960 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 08:54:38,387 - % - INFO - Subject ID set to subject_2
+2014-08-01 08:54:38,390 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 08:54:38,391 - % - INFO - Model.clear_cached_values
+2014-08-01 08:54:38,959 - % - INFO - Session ID set to session_0
+2014-08-01 08:54:38,959 - % - INFO - Session: voor
+2014-08-01 08:54:39,082 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:54:39,082 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 08:54:41,892 - % - INFO - Subject ID set to subject_1
+2014-08-01 08:54:41,895 - % - INFO - Subject: Ivo Flipse
+2014-08-01 08:54:41,898 - % - INFO - Model.clear_cached_values
+2014-08-01 08:54:42,454 - % - INFO - Session ID set to session_2
+2014-08-01 08:54:42,454 - % - INFO - Session: Jacha
+2014-08-01 08:54:42,555 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:54:42,555 - % - INFO - Model.load_contacts: Loading all measurements for subject: Ivo Flipse, session: Jacha
+2014-08-01 08:54:42,908 - % - INFO - Changing tabs to the Processing tab
+2014-08-01 08:54:42,937 - % - INFO - Measurement ID set to measurement_2
+2014-08-01 08:54:42,937 - % - INFO - Measurement: _1 - 20-06-2013 - Entire Plate Roll Off
+2014-08-01 08:54:43,303 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:54:43,461 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:54:45,144 - % - INFO - Model.store_contacts: Results for _1 - 20-06-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:54:45,144 - % - INFO - Results saved
+2014-08-01 08:54:45,901 - % - INFO - Measurement ID set to measurement_4
+2014-08-01 08:54:45,901 - % - INFO - Measurement: _2 - 20-06-2013 - Entire Plate Roll Off
+2014-08-01 08:54:47,786 - % - INFO - Model.store_contacts: Results for _2 - 20-06-2013 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:54:47,786 - % - INFO - Results saved
+2014-08-01 08:54:48,573 - % - INFO - Measurement ID set to measurement_6
+2014-08-01 08:54:48,573 - % - INFO - Measurement: stappen - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:54:52,053 - % - INFO - Model.store_contacts: Results for stappen - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:54:52,053 - % - INFO - Results saved
+2014-08-01 08:54:53,038 - % - INFO - Measurement ID set to measurement_7
+2014-08-01 08:54:53,038 - % - INFO - Measurement: stappen_1 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:54:54,130 - % - INFO - Model.store_contacts: Results for stappen_1 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:54:54,130 - % - INFO - Results saved
+2014-08-01 08:54:55,055 - % - INFO - Measurement ID set to measurement_3
+2014-08-01 08:54:55,055 - % - INFO - Measurement: stappen_2 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:54:55,974 - % - INFO - Model.store_contacts: Results for stappen_2 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:54:55,974 - % - INFO - Results saved
+2014-08-01 08:54:56,398 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 08:54:56,398 - % - INFO - Measurement: stappen_3 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:54:57,326 - % - INFO - Model.store_contacts: Results for stappen_3 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:54:57,326 - % - INFO - Results saved
+2014-08-01 08:54:58,710 - % - INFO - Measurement ID set to measurement_5
+2014-08-01 08:54:58,710 - % - INFO - Measurement: stappen_4 - 21-07-2014 - Entire Plate Roll Off
+2014-08-01 08:54:59,779 - % - INFO - Model.store_contacts: Results for stappen_4 - 21-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:54:59,779 - % - INFO - Results saved
+2014-08-01 08:55:10,812 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 08:55:10,835 - % - INFO - Measurement ID set to measurement_2
+2014-08-01 08:55:10,835 - % - INFO - Measurement: _1 - 20-06-2013 - Entire Plate Roll Off
+2014-08-01 08:55:11,180 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:55:11,339 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:55:13,441 - % - INFO - Switching results to Pressure View
+2014-08-01 08:55:16,009 - % - INFO - Switching results to Force View
+2014-08-01 08:55:18,694 - % - INFO - Switching results to Asymmetry
+2014-08-01 08:55:29,039 - % - INFO - Changing tabs to the Database tab
+2014-08-01 08:55:30,365 - % - INFO - Subject ID set to subject_6
+2014-08-01 08:55:30,368 - % - INFO - Subject: Jaylana Weber
+2014-08-01 08:55:30,371 - % - INFO - Model.clear_cached_values
+2014-08-01 08:55:30,951 - % - INFO - Session ID set to session_1
+2014-08-01 08:55:30,951 - % - INFO - Session: Jaylana Weber
+2014-08-01 08:55:31,140 - % - INFO - Plate ID set to plate_2
+2014-08-01 08:55:31,141 - % - INFO - Model.load_contacts: Loading all measurements for subject: Jaylana Weber, session: Jaylana Weber
+2014-08-01 08:55:31,776 - % - INFO - Changing tabs to the Processing tab
+2014-08-01 08:55:31,819 - % - INFO - Measurement ID set to measurement_15
+2014-08-01 08:55:31,819 - % - INFO - Measurement: stappen_1 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:55:32,269 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:55:32,408 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:55:32,546 - % - INFO - Contact ID set to contact_3
+2014-08-01 08:55:32,687 - % - INFO - Contact ID set to contact_4
+2014-08-01 08:55:35,098 - % - INFO - Starting tracking
+2014-08-01 08:55:59,740 - % - INFO - Model.store_contacts: Results for stappen_1 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:55:59,740 - % - INFO - Results saved
+2014-08-01 08:56:11,701 - % - INFO - Measurement ID set to measurement_6
+2014-08-01 08:56:11,701 - % - INFO - Measurement: stappen_10 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:56:13,114 - % - INFO - Starting tracking
+2014-08-01 08:56:20,762 - % - INFO - Model.store_contacts: Results for stappen_10 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:56:20,762 - % - INFO - Results saved
+2014-08-01 08:56:21,989 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 08:56:21,990 - % - INFO - Measurement: stappen_11 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:56:22,707 - % - INFO - Starting tracking
+2014-08-01 08:56:27,640 - % - INFO - Model.store_contacts: Results for stappen_11 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:56:27,640 - % - INFO - Results saved
+2014-08-01 08:56:35,509 - % - INFO - Measurement ID set to measurement_9
+2014-08-01 08:56:35,509 - % - INFO - Measurement: stappen_13 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:56:37,112 - % - INFO - Starting tracking
+2014-08-01 08:56:53,426 - % - INFO - Starting tracking
+2014-08-01 08:56:59,851 - % - INFO - Starting tracking
+2014-08-01 08:57:06,536 - % - INFO - Model.store_contacts: Results for stappen_13 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:57:06,536 - % - INFO - Results saved
+2014-08-01 08:57:07,789 - % - INFO - Measurement ID set to measurement_4
+2014-08-01 08:57:07,789 - % - INFO - Measurement: stappen_14 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:57:09,815 - % - INFO - Starting tracking
+2014-08-01 08:57:17,798 - % - INFO - Model.store_contacts: Results for stappen_14 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:57:17,798 - % - INFO - Results saved
+2014-08-01 08:57:21,484 - % - INFO - Measurement ID set to measurement_7
+2014-08-01 08:57:21,484 - % - INFO - Measurement: stappen_15 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:57:23,207 - % - INFO - Starting tracking
+2014-08-01 08:57:30,441 - % - INFO - Model.store_contacts: Results for stappen_15 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:57:30,441 - % - INFO - Results saved
+2014-08-01 08:57:32,132 - % - INFO - Measurement ID set to measurement_5
+2014-08-01 08:57:32,132 - % - INFO - Measurement: stappen_2 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:57:35,061 - % - INFO - Model.store_contacts: Results for stappen_2 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:57:35,062 - % - INFO - Results saved
+2014-08-01 08:57:44,874 - % - INFO - Model.store_contacts: Results for stappen_2 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:57:44,875 - % - INFO - Results saved
+2014-08-01 08:57:46,243 - % - INFO - Measurement ID set to measurement_11
+2014-08-01 08:57:46,243 - % - INFO - Measurement: stappen_3 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:57:47,933 - % - INFO - Starting tracking
+2014-08-01 08:58:14,209 - % - INFO - Model.store_contacts: Results for stappen_3 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:58:14,209 - % - INFO - Results saved
+2014-08-01 08:58:16,661 - % - INFO - Measurement ID set to measurement_12
+2014-08-01 08:58:16,661 - % - INFO - Measurement: stappen_4 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:58:31,492 - % - INFO - Measurement ID set to measurement_13
+2014-08-01 08:58:31,492 - % - INFO - Measurement: stappen_5 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:58:36,907 - % - INFO - Model.store_contacts: Results for stappen_5 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:58:36,907 - % - INFO - Results saved
+2014-08-01 08:58:42,621 - % - INFO - Measurement ID set to measurement_14
+2014-08-01 08:58:42,621 - % - INFO - Measurement: stappen_6 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:58:55,697 - % - INFO - Model.store_contacts: Results for stappen_6 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:58:55,697 - % - INFO - Results saved
+2014-08-01 08:59:09,793 - % - INFO - Model.store_contacts: Results for stappen_6 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:59:09,795 - % - INFO - Results saved
+2014-08-01 08:59:12,220 - % - INFO - Measurement ID set to measurement_8
+2014-08-01 08:59:12,220 - % - INFO - Measurement: stappen_7 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:59:23,438 - % - INFO - Model.store_contacts: Results for stappen_7 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:59:23,438 - % - INFO - Results saved
+2014-08-01 08:59:25,882 - % - INFO - Measurement ID set to measurement_2
+2014-08-01 08:59:25,884 - % - INFO - Measurement: stappen_8 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:59:27,267 - % - INFO - Starting tracking
+2014-08-01 08:59:32,917 - % - INFO - Model.store_contacts: Results for stappen_8 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:59:32,917 - % - INFO - Results saved
+2014-08-01 08:59:34,747 - % - INFO - Measurement ID set to measurement_3
+2014-08-01 08:59:34,749 - % - INFO - Measurement: stappen_9 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:59:40,799 - % - INFO - Model.store_contacts: Results for stappen_9 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 08:59:40,801 - % - INFO - Results saved
+2014-08-01 08:59:42,525 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 08:59:42,562 - % - INFO - Measurement ID set to measurement_15
+2014-08-01 08:59:42,563 - % - INFO - Measurement: stappen_1 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 08:59:43,026 - % - INFO - Contact ID set to contact_0
+2014-08-01 08:59:43,174 - % - INFO - Contact ID set to contact_1
+2014-08-01 08:59:43,323 - % - INFO - Contact ID set to contact_2
+2014-08-01 08:59:43,473 - % - INFO - Contact ID set to contact_3
+2014-08-01 08:59:44,323 - % - INFO - Switching results to Gait Diagram
+2014-08-01 08:59:45,180 - % - INFO - Switching results to Force View
+2014-08-01 08:59:46,411 - % - INFO - Switching results to Pressure View
+2014-08-01 09:00:00,654 - % - INFO - Changing tabs to the Database tab
+2014-08-01 09:00:01,858 - % - INFO - Subject ID set to subject_3
+2014-08-01 09:00:01,861 - % - INFO - Subject: Mista Konings
+2014-08-01 09:00:01,865 - % - INFO - Model.clear_cached_values
+2014-08-01 09:00:02,456 - % - INFO - Session ID set to session_1
+2014-08-01 09:00:02,456 - % - INFO - Session: na
+2014-08-01 09:00:02,940 - % - INFO - Subject ID set to subject_6
+2014-08-01 09:00:02,941 - % - INFO - Subject: Jaylana Weber
+2014-08-01 09:00:02,944 - % - INFO - Model.clear_cached_values
+2014-08-01 09:00:03,565 - % - INFO - Session ID set to session_1
+2014-08-01 09:00:03,565 - % - INFO - Session: Jaylana Weber
+2014-08-01 09:00:03,726 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:00:03,726 - % - INFO - Model.load_contacts: Loading all measurements for subject: Jaylana Weber, session: Jaylana Weber
+2014-08-01 09:00:13,500 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 09:00:13,549 - % - INFO - Measurement ID set to measurement_15
+2014-08-01 09:00:13,549 - % - INFO - Measurement: stappen_1 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:00:13,963 - % - INFO - Contact ID set to contact_0
+2014-08-01 09:00:14,243 - % - INFO - Contact ID set to contact_1
+2014-08-01 09:00:14,526 - % - INFO - Contact ID set to contact_2
+2014-08-01 09:00:14,802 - % - INFO - Contact ID set to contact_3
+2014-08-01 09:00:15,171 - % - INFO - Switching results to Asymmetry
+2014-08-01 09:00:40,792 - % - INFO - Application Shutdown
+
+2014-08-01 09:02:39,407 - % - INFO - -----------------------------------
+2014-08-01 09:02:39,407 - % - INFO - Log system successfully initialised
+2014-08-01 09:02:39,407 - % - INFO - -----------------------------------
+2014-08-01 09:02:39,976 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 09:02:40,398 - % - INFO - Subject ID set to subject_2
+2014-08-01 09:02:40,401 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 09:02:40,401 - % - INFO - Model.clear_cached_values
+2014-08-01 09:02:40,940 - % - INFO - Session ID set to session_0
+2014-08-01 09:02:40,940 - % - INFO - Session: voor
+2014-08-01 09:02:41,069 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:02:41,071 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 09:02:46,762 - % - INFO - Subject ID set to subject_6
+2014-08-01 09:02:46,765 - % - INFO - Subject: Jaylana Weber
+2014-08-01 09:02:46,767 - % - INFO - Model.clear_cached_values
+2014-08-01 09:02:47,351 - % - INFO - Session ID set to session_1
+2014-08-01 09:02:47,351 - % - INFO - Session: Jaylana Weber
+2014-08-01 09:02:47,542 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:02:47,542 - % - INFO - Model.load_contacts: Loading all measurements for subject: Jaylana Weber, session: Jaylana Weber
+2014-08-01 09:02:48,244 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 09:02:48,288 - % - INFO - Measurement ID set to measurement_15
+2014-08-01 09:02:48,288 - % - INFO - Measurement: stappen_1 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:02:48,680 - % - INFO - Contact ID set to contact_0
+2014-08-01 09:02:48,835 - % - INFO - Contact ID set to contact_1
+2014-08-01 09:02:48,983 - % - INFO - Contact ID set to contact_2
+2014-08-01 09:02:49,135 - % - INFO - Contact ID set to contact_3
+2014-08-01 09:02:49,651 - % - INFO - Switching results to Asymmetry
+2014-08-01 09:02:57,714 - % - INFO - Changing tabs to the Database tab
+2014-08-01 09:02:58,834 - % - INFO - Subject ID set to subject_3
+2014-08-01 09:02:58,836 - % - INFO - Subject: Mista Konings
+2014-08-01 09:02:58,838 - % - INFO - Model.clear_cached_values
+2014-08-01 09:02:59,367 - % - INFO - Session ID set to session_1
+2014-08-01 09:02:59,367 - % - INFO - Session: na
+2014-08-01 09:03:03,042 - % - INFO - Model.clear_cached_values
+2014-08-01 09:03:03,612 - % - INFO - Session ID set to session_0
+2014-08-01 09:03:03,614 - % - INFO - Session: voor
+2014-08-01 09:03:03,805 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:03:03,805 - % - INFO - Model.load_contacts: Loading all measurements for subject: Mista Konings, session: voor
+2014-08-01 09:03:17,118 - % - INFO - Subject ID set to subject_2
+2014-08-01 09:03:17,119 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 09:03:17,157 - % - INFO - Model.clear_cached_values
+2014-08-01 09:03:17,690 - % - INFO - Session ID set to session_0
+2014-08-01 09:03:17,690 - % - INFO - Session: voor
+2014-08-01 09:03:17,818 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:03:17,818 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 09:03:18,369 - % - INFO - Model.clear_cached_values
+2014-08-01 09:03:18,895 - % - INFO - Session ID set to session_0
+2014-08-01 09:03:18,895 - % - INFO - Session: voor
+2014-08-01 09:03:19,019 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:03:19,019 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 09:03:19,579 - % - INFO - Subject ID set to subject_5
+2014-08-01 09:03:19,582 - % - INFO - Subject: Stefie Amtyi
+2014-08-01 09:03:19,588 - % - INFO - Model.clear_cached_values
+2014-08-01 09:03:20,170 - % - INFO - Session ID set to session_2
+2014-08-01 09:03:20,170 - % - INFO - Session: Stefie Amtyi na behandeling
+2014-08-01 09:03:20,358 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:03:20,358 - % - INFO - Model.load_contacts: Loading all measurements for subject: Stefie Amtyi, session: Stefie Amtyi na behandeling
+2014-08-01 09:03:27,453 - % - INFO - Changing tabs to the Processing tab
+2014-08-01 09:03:27,500 - % - INFO - Measurement ID set to measurement_6
+2014-08-01 09:03:27,500 - % - INFO - Measurement: stappen na_1 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:03:27,914 - % - INFO - Contact ID set to contact_0
+2014-08-01 09:03:28,071 - % - INFO - Contact ID set to contact_1
+2014-08-01 09:03:28,226 - % - INFO - Contact ID set to contact_2
+2014-08-01 09:03:28,381 - % - INFO - Contact ID set to contact_3
+2014-08-01 09:03:37,611 - % - INFO - Model.store_contacts: Results for stappen na_1 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:03:37,611 - % - INFO - Results saved
+2014-08-01 09:03:38,720 - % - INFO - Measurement ID set to measurement_4
+2014-08-01 09:03:38,720 - % - INFO - Measurement: stappen na_10 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:03:45,680 - % - INFO - Model.store_contacts: Results for stappen na_10 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:03:45,680 - % - INFO - Results saved
+2014-08-01 09:03:47,170 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 09:03:47,170 - % - INFO - Measurement: stappen na_11 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:03:48,072 - % - INFO - Starting tracking
+2014-08-01 09:03:54,275 - % - INFO - Model.store_contacts: Results for stappen na_11 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:03:54,276 - % - INFO - Results saved
+2014-08-01 09:03:55,921 - % - INFO - Measurement ID set to measurement_14
+2014-08-01 09:03:55,923 - % - INFO - Measurement: stappen na_12 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:03:57,796 - % - INFO - Starting tracking
+2014-08-01 09:04:06,813 - % - INFO - Model.store_contacts: Results for stappen na_12 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:04:06,813 - % - INFO - Results saved
+2014-08-01 09:04:09,329 - % - INFO - Measurement ID set to measurement_11
+2014-08-01 09:04:09,329 - % - INFO - Measurement: stappen na_13 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:04:11,642 - % - INFO - Model.store_contacts: Results for stappen na_13 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:04:11,642 - % - INFO - Results saved
+2014-08-01 09:04:13,681 - % - INFO - Measurement ID set to measurement_7
+2014-08-01 09:04:13,681 - % - INFO - Measurement: stappen na_14 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:04:22,588 - % - INFO - Model.store_contacts: Results for stappen na_14 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:04:22,588 - % - INFO - Results saved
+2014-08-01 09:04:25,648 - % - INFO - Measurement ID set to measurement_3
+2014-08-01 09:04:25,648 - % - INFO - Measurement: stappen na_15 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:04:30,500 - % - INFO - Model.store_contacts: Results for stappen na_15 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:04:30,500 - % - INFO - Results saved
+2014-08-01 09:04:32,529 - % - INFO - Measurement ID set to measurement_12
+2014-08-01 09:04:32,529 - % - INFO - Measurement: stappen na_2 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:04:36,266 - % - INFO - Model.store_contacts: Results for stappen na_2 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:04:36,266 - % - INFO - Results saved
+2014-08-01 09:04:40,194 - % - INFO - Measurement ID set to measurement_8
+2014-08-01 09:04:40,194 - % - INFO - Measurement: stappen na_3 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:04:48,647 - % - INFO - Model.store_contacts: Results for stappen na_3 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:04:48,647 - % - INFO - Results saved
+2014-08-01 09:04:53,145 - % - INFO - Measurement ID set to measurement_2
+2014-08-01 09:04:53,145 - % - INFO - Measurement: stappen na_4 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:04:57,503 - % - INFO - Model.store_contacts: Results for stappen na_4 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:04:57,503 - % - INFO - Results saved
+2014-08-01 09:04:59,536 - % - INFO - Measurement ID set to measurement_5
+2014-08-01 09:04:59,536 - % - INFO - Measurement: stappen na_5 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:05:07,489 - % - INFO - Measurement ID set to measurement_9
+2014-08-01 09:05:07,489 - % - INFO - Measurement: stappen na_6 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:05:37,147 - % - INFO - Model.store_contacts: Results for stappen na_6 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:05:37,147 - % - INFO - Results saved
+2014-08-01 09:05:39,888 - % - INFO - Measurement ID set to measurement_15
+2014-08-01 09:05:39,888 - % - INFO - Measurement: stappen na_7 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:05:45,289 - % - INFO - Measurement ID set to measurement_10
+2014-08-01 09:05:45,289 - % - INFO - Measurement: stappen na_8 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:05:53,654 - % - INFO - Model.store_contacts: Results for stappen na_8 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:05:53,654 - % - INFO - Results saved
+2014-08-01 09:05:56,743 - % - INFO - Measurement ID set to measurement_13
+2014-08-01 09:05:56,743 - % - INFO - Measurement: stappen na_9 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:06:01,244 - % - INFO - Model.store_contacts: Results for stappen na_9 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:06:01,244 - % - INFO - Results saved
+2014-08-01 09:06:02,138 - % - INFO - Changing tabs to the Database tab
+2014-08-01 09:06:03,492 - % - INFO - Model.clear_cached_values
+2014-08-01 09:06:04,063 - % - INFO - Session ID set to session_1
+2014-08-01 09:06:04,063 - % - INFO - Session: Stefie Qmtyi
+2014-08-01 09:06:04,209 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:06:04,209 - % - INFO - Model.load_contacts: Loading all measurements for subject: Stefie Amtyi, session: Stefie Qmtyi
+2014-08-01 09:06:05,186 - % - INFO - Changing tabs to the Processing tab
+2014-08-01 09:06:05,232 - % - INFO - Measurement ID set to measurement_11
+2014-08-01 09:06:05,233 - % - INFO - Measurement: stappen_1 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:06:07,020 - % - INFO - Starting tracking
+2014-08-01 09:06:17,213 - % - INFO - Model.store_contacts: Results for stappen_1 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:06:17,213 - % - INFO - Results saved
+2014-08-01 09:06:19,321 - % - INFO - Measurement ID set to measurement_5
+2014-08-01 09:06:19,321 - % - INFO - Measurement: stappen_10 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:06:28,799 - % - INFO - Model.store_contacts: Results for stappen_10 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:06:28,799 - % - INFO - Results saved
+2014-08-01 09:06:30,857 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 09:06:30,857 - % - INFO - Measurement: stappen_11 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:06:32,273 - % - INFO - Model.store_contacts: Results for stappen_11 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:06:32,273 - % - INFO - Results saved
+2014-08-01 09:06:47,506 - % - INFO - Model.store_contacts: Results for stappen_11 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:06:47,506 - % - INFO - Results saved
+2014-08-01 09:06:48,864 - % - INFO - Measurement ID set to measurement_4
+2014-08-01 09:06:48,865 - % - INFO - Measurement: stappen_2 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:06:54,828 - % - INFO - Model.store_contacts: Results for stappen_2 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:06:54,828 - % - INFO - Results saved
+2014-08-01 09:06:56,207 - % - INFO - Measurement ID set to measurement_7
+2014-08-01 09:06:56,209 - % - INFO - Measurement: stappen_3 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:07:02,923 - % - INFO - Model.store_contacts: Results for stappen_3 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:07:02,923 - % - INFO - Results saved
+2014-08-01 09:07:04,288 - % - INFO - Measurement ID set to measurement_9
+2014-08-01 09:07:04,288 - % - INFO - Measurement: stappen_4 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:07:13,473 - % - INFO - Model.store_contacts: Results for stappen_4 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:07:13,473 - % - INFO - Results saved
+2014-08-01 09:07:14,984 - % - INFO - Measurement ID set to measurement_10
+2014-08-01 09:07:14,984 - % - INFO - Measurement: stappen_5 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:07:20,690 - % - INFO - Model.store_contacts: Results for stappen_5 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:07:20,690 - % - INFO - Results saved
+2014-08-01 09:07:24,400 - % - INFO - Measurement ID set to measurement_8
+2014-08-01 09:07:24,400 - % - INFO - Measurement: stappen_6 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:08:52,265 - % - INFO - Model.store_contacts: Results for stappen_6 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:08:52,265 - % - INFO - Results saved
+2014-08-01 09:08:55,072 - % - INFO - Measurement ID set to measurement_6
+2014-08-01 09:08:55,072 - % - INFO - Measurement: stappen_7 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:09:22,253 - % - INFO - Model.store_contacts: Results for stappen_7 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:09:22,253 - % - INFO - Results saved
+2014-08-01 09:09:24,638 - % - INFO - Measurement ID set to measurement_2
+2014-08-01 09:09:24,638 - % - INFO - Measurement: stappen_8 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:09:29,319 - % - INFO - Measurement ID set to measurement_3
+2014-08-01 09:09:29,319 - % - INFO - Measurement: stappen_9 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:09:37,677 - % - INFO - Model.store_contacts: Results for stappen_9 - 30-07-2014 - Entire Plate Roll Off have been successfully saved
+2014-08-01 09:09:37,677 - % - INFO - Results saved
+2014-08-01 09:09:39,448 - % - INFO - Changing tabs to the Database tab
+2014-08-01 09:09:40,631 - % - INFO - Model.clear_cached_values
+2014-08-01 09:09:41,151 - % - INFO - Session ID set to session_2
+2014-08-01 09:09:41,151 - % - INFO - Session: Stefie Amtyi na behandeling
+2014-08-01 09:09:41,390 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:09:41,390 - % - INFO - Model.load_contacts: Loading all measurements for subject: Stefie Amtyi, session: Stefie Amtyi na behandeling
+2014-08-01 09:09:42,444 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 09:09:42,483 - % - INFO - Measurement ID set to measurement_6
+2014-08-01 09:09:42,483 - % - INFO - Measurement: stappen na_1 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:09:42,934 - % - INFO - Contact ID set to contact_0
+2014-08-01 09:09:43,095 - % - INFO - Contact ID set to contact_1
+2014-08-01 09:09:43,255 - % - INFO - Contact ID set to contact_2
+2014-08-01 09:09:43,413 - % - INFO - Contact ID set to contact_3
+2014-08-01 09:09:47,209 - % - INFO - Changing tabs to the Database tab
+2014-08-01 09:09:48,421 - % - INFO - Subject ID set to subject_6
+2014-08-01 09:09:48,426 - % - INFO - Subject: Jaylana Weber
+2014-08-01 09:09:48,430 - % - INFO - Model.clear_cached_values
+2014-08-01 09:09:48,961 - % - INFO - Session ID set to session_1
+2014-08-01 09:09:48,963 - % - INFO - Session: Jaylana Weber
+2014-08-01 09:09:49,150 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:09:49,150 - % - INFO - Model.load_contacts: Loading all measurements for subject: Jaylana Weber, session: Jaylana Weber
+2014-08-01 09:09:49,996 - % - INFO - Subject ID set to subject_5
+2014-08-01 09:09:50,000 - % - INFO - Subject: Stefie Amtyi
+2014-08-01 09:09:50,003 - % - INFO - Model.clear_cached_values
+2014-08-01 09:09:50,601 - % - INFO - Session ID set to session_2
+2014-08-01 09:09:50,601 - % - INFO - Session: Stefie Amtyi na behandeling
+2014-08-01 09:09:50,783 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:09:50,783 - % - INFO - Model.load_contacts: Loading all measurements for subject: Stefie Amtyi, session: Stefie Amtyi na behandeling
+2014-08-01 09:09:51,832 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 09:09:51,878 - % - INFO - Measurement ID set to measurement_6
+2014-08-01 09:09:51,878 - % - INFO - Measurement: stappen na_1 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:09:52,309 - % - INFO - Contact ID set to contact_0
+2014-08-01 09:09:52,467 - % - INFO - Contact ID set to contact_1
+2014-08-01 09:09:52,624 - % - INFO - Contact ID set to contact_2
+2014-08-01 09:09:52,780 - % - INFO - Contact ID set to contact_3
+2014-08-01 09:09:54,924 - % - INFO - Switching results to Gait Diagram
+2014-08-01 09:09:55,607 - % - INFO - Switching results to Asymmetry
+2014-08-01 09:10:10,584 - % - INFO - Changing tabs to the Database tab
+2014-08-01 09:10:11,641 - % - INFO - Model.clear_cached_values
+2014-08-01 09:10:12,167 - % - INFO - Session ID set to session_1
+2014-08-01 09:10:12,167 - % - INFO - Session: Stefie Qmtyi
+2014-08-01 09:10:12,358 - % - INFO - Plate ID set to plate_2
+2014-08-01 09:10:12,358 - % - INFO - Model.load_contacts: Loading all measurements for subject: Stefie Amtyi, session: Stefie Qmtyi
+2014-08-01 09:10:14,016 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 09:10:14,062 - % - INFO - Measurement ID set to measurement_11
+2014-08-01 09:10:14,062 - % - INFO - Measurement: stappen_1 - 30-07-2014 - Entire Plate Roll Off
+2014-08-01 09:10:14,473 - % - INFO - Contact ID set to contact_0
+2014-08-01 09:10:14,624 - % - INFO - Contact ID set to contact_1
+2014-08-01 09:10:14,773 - % - INFO - Contact ID set to contact_2
+2014-08-01 09:10:14,923 - % - INFO - Contact ID set to contact_4
+2014-08-01 09:10:17,375 - % - INFO - Switching results to Gait Diagram
+2014-08-01 09:10:18,046 - % - INFO - Switching results to Asymmetry
+2014-08-01 09:10:25,234 - % - INFO - Application Shutdown
+
