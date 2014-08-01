@@ -92,7 +92,6 @@ class ContactView(QtGui.QWidget):
         self.max_z = 0
         self.frame = -1
         self.length = 0
-        self.outlier_toggle = False
         self.average_toggle = False
         self.ratio = 1
         self.cop_x = np.zeros(15)
@@ -147,8 +146,7 @@ class ContactView(QtGui.QWidget):
             if self.parent.active:
                 self.change_frame(frame=-1)
 
-    def filter_outliers(self, toggle):
-        self.outlier_toggle = toggle
+    def filter_outliers(self):
         self.clear_cached_values()
         if self.parent.active:
             self.change_frame(frame=-1)

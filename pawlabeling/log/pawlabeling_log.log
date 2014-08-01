@@ -6325,3 +6325,38 @@
 2014-08-01 15:08:12,301 - % - INFO - Contact ID set to contact_3
 2014-08-01 15:08:15,674 - % - INFO - Application Shutdown
 
+2014-08-01 15:15:26,750 - % - INFO - -----------------------------------
+2014-08-01 15:15:26,750 - % - INFO - Log system successfully initialised
+2014-08-01 15:15:26,750 - % - INFO - -----------------------------------
+2014-08-01 15:15:27,336 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 15:15:27,799 - % - INFO - Subject ID set to subject_2
+2014-08-01 15:15:27,801 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 15:15:27,802 - % - INFO - Model.clear_cached_values
+2014-08-01 15:15:28,539 - % - INFO - Session ID set to session_0
+2014-08-01 15:15:28,539 - % - INFO - Session: voor
+2014-08-01 15:15:28,664 - % - INFO - Plate ID set to plate_2
+2014-08-01 15:15:28,664 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 15:15:31,134 - % - INFO - Application Shutdown
+
+2014-08-01 15:17:35,974 - % - INFO - -----------------------------------
+2014-08-01 15:17:35,974 - % - INFO - Log system successfully initialised
+2014-08-01 15:17:35,974 - % - INFO - -----------------------------------
+2014-08-01 15:17:36,539 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 15:17:37,013 - % - INFO - Subject ID set to subject_2
+2014-08-01 15:17:37,015 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 15:17:37,016 - % - INFO - Model.clear_cached_values
+2014-08-01 15:17:37,591 - % - INFO - Session ID set to session_0
+2014-08-01 15:17:37,591 - % - INFO - Session: voor
+2014-08-01 15:17:37,713 - % - INFO - Plate ID set to plate_2
+2014-08-01 15:17:37,714 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 15:17:56,887 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 15:17:56,917 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 15:17:56,917 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 15:17:57,329 - % - INFO - Contact ID set to contact_0
+2014-08-01 15:17:57,492 - % - INFO - Contact ID set to contact_1
+2014-08-01 15:17:57,687 - % - INFO - Contact ID set to contact_2
+2014-08-01 15:17:57,838 - % - INFO - Contact ID set to contact_4
+2014-08-01 15:18:02,608 - % - INFO - Contact ID set to contact_3
+2014-08-01 15:18:05,569 - % - INFO - Switching results to Force View
+2014-08-01 15:18:41,855 - % - INFO - Application Shutdown
+

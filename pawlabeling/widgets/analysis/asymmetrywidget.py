@@ -62,7 +62,6 @@ class AsymmetryView(QtGui.QWidget):
         self.frame = -1
         self.length = 0
         self.ratio = 1
-        self.outlier_toggle = False
         self.average_toggle = False
 
         self.labels = {}
@@ -95,9 +94,10 @@ class AsymmetryView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
 
-    def filter_outliers(self, toggle):
-        self.outlier_toggle = toggle
-        self.draw()
+    def filter_outliers(self):
+        if self.parent.active:
+            self.clear_cached_values()
+            self.draw()
 
     def draw(self):
         if not self.model.contacts:
@@ -106,7 +106,7 @@ class AsymmetryView(QtGui.QWidget):
         asi = defaultdict(list)
 
         df = self.model.dataframe
-        if self.outlier_toggle:
+        if self.model.outlier_toggle:
             df = df[df["filtered"]==False]
 
         # I probably should calculate this in the model as well

@@ -87,7 +87,6 @@ class ContactView(QtGui.QWidget):
         self.color_table = self.image_color_table.create_color_table()
         self.x = 100
         self.y = 100
-        self.outlier_toggle = False
 
         self.dpi = 100
         self.fig = Figure(figsize=(3.0, 2.0), dpi=self.dpi)
@@ -109,9 +108,10 @@ class ContactView(QtGui.QWidget):
         pub.subscribe(self.filter_outliers, "filter_outliers")
         pub.subscribe(self.update_contact, "put_contact")
 
-    def filter_outliers(self, toggle):
-        self.outlier_toggle = toggle
-        self.draw()
+    def filter_outliers(self):
+        if self.parent.active:
+            self.clear_cached_values()
+            self.draw()
 
     def update_contact(self):
         if self.contact_label == self.model.contact.contact_label:
@@ -133,7 +133,7 @@ class ContactView(QtGui.QWidget):
         for measurement_name, contacts in self.model.contacts.iteritems():
             for contact in contacts:
                 # Skip contacts that have been filtered if the toggle is on
-                if self.outlier_toggle:
+                if self.model.outlier_toggle:
                     if contact.filtered or contact.invalid:
                         continue
 
@@ -177,7 +177,7 @@ class ContactView(QtGui.QWidget):
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.vertical_line.set_xdata(self.frame)
         self.axes.set_xlim([0, self.model.max_length + 2])  # +2 because we padded the array
-        if self.outlier_toggle:
+        if self.model.outlier_toggle:
             self.axes.set_xlim([0, self.model.filtered_length + 2]) # 2 because of the padding
         self.axes.set_ylim([0, self.max_force * 1.1])
         self.canvas.draw()

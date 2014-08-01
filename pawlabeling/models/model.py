@@ -34,12 +34,14 @@ class Model():
         self.selected_contacts = defaultdict()
         self.max_results = defaultdict()
         self.n_max = 0
+        self.max_length = 0
+        self.filtered_length = 0
         self.current_measurement_index = 0
         self.outlier_toggle = False
 
         # Various
         pub.subscribe(self.changed_settings, "changed_settings")
-        pub.subscribe(self.filter_outliers, "filter_outliers")
+        pub.subscribe(self.filter_outliers, "model_filter_outliers")
 
     def create_subject(self, subject):
         self.subject_id = self.subject_model.create_subject(subject=subject)
@@ -248,11 +250,24 @@ class Model():
         self.update_average()
         pub.sendMessage("update_current_contact")
 
-    def filter_outliers(self, toggle):
+    def filter_outliers(self):
         """
         This function tries to select a contact that's not filtered or invalid
         """
-        self.outlier_toggle = toggle
+        self.outlier_toggle = not self.outlier_toggle
+        # If we're not filtering, leave things be
+        if not self.outlier_toggle:
+            return
+
+        # Update the average, because we want to get rid of the filtered contacts
+        self.update_average()
+
+        # Calculate the length of only the filtered contacts
+        self.filtered_length = 0
+        for measurement_id, contacts in self.contacts.items():
+            for contact in contacts:
+                if not contact.filtered and not contact.invalid and contact.length > self.filtered_length:
+                    self.filtered_length = contact.length
 
         for contact_label, current_contact in self.selected_contacts.items():
             if not current_contact.filtered and not current_contact.invalid:
@@ -263,6 +278,7 @@ class Model():
                     self.put_contact(contact.contact_id)
                     break
 
+        pub.sendMessage("filter_outliers")
 
     # TODO Store every contact, from every measurement?
     def store_contacts(self):
@@ -325,14 +341,10 @@ class Model():
     def update_average(self):
         self.shape = self.session_model.calculate_shape(contacts=self.contacts)
         self.average_data = self.session_model.calculate_average_data(contacts=self.contacts,
-                                                                      shape=self.shape)
+                                                                      shape=self.shape,
+                                                                      filtering=self.outlier_toggle)
         self.max_length = self.shape[2]
-        # Also calculate the length of only the filtered contacts
-        self.filtered_length = 0
-        for measurement_id, contacts in self.contacts.items():
-            for contact in contacts:
-                if not contact.filtered and not contact.invalid and contact.length > self.filtered_length:
-                    self.filtered_length = contact.length
+        self.filtered_length = self.max_length
         pub.sendMessage("update_average")
 
     def calculate_results(self):
