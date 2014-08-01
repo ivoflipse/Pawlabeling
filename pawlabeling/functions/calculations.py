@@ -200,31 +200,33 @@ def vertical_impulse_method1(contact, frequency):
     sum_force = np.sum(force_over_time)
     return sum_force
 
-# If you integrate with step size 1, you basically take the sum
-# You can use simps, but the difference is like 0.01-0.05 N*s
-def vertical_impulse_trapz(contact, frequency):
-    """
-    From Oosterlinck:
-    Vertical impulse (VI) was calculated by time integration of the  force-time curves and multiplied by time,
-    normalised by weight and expressed as Newton-seconds per kilogram (N s/kg)
-    So wouldn't that just be one value? Namely the surface under the entire force curve?
-    """
-    from scipy.integrate import trapz  # simps is an alternative
-
-    sum_force = trapz(contact.force_over_time, dx=1 / frequency)
-    return sum_force
+# This version is broken
+# def vertical_impulse_trapz(contact, frequency):
+#     """
+#     If you integrate with step size 1, you basically take the sum
+#     You can use simps, but the difference is like 0.01-0.05 N*s
+#
+#     From Oosterlinck:
+#     Vertical impulse (VI) was calculated by time integration of the  force-time curves and multiplied by time,
+#     normalised by weight and expressed as Newton-seconds per kilogram (N s/kg)
+#     So wouldn't that just be one value? Namely the surface under the entire force curve?
+#     """
+#     from scipy.integrate import trapz  # simps is an alternative
+#
+#     sum_force = trapz(contact.force_over_time, dx=1 / frequency)
+#     return sum_force
 
 
 def vertical_impulse(contact, frequency, version=1):
     """
     Careful, I would recommend using mass in Newtons instead of kilograms
     """
-    assert version in [1, 2]
+    assert version == 1
     vi = None
     if version == 1:
         vi = vertical_impulse_method1(contact, frequency)
-    elif version == 2:
-        vi = vertical_impulse_trapz(contact, frequency)
+    #elif version == 2:
+    #    vi = vertical_impulse_trapz(contact, frequency)
     contact.vertical_impulse = vi
     return contact.vertical_impulse
 

@@ -56,13 +56,13 @@ class Contacts(object):
 
         for item_id, data in array_results.iteritems():
             result = self.contacts_table.get_data(group=self.contact_group, item_id=item_id)
-            if not result: #result is None:
+            if not result:  # result is None:
                 self.contacts_table.store_data(group=self.contact_group,
                                                item_id=item_id,
                                                data=data)
                 # If the arrays are not equal, drop the old one and write the new data
             elif not np.array_equal(result, data):
-                #print "Item: {} is not equal to the stored version".format(item_id)
+                # print "Item: {} is not equal to the stored version".format(item_id)
                 # Let's hope this will simply replace the old values
                 # http://hdf-forum.184993.n3.nabble.com/hdf-forum-Reset-data-in-pytables-array-td193311.html
                 # Supposedly I should use arr.__set__item(key, value)
@@ -254,7 +254,6 @@ class Contacts(object):
                 if contact.stride_duration > contact.stance_duration:
                     contact.stance_percentage = (contact.stance_duration * 100.) / contact.stride_duration
 
-
             step_label = other_contact_lookup[contact_label]["step"]
             step_contact = distance.get(step_label)
             if step_contact:
@@ -275,6 +274,7 @@ class Contacts(object):
                 contact.diag_width = diag_contact[0]
                 contact.diag_length = diag_contact[1]
                 contact.diag_duration = diag_contact[2]
+
 
 class Contact(object):
     """
@@ -458,9 +458,7 @@ class Contact(object):
                                                                               measurement.frequency)
         self.time_of_peak_force = calculations.time_of_peak_force(self, frequency=measurement.frequency,
                                                                   relative=False)
-        # Note vertical impluse is NOT normalized here!
-        self.vertical_impulse = calculations.vertical_impulse(self, frequency=measurement.frequency,
-                                                              mass=1.0, version=2)
+        self.vertical_impulse = calculations.vertical_impulse(self, frequency=measurement.frequency, version=1)
         self.max_of_max = np.max(self.data, axis=2)
 
         self.stance_duration = calculations.stance_duration(self, frequency=measurement.frequency)
@@ -468,7 +466,6 @@ class Contact(object):
         self.peak_force = calculations.peak_force(self)
         self.peak_pressure = calculations.peak_pressure(self, plate.sensor_surface)
         self.peak_surface = calculations.peak_surface(self, plate.sensor_surface)
-
 
 
     def validate_contact(self, measurement_data):
@@ -584,7 +581,7 @@ class MockContacts(Contacts):
         self.session_id = session_id
         self.measurement_id = measurement_id
         # We don't want to call super, because we don't want a table connection
-        #super(MockContacts, self).__init__(subject_id, session_id, measurement_id)
+        # super(MockContacts, self).__init__(subject_id, session_id, measurement_id)
 
 
 class MockContact(Contact):

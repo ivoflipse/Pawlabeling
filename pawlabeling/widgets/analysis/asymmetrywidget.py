@@ -107,6 +107,10 @@ class AsymmetryView(QtGui.QWidget):
                     if r in contact_group.groups:
                         right += np.mean(contact_group.get_group(r)[column].dropna())
 
+                # Somehow one or the other can have an opposite sign, so make them absolute
+                if column == "step_length":
+                    left = abs(left)
+                    right = abs(right)
                 asi[column].append(calculations.asymmetry_index(left, right))
 
         for column in self.columns:
