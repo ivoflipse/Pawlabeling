@@ -52,7 +52,9 @@ class AsymmetryWidget(QtGui.QWidget):
 class AsymmetryView(QtGui.QWidget):
     def __init__(self, parent, label, compare):
         super(AsymmetryView, self).__init__(parent)
+        label_font = settings.settings.label_font()
         self.label = QtGui.QLabel(label)
+        self.label.setFont(label_font)
         self.parent = parent
         self.model = model.model
         self.compare = compare
@@ -88,14 +90,24 @@ class AsymmetryView(QtGui.QWidget):
 
         self.setLayout(self.main_layout)
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
+        pub.subscribe(self.filter_outliers, "filter_outliers")
+
+    def filter_outliers(self, toggle):
+        self.outlier_toggle = toggle
+        self.draw()
 
     def draw(self):
         if not self.model.contacts:
             return
 
         asi = defaultdict(list)
+
+        df = self.model.dataframe
+        if self.outlier_toggle:
+            df = df[df["filtered"]==False]
+
         # I probably should calculate this in the model as well
-        for measurement_id, measurement_group in self.model.dataframe.groupby("measurement_id"):
+        for measurement_id, measurement_group in df.groupby("measurement_id"):
             contact_group = measurement_group.groupby("contact_label")
 
             # Check if all the compare contacts are present

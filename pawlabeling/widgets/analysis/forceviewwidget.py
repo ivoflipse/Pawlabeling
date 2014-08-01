@@ -76,7 +76,9 @@ class ForceViewWidget(QtGui.QWidget):
 class ContactView(QtGui.QWidget):
     def __init__(self, parent, label, contact_label):
         super(ContactView, self).__init__(parent)
+        label_font = settings.settings.label_font()
         self.label = QtGui.QLabel(label)
+        self.label.setFont(label_font)
         self.contact_label = contact_label
         self.parent = parent
         self.model = model.model
