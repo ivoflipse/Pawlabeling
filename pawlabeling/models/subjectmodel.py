@@ -9,9 +9,8 @@ class MissingIdentifier(Exception):
 
 class Subjects(object):
     def __init__(self):
-        self.database_file = settings.settings.database_file()
-        self.subjects_table = table.SubjectsTable(database_file=self.database_file)
-        self.logger = logging.getLogger("logger")
+        self.table = settings.settings.table
+        self.subjects_table = table.SubjectsTable(table=self.table)
 
     def create_subject(self, subject):
         """
@@ -43,7 +42,7 @@ class Subjects(object):
         try:
             self.subjects_table.get_subjects()
         except:
-            self.subjects_table = table.SubjectsTable(database_file=self.database_file)
+            self.subjects_table = table.SubjectsTable(table=self.table)
 
     def get_subjects(self):
         subjects = {}

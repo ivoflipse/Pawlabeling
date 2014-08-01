@@ -1,7 +1,9 @@
 import os
 import logging
+
 import numpy as np
 from pubsub import pub
+
 
 try:
     import cPickle as pickle
@@ -34,22 +36,6 @@ def fix_orientation(data):
         data = np.rot90(np.rot90(data))
         #measurement_data = measurement_data[::-1,::-1,:]  #Alternative
     return data
-
-
-def check_orientation(data):
-    from scipy.ndimage.measurements import center_of_mass
-    # Find the first and last frame with nonzero measurement_data (from z)
-    x, y, z = np.nonzero(data)
-    # For some reason I was loading the file in such a way that it wasn't sorted
-    z = sorted(z)
-    start, end = z[0], z[-1]
-    # Get the COP for those two frames
-    start_x, start_y = center_of_mass(data[:, :, start])
-    end_x, end_y = center_of_mass(data[:, :, end])
-    # We've calculated the start and end point of the measurement (if at all)
-    x_distance = end_x - start_x
-    # If this distance is negative, the subject walked right to left
-    return True if x_distance < 0 else False
 
 
 def load_zebris(infile):
@@ -112,7 +98,7 @@ def load_rsscan(infile):
 
     for index, line in enumerate(iter(lines)):
         split_line = line.strip().split()
-        if split_line and split_line[0][:5] in ["Frame", "Beeld"]:
+        if split_line and split_line[-1] == "ms)":
             frames.append(index)
 
         # We'll count the number of lines in the first frame
@@ -124,8 +110,8 @@ def load_rsscan(infile):
     num_frames = len(frames)
 
     result = np.zeros((height, width, num_frames), dtype=np.float32)
-    for frame, (start, stop) in enumerate(zip(frames[:-2], frames[1:])):
-        frame_string = StringIO("\n".join(lines[start+1:stop-1]))
+    for frame, start in enumerate(frames):
+        frame_string = StringIO("\n".join(lines[start+1:start+1+height]))
         result[:, :, frame] = np.loadtxt(frame_string, dtype=np.float32)  # unpack=True if we want to change the shape
 
     # Check if the array contains any NaN, if so, throw an Exception

@@ -19,7 +19,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.n_max = 0
         self.subject_name = ""
         self.outlier_toggle = False
-        self.logger = logging.getLogger("logger")
         self.model = model.model
 
         self.colors = settings.settings.colors

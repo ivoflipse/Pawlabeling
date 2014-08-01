@@ -12,7 +12,6 @@ class SessionWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(SessionWidget, self).__init__(parent)
 
-        self.logger = logging.getLogger("logger")
         self.model = model.model
         settings.settings = settings.settings
         label_font = settings.settings.label_font()

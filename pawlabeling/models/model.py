@@ -1,8 +1,8 @@
 from collections import defaultdict
-import logging
-import numpy as np
+#import numpy as np
+import pandas as pd
 from pubsub import pub
-from ..functions import utility, io, tracking, calculations
+#from ..functions import utility, io, tracking, calculations
 from ..settings import settings
 from ..models import table, subjectmodel, sessionmodel, measurementmodel, contactmodel, platemodel
 #from memory_profiler import profile
@@ -11,9 +11,8 @@ from ..models import table, subjectmodel, sessionmodel, measurementmodel, contac
 class Model():
     def __init__(self):
         self.file_paths = defaultdict(dict)
-        # TODO change the models measurement folder instead of writing it to the settings
         self.measurement_folder = settings.settings.measurement_folder()
-        self.database_file = settings.settings.database_file()
+        self.table = settings.settings.table
         self.plate_model = platemodel.Plates()
         # Create the plates if they do not yet exists
         self.plate_model.create_plates()
@@ -23,10 +22,10 @@ class Model():
         self.subject_id = ""
         self.subject_name = ""
         self.session_id = ""
-        self.session = {}
+        self.session = None
         self.sessions = {}
         self.measurement_name = ""
-        self.measurement = {}
+        self.measurement = None
         self.measurements = {}
         self.contact = None
         self.average_data = defaultdict()
@@ -36,8 +35,6 @@ class Model():
         self.max_results = defaultdict()
         self.n_max = 0
         self.current_measurement_index = 0
-
-        self.logger = logging.getLogger("logger")
 
         # Various
         pub.subscribe(self.changed_settings, "changed_settings")
@@ -88,10 +85,11 @@ class Model():
         contacts = self.contact_model.track_contacts(measurement=measurement,
                                                      measurement_data=measurement_data,
                                                      plate=plate)
-        self.contacts[measurement.measurement_name] = self.contact_model.create_contacts(contacts)
+        self.contact_model.create_contacts(contacts)
+        self.contacts[measurement.measurement_name] = contacts
         status = "Number of contacts found: {}".format(len(self.contacts[measurement.measurement_name]))
         pub.sendMessage("update_statusbar", status=status)
-        self.logger.info("model.create_contact: {}".format(status))
+        settings.settings.logger.info("model.create_contact: {}".format(status))
 
     def get_subjects(self):
         self.subjects = self.subject_model.get_subjects()
@@ -134,9 +132,9 @@ class Model():
     def put_subject(self, subject):
         self.subject = subject
         self.subject_id = subject.subject_id
-        self.logger.info("Subject ID set to {}".format(self.subject_id))
+        settings.settings.logger.info("Subject ID set to {}".format(self.subject_id))
         # As soon as a subject is selected, we instantiate our sessions table
-        self.sessions_table = table.SessionsTable(database_file=self.database_file,
+        self.sessions_table = table.SessionsTable(table=self.table,
                                                   subject_id=self.subject_id)
         self.session_model = sessionmodel.Sessions(subject_id=self.subject_id)
         pub.sendMessage("update_statusbar", status="Subject: {} {}".format(self.subject.first_name,
@@ -149,10 +147,10 @@ class Model():
         self.clear_cached_values()
         self.session = session
         self.session_id = session.session_id
-        self.logger.info("Session ID set to {}".format(self.session_id))
+        settings.settings.logger.info("Session ID set to {}".format(self.session_id))
         pub.sendMessage("update_statusbar", status="Session: {}".format(self.session.session_name))
 
-        self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
+        self.measurements_table = table.MeasurementsTable(table=self.table,
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)
         self.measurement_model = measurementmodel.Measurements(subject_id=self.subject_id,
@@ -183,8 +181,10 @@ class Model():
         self.load_contacts()
         pub.sendMessage("update_progress", progress=75)
         self.update_n_max()
-        self.update_average()
+        # Pray this doesn't have side-effects
+        self.calculate_results()
         pub.sendMessage("update_progress", progress=100)
+
 
     # TODO This function is messed up again!
     def put_measurement(self, measurement_id):
@@ -193,11 +193,7 @@ class Model():
         self.measurement_id = measurement.measurement_id
         self.measurement_name = measurement.measurement_name
 
-        self.logger.info("Measurement ID set to {}".format(self.measurement_id))
-        # self.contacts_table = table.ContactsTable(database_file=self.database_file,
-        #                                           subject_id=self.subject_id,
-        #                                           session_id=self.session_id,
-        #                                           measurement_id=self.measurement_id)
+        settings.settings.logger.info("Measurement ID set to {}".format(self.measurement_id))
         self.contact_model = self.contact_models[measurement.measurement_name]
         pub.sendMessage("update_statusbar", status="Measurement: {}".format(self.measurement_name))
         pub.sendMessage("put_measurement")
@@ -217,7 +213,7 @@ class Model():
             if contact.contact_id == contact_id:
                 self.contact = contact
                 self.contact_id = self.contact.contact_id
-                self.logger.info("Contact ID set to {}".format(self.contact_id))
+                settings.settings.logger.info("Contact ID set to {}".format(self.contact_id))
                 self.selected_contacts[self.contact.contact_label] = contact
                 pub.sendMessage("put_contact")
                 break
@@ -226,7 +222,7 @@ class Model():
         self.plate = plate
         self.plate_id = plate.plate_id
         self.sensor_surface = self.plate.sensor_surface
-        self.logger.info("Plate ID set to {}".format(self.plate_id))
+        settings.settings.logger.info("Plate ID set to {}".format(self.plate_id))
 
     def delete_subject(self, subject):
         self.subject_model.delete_subject(subject)
@@ -252,8 +248,14 @@ class Model():
 
     # TODO Store every contact, from every measurement?
     def store_contacts(self):
+        measurement_data = self.measurement_model.get_measurement_data(self.measurement)
+        # Make sure the results are up to date
+        self.contact_model.recalculate_results(self.contacts[self.measurement_name],
+                                               self.plate,
+                                               self.measurement,
+                                               measurement_data)
         self.contact_model.create_contacts(contacts=self.contacts[self.measurement_name])
-        self.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
+        settings.settings.logger.info("Model.store_contacts: Results for {} have been successfully saved".format(
             self.measurement_name))
         pub.sendMessage("update_statusbar", status="Results saved")
         # Notify the measurement that it has been processed
@@ -277,14 +279,21 @@ class Model():
         Check if there if any measurements for this subject have already been processed
         If so, retrieve the measurement_data and convert them to a usable format
         """
-        self.logger.info("Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
+        settings.settings.logger.info("Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
             self.subject_name, self.session.session_name))
         self.contacts.clear()
 
         measurements = {}
         for measurement_id, measurement in self.measurements.iteritems():
             contact_model = self.contact_models[measurement.measurement_name]
-            contacts = contact_model.get_contacts(measurement)
+            plate = self.plates[measurement.plate_id]
+            contacts = contact_model.get_contacts(plate, measurement)
+            if contact_model.verify_contacts(contacts):
+                measurement_data = self.measurement_model.get_measurement_data(measurement)
+                contact_model.recalculate_results(contacts, plate, measurement, measurement_data)
+                # Given the stored data is dirty, store it
+                contact_model.create_contacts(contacts)
+
             if contacts:
                 self.contacts[measurement.measurement_name] = contacts
 
@@ -306,12 +315,19 @@ class Model():
         self.update_average()
         # This updates contacts in place
         self.session_model.calculate_results(contacts=self.contacts)
-        # This might have changed self.contacts, so we should update it to be sure
-        #for measurement_name, contacts in self.contacts.items():
-            # Make sure to update on the right model
-            #contact_model = self.contact_models[measurement_name]
-            # TODO Why would I ever want to do this?
-            #contact_model.update_contacts(measurement_name=measurement_name, contacts=self.contacts)
+        results = []
+        for measurement_id, contacts in self.contacts.items():
+            for contact in contacts:
+                row = [measurement_id, contact.contact_id, contact.contact_label, contact.invalid, contact.filtered,
+                       contact.peak_force, contact.peak_pressure, contact.peak_surface, contact.vertical_impulse,
+                       contact.stance_duration, contact.stance_percentage, contact.step_duration, contact.step_length]
+                results.append(row)
+
+        self.dataframe = pd.DataFrame(results, columns=["measurement_id","contact_id","contact_label","invalid", "filtered",
+                                                        "peak_force","peak_pressure","peak_surface","vertical_impulse",
+                                                        "stance_duration","stance_percentage","step_duration","step_length",
+       ])
+
 
     def update_n_max(self):
         self.n_max = self.measurement_model.update_n_max()
@@ -319,7 +335,6 @@ class Model():
 
     def changed_settings(self):
         self.measurement_folder = settings.settings.measurement_folder()
-        self.database_file = settings.settings.database_file()
 
     def clear_cached_values(self):
         # TODO Figure out what can be cleared and when, perhaps I can use an argument to check the level of clearing
@@ -335,7 +350,7 @@ class Model():
         self.max_results.clear()
         self.n_max = 0
 
-        self.logger.info("Model.clear_cached_values")
+        settings.settings.logger.info("Model.clear_cached_values")
         pub.sendMessage("clear_cached_values")
 
 

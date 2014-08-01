@@ -86,6 +86,20 @@ class TestFixOrientation(TestCase):
         equal = np.array_equal(data, new_data)
         self.assertEqual(equal, True)
 
+class TestCorrectLoading(TestCase):
+    def test_rsscan_loading(self):
+        parent_folder = os.path.dirname(os.path.abspath(__file__))
+        file_location = "files/rsscan_verify_content.zip"
+        file_name = os.path.join(parent_folder, file_location)
+        input_file = io.open_zip_file(file_name)
+        data = io.load(input_file, brand="rsscan")
+        # Check that it has the right shape
+        self.assertEqual(data.shape, (256L, 63L, 249L))
+        # Check that it has pressure in each frame
+        force_over_time = np.sum(np.sum(data, axis=0), axis=0)
+        nonzero_count = np.count_nonzero(force_over_time)
+        self.assertEqual(nonzero_count, 249)
+
 # class TestLoadResults(TestCase):
 #     def test_load_successful(self):
 #         parent_folder = os.path.dirname(os.path.abspath(__file__))

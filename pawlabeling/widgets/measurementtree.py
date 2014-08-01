@@ -20,7 +20,6 @@ class Singleton(object):
 class MeasurementTree(QtGui.QWidget, Singleton):
     def __init__(self, parent=None):
         super(MeasurementTree, self).__init__(parent)
-        self.logger = logging.getLogger("logger")
         self.model = model.model
         self.colors = settings.settings.colors
         self.contact_dict = settings.settings.contact_dict
@@ -56,6 +55,9 @@ class MeasurementTree(QtGui.QWidget, Singleton):
 
     def select_initial_contacts(self):
         measurement_item = self.measurement_tree.currentItem()
+        # If the tree is empty, there's nothing to select
+        if measurement_item is None:
+            return
         measurement_name = measurement_item.text(0)
         lookup = {0: 0, 1: 0, 2: 0, 3: 0}
         for index in range(measurement_item.childCount()):
@@ -84,7 +86,7 @@ class MeasurementTree(QtGui.QWidget, Singleton):
 
             for contact in self.model.contacts[measurement.measurement_name]:
                 contact_item = TreeWidgetItem(measurement_item)
-                contact_item.setText(0, str(contact.contact_id))
+                contact_item.setText(0, str(contact.contact_id.split("_")[-1]))
                 contact_item.setText(1, self.contact_dict[contact.contact_label])
                 contact_item.setText(2, str(contact.length))  # Sets the frame count
                 max_surface = np.max(contact.surface_over_time)
@@ -159,7 +161,8 @@ class MeasurementTree(QtGui.QWidget, Singleton):
         self.measurement_tree.setCurrentItem(measurement_item)
         self.put_measurement()
         # Now put the contact
-        contact_id = int(current_item.text(0))  # Convert the unicode to int
+        #contact_id = int(current_item.text(0))  # Convert the unicode to int
+        contact_id = "contact_{}".format(current_item.text(0))
 
         for index, contact in enumerate(self.model.contacts[self.model.measurement_name]):
             if contact.contact_id == contact_id:
@@ -179,8 +182,8 @@ class TreeWidgetItem(QtGui.QTreeWidgetItem):
     """
     def __lt__(self, other):
         column = self.treeWidget().sortColumn()
-        key_1 = self.text(column)
-        key_2 = other.text(column)
+        key_1 = self.text(column).split("_")[-1]
+        key_2 = other.text(column).split("_")[-1]
         return int(key_1) < int(key_2)
 
 

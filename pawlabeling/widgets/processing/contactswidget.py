@@ -6,7 +6,7 @@ import numpy as np
 from pubsub import pub
 from ...functions import utility, calculations
 from ...settings import settings
-from ...models import model
+from ...models import model, contactmodel
 
 
 class ContactWidgets(QtGui.QWidget):
@@ -42,7 +42,6 @@ class ContactWidgets(QtGui.QWidget):
 
         self.average_data = defaultdict(list)
 
-        self.logger = logging.getLogger("logger")
         self.contact_dict = settings.settings.contact_dict
 
         self.left_contacts_layout = QtGui.QVBoxLayout()
@@ -94,7 +93,7 @@ class ContactWidgets(QtGui.QWidget):
         try:
             self.predict_label()
         except Exception as e:
-            self.logger.info("Couldn't predict the labels. Exception: {}".format(e))
+            settings.settings.logger.info("Couldn't predict the labels. Exception: {}".format(e))
 
     # TODO predict label should receive the average data and compute on that
     def predict_label(self):
@@ -207,11 +206,12 @@ class ContactWidget(QtGui.QWidget):
     def update(self, average_data):
         # Calculate an average contact from the list of arrays
         self.average_data = average_data
-        self.max_pressure = np.max(calculations.force_over_time(self.average_data))
+        self.max_pressure = np.max(np.sum(np.sum(self.average_data, axis=0), axis=0))
         x, y, z = np.nonzero(self.average_data)
         self.mean_duration = np.max(z)
-        self.mean_surface = np.max(
-            calculations.pixel_count_over_time(self.average_data) * self.model.plate.sensor_surface)
+        contact = contactmodel.MockContact("contact_1", self.average_data)
+        pixel_counts_over_time = calculations.pixel_count_over_time(contact)
+        self.mean_surface = np.max(pixel_counts_over_time * self.model.plate.sensor_surface)
 
         self.max_pressure_label.setText("{:3.1f} N".format(self.max_pressure))
         self.mean_duration_label.setText("{} frames".format(int(self.mean_duration)))

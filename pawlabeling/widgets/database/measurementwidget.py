@@ -13,7 +13,6 @@ class MeasurementWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(MeasurementWidget, self).__init__(parent)
 
-        self.logger = logging.getLogger("logger")
         self.model = model.model
         label_font = settings.settings.label_font()
 
@@ -288,9 +287,9 @@ class MeasurementWidget(QtGui.QWidget):
         settings.settings.write_value("plate/plate", plate)
         # Adjust the size in case the text is too big to fit
         self.plate.adjustSize()
-        self.logger.info("measurementwidget.change_plate: Plate changed to {}".format(plate))
+        settings.settings.logger.info("measurementwidget.change_plate: Plate changed to {}".format(plate))
 
     def change_frequency(self, index):
         frequency = self.frequency.itemText(index)
         self.frequency.adjustSize()
-        self.logger.info("measurmentwidget.change_frequency: Frequency changed to {}".format(frequency))
+        settings.settings.logger.info("measurmentwidget.change_frequency: Frequency changed to {}".format(frequency))

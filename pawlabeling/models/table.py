@@ -1,18 +1,16 @@
 from collections import defaultdict
 import tables
-from ..settings.settings import settings
-
+from tables.exceptions import ClosedNodeError, NoSuchNodeError, NodeError
 
 class MissingIdentifier(Exception):
     pass
 
 # I should add some helper function to check if something can be found, if not raise an exception or log something
 class Table(object):
-    def __init__(self, database_file):
-        # TODO Make this part configurable
+    def __init__(self, table):
         # The settings has a table connection, we just create a copy of that
         # So not every subclass of this Table class will create its own copy
-        self.table = settings.table
+        self.table = table
         self.table_name = "table"
         self.filters = tables.Filters(complib="blosc", complevel=9)
         self.table.filters = self.filters
@@ -122,8 +120,8 @@ class SubjectsTable(Table):
         birthday = tables.StringCol(32)
         mass = tables.FloatCol()
 
-    def __init__(self, database_file):
-        super(SubjectsTable, self).__init__(database_file=database_file)
+    def __init__(self, table):
+        super(SubjectsTable, self).__init__(table=table)
         self.table_name = "subject"
 
         # Check if table has subjects table
@@ -184,8 +182,8 @@ class SessionsTable(Table):
         session_id = tables.StringCol(64)
         session_label = tables.StringCol(64)
 
-    def __init__(self, database_file, subject_id):
-        super(SessionsTable, self).__init__(database_file=database_file)
+    def __init__(self, table, subject_id):
+        super(SessionsTable, self).__init__(table=table)
         self.table_name = "session"
         self.subject_id = subject_id
         self.subject_group = self.table.root.__getattr__(self.subject_id)
@@ -254,8 +252,8 @@ class MeasurementsTable(Table):
         time = tables.StringCol(32)
         processed = tables.BoolCol()
 
-    def __init__(self, database_file, subject_id, session_id):
-        super(MeasurementsTable, self).__init__(database_file=database_file)
+    def __init__(self, table, subject_id, session_id):
+        super(MeasurementsTable, self).__init__(table=table)
         self.table_name = "measurement"
         self.subject_id = subject_id
         self.session_id = session_id
@@ -325,7 +323,7 @@ class ContactsTable(Table):
         session_id = tables.StringCol(64)
         subject_id = tables.StringCol(64)
         contact_id = tables.StringCol(16)
-        contact_label = tables.Int16Col()  # These might also be negative...
+        contact_label = tables.Int16Col()
         orientation = tables.BoolCol()
         min_x = tables.UInt16Col()
         max_x = tables.UInt16Col()
@@ -338,9 +336,41 @@ class ContactsTable(Table):
         length = tables.UInt16Col()
         invalid = tables.BoolCol()
         filtered = tables.BoolCol()
+        unfinished_contact = tables.BoolCol()
+        edge_contact = tables.BoolCol()
+        incomplete_contact = tables.BoolCol()
 
-    def __init__(self, database_file, subject_id, session_id, measurement_id):
-        super(ContactsTable, self).__init__(database_file=database_file)
+        vertical_impulse = tables.FloatCol()
+        time_of_peak_force = tables.FloatCol()
+        peak_force = tables.FloatCol()
+        peak_pressure = tables.FloatCol()
+        peak_surface = tables.FloatCol()
+
+        # Spatiotemporal results
+        gait_pattern = tables.StringCol(16)
+        gait_velocity = tables.FloatCol()
+        stance_duration = tables.FloatCol()
+        swing_duration = tables.FloatCol()
+        stance_percentage = tables.FloatCol()
+
+        stride_duration = tables.FloatCol()
+        stride_length = tables.FloatCol()
+        stride_width = tables.FloatCol()
+
+        step_duration = tables.FloatCol()
+        step_length = tables.FloatCol()
+        step_width = tables.FloatCol()
+
+        ipsi_duration = tables.FloatCol()
+        ipsi_length = tables.FloatCol()
+        ipsi_width = tables.FloatCol()
+
+        diag_duration = tables.FloatCol()
+        diag_length = tables.FloatCol()
+        diag_width = tables.FloatCol()
+
+    def __init__(self, table, subject_id, session_id, measurement_id):
+        super(ContactsTable, self).__init__(table=table)
         self.table_name = "contact"
         self.subject_id = subject_id
         self.session_id = session_id
@@ -378,14 +408,18 @@ class ContactsTable(Table):
         return "{}_{}".format(self.table_name, max_id)
 
     def update_contact(self, **kwargs):
+        found = False
         for row in self.contacts_table:
             if row["contact_id"] == kwargs["contact_id"]:
+                found = True
                 # Update any fields that have changed
                 for key, value in kwargs.items():
                     row[key] = value
                     row.update()
-
-        self.contacts_table.flush()
+        if found:
+            self.contacts_table.flush()
+            return True
+        return False
 
     def get_contact(self, contact_id=""):
         return self.search_table(self.contacts_table, contact_id=contact_id)
@@ -402,8 +436,8 @@ class ContactsTable(Table):
 
 
 class ContactDataTable(Table):
-    def __init__(self, database_file, subject_id, session_id, measurement_id):
-        super(ContactDataTable, self).__init__(database_file=database_file)
+    def __init__(self, table, subject_id, session_id, measurement_id):
+        super(ContactDataTable, self).__init__(table=table)
         self.table_name = "contact_data"
         self.subject_id = subject_id
         self.session_id = session_id
@@ -411,7 +445,7 @@ class ContactDataTable(Table):
         self.session_group = self.table.root.__getattr__(self.subject_id).__getattr__(self.session_id)
         self.measurement_group = self.session_group.__getattr__(measurement_id)
         self.item_ids = ["data", "max_of_max", "pressure_over_time", "force_over_time", "surface_over_time",
-                         "cop_x", "cop_y"]
+                         "pixel_count_over_time", "cop_x", "cop_y", "vcop_xy", "vcop_x", "vcop_y",]
 
     def get_contact_data(self):
         contacts = []
@@ -420,7 +454,11 @@ class ContactDataTable(Table):
             group = self.measurement_group.__getattr__(contact_id)
             contact_data = defaultdict()
             for item_id in self.item_ids:
-                contact_data[item_id] = group.__getattr__(item_id).read()
+                # We try to retrieve what's available, if its not available, it should be computed later on
+                try:
+                    contact_data[item_id] = group.__getattr__(item_id).read()
+                except NoSuchNodeError:
+                    contact_data[item_id] = None
             contacts.append(contact_data)
         return contacts
 
@@ -440,8 +478,8 @@ class SessionDataTable(Table):
         height = tables.UInt16Col()
         length = tables.UInt16Col()
 
-    def __init__(self, database_file, subject_id, session_id):
-        super(SessionDataTable, self).__init__(database_file=database_file)
+    def __init__(self, table, subject_id, session_id):
+        super(SessionDataTable, self).__init__(table=table)
         self.table_name = "session_data"
         self.subject_id = subject_id
         self.session_id = session_id
@@ -471,8 +509,8 @@ class PlatesTable(Table):
         sensor_height = tables.FloatCol()
         sensor_surface = tables.FloatCol()
 
-    def __init__(self, database_file):
-        super(PlatesTable, self).__init__(database_file=database_file)
+    def __init__(self, table):
+        super(PlatesTable, self).__init__(table=table)
         self.table_name = "plate"
 
         if 'plates' not in self.table.root:
@@ -505,3 +543,126 @@ class PlatesTable(Table):
                 plate[key] = value
             plates.append(plate)
         return plates
+
+
+def verify_tables(table):
+    # If there isn't even a subjects table, no need to do anything
+    if not hasattr(table.root,  "subjects"):
+        return
+
+    # Check SubjectsTable
+    subjects_description = table.root.subjects.description._v_dtypes
+    subject_difference = False
+    for key, value in SubjectsTable.Subjects.columns.items():
+        if value.dtype != subjects_description.get(key):
+            subject_difference = True
+
+    # If there are any differences, copy over the content to a new table and then replace the old table with the new one
+    if subject_difference:
+        root_group = table.root
+        new_subjects_table = table.createTable(where="/", name="subjects2",
+                                               description=SubjectsTable.Subjects,
+                                               title="Subjects", filters=table.filters)
+        subjects_table = table.root.subjects
+        subjects_table.attrs._f_copy(new_subjects_table)
+        for i in xrange(subjects_table.nrows):
+            new_subjects_table.row.append()
+        new_subjects_table.flush()
+
+        description = table.description._v_colObjects
+        for col in description:
+            getattr(new_subjects_table.cols, col)[:] = getattr(subjects_table.cols, col)[:]
+
+        subjects_table.remove()
+        new_subjects_table.move(root_group, "subjects")
+
+    # Check SessionsTable
+    for subject in table.root.subjects:
+        session_difference = False
+        subject_id = subject["subject_id"]
+        subject_group = table.root.__getattr__(subject_id)
+        sessions_description = subject_group.sessions.description._v_dtypes
+        for key, value in SessionsTable.Sessions.columns.items():
+            if value.dtype != sessions_description.get(key):
+                session_difference = True
+
+        if session_difference:
+            new_sessions_table = table.createTable(where="/", name="sessions2",
+                                                   description=SessionsTable.Sessions,
+                                                   title="Sessions", filters=table.filters)
+            sessions_table = subject_group.sessions
+            sessions_table.attrs._f_copy(new_sessions_table)
+            for i in xrange(sessions_table.nrows):
+                new_sessions_table.row.append()
+            new_sessions_table.flush()
+
+            description = sessions_table.description._v_colObjects
+            for col in description:
+                getattr(new_sessions_table.cols, col)[:] = getattr(sessions_table.cols, col)[:]
+
+            sessions_table.remove()
+            new_sessions_table.move(subject_group, "sessions")
+
+        # Check the MeasurementsTable
+        for session in table.root.__getattr__(subject_id).sessions:
+            measurement_difference = False
+            session_id = session["session_id"]
+            session_group = table.root.__getattr__(subject_id).__getattr__(session_id)
+            # If an attribute is missing, skip it
+            if not hasattr(session_group, "measurements"):
+                continue
+            measurements_description = session_group.measurements.description._v_dtypes
+            for key, value in MeasurementsTable.Measurements.columns.items():
+                if value.dtype != measurements_description.get(key):
+                    measurement_difference = True
+
+            if measurement_difference:
+                new_measurements_table = table.createTable(where="/", name="measurements2",
+                                                           description=MeasurementsTable.Measurements,
+                                                           title="Measurements", filters=table.filters)
+                measurements_table = session_group.measurements
+                measurements_table.attrs._f_copy(new_measurements_table)
+                for i in xrange(measurements_table.nrows):
+                    new_measurements_table.row.append()
+                new_measurements_table.flush()
+
+                description = measurements_table.description._v_colObjects
+                for col in description:
+                    getattr(new_measurements_table.cols, col)[:] = getattr(measurements_table.cols, col)[:]
+
+                measurements_table.remove()
+                new_measurements_table.move(session_group, "measurements")
+
+            for measurement in table.root.__getattr__(subject_id).__getattr__(session_id).measurements:
+                contact_difference = False
+                measurement_id = measurement["measurement_id"]
+                measurement_group = table.root.__getattr__(subject_id).__getattr__(session_id).__getattr__(measurement_id)
+                # If an attribute is missing, skip it
+                if not hasattr(measurement_group, "contacts"):
+                    continue
+                contacts_description = measurement_group.contacts.description._v_dtypes
+                for key, value in ContactsTable.Contacts.columns.items():
+                    if value.dtype != contacts_description.get(key):
+                        contact_difference = True
+
+                if contact_difference:
+                    new_contacts_table = table.createTable(where="/", name="contacts2",
+                                                               description=ContactsTable.Contacts,
+                                                               title="Contacts", filters=table.filters)
+                    contacts_table = measurement_group.contacts
+                    contacts_table.attrs._f_copy(new_contacts_table)
+                    for i in xrange(contacts_table.nrows):
+                        new_contacts_table.row.append()
+                    new_contacts_table.flush()
+
+                    description = contacts_table.description._v_colObjects
+                    for col in description:
+                        getattr(new_contacts_table.cols, col)[:] = getattr(contacts_table.cols, col)[:]
+
+                    contacts_table.remove()
+                    new_contacts_table.move(measurement_group, "contacts")
+
+    return True
+
+def load_table(database_file):
+    return tables.open_file(database_file, mode="a", title="Data")

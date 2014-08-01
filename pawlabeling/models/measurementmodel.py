@@ -1,13 +1,13 @@
 from ..models import table
-from ..functions import io
+from ..functions import io, calculations
 from ..settings import settings
 
 class Measurements(object):
     def __init__(self, subject_id, session_id):
         self.subject_id = subject_id
         self.session_id = session_id
-        self.database_file = settings.settings.database_file()
-        self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
+        self.table = settings.settings.table
+        self.measurements_table = table.MeasurementsTable(table=self.table,
                                                           subject_id=self.subject_id,
                                                           session_id=self.session_id)
 
@@ -49,8 +49,8 @@ class Measurements(object):
         # If we've removed all the sessions, clean up after yourself
         try:
             self.measurements_table.get_measurements()
-        except settings.ClosedNodeError:
-            self.measurements_table = table.MeasurementsTable(database_file=self.database_file,
+        except table.ClosedNodeError:
+            self.measurements_table = table.MeasurementsTable(table=self.table,
                                                               subject_id=self.subject_id,
                                                               session_id=self.session_id)
 
@@ -58,7 +58,7 @@ class Measurements(object):
         measurements = {}
         try:
             self.measurements_table.get_measurements()
-        except settings.ClosedNodeError:
+        except table.ClosedNodeError:
             return measurements
 
         for measurement in self.measurements_table.get_measurements():
@@ -128,7 +128,7 @@ class Measurement(object):
             raise Exception
 
         self.number_of_rows, self.number_of_columns, self.number_of_frames = self.measurement_data.shape
-        self.orientation = io.check_orientation(self.measurement_data)
+        self.orientation = calculations.check_orientation(self.measurement_data)
         self.maximum_value = self.measurement_data.max()  # Perhaps round this and store it as an int?
         self.frequency = measurement["frequency"]
 
@@ -148,21 +148,9 @@ class Measurement(object):
         return input_file
 
     def restore(self, measurement):
-        self.measurement_id = measurement["measurement_id"]
-        self.session_id = measurement["session_id"]
-        self.subject_id = measurement["subject_id"]
-        self.plate_id = measurement["plate_id"]
-        self.measurement_name = measurement["measurement_name"]
-        self.number_of_frames = measurement["number_of_frames"]
-        self.number_of_rows = measurement["number_of_rows"]
-        self.number_of_columns = measurement["number_of_columns"]
-        self.frequency = measurement["frequency"]
-        self.orientation = measurement["orientation"]
-        self.maximum_value = measurement["maximum_value"]
-        self.date = measurement["date"]
-        self.time = measurement["time"]
-        self.processed = measurement["processed"]
-        # TODO Tag the data on here as well
+        for key, value in measurement.items():
+            setattr(self, key, value)
+
 
     def to_dict(self):
         return {
@@ -181,3 +169,14 @@ class Measurement(object):
             "time": self.time,
             "processed": self.processed
         }
+
+class MockMeasurement(object):
+    def __init__(self, measurement_id, data, frequency):
+        self.measurement_id = measurement_id
+        self.data = data
+        x, y, z = data.shape
+        self.number_of_rows = x
+        self.number_of_columns = y
+        self.number_of_frames = z
+        self.orientation = True
+        self.frequency = frequency

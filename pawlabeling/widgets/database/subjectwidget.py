@@ -13,7 +13,6 @@ class SubjectWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(SubjectWidget, self).__init__(parent)
 
-        self.logger = logging.getLogger("logger")
         self.model = model.model
         label_font = settings.settings.label_font()
         date_format = settings.settings.date_format()

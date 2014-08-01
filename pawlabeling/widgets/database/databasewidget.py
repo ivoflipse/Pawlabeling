@@ -11,7 +11,6 @@ class DatabaseWidget(QtGui.QWidget):
     def __init__(self, parent=None):
         super(DatabaseWidget, self).__init__(parent)
 
-        self.logger = logging.getLogger("logger")
         self.toolbar = gui.Toolbar(self)
 
         self.subject_widget = subjectwidget.SubjectWidget(self)

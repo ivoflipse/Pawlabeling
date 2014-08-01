@@ -1,9 +1,9 @@
 numpy
-PySide
+pyside
 cv2
 scipy
 matplotlib
-pypubsub==3.1.2
+pypubsub==3.3.0
 tables
+pandas
 nose
-imreg

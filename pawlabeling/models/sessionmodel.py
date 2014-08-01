@@ -11,9 +11,8 @@ from ..functions import calculations, utility
 class Sessions(object):
     def __init__(self, subject_id):
         self.subject_id = subject_id
-        self.database_file = settings.settings.database_file()
-        self.sessions_table = table.SessionsTable(database_file=self.database_file, subject_id=self.subject_id)
-        self.logger = logging.getLogger("logger")
+        self.table = settings.settings.table
+        self.sessions_table = table.SessionsTable(table=self.table, subject_id=self.subject_id)
 
     def create_session(self, session):
         session_object = Session(self.subject_id)
@@ -37,14 +36,14 @@ class Sessions(object):
         # If we've removed all the sessions, clean up after yourself
         try:
             self.sessions_table.get_sessions()
-        except settings.ClosedNodeError:
-            self.sessions_table = table.SessionsTable(database_file=self.database_file, subject_id=self.subject_id)
+        except table.ClosedNodeError:
+            self.sessions_table = table.SessionsTable(table=self.table, subject_id=self.subject_id)
 
     def get_sessions(self):
         sessions = defaultdict()
         try:
             self.sessions_table.get_sessions()
-        except settings.ClosedNodeError:
+        except table.ClosedNodeError:
             return sessions
 
         for session in self.sessions_table.get_sessions():
@@ -158,9 +157,9 @@ class Sessions(object):
                                         lower_bound_force < force < upper_bound_force and
                                         lower_bound_surface < surface < upper_bound_surface and
                                         lower_bound_length < length < upper_bound_length):
-                        contact.set_filtered(filtered=True)
+                        contact.filtered = True
                     else:
-                        contact.set_filtered(filtered=False)
+                        contact.filtered = False
 
         return results, max_results
 
@@ -257,8 +256,5 @@ class Session(object):
         return session
 
     def restore(self, session):
-        self.subject_id = session["subject_id"]
-        self.session_id = session["session_id"]
-        self.session_name = session["session_name"]
-        self.session_date = session["session_date"]
-        self.session_time = session["session_time"]
+        for key, value in session.items():
+            setattr(self, key, value)

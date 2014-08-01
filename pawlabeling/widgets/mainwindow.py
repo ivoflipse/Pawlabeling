@@ -21,8 +21,6 @@ from ..widgets.settings import settingswidget
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__()
-        # Set up the logger before anything else
-        self.logger = settings.settings.logger
         # Set the screen dimensions, useful for when its not being run full screen
         # self.setGeometry(settings.main_window_size)
         # self.setGeometry(settings.settings.value("widgets/main_window_size"))
@@ -113,7 +111,7 @@ class MainWindow(QtGui.QMainWindow):
         self.move(x, y)
 
     def change_status(self, status):
-        self.logger.info(status)
+        settings.settings.logger.info(status)
         self.status.showMessage(status)
 
     def update_progress(self, progress):
@@ -159,8 +157,7 @@ class MainWindow(QtGui.QMainWindow):
             settings.settings.write_value("widgets/main_window_left", pos.x())
             settings.settings.write_value("widgets/main_window_top", pos.y())
 
-        self.logger = logging.getLogger("logger")
-        self.logger.info("Application Shutdown\n")
+        settings.settings.logger.info("Application Shutdown\n")
 
         event.accept()
 

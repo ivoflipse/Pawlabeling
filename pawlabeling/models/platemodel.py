@@ -5,9 +5,8 @@ from ..settings import settings
 
 class Plates(object):
     def __init__(self):
-        self.database_file = settings.settings.database_file()
-        self.plates_table = table.PlatesTable(database_file=self.database_file)
-        self.logger = logging.getLogger("logger")
+        self.table = settings.settings.table
+        self.plates_table = table.PlatesTable(table=self.table)
 
     def get_plates(self):
         # Keep a dictionary with all the plates with their id as the key
