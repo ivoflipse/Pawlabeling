@@ -177,6 +177,8 @@ class ContactView(QtGui.QWidget):
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.vertical_line.set_xdata(self.frame)
         self.axes.set_xlim([0, self.model.max_length + 2])  # +2 because we padded the array
+        if self.outlier_toggle:
+            self.axes.set_xlim([0, self.model.filtered_length + 2]) # 2 because of the padding
         self.axes.set_ylim([0, self.max_force * 1.1])
         self.canvas.draw()
 

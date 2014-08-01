@@ -35,9 +35,11 @@ class Model():
         self.max_results = defaultdict()
         self.n_max = 0
         self.current_measurement_index = 0
+        self.outlier_toggle = False
 
         # Various
         pub.subscribe(self.changed_settings, "changed_settings")
+        pub.subscribe(self.filter_outliers, "filter_outliers")
 
     def create_subject(self, subject):
         self.subject_id = self.subject_model.create_subject(subject=subject)
@@ -246,6 +248,22 @@ class Model():
         self.update_average()
         pub.sendMessage("update_current_contact")
 
+    def filter_outliers(self, toggle):
+        """
+        This function tries to select a contact that's not filtered or invalid
+        """
+        self.outlier_toggle = toggle
+
+        for contact_label, current_contact in self.selected_contacts.items():
+            if not current_contact.filtered and not current_contact.invalid:
+                continue
+            for contact in self.contacts[self.measurement_name]:
+                if contact.contact_label == contact_label and not contact.filtered and not contact.invalid:
+                    self.selected_contacts[contact_label] = contact
+                    self.put_contact(contact.contact_id)
+                    break
+
+
     # TODO Store every contact, from every measurement?
     def store_contacts(self):
         measurement_data = self.measurement_model.get_measurement_data(self.measurement)
@@ -309,6 +327,12 @@ class Model():
         self.average_data = self.session_model.calculate_average_data(contacts=self.contacts,
                                                                       shape=self.shape)
         self.max_length = self.shape[2]
+        # Also calculate the length of only the filtered contacts
+        self.filtered_length = 0
+        for measurement_id, contacts in self.contacts.items():
+            for contact in contacts:
+                if not contact.filtered and not contact.invalid and contact.length > self.filtered_length:
+                    self.filtered_length = contact.length
         pub.sendMessage("update_average")
 
     def calculate_results(self):
