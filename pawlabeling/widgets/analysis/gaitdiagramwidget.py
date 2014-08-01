@@ -46,7 +46,9 @@ class GaitDiagramWidget(QtGui.QWidget):
 class GaitDiagramView(QtGui.QWidget):
     def __init__(self, parent, label):
         super(GaitDiagramView, self).__init__(parent)
+        label_font = settings.settings.label_font()
         self.label = QtGui.QLabel(label)
+        self.label.setFont(label_font)
         self.parent = parent
         self.model = model.model
         self.degree = settings.settings.interpolation_results()

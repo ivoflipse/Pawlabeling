@@ -52,7 +52,9 @@ class AsymmetryWidget(QtGui.QWidget):
 class AsymmetryView(QtGui.QWidget):
     def __init__(self, parent, label, compare):
         super(AsymmetryView, self).__init__(parent)
+        label_font = settings.settings.label_font()
         self.label = QtGui.QLabel(label)
+        self.label.setFont(label_font)
         self.parent = parent
         self.model = model.model
         self.compare = compare
@@ -75,12 +77,15 @@ class AsymmetryView(QtGui.QWidget):
         self.asi_layout.addWidget(self.label, 0, 0, columnSpan=1)
 
         for index, column in enumerate(self.columns):
-            label = QtGui.QLabel(column.title())
+            label = QtGui.QLabel(" ".join([word.title() for word in column.split("_")]))
             self.labels[column] = label
             self.asi_layout.addWidget(label, index+1, 0)
             text_box = QtGui.QLineEdit("0.0")
             self.text_boxes[column] = text_box
             self.asi_layout.addWidget(text_box, index+1, 1)
+
+        # This adds stretch to an empty column
+        self.asi_layout.setColumnStretch(2, 1)
 
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addLayout(self.asi_layout)
@@ -88,14 +93,24 @@ class AsymmetryView(QtGui.QWidget):
 
         self.setLayout(self.main_layout)
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
+        pub.subscribe(self.filter_outliers, "filter_outliers")
+
+    def filter_outliers(self, toggle):
+        self.outlier_toggle = toggle
+        self.draw()
 
     def draw(self):
         if not self.model.contacts:
             return
 
         asi = defaultdict(list)
+
+        df = self.model.dataframe
+        if self.outlier_toggle:
+            df = df[df["filtered"]==False]
+
         # I probably should calculate this in the model as well
-        for measurement_id, measurement_group in self.model.dataframe.groupby("measurement_id"):
+        for measurement_id, measurement_group in df.groupby("measurement_id"):
             contact_group = measurement_group.groupby("contact_label")
 
             # Check if all the compare contacts are present

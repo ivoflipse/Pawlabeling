@@ -19,23 +19,27 @@ class OverviewWidget(QtGui.QWidget):
         self.parent = parent
         self.active = False
 
-        self.left_front = OverviewView(self, "Left Front")
-        self.left_hind = OverviewView(self, "Left Hind")
-        self.right_front = OverviewView(self, "Right Front")
-        self.right_hind = OverviewView(self, "Right Hind")
+        self.left_front = OverviewView(self, "Left Front", 0)
+        self.left_hind = OverviewView(self, "Left Hind", 1)
+        self.right_front = OverviewView(self, "Right Front", 2)
+        self.right_hind = OverviewView(self, "Right Hind", 3)
 
 
-        self.asymmetry_list = [self.overview_front,
-                               self.overview_hind,
-                               self.asymmetry_pt]
+        self.overview_list = [self.left_front,
+                               self.left_hind,
+                               self.right_front,
+                               self.right_hind]
 
-        self.asymmetry_layout = QtGui.QHBoxLayout()
-        self.asymmetry_layout.addWidget(self.overview_front)
-        self.asymmetry_layout.addWidget(self.overview_hind)
-        self.asymmetry_layout.addWidget(self.asymmetry_pt)
+        self.asymmetry_layout = QtGui.QGridLayout()
+        self.asymmetry_layout.addWidget(self.left_front, 1, 0)
+        self.asymmetry_layout.addWidget(self.left_hind, 2, 0)
+        self.asymmetry_layout.addWidget(self.right_front, 1, 1)
+        self.asymmetry_layout.addWidget(self.right_hind, 2, 1)
 
-        self.main_layout = QtGui.QHBoxLayout()
+
+        self.main_layout = QtGui.QVBoxLayout()
         self.main_layout.addLayout(self.asymmetry_layout)
+        self.main_layout.addStretch(1)
         self.setLayout(self.main_layout)
 
         pub.subscribe(self.active_widget, "active_widget")
@@ -46,17 +50,20 @@ class OverviewWidget(QtGui.QWidget):
             self.active = True
             progress = 0
             pub.sendMessage("update_progress", progress=progress)
-            for view in self.asymmetry_list:
+            for view in self.overview_list:
                 view.draw()
             pub.sendMessage("update_progress", progress=100)
 
 
 class OverviewView(QtGui.QWidget):
-    def __init__(self, parent, label):
+    def __init__(self, parent, label, contact_label):
         super(OverviewView, self).__init__(parent)
+        label_font = settings.settings.label_font()
         self.label = QtGui.QLabel(label)
+        self.label.setFont(label_font)
         self.parent = parent
         self.model = model.model
+        self.contact_label = contact_label
 
         self.frame = -1
         self.length = 0
@@ -70,55 +77,48 @@ class OverviewView(QtGui.QWidget):
         self.columns = ["peak_force","peak_pressure","peak_surface","vertical_impulse",
                         "stance_duration","stance_percentage","step_duration","step_length"]
 
-        self.asi_layout = QtGui.QGridLayout()
-        self.asi_layout.setSpacing(10)
+        self.result_layout = QtGui.QGridLayout()
+        self.result_layout.setSpacing(10)
 
-        self.asi_layout.addWidget(self.label, 0, 0, columnSpan=1)
+        self.result_layout.addWidget(self.label, 0, 0, columnSpan=1)
 
         for index, column in enumerate(self.columns):
-            label = QtGui.QLabel(column.title())
+            label = QtGui.QLabel(" ".join([word.title() for word in column.split("_")]))
             self.labels[column] = label
-            self.asi_layout.addWidget(label, index+1, 0)
+            self.result_layout.addWidget(label, index+1, 0)
             text_box = QtGui.QLineEdit("0.0")
             self.text_boxes[column] = text_box
-            self.asi_layout.addWidget(text_box, index+1, 1)
+            self.result_layout.addWidget(text_box, index+1, 1)
+
+        # This adds stretch to an empty column
+        self.result_layout.setColumnStretch(2, 1)
 
         self.main_layout = QtGui.QVBoxLayout(self)
-        self.main_layout.addLayout(self.asi_layout)
+        self.main_layout.addLayout(self.result_layout)
         self.main_layout.addStretch(1)
 
         self.setLayout(self.main_layout)
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
+        pub.subscribe(self.filter_outliers, "filter_outliers")
+
+    def filter_outliers(self, toggle):
+        self.outlier_toggle = toggle
+        self.draw()
 
     def draw(self):
         if not self.model.contacts:
             return
 
-        asi = defaultdict(list)
-        # I probably should calculate this in the model as well
-        for measurement_id, measurement_group in self.model.dataframe.groupby("measurement_id"):
-            contact_group = measurement_group.groupby("contact_label")
+        df = self.model.dataframe
+        if self.outlier_toggle:
+            df = df[df["filtered"]==False]
+
+        contact_group = df.groupby("contact_label")
+        if self.contact_label in contact_group.groups:
+            data = contact_group.get_group(self.contact_label)
             for column in self.columns:
-                left = 0.
-                right = 0.
-                for l in self.compare[0]:
-                    if l in contact_group.groups:
-                        left += np.mean(contact_group.get_group(l)[column].dropna())
-                for r in self.compare[1]:
-                    if r in contact_group.groups:
-                        right += np.mean(contact_group.get_group(r)[column].dropna())
-
-                # Somehow one or the other can have an opposite sign, so make them absolute
-                if column == "step_length":
-                    left = abs(left)
-                    right = abs(right)
-                asi[column].append(calculations.asymmetry_index(left, right))
-
-        for column in self.columns:
-            #print column, asi[column]
-            self.text_boxes[column].setText("{:>6} +/- {:>5}".format("{:.2f}".format(np.mean(asi[column])),
-                                                                    "{:.2f}".format(np.std(asi[column]))))
-
+                self.text_boxes[column].setText("{:>6} +/- {:>5}".format("{:.2f}".format(np.mean(data[column].dropna())),
+                                                                        "{:.2f}".format(np.std(data[column].dropna()))))
 
 
     def clear_cached_values(self):

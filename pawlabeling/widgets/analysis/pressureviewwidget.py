@@ -75,7 +75,9 @@ class PressureViewWidget(QtGui.QWidget):
 class ContactView(QtGui.QWidget):
     def __init__(self, parent, label, contact_label):
         super(ContactView, self).__init__(parent)
+        label_font = settings.settings.label_font()
         self.label = QtGui.QLabel(label)
+        self.label.setFont(label_font)
         self.contact_label = contact_label
         self.parent = parent
         self.model = model.model
@@ -172,7 +174,10 @@ class ContactView(QtGui.QWidget):
         self.axes.plot(interpolated_time_line, mean_pressure - std_pressure, color="r", linewidth=1)
         self.vertical_line = self.axes.axvline(linewidth=4, color='r')
         self.vertical_line.set_xdata(self.frame)
-        self.axes.set_xlim([0, self.model.max_length + 2])  # +2 because we padded the array
+        self.axes.set_xlim([0, self.model.max_length + 2]) # 2 because of the padding
+        # If the outlier toggle is selected, we pick that instead
+        if self.outlier_toggle:
+            self.axes.set_xlim([0, self.model.filtered_length + 2]) # 2 because of the padding
         self.axes.set_ylim([0, self.max_pressure * 1.1])
         self.canvas.draw()
 

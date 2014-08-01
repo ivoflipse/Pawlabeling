@@ -1,7 +1,9 @@
 from PySide import QtGui
 from pubsub import pub
-from ...widgets.analysis import forceviewwidget, twodimviewwidget, pressureviewwidget, copviewwidget, gaitdiagramwidget, asymmetrywidget
+from ...widgets.analysis import forceviewwidget, twodimviewwidget, pressureviewwidget, copviewwidget, gaitdiagramwidget, \
+    asymmetrywidget, overviewwidget
 from ...models.model import model
+
 
 class ResultsWidget(QtGui.QWidget):
     def __init__(self, parent):
@@ -15,13 +17,15 @@ class ResultsWidget(QtGui.QWidget):
         self.cop_view_widget = copviewwidget.CopViewWidget(self)
         self.gait_diagram_widget = gaitdiagramwidget.GaitDiagramWidget(self)
         self.asymmetry_widget = asymmetrywidget.AsymmetryWidget(self)
+        self.overview_widget = overviewwidget.OverviewWidget(self)
 
         self.widgets = [self.two_dim_view_widget,
                         self.pressure_view_widget,
                         self.force_view_widget,
                         self.cop_view_widget,
                         self.gait_diagram_widget,
-                        self.asymmetry_widget]
+                        self.asymmetry_widget,
+                        self.overview_widget]
 
         self.current_widget = self.widgets[0]
 
@@ -34,6 +38,7 @@ class ResultsWidget(QtGui.QWidget):
         self.tab_widget.addTab(self.cop_view_widget, "COP")
         self.tab_widget.addTab(self.gait_diagram_widget, "Gait Diagram")
         self.tab_widget.addTab(self.asymmetry_widget, "Asymmetry")
+        self.tab_widget.addTab(self.overview_widget, "Overview")
         self.tab_widget.currentChanged.connect(self.update_active_widget)
 
         self.main_layout = QtGui.QHBoxLayout()
