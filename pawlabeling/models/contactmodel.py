@@ -529,8 +529,6 @@ class Contact(object):
         for key, value in contact.items():
             setattr(self, key, value)
 
-        #self.calculate_results(plate=plate, measurement=measurement)
-
 
     def to_dict(self):
         # TODO convert this to a list of strings and a bunch of getattr calls

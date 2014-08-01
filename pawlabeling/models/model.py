@@ -325,7 +325,7 @@ class Model():
         self.dataframe = pd.DataFrame(results, columns=["measurement_id","contact_id","contact_label","invalid",
                                                         "peak_force","peak_pressure","peak_surface","vertical_impulse",
                                                         "stance_duration","stance_percentage","step_duration","step_length",
-        ])
+       ])
 
 
     def update_n_max(self):

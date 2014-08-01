@@ -82,11 +82,9 @@ class AsymmetryView(QtGui.QWidget):
             self.text_boxes[column] = text_box
             self.asi_layout.addWidget(text_box, index+1, 1)
 
-        spacer = QtGui.QSpacerItem(10,10, vData=QtGui.QSizePolicy.Maximum)
-        self.asi_layout.addItem(spacer, len(self.columns)+2, 0, columnSpan=1)
-
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addLayout(self.asi_layout)
+        self.main_layout.addStretch(1)
 
         self.setLayout(self.main_layout)
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
@@ -112,6 +110,7 @@ class AsymmetryView(QtGui.QWidget):
                 asi[column].append(calculations.asymmetry_index(left, right))
 
         for column in self.columns:
+            print column, asi[column]
             self.text_boxes[column].setText("{:>6} +/- {:>5}".format("{:.2f}".format(np.mean(asi[column])),
                                                                     "{:.2f}".format(np.std(asi[column]))))
 

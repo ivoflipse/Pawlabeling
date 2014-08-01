@@ -188,7 +188,7 @@ def time_of_peak_force(contact, frequency, relative=True):
     return contact.time_of_peak_force
 
 
-def vertical_impulse_method1(contact, frequency, mass):
+def vertical_impulse_method1(contact, frequency):
     """
     From Oosterlinck:
     Vertical impulse (VI) was calculated by time integration of the force-time curves and multiplied by time,
@@ -196,13 +196,13 @@ def vertical_impulse_method1(contact, frequency, mass):
     So wouldn't that just be one value? Namely the surface under the entire force curve?
     """
     # Normalize the force over time by mass
-    force_over_time = np.divide(contact.force_over_time, mass * frequency)
+    force_over_time = np.divide(contact.force_over_time, frequency)
     sum_force = np.sum(force_over_time)
     return sum_force
 
 # If you integrate with step size 1, you basically take the sum
 # You can use simps, but the difference is like 0.01-0.05 N*s
-def vertical_impulse_trapz(contact, frequency, mass=1.0):
+def vertical_impulse_trapz(contact, frequency):
     """
     From Oosterlinck:
     Vertical impulse (VI) was calculated by time integration of the  force-time curves and multiplied by time,
@@ -211,21 +211,20 @@ def vertical_impulse_trapz(contact, frequency, mass=1.0):
     """
     from scipy.integrate import trapz  # simps is an alternative
 
-    force_over_time = np.divide(contact.force_over_time, mass)
-    sum_force = trapz(force_over_time, dx=1 / frequency)
+    sum_force = trapz(contact.force_over_time, dx=1 / frequency)
     return sum_force
 
 
-def vertical_impulse(contact, frequency, mass=1.0, version=1):
+def vertical_impulse(contact, frequency, version=1):
     """
     Careful, I would recommend using mass in Newtons instead of kilograms
     """
     assert version in [1, 2]
     vi = None
     if version == 1:
-        vi = vertical_impulse_method1(contact, frequency, mass)
+        vi = vertical_impulse_method1(contact, frequency)
     elif version == 2:
-        vi = vertical_impulse_trapz(contact, frequency, mass)
+        vi = vertical_impulse_trapz(contact, frequency)
     contact.vertical_impulse = vi
     return contact.vertical_impulse
 
