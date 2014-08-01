@@ -90,6 +90,9 @@ class OverviewView(QtGui.QWidget):
             self.text_boxes[column] = text_box
             self.result_layout.addWidget(text_box, index+1, 1)
 
+        # This adds stretch to an empty column
+        self.result_layout.setColumnStretch(2, 1)
+
         self.main_layout = QtGui.QVBoxLayout(self)
         self.main_layout.addLayout(self.result_layout)
         self.main_layout.addStretch(1)
