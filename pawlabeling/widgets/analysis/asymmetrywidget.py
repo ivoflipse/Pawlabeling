@@ -77,7 +77,7 @@ class AsymmetryView(QtGui.QWidget):
         self.asi_layout.addWidget(self.label, 0, 0, columnSpan=1)
 
         for index, column in enumerate(self.columns):
-            label = QtGui.QLabel(column.title())
+            label = QtGui.QLabel(" ".join([word.title() for word in column.split("_")]))
             self.labels[column] = label
             self.asi_layout.addWidget(label, index+1, 0)
             text_box = QtGui.QLineEdit("0.0")

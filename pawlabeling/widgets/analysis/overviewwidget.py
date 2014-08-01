@@ -32,8 +32,8 @@ class OverviewWidget(QtGui.QWidget):
 
         self.asymmetry_layout = QtGui.QGridLayout()
         self.asymmetry_layout.addWidget(self.left_front, 1, 0)
-        self.asymmetry_layout.addWidget(self.left_hind, 1, 1)
-        self.asymmetry_layout.addWidget(self.right_front, 2, 0)
+        self.asymmetry_layout.addWidget(self.left_hind, 2, 0)
+        self.asymmetry_layout.addWidget(self.right_front, 1, 1)
         self.asymmetry_layout.addWidget(self.right_hind, 2, 1)
 
 
@@ -83,7 +83,7 @@ class OverviewView(QtGui.QWidget):
         self.result_layout.addWidget(self.label, 0, 0, columnSpan=1)
 
         for index, column in enumerate(self.columns):
-            label = QtGui.QLabel(column.title())
+            label = QtGui.QLabel(" ".join([word.title() for word in column.split("_")]))
             self.labels[column] = label
             self.result_layout.addWidget(label, index+1, 0)
             text_box = QtGui.QLineEdit("0.0")
