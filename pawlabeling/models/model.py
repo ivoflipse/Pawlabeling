@@ -1,11 +1,11 @@
 from collections import defaultdict
-#import numpy as np
+# import numpy as np
 import pandas as pd
 from pubsub import pub
-#from ..functions import utility, io, tracking, calculations
+# from ..functions import utility, io, tracking, calculations
 from ..settings import settings
 from ..models import table, subjectmodel, sessionmodel, measurementmodel, contactmodel, platemodel
-#from memory_profiler import profile
+# from memory_profiler import profile
 
 
 class Model():
@@ -18,27 +18,43 @@ class Model():
         self.plate_model.create_plates()
 
         self.subject_model = subjectmodel.Subjects()
-        # Initialize our variables that will cache results
+        self.subject = None
         self.subject_id = ""
         self.subject_name = ""
+        self.subjects = {}
+        self.session_model = None
+        self.sessions_table = None
         self.session_id = ""
         self.session = None
         self.sessions = {}
+        self.measurement_model = None
+        self.measurement_data = None
+        self.measurements_table = None
+        self.measurement_id = ""
         self.measurement_name = ""
         self.measurement = None
         self.measurements = {}
-        self.contact = None
-        self.average_data = defaultdict()
         self.contacts = defaultdict(list)
-        self.results = defaultdict(lambda: defaultdict(list))
         self.selected_contacts = defaultdict()
+        self.contacts_table = None
+        self.contact = None
+        self.contact_model = None
+        self.current_contact_index = 0
+        self.current_measurement_index = 0
+        self.plates = {}
+        self.plate = None
+        self.plate_id = ""
+        self.shape = None
+        self.sensor_surface = None
+        self.average_data = defaultdict()
+        self.results = defaultdict(lambda: defaultdict(list))
         self.max_results = defaultdict()
         self.n_max = 0
         self.max_length = 0
         self.filtered_length = 0
-        self.current_measurement_index = 0
         self.outlier_toggle = False
         self.average_toggle = False
+        self.dataframe = None
 
         # Various
         pub.subscribe(self.changed_settings, "changed_settings")
@@ -209,7 +225,7 @@ class Model():
         self.get_measurement_data()
         # TODO I turned off the assertion, though I'm intrigued by how its possible
         # Check that its not empty
-        #assert self.contacts[self.measurement_name]
+        # assert self.contacts[self.measurement_name]
         # TODO get_contacts doesn't really do anything, but send a message, can't this be done differently?
         self.get_contacts()
 
@@ -310,7 +326,7 @@ class Model():
         self.contacts[self.measurement_name] = contacts
         # This notifies the other widgets that the contacts have been retrieved again
         self.get_contacts()
-        #Notify the measurement tree that something has changed
+        # Notify the measurement tree that something has changed
         pub.sendMessage("update_measurement_status")
 
     # TODO Make sure this function doesn't have to pass along data
@@ -319,8 +335,9 @@ class Model():
         Check if there if any measurements for this subject have already been processed
         If so, retrieve the measurement_data and convert them to a usable format
         """
-        settings.settings.logger.info("Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
-            self.subject_name, self.session.session_name))
+        settings.settings.logger.info(
+            "Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
+                self.subject_name, self.session.session_name))
         self.contacts.clear()
 
         measurements = {}
@@ -343,7 +360,6 @@ class Model():
         # This notifies the measurement_trees which measurements have contacts assigned to them
         pub.sendMessage("update_measurement_status")
 
-
     def update_average(self):
         self.shape = self.session_model.calculate_shape(contacts=self.contacts)
         self.average_data = self.session_model.calculate_average_data(contacts=self.contacts,
@@ -365,11 +381,11 @@ class Model():
                        contact.stance_duration, contact.stance_percentage, contact.step_duration, contact.step_length]
                 results.append(row)
 
-        self.dataframe = pd.DataFrame(results, columns=["measurement_id","contact_id","contact_label","invalid", "filtered",
-                                                        "peak_force","peak_pressure","peak_surface","vertical_impulse",
-                                                        "stance_duration","stance_percentage","step_duration","step_length",
-       ])
-
+        self.dataframe = pd.DataFrame(results,
+                                      columns=["measurement_id", "contact_id", "contact_label", "invalid", "filtered",
+                                               "peak_force", "peak_pressure", "peak_surface", "vertical_impulse",
+                                               "stance_duration", "stance_percentage", "step_duration", "step_length",
+                                               ])
 
     def update_n_max(self):
         self.n_max = self.measurement_model.update_n_max()
@@ -381,7 +397,7 @@ class Model():
     def clear_cached_values(self):
         # TODO Figure out what can be cleared and when, perhaps I can use an argument to check the level of clearing
         # like, subject/session/measurement etc
-        #print "model.clear_cached_values"
+        # print "model.clear_cached_values"
         self.measurement_name = ""
         self.measurements = {}
         self.contact = None
