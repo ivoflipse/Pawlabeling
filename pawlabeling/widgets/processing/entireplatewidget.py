@@ -110,7 +110,7 @@ class EntirePlateWidget(QtGui.QWidget):
 
     def update_measurement(self):
         self.clear_gait_line()
-
+        # TODO remove this state so it always uses the model version (I'm not 100% certain its not making a copy)
         self.n_max = self.model.measurement.maximum_value
         self.height = self.model.measurement.number_of_rows
         self.width = self.model.measurement.number_of_columns
@@ -154,7 +154,10 @@ class EntirePlateWidget(QtGui.QWidget):
         self.update_entire_plate()
 
     def update_contacts(self):
-        if not self.gait_lines:
+        # Check if the gait_lines match the number of contacts
+        # I think there are n - 1 lines between the contacts
+        if len(self.gait_lines) != len(self.model.contacts[self.measurement_name]) - 1:
+            self.clear_gait_line()
             self.draw_gait_line()
 
         self.clear_bounding_box()

@@ -6360,3 +6360,95 @@
 2014-08-01 15:18:05,569 - % - INFO - Switching results to Force View
 2014-08-01 15:18:41,855 - % - INFO - Application Shutdown
 
+2014-08-01 15:58:07,523 - % - INFO - -----------------------------------
+2014-08-01 15:58:07,523 - % - INFO - Log system successfully initialised
+2014-08-01 15:58:07,523 - % - INFO - -----------------------------------
+2014-08-01 15:58:08,130 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 15:58:27,812 - % - INFO - -----------------------------------
+2014-08-01 15:58:27,812 - % - INFO - Log system successfully initialised
+2014-08-01 15:58:27,812 - % - INFO - -----------------------------------
+2014-08-01 15:58:28,326 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 15:58:28,727 - % - INFO - Subject ID set to subject_2
+2014-08-01 15:58:28,730 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 15:58:28,730 - % - INFO - Model.clear_cached_values
+2014-08-01 15:58:29,269 - % - INFO - Session ID set to session_0
+2014-08-01 15:58:29,269 - % - INFO - Session: voor
+2014-08-01 15:58:29,384 - % - INFO - Plate ID set to plate_2
+2014-08-01 15:58:29,384 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 15:58:31,273 - % - INFO - Changing tabs to the Analysis tab
+2014-08-01 15:58:31,302 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 15:58:31,303 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 15:58:31,463 - % - INFO - Contact ID set to contact_0
+2014-08-01 15:58:31,615 - % - INFO - Contact ID set to contact_1
+2014-08-01 15:58:31,763 - % - INFO - Contact ID set to contact_2
+2014-08-01 15:58:31,957 - % - INFO - Contact ID set to contact_4
+2014-08-01 15:58:33,782 - % - INFO - Switching results to Pressure View
+2014-08-01 15:58:35,128 - % - INFO - Contact ID set to contact_3
+2014-08-01 15:58:36,755 - % - INFO - Switching results to Force View
+2014-08-01 15:58:39,334 - % - INFO - Switching results to Force View
+2014-08-01 15:58:48,789 - % - INFO - Switching results to 2D View
+2014-08-01 15:58:57,394 - % - INFO - Application Shutdown
+
+2014-08-01 16:11:08,181 - % - INFO - -----------------------------------
+2014-08-01 16:11:08,181 - % - INFO - Log system successfully initialised
+2014-08-01 16:11:08,183 - % - INFO - -----------------------------------
+2014-08-01 16:11:08,753 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 16:11:09,161 - % - INFO - Subject ID set to subject_2
+2014-08-01 16:11:09,164 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 16:11:09,164 - % - INFO - Model.clear_cached_values
+2014-08-01 16:11:09,707 - % - INFO - Session ID set to session_0
+2014-08-01 16:11:09,707 - % - INFO - Session: voor
+2014-08-01 16:11:09,825 - % - INFO - Plate ID set to plate_2
+2014-08-01 16:11:09,825 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 16:11:11,612 - % - INFO - Changing tabs to the Processing tab
+2014-08-01 16:11:11,645 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 16:11:11,647 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 16:11:11,806 - % - INFO - Contact ID set to contact_0
+2014-08-01 16:11:11,953 - % - INFO - Contact ID set to contact_1
+2014-08-01 16:11:12,099 - % - INFO - Contact ID set to contact_2
+2014-08-01 16:11:12,286 - % - INFO - Contact ID set to contact_4
+2014-08-01 16:11:15,565 - % - INFO - Starting tracking
+2014-08-01 16:11:23,809 - % - INFO - Starting tracking
+2014-08-01 16:11:29,252 - % - INFO - Starting tracking
+2014-08-01 16:11:34,039 - % - INFO - Starting tracking
+2014-08-01 16:11:37,921 - % - INFO - Starting tracking
+2014-08-01 16:11:41,586 - % - INFO - Starting tracking
+2014-08-01 16:11:46,263 - % - INFO - Starting tracking
+2014-08-01 16:11:49,301 - % - INFO - Starting tracking
+2014-08-01 16:12:07,539 - % - INFO - Starting tracking
+2014-08-01 16:12:11,299 - % - INFO - Starting tracking
+2014-08-01 16:12:14,029 - % - INFO - Starting tracking
+2014-08-01 16:12:17,983 - % - INFO - Starting tracking
+2014-08-01 16:12:36,825 - % - INFO - Starting tracking
+2014-08-01 16:12:45,334 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 16:12:45,334 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 16:12:47,546 - % - INFO - Starting tracking
+2014-08-01 16:12:51,710 - % - INFO - Starting tracking
+2014-08-01 16:12:56,923 - % - INFO - Starting tracking
+2014-08-01 16:13:04,364 - % - INFO - Application Shutdown
+
+2014-08-01 16:17:58,642 - % - INFO - -----------------------------------
+2014-08-01 16:17:58,642 - % - INFO - Log system successfully initialised
+2014-08-01 16:17:58,642 - % - INFO - -----------------------------------
+2014-08-01 16:17:59,480 - % - INFO - io.get_file_paths: Searching for measurements...
+2014-08-01 16:18:00,184 - % - INFO - Subject ID set to subject_2
+2014-08-01 16:18:00,187 - % - INFO - Subject: Berdi van Breggen
+2014-08-01 16:18:00,187 - % - INFO - Model.clear_cached_values
+2014-08-01 16:18:00,867 - % - INFO - Session ID set to session_0
+2014-08-01 16:18:00,867 - % - INFO - Session: voor
+2014-08-01 16:18:00,984 - % - INFO - Plate ID set to plate_2
+2014-08-01 16:18:00,986 - % - INFO - Model.load_contacts: Loading all measurements for subject: Berdi van Breggen, session: voor
+2014-08-01 16:18:09,523 - % - INFO - Changing tabs to the Processing tab
+2014-08-01 16:18:09,555 - % - INFO - Measurement ID set to measurement_1
+2014-08-01 16:18:09,555 - % - INFO - Measurement: _10voor 24=7 - 24-07-2013 - Entire Plate Roll Off
+2014-08-01 16:18:09,729 - % - INFO - Contact ID set to contact_0
+2014-08-01 16:18:09,887 - % - INFO - Contact ID set to contact_1
+2014-08-01 16:18:10,039 - % - INFO - Contact ID set to contact_2
+2014-08-01 16:18:10,226 - % - INFO - Contact ID set to contact_4
+2014-08-01 16:18:17,046 - % - INFO - Starting tracking
+2014-08-01 16:18:24,158 - % - INFO - Starting tracking
+2014-08-01 16:18:35,371 - % - INFO - Starting tracking
+2014-08-01 16:18:40,822 - % - INFO - Starting tracking
+2014-08-01 16:18:47,134 - % - INFO - Starting tracking
+2014-08-01 16:18:50,974 - % - INFO - Application Shutdown
+

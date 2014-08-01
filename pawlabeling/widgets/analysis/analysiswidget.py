@@ -72,8 +72,8 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.set_max_length()
 
     def show_average_results(self):
-        self.average_toggle = not self.average_toggle
-        pub.sendMessage("show_average_results", toggle=self.average_toggle)
+        pub.sendMessage("model_show_average_results")
+        # Not particularly elegant that this has to be called here
         self.set_max_length()
 
     def set_max_length(self):

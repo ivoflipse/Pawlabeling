@@ -100,7 +100,7 @@ class OverviewView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
 
-    def filter_outliers(self, toggle):
+    def filter_outliers(self):
         if self.parent.active:
             self.draw()
 

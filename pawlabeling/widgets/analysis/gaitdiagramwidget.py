@@ -93,6 +93,7 @@ class GaitDiagramView(QtGui.QWidget):
         pub.subscribe(self.draw, "put_measurement")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
+
     def draw(self):
         if not self.parent.active:
             return

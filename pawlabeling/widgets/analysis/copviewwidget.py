@@ -92,7 +92,6 @@ class ContactView(QtGui.QWidget):
         self.max_z = 0
         self.frame = -1
         self.length = 0
-        self.average_toggle = False
         self.ratio = 1
         self.cop_x = np.zeros(15)
         self.cop_y = np.zeros(15)
@@ -129,7 +128,6 @@ class ContactView(QtGui.QWidget):
         pub.subscribe(self.show_average_results, "show_average_results")
 
     def show_average_results(self, toggle):
-        self.average_toggle = toggle
         self.clear_cached_values()
         if self.parent.active:
             self.change_frame(frame=-1)
@@ -152,7 +150,7 @@ class ContactView(QtGui.QWidget):
             self.change_frame(frame=-1)
 
     def get_data(self):
-        if self.average_toggle:
+        if self.model.average_toggle:
             if self.frame == -1:
                 self.data = self.model.average_data[self.contact_label].max(axis=2)
             else:
@@ -181,7 +179,7 @@ class ContactView(QtGui.QWidget):
         # This value determines how many points of the COP are being plotted.
         self.x = 15
 
-        if self.average_toggle:
+        if self.model.average_toggle:
             data = self.model.average_data[self.contact_label]
         else:
             data = self.model.selected_contacts[self.contact_label].data

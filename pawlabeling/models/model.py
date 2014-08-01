@@ -38,10 +38,12 @@ class Model():
         self.filtered_length = 0
         self.current_measurement_index = 0
         self.outlier_toggle = False
+        self.average_toggle = False
 
         # Various
         pub.subscribe(self.changed_settings, "changed_settings")
         pub.subscribe(self.filter_outliers, "model_filter_outliers")
+        pub.subscribe(self.show_average_results, "model_show_average_results")
 
     def create_subject(self, subject):
         self.subject_id = self.subject_model.create_subject(subject=subject)
@@ -280,6 +282,11 @@ class Model():
 
         pub.sendMessage("filter_outliers")
 
+
+    def show_average_results(self):
+        self.average_toggle = not self.average_toggle
+        pub.sendMessage("show_average_results")
+
     # TODO Store every contact, from every measurement?
     def store_contacts(self):
         measurement_data = self.measurement_model.get_measurement_data(self.measurement)
@@ -306,6 +313,8 @@ class Model():
         self.contacts[self.measurement_name] = contacts
         # This notifies the other widgets that the contacts have been retrieved again
         self.get_contacts()
+        #Notify the measurement tree that something has changed
+        pub.sendMessage("update_measurement_status")
 
     # TODO Make sure this function doesn't have to pass along data
     def load_contacts(self):
