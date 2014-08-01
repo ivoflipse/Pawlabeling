@@ -1,11 +1,11 @@
 from collections import defaultdict
-#import numpy as np
+# import numpy as np
 import pandas as pd
 from pubsub import pub
-#from ..functions import utility, io, tracking, calculations
+# from ..functions import utility, io, tracking, calculations
 from ..settings import settings
 from ..models import table, subjectmodel, sessionmodel, measurementmodel, contactmodel, platemodel
-#from memory_profiler import profile
+# from memory_profiler import profile
 
 
 class Model():
@@ -18,28 +18,48 @@ class Model():
         self.plate_model.create_plates()
 
         self.subject_model = subjectmodel.Subjects()
-        # Initialize our variables that will cache results
+        self.subject = None
         self.subject_id = ""
         self.subject_name = ""
+        self.subjects = {}
+        self.session_model = None
+        self.sessions_table = None
         self.session_id = ""
         self.session = None
         self.sessions = {}
+        self.measurement_model = None
+        self.measurement_data = None
+        self.measurements_table = None
+        self.measurement_id = ""
         self.measurement_name = ""
         self.measurement = None
         self.measurements = {}
-        self.contact = None
-        self.average_data = defaultdict()
         self.contacts = defaultdict(list)
-        self.results = defaultdict(lambda: defaultdict(list))
         self.selected_contacts = defaultdict()
+        self.contacts_table = None
+        self.contact = None
+        self.contact_model = None
+        self.current_contact_index = 0
+        self.current_measurement_index = 0
+        self.plates = {}
+        self.plate = None
+        self.plate_id = ""
+        self.shape = None
+        self.sensor_surface = None
+        self.average_data = defaultdict()
+        self.results = defaultdict(lambda: defaultdict(list))
         self.max_results = defaultdict()
         self.n_max = 0
-        self.current_measurement_index = 0
+        self.max_length = 0
+        self.filtered_length = 0
         self.outlier_toggle = False
+        self.average_toggle = False
+        self.dataframe = None
 
         # Various
         pub.subscribe(self.changed_settings, "changed_settings")
-        pub.subscribe(self.filter_outliers, "filter_outliers")
+        pub.subscribe(self.filter_outliers, "model_filter_outliers")
+        pub.subscribe(self.show_average_results, "model_show_average_results")
 
     def create_subject(self, subject):
         self.subject_id = self.subject_model.create_subject(subject=subject)
@@ -205,7 +225,7 @@ class Model():
         self.get_measurement_data()
         # TODO I turned off the assertion, though I'm intrigued by how its possible
         # Check that its not empty
-        #assert self.contacts[self.measurement_name]
+        # assert self.contacts[self.measurement_name]
         # TODO get_contacts doesn't really do anything, but send a message, can't this be done differently?
         self.get_contacts()
 
@@ -248,11 +268,21 @@ class Model():
         self.update_average()
         pub.sendMessage("update_current_contact")
 
-    def filter_outliers(self, toggle):
+    def filter_outliers(self):
         """
         This function tries to select a contact that's not filtered or invalid
         """
-        self.outlier_toggle = toggle
+        self.outlier_toggle = not self.outlier_toggle
+
+        # Update the average, because we want to get rid of the filtered contacts
+        self.update_average()
+
+        # Calculate the length of only the filtered contacts
+        self.filtered_length = 0
+        for measurement_id, contacts in self.contacts.items():
+            for contact in contacts:
+                if not contact.filtered and not contact.invalid and contact.length > self.filtered_length:
+                    self.filtered_length = contact.length
 
         for contact_label, current_contact in self.selected_contacts.items():
             if not current_contact.filtered and not current_contact.invalid:
@@ -263,6 +293,12 @@ class Model():
                     self.put_contact(contact.contact_id)
                     break
 
+        pub.sendMessage("filter_outliers")
+
+
+    def show_average_results(self):
+        self.average_toggle = not self.average_toggle
+        pub.sendMessage("show_average_results")
 
     # TODO Store every contact, from every measurement?
     def store_contacts(self):
@@ -290,6 +326,8 @@ class Model():
         self.contacts[self.measurement_name] = contacts
         # This notifies the other widgets that the contacts have been retrieved again
         self.get_contacts()
+        # Notify the measurement tree that something has changed
+        pub.sendMessage("update_measurement_status")
 
     # TODO Make sure this function doesn't have to pass along data
     def load_contacts(self):
@@ -297,8 +335,9 @@ class Model():
         Check if there if any measurements for this subject have already been processed
         If so, retrieve the measurement_data and convert them to a usable format
         """
-        settings.settings.logger.info("Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
-            self.subject_name, self.session.session_name))
+        settings.settings.logger.info(
+            "Model.load_contacts: Loading all measurements for subject: {}, session: {}".format(
+                self.subject_name, self.session.session_name))
         self.contacts.clear()
 
         measurements = {}
@@ -321,18 +360,13 @@ class Model():
         # This notifies the measurement_trees which measurements have contacts assigned to them
         pub.sendMessage("update_measurement_status")
 
-
     def update_average(self):
         self.shape = self.session_model.calculate_shape(contacts=self.contacts)
         self.average_data = self.session_model.calculate_average_data(contacts=self.contacts,
-                                                                      shape=self.shape)
+                                                                      shape=self.shape,
+                                                                      filtering=self.outlier_toggle)
         self.max_length = self.shape[2]
-        # Also calculate the length of only the filtered contacts
-        self.filtered_length = 0
-        for measurement_id, contacts in self.contacts.items():
-            for contact in contacts:
-                if not contact.filtered and not contact.invalid and contact.length > self.filtered_length:
-                    self.filtered_length = contact.length
+        self.filtered_length = self.max_length
         pub.sendMessage("update_average")
 
     def calculate_results(self):
@@ -347,11 +381,11 @@ class Model():
                        contact.stance_duration, contact.stance_percentage, contact.step_duration, contact.step_length]
                 results.append(row)
 
-        self.dataframe = pd.DataFrame(results, columns=["measurement_id","contact_id","contact_label","invalid", "filtered",
-                                                        "peak_force","peak_pressure","peak_surface","vertical_impulse",
-                                                        "stance_duration","stance_percentage","step_duration","step_length",
-       ])
-
+        self.dataframe = pd.DataFrame(results,
+                                      columns=["measurement_id", "contact_id", "contact_label", "invalid", "filtered",
+                                               "peak_force", "peak_pressure", "peak_surface", "vertical_impulse",
+                                               "stance_duration", "stance_percentage", "step_duration", "step_length",
+                                               ])
 
     def update_n_max(self):
         self.n_max = self.measurement_model.update_n_max()
@@ -363,7 +397,7 @@ class Model():
     def clear_cached_values(self):
         # TODO Figure out what can be cleared and when, perhaps I can use an argument to check the level of clearing
         # like, subject/session/measurement etc
-        #print "model.clear_cached_values"
+        # print "model.clear_cached_values"
         self.measurement_name = ""
         self.measurements = {}
         self.contact = None

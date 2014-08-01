@@ -68,7 +68,6 @@ class OverviewView(QtGui.QWidget):
         self.frame = -1
         self.length = 0
         self.ratio = 1
-        self.outlier_toggle = False
         self.average_toggle = False
 
         self.labels = {}
@@ -101,19 +100,20 @@ class OverviewView(QtGui.QWidget):
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
         pub.subscribe(self.filter_outliers, "filter_outliers")
 
-    def filter_outliers(self, toggle):
-        self.outlier_toggle = toggle
-        self.draw()
+    def filter_outliers(self):
+        if self.parent.active:
+            self.clear_cached_values()
+            self.draw()
 
     def draw(self):
-        if not self.model.contacts:
+        if len(self.model.dataframe) == 0:
             return
 
-        df = self.model.dataframe
-        if self.outlier_toggle:
-            df = df[df["filtered"]==False]
+        index = self.model.dataframe.index
+        if self.model.outlier_toggle:
+            index = self.model.dataframe[self.model.dataframe["filtered"]==False].index
 
-        contact_group = df.groupby("contact_label")
+        contact_group = self.model.dataframe.ix[index].groupby("contact_label")
         if self.contact_label in contact_group.groups:
             data = contact_group.get_group(self.contact_label)
             for column in self.columns:

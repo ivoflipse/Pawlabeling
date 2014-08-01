@@ -18,7 +18,6 @@ class AnalysisWidget(QtGui.QTabWidget):
         self.frame = 0
         self.n_max = 0
         self.subject_name = ""
-        self.outlier_toggle = False
         self.model = model.model
 
         self.colors = settings.settings.colors
@@ -67,15 +66,14 @@ class AnalysisWidget(QtGui.QTabWidget):
         pub.sendMessage("analysis.change_frame", frame=self.frame)
 
     def filter_outliers(self, event=None):
-        self.outlier_toggle = not self.outlier_toggle
-        pub.sendMessage("filter_outliers", toggle=self.outlier_toggle)
+        pub.sendMessage("model_filter_outliers")
 
     def put_contact(self):
         self.set_max_length()
 
     def show_average_results(self):
-        self.average_toggle = not self.average_toggle
-        pub.sendMessage("show_average_results", toggle=self.average_toggle)
+        pub.sendMessage("model_show_average_results")
+        # Not particularly elegant that this has to be called here
         self.set_max_length()
 
     def set_max_length(self):

@@ -93,8 +93,6 @@ class ContactView(QtGui.QWidget):
         self.max_z = 0
         self.frame = -1
         self.length = 0
-        self.outlier_toggle = False
-        self.average_toggle = False
         self.data = np.zeros((self.mx, self.my))
 
         self.scene = QtGui.QGraphicsScene(self)
@@ -118,14 +116,12 @@ class ContactView(QtGui.QWidget):
         pub.subscribe(self.update_contact, "put_contact")
         pub.subscribe(self.show_average_results, "show_average_results")
 
-    def show_average_results(self, toggle):
-        self.average_toggle = toggle
+    def show_average_results(self):
         self.clear_cached_values()
         if self.parent.active:
             self.change_frame(frame=-1)
 
-    def filter_outliers(self, toggle):
-        self.outlier_toggle = toggle
+    def filter_outliers(self):
         self.clear_cached_values()
         if self.parent.active:
             self.change_frame(frame=-1)
@@ -144,7 +140,7 @@ class ContactView(QtGui.QWidget):
                 self.change_frame(frame=-1)
 
     def get_data(self):
-        if self.average_toggle:
+        if self.model.average_toggle:
             if self.frame == -1:
                 self.data = self.model.average_data[self.contact_label].max(axis=2)
             else:

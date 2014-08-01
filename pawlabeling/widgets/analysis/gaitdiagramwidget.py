@@ -59,7 +59,6 @@ class GaitDiagramView(QtGui.QWidget):
         self.frame = -1
         self.length = 0
         self.ratio = 1
-        self.outlier_toggle = False
         self.average_toggle = False
 
         self.scene = QtGui.QGraphicsScene(self)
@@ -94,7 +93,11 @@ class GaitDiagramView(QtGui.QWidget):
         pub.subscribe(self.draw, "put_measurement")
         pub.subscribe(self.clear_cached_values, "clear_cached_values")
 
+
     def draw(self):
+        if not self.parent.active:
+            return
+
         self.clear_cached_values()
         self.model.get_measurement_data()
         self.n_max = self.model.measurement.maximum_value

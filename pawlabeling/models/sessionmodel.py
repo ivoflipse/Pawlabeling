@@ -75,12 +75,15 @@ class Sessions(object):
 
     # TODO see when this function is being called and make sure it doesn't happen unnecessarily
     # TODO perhaps I should even include -1, so I automatically get the correctly shaped current_contact
-    def calculate_average_data(self, contacts, shape):
+    def calculate_average_data(self, contacts, shape, filtering):
         num_contacts = defaultdict(int)
         mx, my, mz = shape
         average_data = defaultdict(lambda: np.zeros(shape))
         for measurement_name, contacts in contacts.iteritems():
             for contact in contacts:
+                # Skip any contacts if we're filtering
+                if filtering and (contact.filtered or contact.invalid):
+                    continue
                 if contact.contact_label >= 0:
                     num_contacts[contact.contact_label] += 1
                     x, y, z = contact.data.shape
