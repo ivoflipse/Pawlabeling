@@ -50,7 +50,7 @@ _cache/
 # Logs and databases #
 ######################
 *.sqlite
-#*.log  # This only causes problems
+*.log
 *.sql
 
 # Windows #
