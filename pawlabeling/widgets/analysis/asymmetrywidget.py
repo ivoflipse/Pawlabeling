@@ -100,17 +100,17 @@ class AsymmetryView(QtGui.QWidget):
             self.draw()
 
     def draw(self):
-        if not self.model.contacts:
+        if len(self.model.dataframe) == 0:
             return
 
         asi = defaultdict(list)
 
-        df = self.model.dataframe
+        index = self.model.dataframe.index
         if self.model.outlier_toggle:
-            df = df[df["filtered"]==False]
+            index = self.model.dataframe[self.model.dataframe["filtered"]==False].index
 
         # I probably should calculate this in the model as well
-        for measurement_id, measurement_group in df.groupby("measurement_id"):
+        for measurement_id, measurement_group in self.model.dataframe.ix[index].groupby("measurement_id"):
             contact_group = measurement_group.groupby("contact_label")
 
             # Check if all the compare contacts are present

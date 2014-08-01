@@ -257,9 +257,6 @@ class Model():
         This function tries to select a contact that's not filtered or invalid
         """
         self.outlier_toggle = not self.outlier_toggle
-        # If we're not filtering, leave things be
-        if not self.outlier_toggle:
-            return
 
         # Update the average, because we want to get rid of the filtered contacts
         self.update_average()
