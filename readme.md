@@ -1,4 +1,4 @@
-Paw Labeling [![Build Status](https://travis-ci.org/ivoflipse/Pawlabeling.png)](https://travis-ci.org/ivoflipse/Pawlabeling) [![DOI](https://zenodo.org/badge/5117/ivoflipse/Pawlabeling.png)](http://dx.doi.org/10.5281/zenodo.10885)
+Paw Labeling [![Build Status](https://travis-ci.org/ivoflipse/Pawlabeling.png)](https://travis-ci.org/ivoflipse/Pawlabeling) [![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.13678.svg)](http://dx.doi.org/10.5281/zenodo.13678)
 ============
 
 ![Paw labeling tool](docs/images/Pawlabeling.png)
