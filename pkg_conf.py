@@ -11,7 +11,7 @@ DOC_ROOT = 'docs'
 ANACONDA_USER = 'ivoflipse'
 PKG_ROOT = 'pawlabeling'
 PKG_NAME = 'pawlabeling'
-DATA_FILES = ["*.json"]
+DATA_FILES = ["*.json", "*.zip"]
 
 ################################
 # End of customizable settings #
@@ -52,7 +52,7 @@ def get_version():
 def get_readme():
     global _cache
     if 'readme' not in _cache:
-        with open(os.path.join(ABS_REPO_ROOT, 'README.rst'), "r") as infile:
+        with open(os.path.join(ABS_REPO_ROOT, 'readme.md'), "r") as infile:
             _cache['readme'] = infile.read()
     return _cache['readme']
 

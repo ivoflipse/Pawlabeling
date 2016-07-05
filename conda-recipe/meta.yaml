@@ -3,30 +3,30 @@ package:
   version: 0.3.0
 build:
   number: 0
-  script: python setup.py install
+  script: python setup.py install --single-version-externally-managed --record=record.txt
 requirements:
   build:
     - python 2.7*
     - opencv 2.4*
-    - pyqt 4.11*
+    - pyside 1.2*
     - numpy 1.11*
     - scipy 0.17*
     - pytables 3.2*
     - pypubsub 3.3.0
-    - nose  1.3.7
     - matplotlib 1.5*
     - pandas 0.18*
+    - future 0.15*
   run:
     - python 2.7*
     - opencv 2.4*
-    - pyqt 4.11*
+    - pyside 1.2*
     - numpy 1.11*
     - scipy 0.17*
     - pytables 3.2*
     - pypubsub 3.3.0
-    - nose  1.3.7
     - matplotlib 1.5*
     - pandas 0.18*
+    - future 0.15*
 source:
   path: ..
 test:
