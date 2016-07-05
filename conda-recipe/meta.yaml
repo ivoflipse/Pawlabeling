@@ -37,6 +37,7 @@ test:
   imports:
     - pawlabeling
   requires:
+    - python 2.7*
     - pytest 2.9*
     - mock 1.3*
     - pytest-mock 0.10*
