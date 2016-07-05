@@ -2,8 +2,10 @@ package:
   name: pawlabeling
   version: 0.3.0
 build:
-  number: 0
+  number: 1
   script: python setup.py install --single-version-externally-managed --record=record.txt
+  entry_points:
+    - pawlabeling = pawlabeling.widgets.mainwindow:main
 requirements:
   build:
     - python 2.7*
@@ -47,3 +49,8 @@ about:
   home: https://github.com/ivoflipse/Pawlabeling
   license: BSD 2-Clause
   summary: Clinical Graphics' scientific toolkit
+app:
+  entry: python -m pawlabeling.py
+  summary: Pawlabeling app
+  icon: ..\favicon.ico
+  own_environment: True

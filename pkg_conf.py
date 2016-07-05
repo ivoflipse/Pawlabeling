@@ -11,7 +11,7 @@ DOC_ROOT = 'docs'
 ANACONDA_USER = 'ivoflipse'
 PKG_ROOT = 'pawlabeling'
 PKG_NAME = 'pawlabeling'
-DATA_FILES = ["*.json", "*.zip"]
+DATA_FILES = ["*.json", "*.zip", "*.png", "*.ini"]
 
 ################################
 # End of customizable settings #
