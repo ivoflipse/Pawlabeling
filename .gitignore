@@ -78,3 +78,6 @@ _templates
 
 # Build folder
 build/
+
+# Tests
+.cache/

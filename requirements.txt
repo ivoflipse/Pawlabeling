@@ -1,9 +1,0 @@
-numpy
-pyside
-cv2
-scipy
-matplotlib
-pypubsub==3.3.0
-tables
-pandas
-nose

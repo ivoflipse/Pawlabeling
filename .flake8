@@ -1,0 +1,36 @@
+[flake8]
+# F___ PyFlakes              http://flake8.readthedocs.org/en/latest/warnings.html
+# C9__ mccabe                https://github.com/flintwork/mccabe
+# E___ pep8 errors           http://pep8.readthedocs.org/en/latest/intro.html#error-codes
+# W___ pep8 warnings
+# N8__ pep8-naming           https://github.com/PyCQA/pep8-naming
+# FI__ flake8-future-import  https://github.com/xZise/flake8-future-import
+# D___ pep257                http://pep257.readthedocs.org/en/latest/usage.html
+
+ignore = E124,E126,E127,W291,W293,FI50,FI51,FI12,FI53,FI14,FI15,D203,D205,D400,D401
+# E124       closing bracket does not match visual indentation
+# E126       continuation line over-indented for hanging indent
+# E127       continuation line over-indented for visual indent
+# W291       trailing whitespace
+# W293       blank line contains whitespace
+# FI50-FI55  future import present
+# D203       1 blank line required before class docstring
+# D205       1 blank line required between summary line and description
+# D400       First line should end with a period
+# D401       First line should be in imperative mood
+
+max-line-length = 120
+
+# McCabe complexity score threshold, see https://github.com/flintwork/mccabe
+# disabled by default!
+# max-complexity = 10
+
+exclude = */debug/*,__init__.py
+
+application-import-names = skcg
+import-order-style = google
+
+[pytest]
+# For more info check: https://pytest.org/latest/customize.html
+# This also makes sure we don't use .pyc files
+python_files = test_*.py

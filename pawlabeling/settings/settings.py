@@ -3,8 +3,6 @@ import sys
 from collections import defaultdict
 from PySide import QtGui, QtCore
 from pubsub import pub
-import pkg_resources
-pkg_resources.require("tables==3.1.1")
 from ..models import table
 import logging
 

@@ -1,0 +1,64 @@
+# http://www.appveyor.com/docs/appveyor-yml
+os: Windows Server 2012
+
+environment:
+  matrix:
+    # See: http://www.appveyor.com/docs/installed-software#python
+    - PYTHON: C:\Miniconda-x64
+      PY_SELECTOR: 2.7*
+    - PYTHON: C:\Miniconda35-x64
+      PY_SELECTOR: 3.5*
+
+platform:
+  - x64
+
+# Makes AppVeyor give up all builds as soon as any of the builds fails
+matrix:
+  fast_finish: true
+
+install:
+  # By default, all script lines are interpreter as batch
+  - set PATH=%PYTHON%;%PYTHON%\Scripts;%SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;
+  - set PATH=%PATH%;%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\;C:\Program Files\Mercurial;
+  - set PATH=%PATH%;C:\Program Files\7-Zip;C:\Program Files\AppVeyor\BuildAgent
+
+  # Check that we have the expected version and architecture (x64) for Python
+  - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+
+  # Set up our environment
+  - conda install conda conda-env conda-build jinja2 anaconda-client --yes --quiet
+  # show_channel_urls: http://conda.pydata.org/docs/config.html#show-channel-urls-show-channel-urls
+  # always_yes: http://conda.pydata.org/docs/config.html#always-yes-always-yes
+  - conda config --set show_channel_urls True --set always_yes True
+  # Show us the conda configuration we have right now
+  - conda info -a
+  # create the environment, activate it and list its contents
+  - ps: |
+      (Get-Content environment.yml) | ForEach-Object { $_ -replace [regex]::escape("- python"), "- python =$env:PY_SELECTOR" } | Set-Content environment.yml
+  - conda env create --quiet
+  - ps: |
+      (Get-Content environment.yml) | ForEach-Object { $_ -replace [regex]::escape("- python =$env:PY_SELECTOR"), "- python" } | Set-Content environment.yml
+  - activate skcg
+  - conda list
+
+build_script:
+  - invoke lint
+  - invoke test
+  - invoke build --python 27
+
+after_build:
+  # archive built package(s)
+  - ps: Get-ChildItem $env:PYTHON\conda-bld\win-64\*.tar.bz2 | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+
+# http://www.appveyor.com/docs/notifications
+notifications:
+  - provider: Email
+    to:
+      - ivoflipse@gmail.com
+    on_build_status_changed: true
+
+skip_commits:
+  # skip commits when creating new branches, closing branches, also see https://www.appveyor.com/docs/how-to/skip-build
+  # case-insensitive regex flag is not processed!!
+  message: /([Cc]reated?( new)?|[Cc]losed?) branch.*/

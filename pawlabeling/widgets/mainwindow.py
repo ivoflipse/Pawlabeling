@@ -6,8 +6,9 @@ from pubsub import pub
 # Set this right away, so its set for the whole application
 # http://stackoverflow.com/questions/6723527/getting-pyside-to-work-with-matplotlib
 import matplotlib
+
 matplotlib.use("Qt4Agg")
-matplotlib.rcParams["backend.qt4"] ="PySide"
+matplotlib.rcParams["backend.qt4"] = "PySide"
 
 from ..settings import settings
 from ..functions.qsingleapplication import QtSingleApplication
@@ -51,8 +52,8 @@ class MainWindow(QtGui.QMainWindow):
         self.analysis_widget = analysiswidget.AnalysisWidget(self)
         settings.settings_widget = settingswidget.SettingsWidget(self)
 
-        self.tab_dict = {0:"Database", 1:"Processing",
-                         2:"Analysis", 3:"Settings"}
+        self.tab_dict = {0: "Database", 1: "Processing",
+                         2: "Analysis", 3: "Settings"}
 
         self.status = self.statusBar()
         self.status.showMessage("Ready")
@@ -62,7 +63,6 @@ class MainWindow(QtGui.QMainWindow):
         self.status.addPermanentWidget(self.progress)
 
         self.message_box = QtGui.QMessageBox()
-
 
         self.tab_widget = QtGui.QTabWidget(self)
         self.tab_widget.addTab(self.database_widget, "Database")
@@ -161,6 +161,7 @@ class MainWindow(QtGui.QMainWindow):
 
         event.accept()
 
+
 def main():
     appGuid = 'F3FF80BA-BA05-4277-8063-82A6DB9245A2'
     app = QtSingleApplication(appGuid, sys.argv)
@@ -175,7 +176,6 @@ def main():
     app.exec_()
     # Remember to close the table when we're done
     settings.settings.table.close()
-
 
 
 if __name__ == "__main__":

@@ -1,0 +1,28 @@
+2016-07-05 17:18:39,539 - % - INFO - -----------------------------------
+2016-07-05 17:18:39,540 - % - INFO - Log system successfully initialised
+2016-07-05 17:18:39,540 - % - INFO - -----------------------------------
+2016-07-05 17:18:41,377 - % - INFO - io.get_file_paths: Searching for measurements...
+2016-07-05 17:18:42,207 - % - INFO - Subject ID set to subject_6
+2016-07-05 17:18:42,207 - % - INFO - Subject: Ivo Flipse
+2016-07-05 17:18:42,209 - % - INFO - Model.clear_cached_values
+2016-07-05 17:18:43,802 - % - INFO - Session ID set to session_1
+2016-07-05 17:18:43,802 - % - INFO - Session: voor
+2016-07-05 17:18:43,811 - % - INFO - Plate ID set to plate_2
+2016-07-05 17:18:43,811 - % - INFO - Model.load_contacts: Loading all measurements for subject: Ivo Flipse, session: voor
+2016-07-05 17:18:47,173 - % - INFO - Changing tabs to the Processing tab
+2016-07-05 17:18:47,197 - % - INFO - Measurement ID set to measurement_1
+2016-07-05 17:18:47,197 - % - INFO - Measurement: barefoot_1 - 11-3-2005 - Entire Plate Roll Off
+2016-07-05 17:18:49,073 - % - INFO - Application Shutdown
+
+2016-07-05 17:30:52,446 - % - INFO - -----------------------------------
+2016-07-05 17:30:52,446 - % - INFO - Log system successfully initialised
+2016-07-05 17:30:52,446 - % - INFO - -----------------------------------
+2016-07-05 17:30:52,464 - % - INFO - -----------------------------------
+2016-07-05 17:30:52,464 - % - INFO - Log system successfully initialised
+2016-07-05 17:30:52,464 - % - INFO - -----------------------------------
+2016-07-05 17:30:52,581 - % - INFO - -----------------------------------
+2016-07-05 17:30:52,581 - % - INFO - Log system successfully initialised
+2016-07-05 17:30:52,581 - % - INFO - -----------------------------------
+2016-07-05 17:30:52,615 - % - INFO - -----------------------------------
+2016-07-05 17:30:52,615 - % - INFO - Log system successfully initialised
+2016-07-05 17:30:52,615 - % - INFO - -----------------------------------
