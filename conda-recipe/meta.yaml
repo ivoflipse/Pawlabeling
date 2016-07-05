@@ -9,24 +9,26 @@ requirements:
     - python 2.7*
     - opencv 2.4*
     - pyside 1.2*
-    - numpy 1.11*
+    - numpy 1.10*
     - scipy 0.17*
     - pytables 3.2*
     - pypubsub 3.3.0
     - matplotlib 1.5*
     - pandas 0.18*
     - future 0.15*
+    - pyyaml 3.11*
   run:
     - python 2.7*
     - opencv 2.4*
     - pyside 1.2*
-    - numpy 1.11*
+    - numpy 1.10*
     - scipy 0.17*
     - pytables 3.2*
     - pypubsub 3.3.0
     - matplotlib 1.5*
     - pandas 0.18*
     - future 0.15*
+    - pyyaml 3.11*
 source:
   path: ..
 test:
